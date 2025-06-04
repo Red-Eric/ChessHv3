@@ -2,26 +2,21 @@ import { Chessboard } from "react-chessboard";
 import { Chess } from "chess.js";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 let trackerLength = 999;
 const colors = ["#0000FF", "#00FF00", "#FFFF00", "#FF4D00", "#FF0000"];
-const timeAPI = "https://timeapi.io/api/time/current/zone?timeZone=Europe/Amsterdam";
+const timeAPI = "https://timeapi.io/api/Time/current/zone?timeZone=UTC";
 
 const adjustEval = (evalObj, fen) => {
   const sideToMove = fen.split(" ")[1];
-  if (evalObj.type === "cp") {
+  if (evalObj.type === "cp" || evalObj.type === "mate") {
     return {
       ...evalObj,
       value: sideToMove === "b" ? -evalObj.value : evalObj.value,
     };
-  } else if (evalObj.type === "mate") {
-    return {
-      ...evalObj,
-      value: sideToMove === "b" ? -evalObj.value : evalObj.value,
-    };
-  } else {
-    return evalObj;
   }
+  return evalObj;
 };
 
 const App = () => {
@@ -32,6 +27,11 @@ const App = () => {
   const [positionEval, setPositionEval] = useState("0.0");
   const [arrows, setArrows] = useState([]);
   const [expired, setExpired] = useState(false);
+  // re-render
+  const [stateval, setStateVal] = useState(false)
+  const reRender = () => {
+    setStateVal(!stateval)
+  }
 
   const engine = useRef(null);
   const currentFenRef = useRef(posFen);
@@ -46,24 +46,22 @@ const App = () => {
           setExpired(true);
         }
       })
-      .catch((err) => {
-        console.error("Erreur de récupération de date :", err);
-        // Optionnel : bloquer si l'API échoue
+      .catch(() => {
         setExpired(true);
       });
   }, []);
 
-  useEffect(() => {
-    chrome.runtime.onMessage.addListener((request) => {
-      setSide(request.side);
-      if (trackerLength !== request.movelist.length) {
-        trackerLength = request.movelist.length;
-        let game = new Chess();
-        request.movelist.forEach((e) => game.move(e));
-        setFenPos(game.fen());
-      }
-    });
-  }, []);
+  // useEffect(() => {
+  //   chrome.runtime.onMessage.addListener((request) => {
+  //     setSide(request.side);
+  //     if (trackerLength !== request.movelist.length) {
+  //       trackerLength = request.movelist.length;
+  //       let game = new Chess();
+  //       request.movelist.forEach((e) => game.move(e));
+  //       setFenPos(game.fen());
+  //     }
+  //   });
+  // }, []);
 
   useEffect(() => {
     setArrows([
@@ -77,12 +75,13 @@ const App = () => {
 
   useEffect(() => {
     engine.current = new Worker(new URL("./worker/stockfish.js", import.meta.url));
-    let multipvResults = [];
+    const multipvResults = new Map();
 
     engine.current.onmessage = (event) => {
       const msg = event.data;
+      console.log(msg);
 
-      if (typeof msg === "string" && msg.startsWith("info")) {
+      if (typeof msg === "string" && msg.includes("info depth 10")) {
         const parts = msg.split(" ");
         const multipvIndex = parts.indexOf("multipv");
         const scoreIndex = parts.indexOf("score");
@@ -99,26 +98,25 @@ const App = () => {
 
           let evalObj;
           if (scoreType === "cp") {
-            evalObj = { type: "cp", value: parseFloat((scoreValue / 100).toFixed(2)) };
+            evalObj = { type: "Eval", value: parseFloat((scoreValue / 100).toFixed(2)) };
           } else if (scoreType === "mate") {
             evalObj = { type: "mate", value: parseInt(scoreValue) };
           } else {
             evalObj = { type: "unknown", value: null };
           }
 
-          multipvResults[multipv - 1] = {
+          multipvResults.set(multipv, {
             eval: adjustEval(evalObj, currentFenRef.current),
             move: { from, to },
-          };
-        }
-      }
+          });
 
-      if (msg.startsWith("bestmove")) {
-        const cloned = [...multipvResults];
-        multipvResults = [];
-        setDataGame(cloned);
-        if (cloned.length > 0) {
-          setPositionEval(cloned[0]);
+          if (multipvResults.has(1)) {
+            const ordered = Array.from(multipvResults.entries())
+              .sort(([a], [b]) => a - b)
+              .map(([_, value]) => value);
+            setDataGame(ordered);
+            setPositionEval(ordered[0]);
+          }
         }
       }
     };
@@ -131,6 +129,8 @@ const App = () => {
     };
   }, []);
 
+  const navigate = useNavigate()
+
   useEffect(() => {
     currentFenRef.current = posFen;
     if (engine.current) {
@@ -142,7 +142,7 @@ const App = () => {
   if (expired) {
     return (
       <div className="w-full h-screen bg-black flex items-center justify-center">
-        <h1 className="text-white text-4xl font-bold">Session expirée</h1>
+        <h1 className="text-red-600 text-4xl font-bold">Session expirée</h1>
       </div>
     );
   }
@@ -153,6 +153,7 @@ const App = () => {
       <div
         className="w-80 ml-auto mr-auto mt-3"
         onClick={() => setOrient(orient === "white" ? "black" : "white")}
+        key={`xxx${stateval}`}
       >
         <Chessboard
           id="board1"
@@ -160,16 +161,22 @@ const App = () => {
           boardOrientation={side}
           arePiecesDraggable={false}
           customArrows={arrows}
+          customDarkSquareStyle={
+            { backgroundColor: "#779952" }
+          }
+          customLightSquareStyle={
+            { backgroundColor: "#edeed1" }
+          }
         />
         <p className="text-white text-3xl text-center font-mono pt-3 pb-3 bg-slate-900 rounded-2xl mt-4">
           {positionEval && positionEval.eval
-            ? positionEval.eval.type === "cp"
+            ? positionEval.eval.type === "Eval"
               ? `Score: ${positionEval.eval.value}`
               : `Mate in ${positionEval.eval.value}`
             : "No eval"}
         </p>
 
-        <div className="flex gap-2 mt-3">
+        <div className="flex gap-2 mt-3 ">
           {dataGame.map((d, i) => (
             <div className="rounded-md px-2" style={{ backgroundColor: colors[i] }} key={i}>
               <h2 className="text-center font-bold font-mono">
@@ -178,6 +185,20 @@ const App = () => {
             </div>
           ))}
         </div>
+
+        <div className="flex justify-around mt-3">
+          <h2 className="cursor-pointer rounded-2xl text-white font-bold font-mono bg-stone-950 p-3" onClick={reRender}>
+            Clear🔄
+          </h2>
+          <h2 className="cursor-pointer rounded-2xl text-white font-bold font-mono bg-stone-950 p-3"
+            onClick={() => {
+              navigate("/tuto")
+            }}
+          >
+            Info⚠️
+          </h2>
+        </div>
+
       </div>
     </div>
   );
