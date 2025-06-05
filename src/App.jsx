@@ -5,12 +5,13 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 let trackerLength = 999;
+const expirationDate = "2025-06-06";
 const colors = ["#0000FF", "#00FF00", "#FFFF00", "#FF4D00", "#FF0000"];
-const timeAPI = "https://timeapi.io/api/Time/current/zone?timeZone=UTC";
+const timeAPI = "http://api.timezonedb.com/v2.1/list-time-zone?key=WPOK8LWQNYUI&format=json&country=FR";
 
 const adjustEval = (evalObj, fen) => {
   const sideToMove = fen.split(" ")[1];
-  if (evalObj.type === "cp" || evalObj.type === "mate") {
+  if (evalObj.type === "Eval" || evalObj.type === "mate") {
     return {
       ...evalObj,
       value: sideToMove === "b" ? -evalObj.value : evalObj.value,
@@ -27,22 +28,25 @@ const App = () => {
   const [positionEval, setPositionEval] = useState("0.0");
   const [arrows, setArrows] = useState([]);
   const [expired, setExpired] = useState(false);
-  // re-render
-  const [stateval, setStateVal] = useState(false)
-  const reRender = ()=>{
-    setStateVal(!stateval)
-  }
+  const [stateval, setStateVal] = useState(false);
+  const reRender = () => setStateVal(!stateval);
 
   const engine = useRef(null);
   const currentFenRef = useRef(posFen);
 
   useEffect(() => {
+    let dateMsg = new Date(expirationDate)
+    alert(`Expiration -> ${dateMsg.getDate()}/${dateMsg.getDate()}/${dateMsg.getFullYear()}`)
     axios.get(timeAPI)
       .then((res) => {
-        const { year, month, day } = res.data;
-        const today = new Date(`${year}-${month}-${day}`);
-        const expiryDate = new Date("2025-06-06");
-        if (today >= expiryDate) {
+        const timestamp = res.data?.zones?.[0]?.timestamp;
+        if (timestamp) {
+          const today = new Date(timestamp * 1000);
+          const expiryDate = new Date(expirationDate);
+          if (today >= expiryDate) {
+            setExpired(true);
+          }
+        } else {
           setExpired(true);
         }
       })
@@ -79,8 +83,6 @@ const App = () => {
 
     engine.current.onmessage = (event) => {
       const msg = event.data;
-      console.log(msg);
-
       if (typeof msg === "string" && msg.includes("info depth 10")) {
         const parts = msg.split(" ");
         const multipvIndex = parts.indexOf("multipv");
@@ -129,7 +131,7 @@ const App = () => {
     };
   }, []);
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   useEffect(() => {
     currentFenRef.current = posFen;
@@ -141,15 +143,15 @@ const App = () => {
 
   if (expired) {
     return (
-      <div className="w-full h-screen bg-black flex items-center justify-center">
-        <h1 className="text-red-600 text-4xl font-bold">Session expirée</h1>
+      <div className="h-screen bg-black flex items-center justify-center w-96">
+        <h1 className="text-red-600 text-4xl font-bold">Session expirée | Session expired</h1>
       </div>
     );
   }
 
   return (
     <div className="w-96 border-solid bg-slate-600">
-      <h1 className="text-white bg-slate-950 text-center text-3xl pt-2 pb-2 font-bold">Chess Helper</h1>
+      <h1 className="text-white bg-slate-950 text-center text-2xl pt-2 pb-2 font-bold">ChessH-v3</h1>
       <div
         className="w-80 ml-auto mr-auto mt-3"
         onClick={() => setOrient(orient === "white" ? "black" : "white")}
@@ -161,12 +163,8 @@ const App = () => {
           boardOrientation={side}
           arePiecesDraggable={false}
           customArrows={arrows}
-          customDarkSquareStyle={
-            {backgroundColor: "#779952"}
-          }
-          customLightSquareStyle={
-            {backgroundColor: "#edeed1"}
-          }
+          customDarkSquareStyle={{ backgroundColor: "#779952" }}
+          customLightSquareStyle={{ backgroundColor: "#edeed1" }}
         />
         <p className="text-white text-3xl text-center font-mono pt-3 pb-3 bg-slate-900 rounded-2xl mt-4">
           {positionEval && positionEval.eval
@@ -176,7 +174,7 @@ const App = () => {
             : "No eval"}
         </p>
 
-        <div className="flex gap-2 mt-3 ">
+        <div className="flex gap-2 mt-3">
           {dataGame.map((d, i) => (
             <div className="rounded-md px-2" style={{ backgroundColor: colors[i] }} key={i}>
               <h2 className="text-center font-bold font-mono">
@@ -187,18 +185,26 @@ const App = () => {
         </div>
 
         <div className="flex justify-around mt-3">
-          <h2 className="cursor-pointer rounded-2xl text-white font-bold font-mono bg-stone-950 p-3" onClick={reRender}>
+          <h2
+            className="cursor-pointer rounded-2xl text-white font-bold font-mono bg-stone-950 p-3"
+            onClick={reRender}
+          >
             Clear🔄
           </h2>
-          <h2 className="cursor-pointer rounded-2xl text-white font-bold font-mono bg-stone-950 p-3"
-          onClick={()=>{
-            navigate("/tuto")
-          }}
+          <h2
+            className="cursor-pointer rounded-2xl text-white font-bold font-mono bg-stone-950 p-3"
+            onClick={() => {
+              navigate("/tuto");
+            }}
           >
             Info⚠️
           </h2>
+          <h2
+            className="cursor-pointer rounded-2xl text-white font-bold font-mono bg-stone-950 p-3"
+          >
+            Theme🎨
+          </h2>
         </div>
-        
       </div>
     </div>
   );

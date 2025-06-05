@@ -7,7 +7,7 @@ export const Tuto = () => {
 
     const navigate = useNavigate()
     return (
-        <div className="bg-slate-800 min-h-screen py-10 px-4 text-white font-mono">
+        <div className="bg-slate-800 min-h-screen py-10 px-4 text-white font-mono w-96">
             <h1 className="text-4xl font-bold text-center mb-10">📘 Tutoriel / Tutorial</h1>
 
             <div className="w-full max-w-2xl mx-auto space-y-10">
