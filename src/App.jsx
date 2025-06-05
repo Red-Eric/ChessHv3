@@ -4,12 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { EvalBar } from "./component/Eval";
-import logoImg from "./assets/logo.png"
+import logoImg from "./assets/logo.png";
 
 let trackerLength = 999;
 const expirationDate = "2025-06-06";
-let dateMsg = new Date(expirationDate)
-alert(`Expiration -> ${dateMsg.getDate()}/${dateMsg.getDate()}/${dateMsg.getFullYear()}`)
+let dateMsg = new Date(expirationDate);
+alert(`Expiration -> ${dateMsg.getDate()}/${dateMsg.getDate()}/${dateMsg.getFullYear()}`);
 const colors = ["#0000FF", "#00FF00", "#FFFF00", "#FF4D00", "#FF0000"];
 const timeAPI = "http://api.timezonedb.com/v2.1/list-time-zone?key=WPOK8LWQNYUI&format=json&country=FR";
 
@@ -26,7 +26,6 @@ const adjustEval = (evalObj, fen) => {
 
 const App = () => {
   const [posFen, setFenPos] = useState("rnb1k1nr/pppp2pp/8/4p3/4PpP1/2N2P2/PPPP3q/R1BQKBR1 b kq - 3 9");
-  // const [posFen, setFenPos] = useState("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
   const [side, setSide] = useState("white");
   const [orient, setOrient] = useState("white");
   const [dataGame, setDataGame] = useState([]);
@@ -42,9 +41,11 @@ const App = () => {
   const engine = useRef(null);
   const currentFenRef = useRef(posFen);
 
+  //  Expiration Check
   useEffect(() => {
-
-    axios.get(timeAPI)
+    const controller = new AbortController();
+    axios
+      .get(timeAPI, { signal: controller.signal })
       .then((res) => {
         const timestamp = res.data?.zones?.[0]?.timestamp;
         if (timestamp) {
@@ -60,10 +61,15 @@ const App = () => {
       .catch(() => {
         setExpired(true);
       });
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
+  // Chrome runtime message listener cleanup
   useEffect(() => {
-    chrome.runtime.onMessage.addListener((request) => {
+    const handleMessage = (request) => {
       setSide(request.side);
       if (trackerLength !== request.movelist.length) {
         trackerLength = request.movelist.length;
@@ -71,9 +77,13 @@ const App = () => {
         request.movelist.forEach((e) => game.move(e));
         setFenPos(game.fen());
       }
-    });
+    };
+
+    chrome.runtime.onMessage.addListener(handleMessage);
+    return () => chrome.runtime.onMessage.removeListener(handleMessage);
   }, []);
 
+  // Arrows Update from dataGame
   useEffect(() => {
     setArrows([
       [dataGame[0]?.move.from, dataGame[0]?.move.to, colors[0]],
@@ -84,6 +94,7 @@ const App = () => {
     ]);
   }, [dataGame]);
 
+  // Initialize Stockfish
   useEffect(() => {
     engine.current = new Worker(new URL("./worker/stockfish.js", import.meta.url));
     const multipvResults = new Map();
@@ -138,9 +149,7 @@ const App = () => {
     };
   }, []);
 
-  const navigate = useNavigate();
-  const [showThemes, setShowThemes] = useState(false);
-
+  // FEN UPDATE
   useEffect(() => {
     currentFenRef.current = posFen;
     if (engine.current) {
@@ -148,6 +157,9 @@ const App = () => {
       engine.current.postMessage("go depth 10");
     }
   }, [posFen]);
+
+  const navigate = useNavigate();
+  const [showThemes, setShowThemes] = useState(false);
 
   if (expired) {
     return (
@@ -264,9 +276,6 @@ const App = () => {
             ))}
           </div>
         )}
-
-
-
       </div>
     </div >
   );

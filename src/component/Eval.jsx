@@ -49,10 +49,10 @@ export const EvalBar = ({ eval: evalStr, side = "white" }) => {
                 </>
             )}
 
-            {/* Ligne rouge centrale */}
+
             <div className="absolute left-0 w-full h-0.5 bg-red-500" style={{ top: "50%" }} />
 
-            {/* Affichage du score */}
+
             <div className="absolute top-2 left-10 bg-white text-black text-xs px-1 py-0.5 rounded shadow">
                 {isMate ? `#${Math.abs(evalValue)}` : (evalValue > 0 ? `+${evalValue}` : evalValue)}
             </div>
