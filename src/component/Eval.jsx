@@ -12,7 +12,7 @@ export const EvalBar = ({ eval: evalStr, side = "white" }) => {
 
     let percentWhite;
     if (isMate) {
-        // Mate = barre complète
+        
         percentWhite = evalValue >= 0 ? 100 : 0;
     } else {
         const cappedEval = Math.max(-9, Math.min(9, evalValue));
