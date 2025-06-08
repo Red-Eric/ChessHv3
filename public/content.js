@@ -29,7 +29,13 @@ if (window.location.hostname.includes("chess.com")) {
 
     setInterval(() => {
         console.log("Sending moves");
-        sendMessage();
+        try{
+            sendMessage();
+        }
+        catch(error){
+            console.log(error)
+        }
+        
     }, 500);
 
 } else {
