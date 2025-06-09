@@ -46,6 +46,15 @@ const App = () => {
   const chosenLine = useRef(null)
   //  Expiration Check
   useEffect(() => {
+    /*********************** */
+    const width = 380;
+    const height = 538;
+
+    document.body.style.width = `${width}px`;
+    document.body.style.height = `${height}px`;
+    document.documentElement.style.width = `${width}px`;
+    document.documentElement.style.height = `${height}px`;
+    /**************************** */
     if (!sessionStorage.chesshv3) {
       AlertPage(expirationDate)
 
@@ -197,17 +206,17 @@ const App = () => {
     }
 
     const gameTmp = new Chess(posFen);
-    if(gameTmp.game_over()){
+    if (gameTmp.game_over()) {
       console.log(gameTmp.game_over())
       // b or w
       const winner = gameTmp.turn() === "w" ? "black" : "white"
-      if(side === winner){
+      if (side === winner) {
         setIsWinner(true)
-      }else{
+      } else {
         setIsWinner(false)
       }
     }
-    else{
+    else {
       setIsWinner(false)
     }
 
@@ -227,16 +236,16 @@ const App = () => {
   // useEffect(() => {
   //   console.log(arrayVarient)
   // }, [arrayVarient])
-  useEffect(() => {
-    console.log(isInVarient)
-  }, [isInVarient])
+  // useEffect(() => {
+  //   console.log(isInVarient)
+  // }, [isInVarient])
   //------------------------------------------------------
+  const [shouldPlay, setShouldPlay] = useState(false);
 
   const playVarient = () => {
-    if (chosenLine.current.fen) {
+    if (chosenLine.current && chosenLine.current.fen) {
       const game = new Chess(chosenLine.current.fen);
       const moves = chosenLine.current.moves;
-
       let i = 0;
 
       const interval = setInterval(() => {
@@ -246,18 +255,17 @@ const App = () => {
           const to = moveStr.slice(2, 4);//e4
           const promotion = moveStr[4];
           const move = game.move({ from, to, promotion });
+          console.log(from + to)
+          console.log(game.fen())
           if (move) {
             setPosFenVarient(game.fen());
           }
           else {
-
             clearInterval(interval);
           }
           i++;
         }
-
         else {
-
           clearInterval(interval);
         }
       }, 400);
@@ -266,6 +274,14 @@ const App = () => {
       setIsInVarient(false);
     }
   };
+
+  useEffect(() => {
+    if (shouldPlay && posFenVarient !== null) {
+      playVarient();
+      setShouldPlay(false);
+    }
+  }, [posFenVarient, shouldPlay]);
+
   //-----------------------------------------------RENDER-------------------------------------------------
   if (expired) {
     return (
@@ -278,7 +294,7 @@ const App = () => {
   return (
     <div className="w-96 border-solid bg-slate-600">
       {
-        isWinner ? <ReactConfetti/> : <p></p>
+        isWinner ? <ReactConfetti width={window.innerWidth} height={window.innerHeight} /> : <div></div>
       }
       <div className=" text-white bg-slate-950 flex items-center justify-center gap-3">
         <img className="w-8 h-8" src={logoImg} alt="stockfish" />
@@ -315,7 +331,7 @@ const App = () => {
               position={posFenVarient}
               boardOrientation={side}
               customDarkSquareStyle={{ backgroundColor: darkSquareColor }}
-              customLightSquareStyle={{ backgroundColor: lightSquareColor }}npm i react-confetti
+              customLightSquareStyle={{ backgroundColor: lightSquareColor }} npm i react-confetti
               arePiecesDraggable={false}
               areArrowsAllowed={false}
             />}
@@ -326,7 +342,7 @@ const App = () => {
             ? positionEval.eval.type === "Eval"
               ? `Score: ${positionEval.eval.value}`
               : `Mate in ${positionEval.eval.value}`
-            : "No eval"}
+            : "Loading ..."}
         </p>
 
         <div className="grid grid-cols-3 gap-2 mt-3">
@@ -341,8 +357,9 @@ const App = () => {
                 } else {
                   setIsInVarient(!isInVarient)
                   chosenLine.current = arrayVarient[i]
+                  setShouldPlay(true)
                   setPosFenVarient(arrayVarient[i].fen)
-                  playVarient()
+
                 }
               }}
             >
