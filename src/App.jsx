@@ -35,11 +35,10 @@ const App = () => {
   const [stateval, setStateVal] = useState(false);
   const [darkSquareColor, setDarkSquareColor] = useState("#779952");
   const [lightSquareColor, setLightSquareColor] = useState("#edeed1");
-
   const [isInVarient, setIsInVarient] = useState(false)
-
   const [isWinner, setIsWinner] = useState(false)
   const engine = useRef(null);
+  const [viewFen, setViewFen] = useState(null)
   const currentFenRef = useRef(posFen);
 
   //  Expiration Check
@@ -211,7 +210,43 @@ const App = () => {
   };
   const navigate = useNavigate();
   const [showThemes, setShowThemes] = useState(false);
-  
+  //----------------view---------------------------
+  const play = (index) => {
+    console.log(dataGame[index].fen_);
+    console.log(dataGame[index].moves);
+
+    const game = new Chess(dataGame[index].fen_);
+    const movesTmp = [...dataGame[index].moves];
+    let i = 0;
+
+    setViewFen(game.fen()); 
+    const intervalId = setInterval(() => {
+      if (i >= movesTmp.length) {
+        clearInterval(intervalId);
+        return;
+      }
+      const moveStr = movesTmp[i];
+      const move = {
+        from: moveStr.slice(0, 2),
+        to: moveStr.slice(2, 4),
+      };
+      if (moveStr.length === 5) {
+        move.promotion = moveStr[4];
+      }
+      const result = game.move(move);
+      if (result) {
+        setViewFen(game.fen());
+        console.log("FEN updated:", game.fen());
+      } else {
+        console.warn("Illegal move:", move);
+        setIsInVarient(false)
+      }
+
+      i++;
+    }, 400);
+  };
+
+
   //-----------------------------------------------RENDER-------------------------------------------------
   if (expired) {
     return (
@@ -258,7 +293,7 @@ const App = () => {
             <Chessboard
               boardWidth={300}
               id="boardVarient"
-              position={posFenVarient}
+              position={viewFen}
               boardOrientation={side}
               customDarkSquareStyle={{ backgroundColor: darkSquareColor }}
               customLightSquareStyle={{ backgroundColor: lightSquareColor }} npm i react-confetti
@@ -281,7 +316,15 @@ const App = () => {
               key={i}
               className={`rounded-md ${isInVarient ? 'opacity-50' : ''}`}
               style={{ backgroundColor: colors[i] }}
-              
+              onClick={() => {
+                console.log(i)
+                if (isInVarient) return
+                else {
+                  setViewFen(dataGame[i].fen_)
+                  play(i)
+                  setIsInVarient(true)
+                }
+              }}
             >
               <h2 className="pointer-events-none text-center font-mono whitespace-nowrap font-bold">
                 {d?.eval.type} : {d?.eval.value}
