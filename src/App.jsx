@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { EvalBar } from "./component/Eval";
 import logoImg from "./assets/logo.png";
 import { AlertPage } from "./pages/alertPagefun";
+import ReactConfetti from "react-confetti";
 
 let trackerLength = 999;
 let tempArrayLine = []
@@ -38,6 +39,7 @@ const App = () => {
   const [arrayVarient, setArrayVarient] = useState([]);
   const [isInVarient, setIsInVarient] = useState(false)
   const [posFenVarient, setPosFenVarient] = useState("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+  const [isWinner, setIsWinner] = useState(false)
 
   const engine = useRef(null);
   const currentFenRef = useRef(posFen);
@@ -193,6 +195,22 @@ const App = () => {
       engine.current.postMessage(`position fen ${posFen}`);
       engine.current.postMessage("go depth 10");
     }
+
+    const gameTmp = new Chess(posFen);
+    if(gameTmp.game_over()){
+      console.log(gameTmp.game_over())
+      // b or w
+      const winner = gameTmp.turn() === "w" ? "black" : "white"
+      if(side === winner){
+        setIsWinner(true)
+      }else{
+        setIsWinner(false)
+      }
+    }
+    else{
+      setIsWinner(false)
+    }
+
   }, [posFen]);
 
   const reRender = () => {
@@ -259,6 +277,9 @@ const App = () => {
 
   return (
     <div className="w-96 border-solid bg-slate-600">
+      {
+        isWinner ? <ReactConfetti/> : <p></p>
+      }
       <div className=" text-white bg-slate-950 flex items-center justify-center gap-3">
         <img className="w-8 h-8" src={logoImg} alt="stockfish" />
         <h1 className=" text-center text-2xl pt-2 pb-2 font-bold">ChessH-V3</h1>
