@@ -9,7 +9,6 @@ import { AlertPage } from "./pages/alertPagefun";
 import ReactConfetti from "react-confetti";
 
 let trackerLength = 999;
-let tempArrayLine = []
 const expirationDate = "2025-06-10";
 const colors = ["#0000FF", "#00FF00", "#FFFF00", "#FF4D00", "#FF0000"];
 const timeAPI = "http://api.timezonedb.com/v2.1/list-time-zone?key=WPOK8LWQNYUI&format=json&country=FR";
@@ -36,14 +35,13 @@ const App = () => {
   const [stateval, setStateVal] = useState(false);
   const [darkSquareColor, setDarkSquareColor] = useState("#779952");
   const [lightSquareColor, setLightSquareColor] = useState("#edeed1");
-  const [arrayVarient, setArrayVarient] = useState([]);
-  const [isInVarient, setIsInVarient] = useState(false)
-  const [posFenVarient, setPosFenVarient] = useState("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-  const [isWinner, setIsWinner] = useState(false)
 
+  const [isInVarient, setIsInVarient] = useState(false)
+
+  const [isWinner, setIsWinner] = useState(false)
   const engine = useRef(null);
   const currentFenRef = useRef(posFen);
-  const chosenLine = useRef(null)
+
   //  Expiration Check
   useEffect(() => {
     /*********************** */
@@ -125,30 +123,14 @@ const App = () => {
     engine.current.onmessage = (event) => {
       const msg = event.data;
 
-      if (typeof msg === "string" && msg.includes("bestmove")) {
-        if (tempArrayLine.length > 0) {
-          setArrayVarient(tempArrayLine);
-        }
-        tempArrayLine = [];
-      }
-
       if (typeof msg === "string" && msg.includes("info depth 10")) {
         const parts = msg.split(" ");
         const multipvIndex = parts.indexOf("multipv");
         const scoreIndex = parts.indexOf("score");
         const pvIndex = parts.indexOf("pv");
-
-        // Extraction pour variation brute
         const indication = msg.split(" pv ")[0]?.split("multipv ")[1]?.[0];
         const line = msg.split(" pv ")[1];
         const movesArray = line?.trim().split(" ");
-
-        const lineObj = {
-          index: indication,
-          moves: movesArray,
-          fen: posFen,
-        };
-        tempArrayLine.push(lineObj);
 
         if (multipvIndex !== -1 && scoreIndex !== -1 && pvIndex !== -1) {
           const multipv = parseInt(parts[multipvIndex + 1]);
@@ -218,7 +200,6 @@ const App = () => {
     else {
       setIsWinner(false)
     }
-
   }, [posFen]);
 
   const reRender = () => {
@@ -229,58 +210,8 @@ const App = () => {
     }
   };
   const navigate = useNavigate();
-
   const [showThemes, setShowThemes] = useState(false);
-  //------------------ debug state-----------------------//
-  // useEffect(() => {
-  //   console.log(arrayVarient)
-  // }, [arrayVarient])
-  // useEffect(() => {
-  //   console.log(isInVarient)
-  // }, [isInVarient])
-  //------------------------------------------------------
-  const [shouldPlay, setShouldPlay] = useState(false);
-
-  const playVarient = () => {
-    if (chosenLine.current && chosenLine.current.fen) {
-      const game = new Chess(chosenLine.current.fen);
-      const moves = chosenLine.current.moves;
-      let i = 0;
-
-      const interval = setInterval(() => {
-        if (i < moves.length) {
-          const moveStr = moves[i];
-          const from = moveStr.slice(0, 2);//"e2"
-          const to = moveStr.slice(2, 4);//e4
-          const promotion = moveStr[4];
-          const move = game.move({ from, to, promotion });
-          console.log(from + to)
-          console.log(game.fen())
-          if (move) {
-            setPosFenVarient(game.fen());
-          }
-          else {
-            clearInterval(interval);
-          }
-          i++;
-        }
-        else {
-          clearInterval(interval);
-        }
-      }, 400);
-    }
-    else {
-      setIsInVarient(false);
-    }
-  };
-
-  useEffect(() => {
-    if (shouldPlay && posFenVarient !== null) {
-      playVarient();
-      setShouldPlay(false);
-    }
-  }, [posFenVarient, shouldPlay]);
-
+  
   //-----------------------------------------------RENDER-------------------------------------------------
   if (expired) {
     return (
@@ -350,17 +281,7 @@ const App = () => {
               key={i}
               className={`rounded-md ${isInVarient ? 'opacity-50' : ''}`}
               style={{ backgroundColor: colors[i] }}
-              onClick={() => {
-                if (isInVarient) {
-                  // none
-                } else {
-                  setIsInVarient(!isInVarient)
-                  chosenLine.current = arrayVarient[i]
-                  setShouldPlay(true)
-                  setPosFenVarient(arrayVarient[i].fen)
-
-                }
-              }}
+              
             >
               <h2 className="pointer-events-none text-center font-mono whitespace-nowrap font-bold">
                 {d?.eval.type} : {d?.eval.value}
