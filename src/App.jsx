@@ -112,6 +112,9 @@ const App = () => {
       [dataGame[3]?.move.from, dataGame[3]?.move.to, colors[3]],
       [dataGame[4]?.move.from, dataGame[4]?.move.to, colors[4]],
     ]);
+
+    console.log(dataGame)
+
   }, [dataGame]);
 
   // Initialize Stockfish
@@ -119,20 +122,14 @@ const App = () => {
     engine.current = new Worker(new URL("./worker/stockfish.js", import.meta.url));
     const multipvResults = new Map();
 
-
     engine.current.onmessage = (event) => {
       const msg = event.data;
-      // console.log(msg)
-      //info depth 10 seldepth 12 multipv 5 score cp 38 nodes 84420 nps 65594 hashfull 32 tbhits 0 time 1287 pv b1c3 d7d5 d2d4 g8f6 g1f3 e7e6 c1g5 f8b4 e2e3 e8g8 f1d3
-      //b1c3 d7d5 d2d4 g8f6 g1f3 e7e6 c1g5 f8b4 e2e3 e8g8 f1d3
-      //safety
+
       if (typeof msg === "string" && msg.includes("bestmove")) {
-        // [1]->[1] => []-[1]
-        const tmp = tempArrayLine
-        if (tmp.length > 0) {
-          setArrayVarient(tmp)
+        if (tempArrayLine.length > 0) {
+          setArrayVarient(tempArrayLine);
         }
-        tempArrayLine = []
+        tempArrayLine = [];
       }
 
       if (typeof msg === "string" && msg.includes("info depth 10")) {
@@ -141,19 +138,18 @@ const App = () => {
         const scoreIndex = parts.indexOf("score");
         const pvIndex = parts.indexOf("pv");
 
-        //----------- Variente -------
-
-        const indication = msg.split(" pv ")[0].toString().split("multipv ")[1][0]
-        const line = msg.split(" pv ")[1]
+        // Extraction pour variation brute
+        const indication = msg.split(" pv ")[0]?.split("multipv ")[1]?.[0];
+        const line = msg.split(" pv ")[1];
+        const movesArray = line?.trim().split(" ");
 
         const lineObj = {
           index: indication,
-          moves: line.split(" "),
-          fen: posFen
-        }
-        tempArrayLine.push(lineObj)
+          moves: movesArray,
+          fen: posFen,
+        };
+        tempArrayLine.push(lineObj);
 
-        //---------------------
         if (multipvIndex !== -1 && scoreIndex !== -1 && pvIndex !== -1) {
           const multipv = parseInt(parts[multipvIndex + 1]);
           const scoreType = parts[scoreIndex + 1];
@@ -175,13 +171,15 @@ const App = () => {
           multipvResults.set(multipv, {
             eval: adjustEval(evalObj, currentFenRef.current),
             move: { from, to },
+            fen_: posFen,
+            moves: movesArray,
           });
 
           if (multipvResults.has(1)) {
             const ordered = Array.from(multipvResults.entries())
               .sort(([a], [b]) => a - b)
               .map(([_, value]) => value);
-            setDataGame([])
+
             setDataGame(ordered);
             setPositionEval(ordered[0]);
           }
@@ -196,6 +194,7 @@ const App = () => {
       engine.current = null;
     };
   }, []);
+
 
   // FEN UPDATE
   useEffect(() => {
