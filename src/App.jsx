@@ -187,7 +187,7 @@ const App = () => {
 
     const gameTmp = new Chess(posFen);
     if (gameTmp.game_over()) {
-      console.log(gameTmp.game_over())
+      console.log(gameTmp.in_checkmate())
       // b or w
       const winner = gameTmp.turn() === "w" ? "black" : "white"
       if (side === winner) {
