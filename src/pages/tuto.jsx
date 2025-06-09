@@ -2,10 +2,14 @@ import { useNavigate } from "react-router-dom";
 import imgLang from "../assets/0.png";
 import imgNot1 from "../assets/1.png";
 import imgNot2 from "../assets/2.png";
+import { useEffect } from "react";
 
 export const Tuto = () => {
 
     const navigate = useNavigate()
+    useEffect(()=>{
+        sessionStorage.setItem("chesshv3","ok")
+    },[])
     return (
         <div className="bg-slate-800 min-h-screen py-10 px-4 text-white font-mono w-96">
             <h1 className="text-4xl font-bold text-center mb-10">📘 Tutoriel / Tutorial</h1>
