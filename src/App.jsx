@@ -35,14 +35,14 @@ const App = () => {
   const [darkSquareColor, setDarkSquareColor] = useState("#779952");
   const [lightSquareColor, setLightSquareColor] = useState("#edeed1");
 
-  const reRender = () => setStateVal(!stateval);
+
 
   const engine = useRef(null);
   const currentFenRef = useRef(posFen);
 
   //  Expiration Check
   useEffect(() => {
-    AlertPage(expirationDate)
+    // AlertPage(expirationDate)
     axios.get(timeAPI).then((res) => {
       const timestamp = res.data?.zones?.[0]?.timestamp;
       if (timestamp) {
@@ -57,19 +57,35 @@ const App = () => {
 
   // Chrome runtime message listener cleanup
   useEffect(() => {
-    const handleMessage = (request) => {
-      setSide(request.side);
-      if (trackerLength !== request.movelist.length) {
-        trackerLength = request.movelist.length;
-        let game = new Chess();
-        request.movelist.forEach((e) => game.move(e));
-        setFenPos(game.fen());
+    try {
+      const handleMessage = (request) => {
+        try {
+          setSide(request.side);
+          if (trackerLength !== request.movelist.length) {
+            trackerLength = request.movelist.length;
+            let game = new Chess();
+            request.movelist.forEach((e) => game.move(e));
+            setFenPos(game.fen());
+          }
+        } catch (err) {
+          console.error("Mess:", err);
+        }
+      };
+      if (chrome?.runtime?.onMessage) {
+        chrome.runtime.onMessage.addListener(handleMessage);
+      } else {
+        console.warn("Dev Mode");
       }
-    };
-
-    chrome.runtime.onMessage.addListener(handleMessage);
-    return () => chrome.runtime.onMessage.removeListener(handleMessage);
+      return () => {
+        if (chrome?.runtime?.onMessage) {
+          chrome.runtime.onMessage.removeListener(handleMessage);
+        }
+      };
+    } catch (err) {
+      console.error(err);
+    }
   }, []);
+
 
   // Arrows Update from dataGame
   useEffect(() => {
@@ -89,6 +105,7 @@ const App = () => {
 
     engine.current.onmessage = (event) => {
       const msg = event.data;
+      console.log(msg)
       if (typeof msg === "string" && msg.includes("info depth 10")) {
         const parts = msg.split(" ");
         const multipvIndex = parts.indexOf("multipv");
@@ -122,6 +139,7 @@ const App = () => {
             const ordered = Array.from(multipvResults.entries())
               .sort(([a], [b]) => a - b)
               .map(([_, value]) => value);
+            setDataGame([])
             setDataGame(ordered);
             setPositionEval(ordered[0]);
           }
@@ -146,6 +164,13 @@ const App = () => {
     }
   }, [posFen]);
 
+  const reRender = () => {
+    setStateVal(!stateval)
+    if (engine) {
+      engine.current.postMessage(`position fen ${posFen}`);
+      engine.current.postMessage("go depth 10");
+    }
+  };
   const navigate = useNavigate();
   const [showThemes, setShowThemes] = useState(false);
 
@@ -195,22 +220,27 @@ const App = () => {
             : "No eval"}
         </p>
 
-        <div className="flex gap-2 mt-3">
+        <div className="grid grid-cols-3 gap-2 mt-3">
           {dataGame.map((d, i) => (
-            <div className="rounded-md px-2" style={{ backgroundColor: colors[i] }} key={i}>
-              <h2 className="text-center font-bold font-mono">
+            <div
+              key={i}
+              className="rounded-md"
+              style={{ backgroundColor: colors[i] }}
+            >
+              <h2 className="text-center font-mono whitespace-nowrap font-bold">
                 {d?.eval.type} : {d?.eval.value}
               </h2>
             </div>
           ))}
         </div>
 
+
         <div className="flex justify-around gap-4 mt-3">
           <h2
             className="cursor-pointer rounded-2xl text-white font-mono bg-stone-950 p-2"
             onClick={reRender}
           >
-            Clear🔄
+            Refresh🔄
           </h2>
           <h2
             className="cursor-pointer rounded-2xl text-white font-mono bg-stone-950 p-2"
