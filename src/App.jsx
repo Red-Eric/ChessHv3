@@ -294,7 +294,7 @@ const App = () => {
               position={posFenVarient}
               boardOrientation={side}
               customDarkSquareStyle={{ backgroundColor: darkSquareColor }}
-              customLightSquareStyle={{ backgroundColor: lightSquareColor }}
+              customLightSquareStyle={{ backgroundColor: lightSquareColor }}npm i react-confetti
               arePiecesDraggable={false}
               areArrowsAllowed={false}
             />}
