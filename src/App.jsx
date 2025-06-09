@@ -42,7 +42,7 @@ const App = () => {
 
   //  Expiration Check
   useEffect(() => {
-    // AlertPage(expirationDate)
+    AlertPage(expirationDate)
     axios.get(timeAPI).then((res) => {
       const timestamp = res.data?.zones?.[0]?.timestamp;
       if (timestamp) {
