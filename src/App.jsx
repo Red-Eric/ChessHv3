@@ -8,6 +8,7 @@ import logoImg from "./assets/logo.png";
 import { AlertPage } from "./pages/alertPagefun";
 
 let trackerLength = 999;
+let tempArrayLine = []
 const expirationDate = "2025-06-10";
 const colors = ["#0000FF", "#00FF00", "#FFFF00", "#FF4D00", "#FF0000"];
 const timeAPI = "http://api.timezonedb.com/v2.1/list-time-zone?key=WPOK8LWQNYUI&format=json&country=FR";
@@ -34,8 +35,7 @@ const App = () => {
   const [stateval, setStateVal] = useState(false);
   const [darkSquareColor, setDarkSquareColor] = useState("#779952");
   const [lightSquareColor, setLightSquareColor] = useState("#edeed1");
-
-
+  const [variants, setVariants] = useState([])
 
   const engine = useRef(null);
   const currentFenRef = useRef(posFen);
@@ -102,16 +102,38 @@ const App = () => {
   useEffect(() => {
     engine.current = new Worker(new URL("./worker/stockfish.js", import.meta.url));
     const multipvResults = new Map();
+    
 
     engine.current.onmessage = (event) => {
       const msg = event.data;
-      console.log(msg)
+      // console.log(msg)
+      //info depth 10 seldepth 12 multipv 5 score cp 38 nodes 84420 nps 65594 hashfull 32 tbhits 0 time 1287 pv b1c3 d7d5 d2d4 g8f6 g1f3 e7e6 c1g5 f8b4 e2e3 e8g8 f1d3
+      //b1c3 d7d5 d2d4 g8f6 g1f3 e7e6 c1g5 f8b4 e2e3 e8g8 f1d3
+      //safety
+      if(typeof msg === "string" && msg.includes("bestmove")){
+        tempArrayLine = []
+      }
+
       if (typeof msg === "string" && msg.includes("info depth 10")) {
         const parts = msg.split(" ");
         const multipvIndex = parts.indexOf("multipv");
         const scoreIndex = parts.indexOf("score");
         const pvIndex = parts.indexOf("pv");
 
+        //----------- Variente -------
+        
+        const indication = msg.split(" pv ")[0].toString().split("multipv ")[1][0]
+        const line = msg.split(" pv ")[1]
+        
+        const lineObj = {
+          index : indication,
+          moves : line.split(" "),
+          fen : posFen
+        }
+        tempArrayLine.push(lineObj)
+        console.log(tempArrayLine)
+
+        //---------------------
         if (multipvIndex !== -1 && scoreIndex !== -1 && pvIndex !== -1) {
           const multipv = parseInt(parts[multipvIndex + 1]);
           const scoreType = parts[scoreIndex + 1];
@@ -209,6 +231,7 @@ const App = () => {
             customArrows={arrows}
             customDarkSquareStyle={{ backgroundColor: darkSquareColor }}
             customLightSquareStyle={{ backgroundColor: lightSquareColor }}
+            areArrowsAllowed={false}
           />
         </div>
 
