@@ -247,6 +247,7 @@ const App = () => {
   //---------------Minimize Logic-------------------------
 
   const [minimized, setMinimized] = useState(false)
+
   //-----------------------------------------------RENDER-------------------------------------------------
   if (expired) {
     return (
