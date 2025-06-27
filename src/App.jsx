@@ -255,7 +255,7 @@ const App = () => {
   if (expired) {
     return (
       <div className="h-screen bg-black flex items-center justify-center w-96">
-        <h1 className="text-red-600 text-4xl font-bold">Session expirée | Session expired</h1>
+        <h1 className="text-red-600 text-4xl font-bold select-none">Session expirée | Session expired</h1>
       </div>
     );
   }
@@ -270,7 +270,7 @@ const App = () => {
         <div className="flex items-center gap-2">
           <img className="w-8 h-8" src={logoImg} alt="stockfish" />
         </div>
-        <h1 className="absolute left-1/2 -translate-x-1/2 text-2xl font-bold">ChessH-V3</h1>
+        <h1 className="absolute left-1/2 -translate-x-1/2 text-2xl font-bold select-none">ChessH-V3</h1>
         <div>
           {
             minimized ? <Maximize2 size={32} className="cursor-pointer" color="blue" onClick={()=> setMinimized(false) }/> : <Minimize2 size={32} className="cursor-pointer" color="white" onClick={()=> setMinimized(true)}/>
@@ -340,12 +340,12 @@ const App = () => {
                 }
               }}
             >
-              <h2 className="pointer-events-none text-center font-mono whitespace-nowrap font-bold">
+              <h2 className="select-none pointer-events-none text-center font-mono whitespace-nowrap font-bold">
                 {d?.eval.type} : {d?.eval.value}
               </h2>
             </div>
           ))}
-          <h2 className={"bg-slate-800 text-center rounded-md text-white whitespace-nowrap cursor-pointer " + (isInVarient ? "opacity-50" : " hover:bg-slate-700 duration-300")}
+          <h2 className={" select-none bg-slate-800 text-center rounded-md text-white whitespace-nowrap cursor-pointer " + (isInVarient ? "opacity-50" : " hover:bg-slate-700 duration-300")}
             onClick={() => setIsInVarient(false)}
           >Go Back</h2>
         </div>
@@ -354,13 +354,13 @@ const App = () => {
 
         <div className="flex justify-around gap-4 mt-3">
           <h2
-            className="cursor-pointer rounded-2xl text-white font-mono bg-stone-950 p-2"
+            className="select-none cursor-pointer rounded-2xl text-white font-mono bg-stone-950 p-2"
             onClick={reRender}
           >
             Refresh🔄
           </h2>
           <h2
-            className="cursor-pointer rounded-2xl text-white font-mono bg-stone-950 p-2"
+            className="select-none cursor-pointer rounded-2xl text-white font-mono bg-stone-950 p-2"
             onClick={() => {
               navigate("/tuto");
             }}
@@ -368,7 +368,7 @@ const App = () => {
             ReadMe⚠️
           </h2>
           <h2
-            className="cursor-pointer rounded-2xl text-white font-mono bg-stone-950 p-2"
+            className="select-none cursor-pointer rounded-2xl text-white font-mono bg-stone-950 p-2"
             onClick={() => setShowThemes(!showThemes)}
           >
             Theme🎨
