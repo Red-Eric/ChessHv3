@@ -269,7 +269,7 @@ const App = () => {
         <h1 className="absolute left-1/2 -translate-x-1/2 text-2xl font-bold">ChessH-V3</h1>
         <div>
           {
-            minimized ? <Maximize2 size={32} className="cursor-pointer" color="blue" onClick={()=> setMinimized(true)}/> : <Minimize2 size={32} className="cursor-pointer" color="white" onClick={()=> setMinimized(false)}/>
+            minimized ? <Maximize2 size={32} className="cursor-pointer" color="blue" onClick={()=> setMinimized(false)}/> : <Minimize2 size={32} className="cursor-pointer" color="white" onClick={()=> setMinimized(true)}/>
           }
         </div>
       </div>
