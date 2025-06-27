@@ -52,6 +52,9 @@ const App = () => {
     document.body.style.height = `${height}px`;
     document.documentElement.style.width = `${width}px`;
     document.documentElement.style.height = `${height}px`;
+
+    document.body.style.height = "10px"
+    document.documentElement.style.height = "10px";
     /**************************** */
     if (!sessionStorage.chesshv3) {
       AlertPage(expirationDate)
@@ -270,7 +273,7 @@ const App = () => {
         <h1 className="absolute left-1/2 -translate-x-1/2 text-2xl font-bold">ChessH-V3</h1>
         <div>
           {
-            minimized ? <Maximize2 size={32} className="cursor-pointer" color="blue" onClick={()=> setMinimized(false)}/> : <Minimize2 size={32} className="cursor-pointer" color="white" onClick={()=> setMinimized(true)}/>
+            minimized ? <Maximize2 size={32} className="cursor-pointer" color="blue" onClick={()=> setMinimized(false) }/> : <Minimize2 size={32} className="cursor-pointer" color="white" onClick={()=> setMinimized(true)}/>
           }
         </div>
       </div>
