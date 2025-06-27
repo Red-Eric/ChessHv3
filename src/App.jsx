@@ -7,9 +7,10 @@ import { EvalBar } from "./component/Eval";
 import logoImg from "./assets/logo.png";
 import { AlertPage } from "./pages/alertPagefun";
 import ReactConfetti from "react-confetti";
+import { Maximize2, Minimize2 } from "lucide-react";
 
 let trackerLength = 999;
-const expirationDate = "2025-06-10";
+const expirationDate = "2026-01-01";
 const colors = ["#0000FF", "#00FF00", "#FFFF00", "#FF4D00", "#FF0000"];
 const timeAPI = "http://api.timezonedb.com/v2.1/list-time-zone?key=WPOK8LWQNYUI&format=json&country=FR";
 
@@ -121,7 +122,7 @@ const App = () => {
 
     engine.current.onmessage = (event) => {
       const msg = event.data;
-
+      console.log(msg)
       if (typeof msg === "string" && msg.includes("info depth 10")) {
         const parts = msg.split(" ");
         const multipvIndex = parts.indexOf("multipv");
@@ -212,14 +213,13 @@ const App = () => {
   const [showThemes, setShowThemes] = useState(false);
   //----------------view---------------------------
   const play = (index) => {
-    console.log(dataGame[index].fen_);
     console.log(dataGame[index].moves);
-
-    const game = new Chess(dataGame[index].fen_);
-    const movesTmp = [...dataGame[index].moves];
+    const f = currentFenRef.current
+    const game = new Chess(f);
+    const movesTmp = dataGame[index].moves;
     let i = 0;
 
-    setViewFen(game.fen()); 
+    setViewFen(game.fen());
     const intervalId = setInterval(() => {
       if (i >= movesTmp.length) {
         clearInterval(intervalId);
@@ -236,7 +236,6 @@ const App = () => {
       const result = game.move(move);
       if (result) {
         setViewFen(game.fen());
-        console.log("FEN updated:", game.fen());
       } else {
         console.warn("Illegal move:", move);
         setIsInVarient(false)
@@ -245,8 +244,9 @@ const App = () => {
       i++;
     }, 400);
   };
+  //---------------Minimize Logic-------------------------
 
-
+  const [minimized, setMinimized] = useState(false)
   //-----------------------------------------------RENDER-------------------------------------------------
   if (expired) {
     return (
@@ -257,16 +257,26 @@ const App = () => {
   }
 
   return (
-    <div className="w-96 border-solid bg-slate-600">
+    <div id="main"  className="w-96 border-solid bg-slate-600">
       {
         isWinner ? <ReactConfetti width={window.innerWidth} height={window.innerHeight} /> : <div></div>
       }
-      <div className=" text-white bg-slate-950 flex items-center justify-center gap-3">
-        <img className="w-8 h-8" src={logoImg} alt="stockfish" />
-        <h1 className=" text-center text-2xl pt-2 pb-2 font-bold">ChessH-V3</h1>
 
+      <div className="relative text-white bg-slate-950 flex items-center justify-between px-4 h-16">
+        <div className="flex items-center gap-2">
+          <img className="w-8 h-8" src={logoImg} alt="stockfish" />
+        </div>
+        <h1 className="absolute left-1/2 -translate-x-1/2 text-2xl font-bold">ChessH-V3</h1>
+        <div>
+          {
+            minimized ? <Maximize2 size={32} className="cursor-pointer" color="blue" onClick={()=> setMinimized(true)}/> : <Minimize2 size={32} className="cursor-pointer" color="white" onClick={()=> setMinimized(false)}/>
+          }
+        </div>
       </div>
+
       <div
+
+        hidden={minimized}
         className="w-80 ml-auto mr-auto mt-3"
         onClick={() => setOrient(orient === "white" ? "black" : "white")}
         key={`xxx${stateval}+${isInVarient}`}
@@ -283,7 +293,7 @@ const App = () => {
             id="board1"
             position={posFen}
             boardOrientation={side}
-            arePiecesDraggable={false}
+            arePiecesDraggable={true}
             customArrows={arrows}
             customDarkSquareStyle={{ backgroundColor: darkSquareColor }}
             customLightSquareStyle={{ backgroundColor: lightSquareColor }}

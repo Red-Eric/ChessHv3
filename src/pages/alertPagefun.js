@@ -29,7 +29,7 @@ export const AlertPage = (expirationDate) => {
         - Ils détectent les tricheurs via plusieurs facteurs : temps de coup, précision, taux de victoire.<br/>
         - Temps de coup : Ne jouez pas tous vos coups avec un délai identique. Un recoup simple peut être joué vite, un sacrifice complexe doit sembler réfléchi.<br/>
         - Précision : Ne jouez pas toujours les meilleurs coups. Faites quelques erreurs pour baisser votre précision.<br/>
-        - Taux de victoire : Ne dépassez pas 80%. Perdez volontairement parfois.
+        - Taux de victoire : Ne dépassez pas 60%. Perdez volontairement parfois.
         </p>
         <hr/>
         <p>
@@ -49,7 +49,7 @@ export const AlertPage = (expirationDate) => {
         - They detect cheaters based on several factors: Move time, accuracy, win rate.<br/>
         - Move time: Don’t take the same time for every move. Play simple moves quickly, and think longer on hard ones.<br/>
         - Accuracy: Don’t always play the best moves. Make blunders occasionally to reduce your accuracy.<br/>
-        - Win rate: Keep your win rate below 80%. Intentionally lose sometimes.
+        - Win rate: Keep your win rate below 60%. Intentionally lose sometimes.
         </p>
       </div>
     `,
