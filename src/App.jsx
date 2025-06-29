@@ -297,7 +297,7 @@ const App = () => {
             id="board1"
             position={posFen}
             boardOrientation={side}
-            arePiecesDraggable={true}
+            arePiecesDraggable={false}
             customArrows={arrows}
             customDarkSquareStyle={{ backgroundColor: darkSquareColor }}
             customLightSquareStyle={{ backgroundColor: lightSquareColor }}
