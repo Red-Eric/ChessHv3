@@ -78,11 +78,16 @@ const App = () => {
       const handleMessage = (request) => {
         try {
           setSide(request.side);
-          if (trackerLength !== request.movelist.length) {
-            trackerLength = request.movelist.length;
-            let game = new Chess();
-            request.movelist.forEach((e) => game.move(e));
-            setFenPos(game.fen());
+          if (request.fen) {
+            setFenPos(request.fen)
+          }
+          if (request.movelist) {
+            if (trackerLength !== request.movelist.length) {
+              trackerLength = request.movelist.length;
+              let game = new Chess();
+              request.movelist.forEach((e) => game.move(e));
+              setFenPos(game.fen());
+            }
           }
         } catch (err) {
           console.error("Mess:", err);
@@ -261,7 +266,7 @@ const App = () => {
   }
 
   return (
-    <div id="main"  className="w-96 border-solid bg-slate-600">
+    <div id="main" className="w-96 border-solid bg-slate-600">
       {
         isWinner ? <ReactConfetti width={window.innerWidth} height={window.innerHeight} /> : <div></div>
       }
@@ -273,7 +278,7 @@ const App = () => {
         <h1 className="absolute left-1/2 -translate-x-1/2 text-2xl font-bold select-none">ChessH-V3</h1>
         <div>
           {
-            minimized ? <Maximize2 size={32} className="cursor-pointer" color="blue" onClick={()=> setMinimized(false) }/> : <Minimize2 size={32} className="cursor-pointer" color="white" onClick={()=> setMinimized(true)}/>
+            minimized ? <Maximize2 size={32} className="cursor-pointer" color="blue" onClick={() => setMinimized(false)} /> : <Minimize2 size={32} className="cursor-pointer" color="white" onClick={() => setMinimized(true)} />
           }
         </div>
       </div>
