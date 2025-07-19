@@ -7,7 +7,7 @@ import { EvalBar } from "./component/Eval";
 import logoImg from "./assets/logo.png";
 import { AlertPage } from "./pages/alertPagefun";
 import ReactConfetti from "react-confetti";
-import { Maximize2, Minimize2 } from "lucide-react";
+import { FastForward, Maximize2, Minimize2 } from "lucide-react";
 
 let trackerLength = 999;
 const expirationDate = "2026-01-01";
@@ -35,7 +35,6 @@ const App = () => {
   const [positionEval, setPositionEval] = useState("0.0");
   const [arrows, setArrows] = useState([]);
   const [expired, setExpired] = useState(false);
-  const [stateval, setStateVal] = useState(false);
   const [darkSquareColor, setDarkSquareColor] = useState("#779952");
   const [lightSquareColor, setLightSquareColor] = useState("#edeed1");
   const [isInVarient, setIsInVarient] = useState(false)
@@ -44,6 +43,7 @@ const App = () => {
   const [viewFen, setViewFen] = useState(null)
   const currentFenRef = useRef(posFen);
   const [depth, setDepth] = useState(10)
+  const [isEval, setIsEval] = useState(false)
 
   //  Expiration Check
   useEffect(() => {
@@ -82,6 +82,7 @@ const App = () => {
 
     engine.current.onmessage = (event) => {
       const msg = event.data;
+      console.log(msg)
       if (typeof msg === "string" && msg.includes(`info depth ${depth}`)) {
         const parts = msg.split(" ");
         const multipvIndex = parts.indexOf("multipv");
@@ -124,7 +125,11 @@ const App = () => {
             setDataGame(ordered);
             setPositionEval(ordered[0]);
           }
+
         }
+      }
+      if(msg.includes("bestmove")){
+        setIsEval(false)
       }
     };
 
@@ -146,9 +151,6 @@ const App = () => {
           if (request.fen) {
             if (request.fen !== posFen) {
               setFenPos(request.fen)
-              engine.current.postMessage(`position fen ${request.fen}`);
-              engine.current.postMessage(`go depth ${depth}`);
-
             }
           }
           if (request.movelist) {
@@ -157,8 +159,7 @@ const App = () => {
               let game = new Chess();
               request.movelist.forEach((e) => game.move(e));
               setFenPos(game.fen());
-              engine.current.postMessage(`position fen ${game.fen()}`);
-              engine.current.postMessage(`go depth ${depth}`);
+
             }
           }
         } catch (err) {
@@ -180,8 +181,6 @@ const App = () => {
     }
   }, []);
 
-
-  // Arrows Update from dataGame
   useEffect(() => {
     setArrows([
       [dataGame[4]?.move.from, dataGame[4]?.move.to, colors[4]],
@@ -191,17 +190,16 @@ const App = () => {
       [dataGame[0]?.move.from, dataGame[0]?.move.to, colors[0]],
     ]);
 
-
-
   }, [dataGame]);
 
   // FEN UPDATE
   useEffect(() => {
     currentFenRef.current = posFen;
-    if (engine.current) {
+    if (engine.current && !isEval) {
       engine.current.postMessage(`stop`);
       engine.current.postMessage(`position fen ${posFen}`);
       engine.current.postMessage(`go depth ${depth}`);
+      setIsEval(true)
     }
 
     const gameTmp = new Chess(posFen);
@@ -291,7 +289,7 @@ const App = () => {
         hidden={minimized}
         className="w-80 ml-auto mr-auto mt-3"
         onClick={() => setOrient(orient === "white" ? "black" : "white")}
-        key={`xxx${posFen}`}
+        key={`xxx${posFen}+${isEval}`}
       >
         <div className="flex items-center gap-2" >
           <EvalBar eval={positionEval && positionEval.eval
@@ -306,7 +304,7 @@ const App = () => {
             position={posFen}
             boardOrientation={side}
             arePiecesDraggable={false}
-            customArrows={arrows}
+            customArrows={isEval ? [] : arrows}
             customDarkSquareStyle={{ backgroundColor: darkSquareColor }}
             customLightSquareStyle={{ backgroundColor: lightSquareColor }}
             areArrowsAllowed={false}
@@ -325,12 +323,14 @@ const App = () => {
         </div>
 
         <p className="text-white text-3xl text-center font-mono pt-3 pb-3 bg-slate-900 rounded-2xl mt-4">
-          {positionEval && positionEval.eval
-            ? positionEval.eval.type === "Eval"
-              ? `Score: ${positionEval.eval.value}`
-              : `Mate in ${positionEval.eval.value}`
-            : "Loading ..."}
+          {isEval
+            ? "Loading ..."
+            : positionEval?.eval?.type === "Eval"
+              ? `Score: ${positionEval?.eval?.value}`
+              : `Mate in ${positionEval?.eval?.value}`}
         </p>
+
+
 
         <div className="grid grid-cols-3 gap-2 mt-3">
           {dataGame.map((d, i) => (
@@ -365,16 +365,20 @@ const App = () => {
           <input
             type="range"
             min="5"
-            max="15"
+            max="20"
             value={depth}
             onChange={(e) => {
               setDepth(e.target.value)
+              setIsEval(true)
+              engine.current.postMessage(`stop`)
               engine.current.postMessage(`go depth ${e.target.value}`)
 
             }}
             className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
           />
         </div>
+
+        {/* <p className="bg-white p-3 text-black">{debug}</p> */}
 
 
         <div className="flex justify-around gap-4 mt-3">
