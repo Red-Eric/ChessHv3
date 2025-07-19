@@ -86,8 +86,8 @@ function observeChessBoard() {
   });
 
   observer.observe(board, {
-    childList: false,
-    subtree: false,
+    childList: true,
+    subtree: true,
     attributes: true,
   });
 

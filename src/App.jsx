@@ -151,9 +151,9 @@ const App = () => {
         try {
           setSide(request.side);
           engine.current.postMessage("stop");
-          if (request.fen && !isEval) {
+          if (request.fen && !isEval && request.fen !== posFen) {
             setIsEval(true)
-            setArrows([])
+            
             // console.log("looooopppppppppp*******************")
             setFenPos(request.fen)
             engine.current.postMessage(`stop`);
@@ -286,7 +286,7 @@ const App = () => {
         onClick={() => setOrient(orient === "white" ? "black" : "white")}
 
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" key={posFen}>
           <EvalBar eval={positionEval && positionEval.eval
             ? positionEval.eval.type === "Eval"
               ? `Score: ${positionEval?.eval?.value}`
@@ -303,6 +303,7 @@ const App = () => {
             customDarkSquareStyle={{ backgroundColor: darkSquareColor }}
             customLightSquareStyle={{ backgroundColor: lightSquareColor }}
             areArrowsAllowed={false}
+
           /> :
             // Varient ChessBoard
             <Chessboard
