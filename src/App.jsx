@@ -137,7 +137,7 @@ const App = () => {
     engine.current.postMessage("setoption name MultiPV value 5");
     engine.current.postMessage(`go depth ${depth}`)
     setIsEval(true)
-    
+
     return () => {
       engine.current.terminate();
       engine.current = null;
@@ -153,7 +153,8 @@ const App = () => {
           engine.current.postMessage("stop");
           if (request.fen && !isEval) {
             setIsEval(true)
-            console.log("looooopppppppppp*******************")
+            setArrows([])
+            // console.log("looooopppppppppp*******************")
             setFenPos(request.fen)
             engine.current.postMessage(`stop`);
             engine.current.postMessage(`position fen ${request.fen}`);
@@ -285,7 +286,7 @@ const App = () => {
         onClick={() => setOrient(orient === "white" ? "black" : "white")}
 
       >
-        <div className="flex items-center gap-2" >
+        <div className="flex items-center gap-2">
           <EvalBar eval={positionEval && positionEval.eval
             ? positionEval.eval.type === "Eval"
               ? `Score: ${positionEval?.eval?.value}`
