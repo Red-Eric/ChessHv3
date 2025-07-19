@@ -29,6 +29,7 @@ const adjustEval = (evalObj, fen) => {
 
 const App = () => {
   const [posFen, setFenPos] = useState("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+  // const [posFen, setFenPos] = useState("r1bqkbnr/pppp1ppp/2n5/4p1N1/4P3/5Q2/PPPP1PPP/RNB1KB1R w KQkq - 6 5");
   const [side, setSide] = useState("white");
   const [orient, setOrient] = useState("white");
   const [dataGame, setDataGame] = useState([]);
@@ -82,7 +83,7 @@ const App = () => {
 
     engine.current.onmessage = (event) => {
       const msg = event.data;
-      console.log(msg)
+      // console.log(msg)
       if (typeof msg === "string" && msg.includes(`info depth ${depth}`)) {
         const parts = msg.split(" ");
         const multipvIndex = parts.indexOf("multipv");
@@ -104,12 +105,11 @@ const App = () => {
           let evalObj;
           if (scoreType === "cp") {
             evalObj = { type: "Eval", value: parseFloat((scoreValue / 100).toFixed(2)) };
-          } else if (scoreType === "mate") {
+          } else if (scoreType === "mate" && !isNaN(parseInt(scoreValue))) {
             evalObj = { type: "mate", value: parseInt(scoreValue) };
           } else {
             evalObj = { type: "unknown", value: null };
           }
-
           multipvResults.set(multipv, {
             eval: adjustEval(evalObj, currentFenRef.current),
             move: { from, to },
@@ -128,7 +128,8 @@ const App = () => {
 
         }
       }
-      if(msg.includes("bestmove")){
+      if (msg.includes("bestmove")) {
+        console.log(msg)
         setIsEval(false)
       }
     };
@@ -149,19 +150,16 @@ const App = () => {
           setSide(request.side);
           engine.current.postMessage("stop");
           if (request.fen) {
-            if (request.fen !== posFen) {
+            if (request.fen !== posFen && !isEval) {
+              console.log("looooopppppppppp*******************")
               setFenPos(request.fen)
+              engine.current.postMessage(`stop`);
+              engine.current.postMessage(`position fen ${request.fen}`);
+              engine.current.postMessage(`go depth ${depth}`);
+              setIsEval(true)
             }
           }
-          if (request.movelist) {
-            if (trackerLength !== request.movelist.length) {
-              trackerLength = request.movelist.length;
-              let game = new Chess();
-              request.movelist.forEach((e) => game.move(e));
-              setFenPos(game.fen());
 
-            }
-          }
         } catch (err) {
           console.error("Mess:", err);
         }
@@ -195,12 +193,10 @@ const App = () => {
   // FEN UPDATE
   useEffect(() => {
     currentFenRef.current = posFen;
-    if (engine.current && !isEval) {
-      engine.current.postMessage(`stop`);
-      engine.current.postMessage(`position fen ${posFen}`);
-      engine.current.postMessage(`go depth ${depth}`);
-      setIsEval(true)
-    }
+    engine.current.postMessage(`stop`);
+    engine.current.postMessage(`position fen ${posFen}`);
+    engine.current.postMessage(`go depth ${depth}`);
+    setIsEval(true)
 
     const gameTmp = new Chess(posFen);
     if (gameTmp.game_over()) {
@@ -289,13 +285,13 @@ const App = () => {
         hidden={minimized}
         className="w-80 ml-auto mr-auto mt-3"
         onClick={() => setOrient(orient === "white" ? "black" : "white")}
-        key={`xxx${posFen}+${isEval}`}
+
       >
         <div className="flex items-center gap-2" >
           <EvalBar eval={positionEval && positionEval.eval
             ? positionEval.eval.type === "Eval"
-              ? `Score: ${positionEval.eval.value}`
-              : `Mate in ${positionEval.eval.value}`
+              ? `Score: ${positionEval?.eval?.value}`
+              : `Mate in ${positionEval?.eval?.value}`
             : "No eval"} side={side} />
 
           {!isInVarient ? <Chessboard
@@ -316,7 +312,7 @@ const App = () => {
               position={viewFen}
               boardOrientation={side}
               customDarkSquareStyle={{ backgroundColor: darkSquareColor }}
-              customLightSquareStyle={{ backgroundColor: lightSquareColor }} npm i react-confetti
+              customLightSquareStyle={{ backgroundColor: lightSquareColor }}
               arePiecesDraggable={false}
               areArrowsAllowed={false}
             />}
@@ -377,9 +373,6 @@ const App = () => {
             className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
           />
         </div>
-
-        {/* <p className="bg-white p-3 text-black">{debug}</p> */}
-
 
         <div className="flex justify-around gap-4 mt-3">
           <h2
