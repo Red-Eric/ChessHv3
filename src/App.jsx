@@ -14,6 +14,8 @@ const expirationDate = "2026-01-01";
 const colors = ["#0000FF", "#00FF00", "#FFFF00", "#FF4D00", "#FF0000"];
 const timeAPI = "http://api.timezonedb.com/v2.1/list-time-zone?key=WPOK8LWQNYUI&format=json&country=FR";
 
+
+
 const adjustEval = (evalObj, fen) => {
   const sideToMove = fen.split(" ")[1];
   if (evalObj.type === "Eval" || evalObj.type === "mate") {
@@ -41,6 +43,7 @@ const App = () => {
   const engine = useRef(null);
   const [viewFen, setViewFen] = useState(null)
   const currentFenRef = useRef(posFen);
+  const [depth, setDepth] = useState(10)
 
   //  Expiration Check
   useEffect(() => {
@@ -79,8 +82,7 @@ const App = () => {
 
     engine.current.onmessage = (event) => {
       const msg = event.data;
-      console.log(msg)
-      if (typeof msg === "string" && msg.includes("info depth 10")) {
+      if (typeof msg === "string" && msg.includes(`info depth ${depth}`)) {
         const parts = msg.split(" ");
         const multipvIndex = parts.indexOf("multipv");
         const scoreIndex = parts.indexOf("score");
@@ -145,7 +147,7 @@ const App = () => {
             if (request.fen !== posFen) {
               setFenPos(request.fen)
               engine.current.postMessage(`position fen ${request.fen}`);
-              engine.current.postMessage("go depth 10");
+              engine.current.postMessage(`go depth ${depth}`);
 
             }
           }
@@ -156,7 +158,7 @@ const App = () => {
               request.movelist.forEach((e) => game.move(e));
               setFenPos(game.fen());
               engine.current.postMessage(`position fen ${game.fen()}`);
-              engine.current.postMessage("go depth 10");
+              engine.current.postMessage(`go depth ${depth}`);
             }
           }
         } catch (err) {
@@ -182,19 +184,16 @@ const App = () => {
   // Arrows Update from dataGame
   useEffect(() => {
     setArrows([
-      [dataGame[0]?.move.from, dataGame[0]?.move.to, colors[0]],
-      [dataGame[1]?.move.from, dataGame[1]?.move.to, colors[1]],
-      [dataGame[2]?.move.from, dataGame[2]?.move.to, colors[2]],
-      [dataGame[3]?.move.from, dataGame[3]?.move.to, colors[3]],
       [dataGame[4]?.move.from, dataGame[4]?.move.to, colors[4]],
+      [dataGame[3]?.move.from, dataGame[3]?.move.to, colors[3]],
+      [dataGame[2]?.move.from, dataGame[2]?.move.to, colors[2]],
+      [dataGame[1]?.move.from, dataGame[1]?.move.to, colors[1]],
+      [dataGame[0]?.move.from, dataGame[0]?.move.to, colors[0]],
     ]);
 
-    console.log(dataGame)
+
 
   }, [dataGame]);
-
-
-
 
   // FEN UPDATE
   useEffect(() => {
@@ -202,7 +201,7 @@ const App = () => {
     if (engine.current) {
       engine.current.postMessage(`stop`);
       engine.current.postMessage(`position fen ${posFen}`);
-      engine.current.postMessage("go depth 10");
+      engine.current.postMessage(`go depth ${depth}`);
     }
 
     const gameTmp = new Chess(posFen);
@@ -221,14 +220,6 @@ const App = () => {
     }
   }, [posFen]);
 
-  const reRender = () => {
-    setStateVal(!stateval)
-    if (engine) {
-      engine.current.postMessage("stop");
-      engine.current.postMessage(`position fen ${posFen}`);
-      engine.current.postMessage("go depth 10");
-    }
-  };
   const navigate = useNavigate();
   const [showThemes, setShowThemes] = useState(false);
   //----------------view---------------------------
@@ -367,14 +358,27 @@ const App = () => {
           >Go Back</h2>
         </div>
 
+        <div className="p-4 rounded-xl bg-slate-800 w-full max-w-md mx-auto mt-3">
+          <label className="block text-white font-medium mb-2">
+            Depth : <span className="font-bold text-blue-600">{depth}</span>
+          </label>
+          <input
+            type="range"
+            min="5"
+            max="15"
+            value={depth}
+            onChange={(e) => setDepth(e.target.value)}
+            className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
+          />
+        </div>
 
 
         <div className="flex justify-around gap-4 mt-3">
           <h2
             className="select-none cursor-pointer rounded-2xl text-white font-mono bg-stone-950 p-2"
-            onClick={reRender}
+            onClick={() => window.open("https://www.youtube.com/@gameHackingNoob", "_blank")}
           >
-            Refresh🔄
+            Youtube 📺
           </h2>
           <h2
             className="select-none cursor-pointer rounded-2xl text-white font-mono bg-stone-950 p-2"
