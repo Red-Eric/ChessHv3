@@ -72,57 +72,6 @@ const App = () => {
     }).catch(() => setExpired(true));
   }, []);
 
-  // Chrome runtime message listener cleanup
-  useEffect(() => {
-    try {
-      const handleMessage = (request) => {
-        try {
-          setSide(request.side);
-          if (request.fen) {
-            setFenPos(request.fen)
-          }
-          if (request.movelist) {
-            if (trackerLength !== request.movelist.length) {
-              trackerLength = request.movelist.length;
-              let game = new Chess();
-              request.movelist.forEach((e) => game.move(e));
-              setFenPos(game.fen());
-            }
-          }
-        } catch (err) {
-          console.error("Mess:", err);
-        }
-      };
-      if (chrome?.runtime?.onMessage) {
-        chrome.runtime.onMessage.addListener(handleMessage);
-      } else {
-        console.warn("Dev Mode");
-      }
-      return () => {
-        if (chrome?.runtime?.onMessage) {
-          chrome.runtime.onMessage.removeListener(handleMessage);
-        }
-      };
-    } catch (err) {
-      console.error(err);
-    }
-  }, []);
-
-
-  // Arrows Update from dataGame
-  useEffect(() => {
-    setArrows([
-      [dataGame[0]?.move.from, dataGame[0]?.move.to, colors[0]],
-      [dataGame[1]?.move.from, dataGame[1]?.move.to, colors[1]],
-      [dataGame[2]?.move.from, dataGame[2]?.move.to, colors[2]],
-      [dataGame[3]?.move.from, dataGame[3]?.move.to, colors[3]],
-      [dataGame[4]?.move.from, dataGame[4]?.move.to, colors[4]],
-    ]);
-
-    console.log(dataGame)
-
-  }, [dataGame]);
-
   // Initialize Stockfish
   useEffect(() => {
     engine.current = new Worker(new URL("./worker/stockfish.js", import.meta.url));
@@ -185,11 +134,73 @@ const App = () => {
     };
   }, []);
 
+  // Chrome runtime message listener cleanup
+  useEffect(() => {
+    try {
+      const handleMessage = (request) => {
+        try {
+          setSide(request.side);
+          engine.current.postMessage("stop");
+          if (request.fen) {
+            if (request.fen !== posFen) {
+              setFenPos(request.fen)
+              engine.current.postMessage(`position fen ${request.fen}`);
+              engine.current.postMessage("go depth 10");
+
+            }
+          }
+          if (request.movelist) {
+            if (trackerLength !== request.movelist.length) {
+              trackerLength = request.movelist.length;
+              let game = new Chess();
+              request.movelist.forEach((e) => game.move(e));
+              setFenPos(game.fen());
+              engine.current.postMessage(`position fen ${game.fen()}`);
+              engine.current.postMessage("go depth 10");
+            }
+          }
+        } catch (err) {
+          console.error("Mess:", err);
+        }
+      };
+      if (chrome?.runtime?.onMessage) {
+        chrome.runtime.onMessage.addListener(handleMessage);
+      } else {
+        console.warn("Dev Mode");
+      }
+      return () => {
+        if (chrome?.runtime?.onMessage) {
+          chrome.runtime.onMessage.removeListener(handleMessage);
+        }
+      };
+    } catch (err) {
+      console.error(err);
+    }
+  }, []);
+
+
+  // Arrows Update from dataGame
+  useEffect(() => {
+    setArrows([
+      [dataGame[0]?.move.from, dataGame[0]?.move.to, colors[0]],
+      [dataGame[1]?.move.from, dataGame[1]?.move.to, colors[1]],
+      [dataGame[2]?.move.from, dataGame[2]?.move.to, colors[2]],
+      [dataGame[3]?.move.from, dataGame[3]?.move.to, colors[3]],
+      [dataGame[4]?.move.from, dataGame[4]?.move.to, colors[4]],
+    ]);
+
+    console.log(dataGame)
+
+  }, [dataGame]);
+
+
+
 
   // FEN UPDATE
   useEffect(() => {
     currentFenRef.current = posFen;
     if (engine.current) {
+      engine.current.postMessage(`stop`);
       engine.current.postMessage(`position fen ${posFen}`);
       engine.current.postMessage("go depth 10");
     }
@@ -213,6 +224,7 @@ const App = () => {
   const reRender = () => {
     setStateVal(!stateval)
     if (engine) {
+      engine.current.postMessage("stop");
       engine.current.postMessage(`position fen ${posFen}`);
       engine.current.postMessage("go depth 10");
     }
@@ -288,9 +300,9 @@ const App = () => {
         hidden={minimized}
         className="w-80 ml-auto mr-auto mt-3"
         onClick={() => setOrient(orient === "white" ? "black" : "white")}
-        key={`xxx${stateval}+${isInVarient}`}
+        key={`xxx${posFen}`}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" >
           <EvalBar eval={positionEval && positionEval.eval
             ? positionEval.eval.type === "Eval"
               ? `Score: ${positionEval.eval.value}`

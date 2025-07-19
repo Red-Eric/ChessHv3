@@ -1,7 +1,11 @@
-function getActiveColor() {
-  const el = document.querySelector(".cc-coach-feedback-detail-text");
-  if (!el) return "w";
-  return el.textContent.includes("Black") ? "b" : "w";
+function getSide() {
+  const coord = document.querySelector(".coordinate-light");
+  if (!coord) return "none";
+
+  const value = coord.innerHTML;
+  if (value === "1") return "black";
+  if (value === "8") return "white";
+  return "none";
 }
 
 function generateFEN() {
@@ -59,8 +63,8 @@ function generateFEN() {
   });
 
   const fenPosition = fenRows.join("/");
-  const activeColor = getActiveColor(); // Assumption
-  const castling = "KQkq"; // Could be improved
+  const activeColor = getSide()[0]; // Assumption
+  const castling = "-"; // Could be improved
   const enPassant = "-"; // Could be calculated
   const halfmoveClock = "0"; // Assumption
   const fullmoveNumber = "1"; // Assumption
@@ -68,15 +72,7 @@ function generateFEN() {
   return `${fenPosition} ${activeColor} ${castling} ${enPassant} ${halfmoveClock} ${fullmoveNumber}`;
 }
 
-function getSide() {
-  const coord = document.querySelector(".coordinate-light");
-  if (!coord) return "none";
 
-  const value = coord.innerHTML;
-  if (value === "1") return "black";
-  if (value === "8") return "white";
-  return "none";
-}
 
 function getMovelist() {
   let movelist = [];
