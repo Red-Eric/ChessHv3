@@ -151,12 +151,13 @@ const App = () => {
           engine.current.postMessage("stop");
           if (request.fen) {
             if (request.fen !== posFen && !isEval) {
+              setIsEval(true)
               console.log("looooopppppppppp*******************")
               setFenPos(request.fen)
               engine.current.postMessage(`stop`);
               engine.current.postMessage(`position fen ${request.fen}`);
               engine.current.postMessage(`go depth ${depth}`);
-              setIsEval(true)
+              
             }
           }
 
@@ -193,10 +194,6 @@ const App = () => {
   // FEN UPDATE
   useEffect(() => {
     currentFenRef.current = posFen;
-    engine.current.postMessage(`stop`);
-    engine.current.postMessage(`position fen ${posFen}`);
-    engine.current.postMessage(`go depth ${depth}`);
-    setIsEval(true)
 
     const gameTmp = new Chess(posFen);
     if (gameTmp.game_over()) {
@@ -249,7 +246,7 @@ const App = () => {
       i++;
     }, 400);
   };
-  
+
   //---------------Minimize Logic-------------------------
 
   const [minimized, setMinimized] = useState(false)

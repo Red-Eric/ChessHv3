@@ -73,21 +73,8 @@ function generateFEN() {
 }
 
 
-
-// function getMovelist() {
-//   let movelist = [];
-//   document.querySelectorAll("div.node").forEach((e) => {
-//     movelist.push(e.innerText.replaceAll(" ", ""));
-//   });
-//   return movelist;
-// }
-
 function sendMessage() {
-  // let moves = getMovelist();
-  // // if (moves && moves.length > 0 && window.location.href.includes("game")) {
-  // //   chrome.runtime.sendMessage({ movelist: moves, side: getSide() });
-  // //   console.log("partie")
-  // // } 
+
   if(window.location.href.includes("chess.com")){
     chrome.runtime.sendMessage({ fen: generateFEN(), side: getSide() });
   }
