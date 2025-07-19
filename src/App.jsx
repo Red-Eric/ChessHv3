@@ -367,7 +367,11 @@ const App = () => {
             min="5"
             max="15"
             value={depth}
-            onChange={(e) => setDepth(e.target.value)}
+            onChange={(e) => {
+              setDepth(e.target.value)
+              engine.current.postMessage(`go depth ${e.target.value}`)
+
+            }}
             className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
           />
         </div>
