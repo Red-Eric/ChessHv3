@@ -135,7 +135,9 @@ const App = () => {
     };
 
     engine.current.postMessage("setoption name MultiPV value 5");
-
+    engine.current.postMessage(`go depth ${depth}`)
+    setIsEval(true)
+    
     return () => {
       engine.current.terminate();
       engine.current = null;
@@ -149,16 +151,14 @@ const App = () => {
         try {
           setSide(request.side);
           engine.current.postMessage("stop");
-          if (request.fen) {
-            if (request.fen !== posFen && !isEval) {
-              setIsEval(true)
-              console.log("looooopppppppppp*******************")
-              setFenPos(request.fen)
-              engine.current.postMessage(`stop`);
-              engine.current.postMessage(`position fen ${request.fen}`);
-              engine.current.postMessage(`go depth ${depth}`);
-              
-            }
+          if (request.fen && !isEval) {
+            setIsEval(true)
+            console.log("looooopppppppppp*******************")
+            setFenPos(request.fen)
+            engine.current.postMessage(`stop`);
+            engine.current.postMessage(`position fen ${request.fen}`);
+            engine.current.postMessage(`go depth ${depth}`);
+
           }
 
         } catch (err) {
