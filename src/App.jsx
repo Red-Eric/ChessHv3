@@ -249,6 +249,7 @@ const App = () => {
       i++;
     }, 400);
   };
+  
   //---------------Minimize Logic-------------------------
 
   const [minimized, setMinimized] = useState(false)
