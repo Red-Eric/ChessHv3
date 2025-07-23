@@ -151,16 +151,34 @@ const App = () => {
         try {
           setSide(request.side);
           engine.current.postMessage("stop");
-          if (request.fen && !isEval && request.fen !== posFen) {
-            setIsEval(true)
-            
-            // console.log("looooopppppppppp*******************")
-            setFenPos(request.fen)
-            engine.current.postMessage(`stop`);
-            engine.current.postMessage(`position fen ${request.fen}`);
-            engine.current.postMessage(`go depth ${depth}`);
+          // if (request.fen && !isEval && request.fen !== posFen) {
+          //   setIsEval(true)
 
+          //   // console.log("looooopppppppppp*******************")
+          //   setFenPos(request.fen)
+          //   engine.current.postMessage(`stop`);
+          //   engine.current.postMessage(`position fen ${request.fen}`);
+          //   engine.current.postMessage(`go depth ${depth}`);
+
+          // }
+
+
+          if (trackerLength === request.movelist.length) { // 999 / 0
+            console.log("no Updt")
           }
+          else {
+            trackerLength = request.movelist.length
+            console.log(" update")
+            let moveList = request.movelist
+            setSide(request.side)
+            if (moveList.length > 0) {
+              let game = new Chess()
+              moveList.forEach(e => game.move(e))
+              setFenPos(game.fen())
+            }
+          }
+
+
 
         } catch (err) {
           console.error("Mess:", err);
@@ -194,6 +212,10 @@ const App = () => {
 
   // FEN UPDATE
   useEffect(() => {
+    engine.current.postMessage(`stop`);
+    engine.current.postMessage(`position fen ${posFen}`);
+    engine.current.postMessage(`go depth ${depth}`);
+    setIsEval(true)
     currentFenRef.current = posFen;
 
     const gameTmp = new Chess(posFen);
@@ -286,7 +308,7 @@ const App = () => {
         onClick={() => setOrient(orient === "white" ? "black" : "white")}
 
       >
-        <div className="flex items-center gap-2" key={posFen}>
+        <div className="flex items-center gap-2">
           <EvalBar eval={positionEval && positionEval.eval
             ? positionEval.eval.type === "Eval"
               ? `Score: ${positionEval?.eval?.value}`
@@ -294,6 +316,7 @@ const App = () => {
             : "No eval"} side={side} />
 
           {!isInVarient ? <Chessboard
+
             boardWidth={300}
             id="board1"
             position={posFen}
