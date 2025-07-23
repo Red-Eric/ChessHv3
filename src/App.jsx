@@ -118,7 +118,7 @@ const App = () => {
 
   }, [dataGame]);
 
-  // Initialize Stockfish
+  // Initialize Stockfis
   useEffect(() => {
     engine.current = new Worker(new URL("./worker/stockfish.js", import.meta.url));
     const multipvResults = new Map();
