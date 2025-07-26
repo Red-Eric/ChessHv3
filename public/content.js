@@ -21,7 +21,7 @@ if (window.location.hostname.includes("chess.com")) {
       const pos = squareToPosition(square);
       const el = document.createElement("p");
       el.className = "customH";
-      el.style.border = `solid ${color} 3px`;
+      el.style.border = `solid ${color} 1px`;
       el.style.width = `${squareSize}px`;
       el.style.height = `${squareSize}px`;
       el.style.position = "absolute";
@@ -59,12 +59,12 @@ if (window.location.hostname.includes("chess.com")) {
 
   function getSide() {
     const coord = document.querySelector(".coordinate-light");
-    if (!coord) return "none";
+    if (!coord) return "w";
 
     const value = coord.innerHTML;
     if (value === "1") return "black";
     if (value === "8") return "white";
-    return "none";
+    return "w";
   }
 
   function getMovelist() {
@@ -78,9 +78,13 @@ if (window.location.hostname.includes("chess.com")) {
   function sendMessage() {
     let moves = getMovelist();
     if (moves && moves.length > 0) {
-      chrome.runtime.sendMessage({ movelist: moves, side: getSide() });
+      try {
+        chrome.runtime.sendMessage({ movelist: moves, side: getSide() });
+      } catch (error) {
+        // console.log(error)
+      }
     } else {
-      console.error("No position defined");
+      // console.error("No position defined");
     }
   }
 
@@ -89,17 +93,15 @@ if (window.location.hostname.includes("chess.com")) {
     try {
       sendMessage();
     } catch (error) {
-      console.log(error);
+      //   console.log(error);
     }
   }, 500);
 
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-
-    clearHighlightSquares()
-    const moves = message.moves
-    highlightMovesOnBoard(moves, getSide()[0])
-
-    return true;
+    console.log(message.moves);
+    clearHighlightSquares();
+    const moves = message.moves;
+    highlightMovesOnBoard(moves, getSide()[0]);
   });
 } else {
   console.log("ChessCom Only.");

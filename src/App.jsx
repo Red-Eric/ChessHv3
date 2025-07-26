@@ -115,6 +115,7 @@ const App = () => {
       [dataGame[4]?.move.from, dataGame[4]?.move.to, colors[4]],
     ]);
 
+    dataGameRef.current = []
     dataGame.forEach((e, _) => {
       dataGameRef.current.push(
         {
@@ -128,9 +129,10 @@ const App = () => {
     console.log(dataGameRef)
     console.log(dataGame)
 
-    if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.sendMessage) {
-      chrome.runtime.sendMessage({ moves: dataGameRef });
-    }
+    // chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    //   chrome.tabs.sendMessage(tabs[0].id, { moves: dataGameRef.current });
+    // });
+
 
 
   }, [dataGame]);
