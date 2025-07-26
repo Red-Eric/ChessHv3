@@ -41,6 +41,7 @@ const App = () => {
   const engine = useRef(null);
   const [viewFen, setViewFen] = useState(null)
   const currentFenRef = useRef(posFen);
+  const dataGameRef = useRef([])
 
   //  Expiration Check
   useEffect(() => {
@@ -114,7 +115,23 @@ const App = () => {
       [dataGame[4]?.move.from, dataGame[4]?.move.to, colors[4]],
     ]);
 
+    dataGame.forEach((e, _) => {
+      dataGameRef.current.push(
+        {
+          from: e.move?.from,
+          to: e.move?.to,
+          score: e.eval?.type === "Eval" ? e.eval?.value : `M${e.eval?.value}`
+        }
+      )
+    })
+
+    console.log(dataGameRef)
     console.log(dataGame)
+
+    if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.sendMessage) {
+      chrome.runtime.sendMessage({ moves: dataGameRef });
+    }
+
 
   }, [dataGame]);
 
@@ -125,7 +142,7 @@ const App = () => {
 
     engine.current.onmessage = (event) => {
       const msg = event.data;
-      console.log(msg)
+      // console.log(msg)
       if (typeof msg === "string" && msg.includes("info depth 10")) {
         const parts = msg.split(" ");
         const multipvIndex = parts.indexOf("multipv");
@@ -182,7 +199,7 @@ const App = () => {
 
 
   // FEN UPDATEeee
-  
+
   useEffect(() => {
     currentFenRef.current = posFen;
     if (engine.current) {
@@ -215,6 +232,8 @@ const App = () => {
   };
   const navigate = useNavigate();
   const [showThemes, setShowThemes] = useState(false);
+
+
   //----------------view---------------------------
   const play = (index) => {
     console.log(dataGame[index].moves);
@@ -262,7 +281,7 @@ const App = () => {
   }
 
   return (
-    <div id="main"  className="w-96 border-solid bg-slate-600">
+    <div id="main" className="w-96 border-solid bg-slate-600">
       {
         isWinner ? <ReactConfetti width={window.innerWidth} height={window.innerHeight} /> : <div></div>
       }
@@ -274,7 +293,7 @@ const App = () => {
         <h1 className="absolute left-1/2 -translate-x-1/2 text-2xl font-bold select-none">ChessH-V3</h1>
         <div>
           {
-            minimized ? <Maximize2 size={32} className="cursor-pointer" color="blue" onClick={()=> setMinimized(false) }/> : <Minimize2 size={32} className="cursor-pointer" color="white" onClick={()=> setMinimized(true)}/>
+            minimized ? <Maximize2 size={32} className="cursor-pointer" color="blue" onClick={() => setMinimized(false)} /> : <Minimize2 size={32} className="cursor-pointer" color="white" onClick={() => setMinimized(true)} />
           }
         </div>
       </div>

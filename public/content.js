@@ -92,6 +92,9 @@ if (window.location.hostname.includes("chess.com")) {
       console.log(error);
     }
   }, 500);
+
+  
+
 } else {
   console.log("ChessCom Only.");
 }
