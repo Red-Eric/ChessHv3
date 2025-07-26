@@ -2,8 +2,9 @@ importScripts("./lib/chess_min.js");
 importScripts("./lib/stockfish.asm.js");
 
 const engine = STOCKFISH();
-
 let multipvResults = new Map();
+let xxxxx = 99999;
+let currentFen = ""; // Pour suivre la position actuelle
 
 function getFen(movelist) {
   let chess = Chess();
@@ -24,8 +25,13 @@ engine.onmessage = function (event) {
     if (multipvMatch && scoreMatch && pvMatch) {
       const multipv = parseInt(multipvMatch[1], 10);
       const scoreType = scoreMatch[1];
-      const scoreValueRaw = parseInt(scoreMatch[2], 10);
+      let scoreValueRaw = parseInt(scoreMatch[2], 10);
       const bestMove = pvMatch[1];
+
+      const sideToMove = currentFen.split(" ")[1];
+      if (sideToMove === "b") {
+        scoreValueRaw *= -1;
+      }
 
       let score;
       if (scoreType === "cp") {
@@ -65,22 +71,17 @@ engine.onmessage = function (event) {
   }
 };
 
-let xxxxx = 99999;
-
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (xxxxx !== request.movelist.length) {
     xxxxx = request.movelist.length;
     multipvResults.clear();
 
     const fen = getFen(request.movelist);
-
-    console.log(fen);
-    console.log(request.movelist);
+    currentFen = fen;
 
     engine.postMessage("uci");
     engine.postMessage("setoption name MultiPV value 5");
     engine.postMessage("isready");
-
     engine.postMessage(`position fen ${fen}`);
     engine.postMessage("go depth 10");
   } else {
