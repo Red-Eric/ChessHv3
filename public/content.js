@@ -47,15 +47,15 @@ if (window.location.hostname.includes("chess.com")) {
       const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
       const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
       marker.setAttribute("id", `arrowhead-${color}`);
-      marker.setAttribute("markerWidth", "4"); 
-      marker.setAttribute("markerHeight", "4"); 
+      marker.setAttribute("markerWidth", "2"); // réduit de 50%
+      marker.setAttribute("markerHeight", "2"); // réduit de 50%
       marker.setAttribute("refX", "0");
-      marker.setAttribute("refY", "2");
+      marker.setAttribute("refY", "1"); // ajusté pour centrer
       marker.setAttribute("orient", "auto");
       marker.setAttribute("markerUnits", "strokeWidth");
     
       const arrowPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      arrowPath.setAttribute("d", "M0,0 L4,2 L0,4 Z");
+      arrowPath.setAttribute("d", "M0,0 L2,1 L0,2 Z"); // moitié taille
       arrowPath.setAttribute("fill", color);
       arrowPath.setAttribute("fill-opacity", "0.6");
     
@@ -85,6 +85,7 @@ if (window.location.hostname.includes("chess.com")) {
       svg.appendChild(text);
       parent.appendChild(svg);
     }
+    
     
     
     
