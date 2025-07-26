@@ -7,7 +7,7 @@ if (window.location.hostname.includes("chess.com")) {
     const maxMoves = 5;
     const colors = ["blue", "green", "yellow", "orange", "red"];
 
-    // Supprimer anciens éléments
+
     parent.querySelectorAll(".customH").forEach((el) => el.remove());
 
     function squareToCoord(square) {
