@@ -181,7 +181,8 @@ const App = () => {
   }, []);
 
 
-  // FEN UPDATE
+  // FEN UPDATEeee
+  
   useEffect(() => {
     currentFenRef.current = posFen;
     if (engine.current) {
