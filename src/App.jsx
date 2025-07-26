@@ -7,12 +7,14 @@ import { EvalBar } from "./component/Eval";
 import logoImg from "./assets/logo.png";
 import { AlertPage } from "./pages/alertPagefun";
 import ReactConfetti from "react-confetti";
-import { Maximize2, Minimize2 } from "lucide-react";
+import { FastForward, Maximize2, Minimize2 } from "lucide-react";
 
 let trackerLength = 999;
 const expirationDate = "2026-01-01";
 const colors = ["#0000FF", "#00FF00", "#FFFF00", "#FF4D00", "#FF0000"];
 const timeAPI = "http://api.timezonedb.com/v2.1/list-time-zone?key=WPOK8LWQNYUI&format=json&country=FR";
+
+
 
 const adjustEval = (evalObj, fen) => {
   const sideToMove = fen.split(" ")[1];
@@ -27,13 +29,13 @@ const adjustEval = (evalObj, fen) => {
 
 const App = () => {
   const [posFen, setFenPos] = useState("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+  // const [posFen, setFenPos] = useState("r1bqkbnr/pppp1ppp/2n5/4p1N1/4P3/5Q2/PPPP1PPP/RNB1KB1R w KQkq - 6 5");
   const [side, setSide] = useState("white");
   const [orient, setOrient] = useState("white");
   const [dataGame, setDataGame] = useState([]);
   const [positionEval, setPositionEval] = useState("0.0");
   const [arrows, setArrows] = useState([]);
   const [expired, setExpired] = useState(false);
-  const [stateval, setStateVal] = useState(false);
   const [darkSquareColor, setDarkSquareColor] = useState("#779952");
   const [lightSquareColor, setLightSquareColor] = useState("#edeed1");
   const [isInVarient, setIsInVarient] = useState(false)
@@ -41,7 +43,12 @@ const App = () => {
   const engine = useRef(null);
   const [viewFen, setViewFen] = useState(null)
   const currentFenRef = useRef(posFen);
+<<<<<<< HEAD
   const dataGameRef = useRef([])
+=======
+  const [depth, setDepth] = useState(10)
+  const [isEval, setIsEval] = useState(false)
+>>>>>>> 982dd7b421fe2071c9f113b45f3f987216666d23
 
   //  Expiration Check
   useEffect(() => {
@@ -73,6 +80,7 @@ const App = () => {
     }).catch(() => setExpired(true));
   }, []);
 
+<<<<<<< HEAD
   // Chrome runtime message listener cleanup
   useEffect(() => {
     try {
@@ -138,6 +146,9 @@ const App = () => {
   }, [dataGame]);
 
   // Initialize Stockfis
+=======
+  // Initialize Stockfish
+>>>>>>> 982dd7b421fe2071c9f113b45f3f987216666d23
   useEffect(() => {
     engine.current = new Worker(new URL("./worker/stockfish.js", import.meta.url));
     const multipvResults = new Map();
@@ -145,7 +156,11 @@ const App = () => {
     engine.current.onmessage = (event) => {
       const msg = event.data;
       // console.log(msg)
+<<<<<<< HEAD
       if (typeof msg === "string" && msg.includes("info depth 10")) {
+=======
+      if (typeof msg === "string" && msg.includes(`info depth ${depth}`)) {
+>>>>>>> 982dd7b421fe2071c9f113b45f3f987216666d23
         const parts = msg.split(" ");
         const multipvIndex = parts.indexOf("multipv");
         const scoreIndex = parts.indexOf("score");
@@ -166,12 +181,11 @@ const App = () => {
           let evalObj;
           if (scoreType === "cp") {
             evalObj = { type: "Eval", value: parseFloat((scoreValue / 100).toFixed(2)) };
-          } else if (scoreType === "mate") {
+          } else if (scoreType === "mate" && !isNaN(parseInt(scoreValue))) {
             evalObj = { type: "mate", value: parseInt(scoreValue) };
           } else {
             evalObj = { type: "unknown", value: null };
           }
-
           multipvResults.set(multipv, {
             eval: adjustEval(evalObj, currentFenRef.current),
             move: { from, to },
@@ -187,11 +201,18 @@ const App = () => {
             setDataGame(ordered);
             setPositionEval(ordered[0]);
           }
+
         }
+      }
+      if (msg.includes("bestmove")) {
+        console.log(msg)
+        setIsEval(false)
       }
     };
 
     engine.current.postMessage("setoption name MultiPV value 5");
+    engine.current.postMessage(`go depth ${depth}`)
+    setIsEval(true)
 
     return () => {
       engine.current.terminate();
@@ -199,15 +220,80 @@ const App = () => {
     };
   }, []);
 
+  // Chrome runtime message listener cleanup
+  useEffect(() => {
+    try {
+      const handleMessage = (request) => {
+        try {
+          setSide(request.side);
+          engine.current.postMessage("stop");
+          // if (request.fen && !isEval && request.fen !== posFen) {
+          //   setIsEval(true)
+
+          //   // console.log("looooopppppppppp*******************")
+          //   setFenPos(request.fen)
+          //   engine.current.postMessage(`stop`);
+          //   engine.current.postMessage(`position fen ${request.fen}`);
+          //   engine.current.postMessage(`go depth ${depth}`);
+
+          // }
+
+
+          if (trackerLength === request.movelist.length) { // 999 / 0
+            console.log("no Updt")
+          }
+          else {
+            trackerLength = request.movelist.length
+            console.log(" update")
+            let moveList = request.movelist
+            setSide(request.side)
+            if (moveList.length > 0) {
+              let game = new Chess()
+              moveList.forEach(e => game.move(e))
+              setFenPos(game.fen())
+            }
+          }
+
+
+
+        } catch (err) {
+          console.error("Mess:", err);
+        }
+      };
+      if (chrome?.runtime?.onMessage) {
+        chrome.runtime.onMessage.addListener(handleMessage);
+      } else {
+        console.warn("Dev Mode");
+      }
+      return () => {
+        if (chrome?.runtime?.onMessage) {
+          chrome.runtime.onMessage.removeListener(handleMessage);
+        }
+      };
+    } catch (err) {
+      console.error(err);
+    }
+  }, []);
+
+  useEffect(() => {
+    setArrows([
+      [dataGame[4]?.move.from, dataGame[4]?.move.to, colors[4]],
+      [dataGame[3]?.move.from, dataGame[3]?.move.to, colors[3]],
+      [dataGame[2]?.move.from, dataGame[2]?.move.to, colors[2]],
+      [dataGame[1]?.move.from, dataGame[1]?.move.to, colors[1]],
+      [dataGame[0]?.move.from, dataGame[0]?.move.to, colors[0]],
+    ]);
+
+  }, [dataGame]);
 
   // FEN UPDATEeee
 
   useEffect(() => {
+    engine.current.postMessage(`stop`);
+    engine.current.postMessage(`position fen ${posFen}`);
+    engine.current.postMessage(`go depth ${depth}`);
+    setIsEval(true)
     currentFenRef.current = posFen;
-    if (engine.current) {
-      engine.current.postMessage(`position fen ${posFen}`);
-      engine.current.postMessage("go depth 10");
-    }
 
     const gameTmp = new Chess(posFen);
     if (gameTmp.game_over()) {
@@ -225,13 +311,6 @@ const App = () => {
     }
   }, [posFen]);
 
-  const reRender = () => {
-    setStateVal(!stateval)
-    if (engine) {
-      engine.current.postMessage(`position fen ${posFen}`);
-      engine.current.postMessage("go depth 10");
-    }
-  };
   const navigate = useNavigate();
   const [showThemes, setShowThemes] = useState(false);
 
@@ -269,6 +348,7 @@ const App = () => {
       i++;
     }, 400);
   };
+
   //---------------Minimize Logic-------------------------
 
   const [minimized, setMinimized] = useState(false)
@@ -305,25 +385,27 @@ const App = () => {
         hidden={minimized}
         className="w-80 ml-auto mr-auto mt-3"
         onClick={() => setOrient(orient === "white" ? "black" : "white")}
-        key={`xxx${stateval}+${isInVarient}`}
+
       >
         <div className="flex items-center gap-2">
           <EvalBar eval={positionEval && positionEval.eval
             ? positionEval.eval.type === "Eval"
-              ? `Score: ${positionEval.eval.value}`
-              : `Mate in ${positionEval.eval.value}`
+              ? `Score: ${positionEval?.eval?.value}`
+              : `Mate in ${positionEval?.eval?.value}`
             : "No eval"} side={side} />
 
           {!isInVarient ? <Chessboard
+
             boardWidth={300}
             id="board1"
             position={posFen}
             boardOrientation={side}
             arePiecesDraggable={false}
-            customArrows={arrows}
+            customArrows={isEval ? [] : arrows}
             customDarkSquareStyle={{ backgroundColor: darkSquareColor }}
             customLightSquareStyle={{ backgroundColor: lightSquareColor }}
             areArrowsAllowed={false}
+
           /> :
             // Varient ChessBoard
             <Chessboard
@@ -332,19 +414,21 @@ const App = () => {
               position={viewFen}
               boardOrientation={side}
               customDarkSquareStyle={{ backgroundColor: darkSquareColor }}
-              customLightSquareStyle={{ backgroundColor: lightSquareColor }} npm i react-confetti
+              customLightSquareStyle={{ backgroundColor: lightSquareColor }}
               arePiecesDraggable={false}
               areArrowsAllowed={false}
             />}
         </div>
 
         <p className="text-white text-3xl text-center font-mono pt-3 pb-3 bg-slate-900 rounded-2xl mt-4">
-          {positionEval && positionEval.eval
-            ? positionEval.eval.type === "Eval"
-              ? `Score: ${positionEval.eval.value}`
-              : `Mate in ${positionEval.eval.value}`
-            : "Loading ..."}
+          {isEval
+            ? "Loading ..."
+            : positionEval?.eval?.type === "Eval"
+              ? `Score: ${positionEval?.eval?.value}`
+              : `Mate in ${positionEval?.eval?.value}`}
         </p>
+
+
 
         <div className="grid grid-cols-3 gap-2 mt-3">
           {dataGame.map((d, i) => (
@@ -372,14 +456,32 @@ const App = () => {
           >Go Back</h2>
         </div>
 
+        <div className="p-4 rounded-xl bg-slate-800 w-full max-w-md mx-auto mt-3">
+          <label className="block text-white font-medium mb-2">
+            Depth : <span className="font-bold text-blue-600">{depth}</span>
+          </label>
+          <input
+            type="range"
+            min="5"
+            max="20"
+            value={depth}
+            onChange={(e) => {
+              setDepth(e.target.value)
+              setIsEval(true)
+              engine.current.postMessage(`stop`)
+              engine.current.postMessage(`go depth ${e.target.value}`)
 
+            }}
+            className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
+          />
+        </div>
 
         <div className="flex justify-around gap-4 mt-3">
           <h2
             className="select-none cursor-pointer rounded-2xl text-white font-mono bg-stone-950 p-2"
-            onClick={reRender}
+            onClick={() => window.open("https://www.youtube.com/@gameHackingNoob", "_blank")}
           >
-            Refresh🔄
+            Youtube 📺
           </h2>
           <h2
             className="select-none cursor-pointer rounded-2xl text-white font-mono bg-stone-950 p-2"
