@@ -93,8 +93,14 @@ if (window.location.hostname.includes("chess.com")) {
     }
   }, 500);
 
-  
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
+    clearHighlightSquares()
+    const moves = message.moves
+    highlightMovesOnBoard(moves, getSide()[0])
+
+    return true;
+  });
 } else {
   console.log("ChessCom Only.");
 }
