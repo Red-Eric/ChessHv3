@@ -43,12 +43,7 @@ const App = () => {
   const engine = useRef(null);
   const [viewFen, setViewFen] = useState(null)
   const currentFenRef = useRef(posFen);
-<<<<<<< HEAD
   const dataGameRef = useRef([])
-=======
-  const [depth, setDepth] = useState(10)
-  const [isEval, setIsEval] = useState(false)
->>>>>>> 982dd7b421fe2071c9f113b45f3f987216666d23
 
   //  Expiration Check
   useEffect(() => {
@@ -80,7 +75,6 @@ const App = () => {
     }).catch(() => setExpired(true));
   }, []);
 
-<<<<<<< HEAD
   // Chrome runtime message listener cleanup
   useEffect(() => {
     try {
@@ -146,9 +140,6 @@ const App = () => {
   }, [dataGame]);
 
   // Initialize Stockfis
-=======
-  // Initialize Stockfish
->>>>>>> 982dd7b421fe2071c9f113b45f3f987216666d23
   useEffect(() => {
     engine.current = new Worker(new URL("./worker/stockfish.js", import.meta.url));
     const multipvResults = new Map();
@@ -156,11 +147,7 @@ const App = () => {
     engine.current.onmessage = (event) => {
       const msg = event.data;
       // console.log(msg)
-<<<<<<< HEAD
       if (typeof msg === "string" && msg.includes("info depth 10")) {
-=======
-      if (typeof msg === "string" && msg.includes(`info depth ${depth}`)) {
->>>>>>> 982dd7b421fe2071c9f113b45f3f987216666d23
         const parts = msg.split(" ");
         const multipvIndex = parts.indexOf("multipv");
         const scoreIndex = parts.indexOf("score");
