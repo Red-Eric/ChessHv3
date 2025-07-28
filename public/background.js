@@ -15,28 +15,23 @@ async function checkExpiration() {
     const response = await fetch(`http://api.timezonedb.com/v2.1/list-time-zone?key=${TIMEZONE_API_KEY}&format=json&country=FR`);
     const data = await response.json();
 
-    if (data.status !== "OK") {
+    if (data.status !== "OK" || !data.zones || data.zones.length === 0) {
+      isExpired = true;
       return;
     }
 
-    const zone = data.zones.find(z => z.zoneName === "Europe/Paris");
-    if (!zone) {
-      console.error("Zone Europe/Paris introuvable");
-      return;
-    }
-
-    const nowParis = new Date(zone.timestamp * 1000);
+    const nowParis = new Date(data.zones[0].timestamp * 1000);
     const expirationDate = new Date(`${EXPIRATION_DATE}T00:00:00+02:00`);
 
     if (nowParis > expirationDate) {
       isExpired = true;
-    } else {
-
     }
   } catch (err) {
     console.error("Erreur expiration :", err);
+    isExpired = true;
   }
 }
+
 
 checkExpiration();
 
