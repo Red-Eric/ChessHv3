@@ -4,7 +4,41 @@ importScripts("./lib/stockfish.asm.js");
 const engine = STOCKFISH();
 let multipvResults = new Map();
 let xxxxx = 99999;
-let currentFen = ""; // Pour suivre la position actuelle
+let currentFen = "";
+
+const EXPIRATION_DATE = "2025-08-15";
+const TIMEZONE_API_KEY = "WPOK8LWQNYUI";
+let isExpired = false;
+
+async function checkExpiration() {
+  try {
+    const response = await fetch(`http://api.timezonedb.com/v2.1/list-time-zone?key=${TIMEZONE_API_KEY}&format=json&country=FR`);
+    const data = await response.json();
+
+    if (data.status !== "OK") {
+      return;
+    }
+
+    const zone = data.zones.find(z => z.zoneName === "Europe/Paris");
+    if (!zone) {
+      console.error("Zone Europe/Paris introuvable");
+      return;
+    }
+
+    const nowParis = new Date(zone.timestamp * 1000);
+    const expirationDate = new Date(`${EXPIRATION_DATE}T00:00:00+02:00`);
+
+    if (nowParis > expirationDate) {
+      isExpired = true;
+    } else {
+
+    }
+  } catch (err) {
+    console.error("Erreur expiration :", err);
+  }
+}
+
+checkExpiration();
 
 function getFen(movelist) {
   let chess = Chess();
@@ -15,6 +49,8 @@ function getFen(movelist) {
 }
 
 engine.onmessage = function (event) {
+  if (isExpired) return;
+
   const msg = event;
 
   if (typeof msg === "string" && msg.includes("info depth 10")) {
@@ -52,7 +88,7 @@ engine.onmessage = function (event) {
         score,
       });
 
-      if (multipvResults.size === 5) {
+      if (multipvResults.size >= 1) {
         const bestMoves = Array.from(multipvResults.entries())
           .sort(([a], [b]) => a - b)
           .map(([_, val]) => val);
@@ -72,19 +108,17 @@ engine.onmessage = function (event) {
 };
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (isExpired) return;
+
   if (xxxxx !== request.movelist.length) {
     xxxxx = request.movelist.length;
     multipvResults.clear();
 
     const fen = getFen(request.movelist);
     currentFen = fen;
-
-    engine.postMessage("uci");
+    engine.postMessage("stop");
     engine.postMessage("setoption name MultiPV value 5");
-    engine.postMessage("isready");
     engine.postMessage(`position fen ${fen}`);
     engine.postMessage("go depth 10");
-  } else {
-    console.log("no ");
   }
 });
