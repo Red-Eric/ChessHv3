@@ -1,1 +1,184 @@
-if(window.location.hostname.includes(deobf(["c","e","h","s","s",".","c","o","m"],[3,0,1,2,8,5,6,7,4]))){function deobf(e,t){return t.map((t=>e[t])).join("")}const e={parentSelectorChunks:["w","c","-","c","h","e","s","s","-","b","o","a","r","d"],parentSelectorOrder:[0,1,2,3,4,5,6,7,8,9,10,11,12,13],classCustomHChunks:["c","u","s","t","o","m","H"],classCustomHOrder:[...Array(7).keys()],colorsChunks:["b","l","u","e","g","r","e","e","n","y","e","l","l","o","w","o","r","a","n","g","e","r","e","d"],colorsOrder:[0,1,2,3,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22],arrowheadIdPrefixChunks:["a","r","r","o","w","h","e","a","d","-"],arrowheadIdPrefixOrder:[...Array(10).keys()],svgNamespaceChunks:["h","t","t","p",":","/","/","w","w","w",".","w","3",".","o","r","g","/","2","0","0","0","/","s","v","g"],svgNamespaceOrder:[...Array(27).keys()],coordinateLightSelectorChunks:[".","c","o","o","r","d","i","n","a","t","e","-","l","i","g","h","t"],coordinateLightSelectorOrder:[...Array(17).keys()],nodeSelectorChunks:["d","i","v",".","n","o","d","e"],nodeSelectorOrder:[...Array(7).keys()],messagesendChunks:["c","h","r","o","m","e",".","r","u","n","t","i","m","e",".","s","e","n","d","M","e","s","s","a","g","e"],messagesendOrder:[...Array(26).keys()],consoleLogChunks:["c","o","n","s","o","l","e",".","l","o","g"],consoleLogOrder:[...Array(10).keys()],sendingMovesTextChunks:["S","e","n","d","i","n","g"," ","m","o","v","e","s"],sendingMovesTextOrder:[...Array(13).keys()],blackStrChunks:["b","l","a","c","k"],blackStrOrder:[...Array(5).keys()],whiteStrChunks:["w","h","i","t","e"],whiteStrOrder:[...Array(5).keys()],zeroStrChunks:["0"],zeroStrOrder:[0]};function deobf(e,t){return t.map((t=>e[t])).join("")}const t=deobf(e.parentSelectorChunks,e.parentSelectorOrder),r=deobf(e.classCustomHChunks,e.classCustomHOrder),o=["blue","green","yellow","orange","red"];function highlightMovesOnBoard(s,n){const i=document.querySelector(t);if(!i)return;const d=i.offsetWidth/8;function c(e){const t=e[0],r=e[1],o=parseInt(r,10)-1;let s;if("w"===n){s=t.charCodeAt(0)-"a".charCodeAt(0);return{x:s*d,y:(7-o)*d}}s="h".charCodeAt(0)-t.charCodeAt(0);return{x:s*d,y:o*d}}i.querySelectorAll("."+r).forEach((e=>e.remove())),i.style.position="relative",s.slice(0,5).forEach(((t,s)=>{const n=o[s]||"red";!function(t,o,s,n){const a=c(t),l=c(o),u=deobf(e.svgNamespaceChunks,e.svgNamespaceOrder),h=document.createElementNS(u,"svg");h.setAttribute("class",r),h.setAttribute("width",i.offsetWidth),h.setAttribute("height",i.offsetWidth),h.style.position="absolute",h.style.left="0",h.style.top="0",h.style.pointerEvents="none",h.style.overflow="visible",h.style.zIndex="10";const g=document.createElementNS(u,"defs"),b=document.createElementNS(u,"marker"),f=deobf(e.arrowheadIdPrefixChunks,e.arrowheadIdPrefixOrder);b.setAttribute("id",`${f}${s}`),b.setAttribute("markerWidth","3.5"),b.setAttribute("markerHeight","2.5"),b.setAttribute("refX","1.75"),b.setAttribute("refY","1.25"),b.setAttribute("orient","auto"),b.setAttribute("markerUnits","strokeWidth");const m=document.createElementNS(u,"path");m.setAttribute("d","M0,0 L3.5,1.25 L0,2.5 Z"),m.setAttribute("fill",s),b.appendChild(m),g.appendChild(b),h.appendChild(g);const y=document.createElementNS(u,"line");if(y.setAttribute("x1",a.x+d/2),y.setAttribute("y1",a.y+d/2),y.setAttribute("x2",l.x+d/2),y.setAttribute("y2",l.y+d/2),y.setAttribute("stroke",s),y.setAttribute("stroke-width","5"),y.setAttribute("marker-end",`url(#${f}${s})`),y.setAttribute("opacity","0.6"),h.appendChild(y),void 0!==n){const e=document.createElementNS(u,"text");e.setAttribute("x",l.x+d-4),e.setAttribute("y",l.y+12),e.setAttribute("fill",s),e.setAttribute("font-size","13"),e.setAttribute("font-weight","bold"),e.setAttribute("text-anchor","end"),e.setAttribute("alignment-baseline","hanging"),e.setAttribute("opacity","1"),e.textContent=n,h.appendChild(e)}i.appendChild(h)}(t.from,t.to,n,t.score)}))}function clearHighlightSquares(){const e=document.querySelector(t);e&&e.querySelectorAll("."+r).forEach((e=>e.remove()))}function getSide(){const t=document.querySelector(deobf(e.coordinateLightSelectorChunks,e.coordinateLightSelectorOrder));if(!t)return"w";const r=t.innerHTML;return r===deobf(e.blackStrChunks,e.blackStrOrder)?"black":r===deobf(e.whiteStrChunks,e.whiteStrOrder)?"white":"w"}function getMovelist(){let t=[];return document.querySelectorAll(deobf(e.nodeSelectorChunks,e.nodeSelectorOrder)).forEach((e=>{t.push(e.innerText.replaceAll(" ",""))})),t}function sendMessage(){let e=getMovelist();if(e&&e.length>0)try{chrome.runtime.sendMessage({movelist:e,side:getSide()[0]})}catch(e){}}setInterval((()=>{try{chrome&&console.log&&console.log(deobf(e.sendingMovesTextChunks,e.sendingMovesTextOrder)),sendMessage()}catch(e){}}),500),chrome.runtime.onMessage.addListener(((e,t,r)=>{clearHighlightSquares(),highlightMovesOnBoard(e.moves,getSide()[0])}))}else console.log("ChessCom Only.");
+if (window.location.hostname.includes("chess.com")) {
+  // alert("hello , mod by red_eric_");
+
+  function highlightMovesOnBoard(moves, side) {
+    const parent = document.querySelector("wc-chess-board");
+    if (!parent) return;
+
+    const squareSize = parent.offsetWidth / 8;
+    const maxMoves = 5;
+    let colors = ["blue", "green", "yellow", "orange", "red"];
+
+    parent.querySelectorAll(".customH").forEach((el) => el.remove());
+
+    function squareToPosition(square) {
+      const fileChar = square[0];
+      const rankChar = square[1];
+      const rank = parseInt(rankChar, 10) - 1;
+
+      let file;
+      if (side === "w") {
+        file = fileChar.charCodeAt(0) - "a".charCodeAt(0);
+        const y = (7 - rank) * squareSize;
+        const x = file * squareSize;
+        return { x, y };
+      } else {
+        file = "h".charCodeAt(0) - fileChar.charCodeAt(0);
+        const y = rank * squareSize;
+        const x = file * squareSize;
+        return { x, y };
+      }
+    }
+
+    function drawArrow(fromSquare, toSquare, color, score) {
+      const from = squareToPosition(fromSquare);
+      const to = squareToPosition(toSquare);
+
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("class", "customH");
+      svg.setAttribute("width", parent.offsetWidth);
+      svg.setAttribute("height", parent.offsetWidth);
+      svg.style.position = "absolute";
+      svg.style.left = "0";
+      svg.style.top = "0";
+      svg.style.pointerEvents = "none";
+      svg.style.overflow = "visible";
+      svg.style.zIndex = "10";
+
+      const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+      const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+      marker.setAttribute("id", `arrowhead-${color}`);
+      marker.setAttribute("markerWidth", "3.5");
+      marker.setAttribute("markerHeight", "2.5");
+      marker.setAttribute("refX", "1.75");
+      marker.setAttribute("refY", "1.25");
+      marker.setAttribute("orient", "auto");
+      marker.setAttribute("markerUnits", "strokeWidth");
+
+      const arrowPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      arrowPath.setAttribute("d", "M0,0 L3.5,1.25 L0,2.5 Z");
+      arrowPath.setAttribute("fill", color);
+      marker.appendChild(arrowPath);
+      defs.appendChild(marker);
+      svg.appendChild(defs);
+
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.setAttribute("x1", from.x + squareSize / 2);
+      line.setAttribute("y1", from.y + squareSize / 2);
+      line.setAttribute("x2", to.x + squareSize / 2);
+      line.setAttribute("y2", to.y + squareSize / 2);
+      line.setAttribute("stroke", color);
+      line.setAttribute("stroke-width", "5");
+      line.setAttribute("marker-end", `url(#arrowhead-${color})`);
+      line.setAttribute("opacity", "0.6");
+      svg.appendChild(line);
+
+      if (score !== undefined) {
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("x", to.x + squareSize - 4);
+        text.setAttribute("y", to.y + 12);
+        text.setAttribute("fill", color);
+        text.setAttribute("font-size", "13");
+        text.setAttribute("font-weight", "bold");
+        text.setAttribute("text-anchor", "end");
+        text.setAttribute("alignment-baseline", "hanging");
+        text.setAttribute("opacity", "1");
+        text.textContent = score;
+        svg.appendChild(text);
+      }
+
+      parent.appendChild(svg);
+    }
+
+    parent.style.position = "relative";
+
+    moves.slice(0, maxMoves).forEach((move, index) => {
+      const color = colors[index] || "red";
+      drawArrow(move.from, move.to, color, move.score);
+    });
+  }
+
+  function clearHighlightSquares() {
+    const parent = document.querySelector("wc-chess-board");
+    if (!parent) return;
+    parent.querySelectorAll(".customH").forEach((el) => el.remove());
+  }
+
+  function getSide() {
+    const coord = document.querySelector(".coordinate-light");
+    if (!coord) return "white";
+    const value = coord.innerHTML;
+    if (value === "1") return "black";
+    if (value === "8") return "white";
+    return "white";
+  }
+
+  function getMovelistText() {
+    let movelist = [];
+    document.querySelectorAll("div.node").forEach((e) => {
+      movelist.push(e.innerText.replaceAll(" ", ""));
+    });
+    return movelist;
+  }
+
+  function getMovelistFigurine() {
+    const nodes = document.querySelectorAll("span.node-highlight-content");
+    const moves = [];
+
+    nodes.forEach((e) => {
+      if (e.children.length === 0) {
+        moves.push(e.innerText.trim());
+      } else {
+        const figurine = e.children[0]?.getAttribute("data-figurine") || "";
+        const moveText = e.innerText.trim().replace(/\s+/g, "");
+        moves.push(figurine + moveText);
+      }
+    });
+
+    return moves;
+  }
+
+  let lastMovesSerialized = "";
+
+  function checkAndSendMoves() {
+    let figure = document.querySelector("span[data-figurine]");
+    let moves = [];
+
+    if (figure === null) {
+      moves = getMovelistText();
+    } else {
+      moves = getMovelistFigurine();
+    }
+
+    const currentSerialized = JSON.stringify(moves);
+    if (currentSerialized !== lastMovesSerialized && moves.length > 0) {
+      lastMovesSerialized = currentSerialized;
+      try {
+
+        side_ = getSide()
+
+        if(side_ === "white"){
+          (moves.length % 2) === 0 ? chrome.runtime.sendMessage({ movelist: moves, side: getSide(), type : "position" }) : clearHighlightSquares()
+        }else{
+          (moves.length % 2) === 1 ? chrome.runtime.sendMessage({ movelist: moves, side: getSide(), type : "position" }) : clearHighlightSquares()
+          
+        }
+
+
+      } catch (error) {
+        console.warn("SendMessage error:", error);
+      }
+    }
+  }
+
+  setInterval(checkAndSendMoves, 350);
+
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    console.log(message.moves);
+    clearHighlightSquares();
+    const moves = message.moves;
+    highlightMovesOnBoard(moves, getSide()[0]);
+  });
+} else {
+  console.log("ChessCom Only.");
+}

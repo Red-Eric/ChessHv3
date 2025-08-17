@@ -1,1 +1,162 @@
-function deobf(e,t){return t.map((t=>e[t])).join("")}importScripts("./lib/chess_min.js"),importScripts("./lib/stockfish.asm.js");const STRINGS={dateChunks:["2","5","0","8","1","-","T","0","0",":",":","+","02",":","00"],dateOrder:[2,0,1,5,3,5,4,6,7,8,9,10,6,11,12,13,14],keyChunks:["W","P","O","K","8","L","W","Q","N","Y","U","I"],keyOrder:[...Array(12).keys()],zoneChunks:["E","u","r","o","p","e","/","P","a","r","i","s"],zoneOrder:[...Array(12).keys()],trueChunks:["t","r","u","e"],trueOrder:[...Array(4).keys()],falseChunks:["f","a","l","s","e"],falseOrder:[...Array(5).keys()],urlChunks:["z","t","p","o","c","/","n","i",":",".","2","e","v","i","s","d","o","d","a","l","e","?","o","m","=","e","y","k","t","m","p","a","l","s","t","o","n",".","b","d","z"],urlOrder:[7,2,1,0,8,3,9,23,32,28,30,29,36,39,24,27,11,12,10,5,31,35,33,34,13,14,15,16,17,18,19,20,21,25,26,37,38,22,6,4],cmdStopChunks:["s","t","o","p"],cmdStopOrder:[0,1,2,3],cmdSetOptionChunks:["s","e","t","o","p","t","i","o","n"," ","n","a","m","e"," ","M","u","l","t","i","P","V"," ","v","a","l","u","e"," ","5"],cmdSetOptionOrder:[...Array(28).keys()],cmdPositionFenChunks:["p","o","s","i","t","i","o","n"," ","f","e","n"," "],cmdPositionFenOrder:[...Array(13).keys()],cmdGoDepthChunks:["g","o"," ","d","e","p","t","h"," ","1","0"],cmdGoDepthOrder:[...Array(11).keys()]},engine=STOCKFISH();let multipvResults=new Map,__lastLength=99999,__currentFen="",isExpired=!1;const EXPIRATION_DATE=deobf(STRINGS.dateChunks,STRINGS.dateOrder),TIMEZONE_API_KEY=deobf(STRINGS.keyChunks,STRINGS.keyOrder),TIMEZONE_ZONE=deobf(STRINGS.zoneChunks,STRINGS.zoneOrder),STR_TRUE=deobf(STRINGS.trueChunks,STRINGS.trueOrder),STR_FALSE=deobf(STRINGS.falseChunks,STRINGS.falseOrder),API_URL_BASE=deobf(STRINGS.urlChunks,STRINGS.urlOrder),CMD_STOP=deobf(STRINGS.cmdStopChunks,STRINGS.cmdStopOrder),CMD_SET_OPTION=deobf(STRINGS.cmdSetOptionChunks,STRINGS.cmdSetOptionOrder),CMD_POSITION_FEN=deobf(STRINGS.cmdPositionFenChunks,STRINGS.cmdPositionFenOrder),CMD_GO_DEPTH=deobf(STRINGS.cmdGoDepthChunks,STRINGS.cmdGoDepthOrder);async function checkExpiration(){try{const e=API_URL_BASE+TIMEZONE_API_KEY+"&format=json&country=FR",t=await fetch(e),s=await t.json();if(!s||"OK"!==s.status||!s.zones||s.zones.length<1)return void(isExpired="xxxx"!==STR_FALSE);const n=new Date(1e3*s.zones[0].timestamp);n>new Date(EXPIRATION_DATE)&&(isExpired="xxxx"!==STR_FALSE)}catch(e){console.log("!Expiration error!"),isExpired="xxxx"!==STR_FALSE}}function getFen(e){let t=Chess();return e.forEach((e=>t.move(e))),t.fen()}checkExpiration(),engine.onmessage=function(e){if(isExpired!==("xx"===STR_FALSE))return;const t=e;if("string"==typeof t&&t.includes("info depth 10")){const e=t.match(/multipv (\d+)/),s=t.match(/score (cp|mate) (-?\d+)/),n=t.match(/pv ([a-h][1-8][a-h][1-8][qrbn]?)/);if(e&&s&&n){const t=parseInt(e[1],10),r=s[1];let o=parseInt(s[2],10);const i=n[1];let S;if("b"===__currentFen.split(" ")[1]&&(o*=-1),"cp"===r){const e=+(o/100).toFixed(2);S=e>0?`+${e}`:`${e}`}else S="mate"===r?`#${o}`:"?";const d=i.slice(0,2),c=i.slice(2,4);if(multipvResults.set(t,{from:d,to:c,score:S}),multipvResults.size>=1){const e=Array.from(multipvResults.entries()).sort((([e],[t])=>e-t)).map((([e,t])=>t));console.log(e),chrome.tabs.query({active:!0,currentWindow:!0},(t=>{t.length>0&&chrome.tabs.sendMessage(t[0].id,{moves:e})})),multipvResults.clear()}}}},chrome.runtime.onMessage.addListener(((e,t,s)=>{if(isExpired===("xx"===STR_FALSE)&&__lastLength!==e.movelist.length){__lastLength=e.movelist.length,multipvResults.clear();const t=getFen(e.movelist);__currentFen=t,engine.postMessage(CMD_STOP),engine.postMessage(CMD_SET_OPTION),engine.postMessage(CMD_POSITION_FEN+t),engine.postMessage(CMD_GO_DEPTH)}}));
+importScripts("./lib/chess_min.js");
+importScripts("./lib/stockfish.asm.js");
+
+const engine = STOCKFISH();
+let multipvResults = new Map();
+let xxxxx = 99999;
+let currentFen = "";
+let line = 5;
+let depth = 10;
+
+const EXPIRATION_DATE = "2025-08-05";
+const TIMEZONE_API_KEY = "WPOK8LWQNYUI";
+let isExpired = false;
+
+async function checkExpiration() {
+  try {
+    const response = await fetch(
+      `http://api.timezonedb.com/v2.1/list-time-zone?key=${TIMEZONE_API_KEY}&format=json&country=FR`
+    );
+    const data = await response.json();
+
+    if (data.status !== "OK" || !data.zones || data.zones.length === 0) {
+      isExpired = true;
+      return;
+    }
+
+    const nowParis = new Date(data.zones[0].timestamp * 1000);
+    const expirationDate = new Date(`${EXPIRATION_DATE}T00:00:00+02:00`);
+
+    if (nowParis > expirationDate) {
+      isExpired = true;
+    }
+  } catch (err) {
+    console.error("Erreur expiration :", err);
+    isExpired = true;
+  }
+}
+
+checkExpiration();
+
+let legalMoves = 0;
+
+function getFen(movelist) {
+  let chess = Chess();
+  movelist.forEach((move) => {
+    chess.move(move);
+  });
+
+  legalMoves = chess.moves().length;
+
+  if (legalMoves >= 5) {
+    line = 5;
+  } else {
+    line = legalMoves;
+  }
+
+  return chess.fen();
+}
+
+engine.onmessage = function (event) {
+  if (isExpired) return;
+
+  const msg = event;
+  console.log(msg);
+
+  if (typeof msg === "string" && msg.includes(`info depth ${depth}`)) {
+    const multipvMatch = msg.match(/multipv (\d+)/);
+    const scoreMatch = msg.match(/score (cp|mate) (-?\d+)/);
+    const pvMatch = msg.match(/pv ([a-h][1-8][a-h][1-8][qrbn]?)/);
+
+    if (multipvMatch && scoreMatch && pvMatch) {
+      const multipv = parseInt(multipvMatch[1], 10);
+      const scoreType = scoreMatch[1];
+      let scoreValueRaw = parseInt(scoreMatch[2], 10);
+      const bestMove = pvMatch[1];
+
+      const sideToMove = currentFen.split(" ")[1];
+      if (sideToMove === "b") {
+        scoreValueRaw *= -1;
+      }
+
+      let score;
+      if (scoreType === "cp") {
+        const value = +(scoreValueRaw / 100).toFixed(2);
+        score = value > 0 ? `+${value}` : `${value}`;
+      } else if (scoreType === "mate") {
+        score = `#${scoreValueRaw}`;
+      } else {
+        score = "?";
+      }
+
+      const from = bestMove.slice(0, 2);
+      const to = bestMove.slice(2, 4);
+
+      multipvResults.set(multipv, {
+        from,
+        to,
+        score,
+      });
+
+      if (multipvResults.size === line) {
+        const bestMoves = Array.from(multipvResults.entries())
+          .sort(([a], [b]) => a - b)
+          .map(([_, val]) => val);
+
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          if (tabs.length > 0) {
+            chrome.tabs.sendMessage(tabs[0].id, { moves: bestMoves });
+          }
+        });
+
+        multipvResults.clear();
+      }
+    }
+  }
+};
+
+// default option
+
+engine.postMessage(`setoption name MultiPV value ${line}`);
+engine.postMessage("setoption name Hash value 1024");
+engine.postMessage("setoption name Threads value 16");
+engine.postMessage("setoption name Ponder value false");
+engine.postMessage("uci");
+
+// {elo: 2800, lines: 5, depth: 15, showArrow: true}
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (isExpired) return;
+
+  if (request.type === "position") {
+    xxxxx = request.movelist.length;
+    multipvResults.clear();
+
+    const fen = getFen(request.movelist);
+    currentFen = fen;
+    engine.postMessage("stop");
+
+    engine.postMessage(`position fen ${fen}`);
+    engine.postMessage(`go depth ${depth}`);
+  }
+
+  ////////////////////// COnfiggggggggggggggg
+
+  if (request.type === "config") {
+    const config = request.config;
+    line = config.lines;
+    depth = config.depth;
+
+    engine.postMessage(`setoption name Skill Level value ${config.skill}`);
+
+    engine.postMessage(`setoption name MultiPV value ${request.config.lines}`);
+    depth = request.config.depth;
+
+    if (currentFen) {
+      engine.postMessage("stop");
+
+      engine.postMessage(`position fen ${currentFen}`);
+      engine.postMessage(`go depth ${depth}`);
+    }
+  }
+});
