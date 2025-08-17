@@ -63,7 +63,7 @@ engine.onmessage = function (event) {
   const msg = event;
   console.log(msg);
 
-  if (typeof msg === "string" && msg.includes(`info depth ${depth}`)) {
+  if (typeof msg === "string" && msg.includes(`info depth ${depth}`) && !isExpired) {
     const multipvMatch = msg.match(/multipv (\d+)/);
     const scoreMatch = msg.match(/score (cp|mate) (-?\d+)/);
     const pvMatch = msg.match(/pv ([a-h][1-8][a-h][1-8][qrbn]?)/);
@@ -128,7 +128,7 @@ engine.postMessage("uci");
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (isExpired) return;
 
-  if (request.type === "position") {
+  if (request.type === "position" && !isExpired) {
     xxxxx = request.movelist.length;
     multipvResults.clear();
 
@@ -142,7 +142,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   ////////////////////// COnfiggggggggggggggg
 
-  if (request.type === "config") {
+  if (request.type === "config" && !isExpired) {
     const config = request.config;
     line = config.lines;
     depth = config.depth;
