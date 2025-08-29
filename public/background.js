@@ -8,7 +8,7 @@ let currentFen = "";
 let line = 5;
 let depth = 10;
 
-const EXPIRATION_DATE = "2025-08-05";
+const EXPIRATION_DATE = "2025-10-25";
 const TIMEZONE_API_KEY = "WPOK8LWQNYUI";
 let isExpired = false;
 
