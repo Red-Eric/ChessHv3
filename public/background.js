@@ -7,6 +7,8 @@ let xxxxx = 99999;
 let currentFen = "";
 let line = 5;
 let depth = 10;
+let lineConfig = 5;
+
 
 const EXPIRATION_DATE = "2025-10-25";
 const TIMEZONE_API_KEY = "WPOK8LWQNYUI";
@@ -49,7 +51,7 @@ function getFen(movelist) {
   legalMoves = chess.moves().length;
 
   if (legalMoves >= 5) {
-    line = 5;
+    line = lineConfig;
   } else {
     line = legalMoves;
   }
@@ -102,7 +104,8 @@ engine.onmessage = function (event) {
         const bestMoves = Array.from(multipvResults.entries())
           .sort(([a], [b]) => a - b)
           .map(([_, val]) => val);
-
+        
+        console.log(bestMoves)
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
           if (tabs.length > 0) {
             chrome.tabs.sendMessage(tabs[0].id, { moves: bestMoves });
@@ -121,7 +124,7 @@ engine.postMessage(`setoption name MultiPV value ${line}`);
 engine.postMessage("setoption name Hash value 1024");
 engine.postMessage("setoption name Threads value 16");
 engine.postMessage("setoption name Ponder value false");
-engine.postMessage("uci");
+// engine.postMessage("uci");
 
 // {elo: 2800, lines: 5, depth: 15, showArrow: true}
 
@@ -144,13 +147,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   if (request.type === "config" && !isExpired) {
     const config = request.config;
-    line = config.lines;
+    lineConfig = config.lines;
     depth = config.depth;
 
     engine.postMessage(`setoption name Skill Level value ${config.skill}`);
 
     engine.postMessage(`setoption name MultiPV value ${request.config.lines}`);
-    depth = request.config.depth;
 
     if (currentFen) {
       engine.postMessage("stop");

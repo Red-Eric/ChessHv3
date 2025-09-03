@@ -1,11 +1,10 @@
 const elo = document.getElementById("elo");
 const lines = document.getElementById("lines");
-const depth = document.getElementById("depth");
+const depth_ = document.getElementById("depth");
 
 const eloValue = document.getElementById("eloValue");
 const linesValue = document.getElementById("linesValue");
 const depthValue = document.getElementById("depthValue");
-
 
 const skillToElo = {
   0: 1350, 1: 1400, 2: 1450, 3: 1500, 4: 1600,
@@ -15,35 +14,30 @@ const skillToElo = {
   20: 3500
 };
 
-
 let config = JSON.parse(localStorage.getItem("chessConfig")) || {
   skill: 20,
   lines: 3,
   depth: 10
 };
 
-
-elo.value = config.elo;
+elo.value = config.skill;
 lines.value = config.lines;
-depth.value = config.depth;
+depth_.value = config.depth;
 
-eloValue.textContent = `Skill: ${config.elo} (${skillToElo[config.elo]} Elo)`;
+eloValue.textContent = `Skill: ${config.skill} (${skillToElo[config.skill]} Elo)`;
 linesValue.textContent = config.lines;
 depthValue.textContent = config.depth;
 
-// Slider Skill
 elo.addEventListener("input", () => {
-  config.elo = parseInt(elo.value);
-  eloValue.textContent = `Skill: ${config.elo} (${skillToElo[config.elo]} Elo)`;
+  config.skill = parseInt(elo.value);
+  eloValue.textContent = `Skill: ${config.skill} (${skillToElo[config.skill]} Elo)`;
 });
 
-// Slider Lines
 lines.addEventListener("input", () => {
   config.lines = parseInt(lines.value);
   linesValue.textContent = config.lines;
 });
 
-// Slider Depth
 depth.addEventListener("input", () => {
   config.depth = parseInt(depth.value);
   depthValue.textContent = config.depth;
@@ -52,6 +46,6 @@ depth.addEventListener("input", () => {
 // Bouton Save
 document.getElementById("save").addEventListener("click", () => {
   localStorage.setItem("chessConfig", JSON.stringify(config));
-  console.log(config)
+  console.log(config);
   chrome.runtime.sendMessage({ config: config, type: "config" });
 });
