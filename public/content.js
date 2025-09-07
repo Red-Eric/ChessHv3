@@ -28,8 +28,6 @@ if (window.location.hostname.includes("chess.com")) {
       }
     }
 
-    
-
     function drawArrow(fromSquare, toSquare, color, score) {
       const from = squareToPosition(fromSquare);
       const to = squareToPosition(toSquare);
@@ -45,8 +43,14 @@ if (window.location.hostname.includes("chess.com")) {
       svg.style.overflow = "visible";
       svg.style.zIndex = "10";
 
-      const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
-      const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+      const defs = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "defs"
+      );
+      const marker = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "marker"
+      );
       marker.setAttribute("id", `arrowhead-${color}`);
       marker.setAttribute("markerWidth", "3.5");
       marker.setAttribute("markerHeight", "2.5");
@@ -55,14 +59,20 @@ if (window.location.hostname.includes("chess.com")) {
       marker.setAttribute("orient", "auto");
       marker.setAttribute("markerUnits", "strokeWidth");
 
-      const arrowPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      const arrowPath = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "path"
+      );
       arrowPath.setAttribute("d", "M0,0 L3.5,1.25 L0,2.5 Z");
       arrowPath.setAttribute("fill", color);
       marker.appendChild(arrowPath);
       defs.appendChild(marker);
       svg.appendChild(defs);
 
-      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      const line = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "line"
+      );
       line.setAttribute("x1", from.x + squareSize / 2);
       line.setAttribute("y1", from.y + squareSize / 2);
       line.setAttribute("x2", to.x + squareSize / 2);
@@ -74,7 +84,10 @@ if (window.location.hostname.includes("chess.com")) {
       svg.appendChild(line);
 
       if (score !== undefined) {
-        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        const text = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "text"
+        );
         text.setAttribute("x", to.x + squareSize - 4);
         text.setAttribute("y", to.y + 12);
         text.setAttribute("fill", color);
@@ -105,12 +118,11 @@ if (window.location.hostname.includes("chess.com")) {
   }
 
   function getSide() {
-    const coord = document.querySelector(".coordinate-light");
-    if (!coord) return "white";
-    const value = coord.innerHTML;
-    if (value === "1") return "black";
-    if (value === "8") return "white";
-    return "white";
+    const board = document.querySelector("wc-chess-board");
+    if (!board) {
+      return "white";
+    }
+    return board.classList.contains("flipped") ? "black" : "white";
   }
 
   function getMovelistText() {
@@ -138,14 +150,13 @@ if (window.location.hostname.includes("chess.com")) {
     return moves;
   }
 
-  function getOppElo(){
+  function getOppElo() {
     // ( 1920 )
-    let elo = document.querySelector(".cc-text-medium").innerText
-    if(elo){
-      return parseInt(elo.slice(1,-1))
-    }
-    else{
-      return 3500
+    let elo = document.querySelector(".cc-text-medium").innerText;
+    if (elo) {
+      return parseInt(elo.slice(1, -1));
+    } else {
+      return 3500;
     }
   }
 
@@ -165,18 +176,28 @@ if (window.location.hostname.includes("chess.com")) {
     if (currentSerialized !== lastMovesSerialized && moves.length > 0) {
       lastMovesSerialized = currentSerialized;
       try {
+        side_ = getSide();
+        _elo_ = getOppElo();
 
-        side_ = getSide()
-        _elo_ = getOppElo()
-
-        if(side_ === "white"){
-          (moves.length % 2) === 0 ? chrome.runtime.sendMessage({ movelist: moves, side: getSide(), type : "position", elo_ : _elo_ }) : clearHighlightSquares()
-        }else{
-          (moves.length % 2) === 1 ? chrome.runtime.sendMessage({ movelist: moves, side: getSide(), type : "position", elo_ : _elo_ }) : clearHighlightSquares()
-          
+        if (side_ === "white") {
+          moves.length % 2 === 0
+            ? chrome.runtime.sendMessage({
+                movelist: moves,
+                side: getSide(),
+                type: "position",
+                elo_: _elo_,
+              })
+            : clearHighlightSquares();
+        } else {
+          moves.length % 2 === 1
+            ? chrome.runtime.sendMessage({
+                movelist: moves,
+                side: getSide(),
+                type: "position",
+                elo_: _elo_,
+              })
+            : clearHighlightSquares();
         }
-
-
       } catch (error) {
         console.warn("SendMessage error:", error);
       }
@@ -192,5 +213,3 @@ if (window.location.hostname.includes("chess.com")) {
     highlightMovesOnBoard(moves, getSide()[0]);
   });
 }
-
-

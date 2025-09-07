@@ -8,18 +8,33 @@ let currentFen = "";
 let line = 5;
 let depth = 10;
 let lineConfig = 5;
-let autoSkill = false
-let winningMove = false
+let autoSkill = false;
+let winningMove = false;
+let side = "white";
 
 const skillToElo = {
-  0: 1350, 1: 1400, 2: 1450, 3: 1500, 4: 1600,
-  5: 1700, 6: 1800, 7: 1900, 8: 2000, 9: 2100,
-  10: 2200, 11: 2300, 12: 2400, 13: 2600, 14: 2800,
-  15: 3000, 16: 3200, 17: 3300, 18: 3400, 19: 3450,
-  20: 3500
+  0: 1350,
+  1: 1400,
+  2: 1450,
+  3: 1500,
+  4: 1600,
+  5: 1700,
+  6: 1800,
+  7: 1900,
+  8: 2000,
+  9: 2100,
+  10: 2200,
+  11: 2300,
+  12: 2400,
+  13: 2600,
+  14: 2800,
+  15: 3000,
+  16: 3200,
+  17: 3300,
+  18: 3400,
+  19: 3450,
+  20: 3500,
 };
-
-
 
 const EXPIRATION_DATE = "2025-10-25";
 const TIMEZONE_API_KEY = "WPOK8LWQNYUI";
@@ -55,7 +70,8 @@ function eloToSkill(elo) {
 
   for (const [skill, skillElo] of Object.entries(skillToElo)) {
     const diff = skillElo - elo;
-    if (diff >= 0 && diff < closestElo) { // plus proche supérieur ou égal
+    if (diff >= 0 && diff < closestElo) {
+      // plus proche supérieur ou égal
       closestElo = diff;
       closestSkill = Number(skill);
     }
@@ -99,7 +115,11 @@ engine.onmessage = function (event) {
   const msg = event;
   console.log(msg);
 
-  if (typeof msg === "string" && msg.includes(`info depth ${depth}`) && !isExpired) {
+  if (
+    typeof msg === "string" &&
+    msg.includes(`info depth ${depth}`) &&
+    !isExpired
+  ) {
     const multipvMatch = msg.match(/multipv (\d+)/);
     const scoreMatch = msg.match(/score (cp|mate) (-?\d+)/);
     const pvMatch = msg.match(/pv ([a-h][1-8][a-h][1-8][qrbn]?)/);
@@ -134,17 +154,63 @@ engine.onmessage = function (event) {
         score,
       });
 
+      // if (multipvResults.size === line) {
+      //   if (winningMove) {
+      //   } else {
+      //     const bestMoves = Array.from(multipvResults.entries())
+      //       .sort(([a], [b]) => a - b)
+      //       .map(([_, val]) => val);
+
+      //     console.log(bestMoves);
+      //     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      //       if (tabs.length > 0) {
+      //         chrome.tabs.sendMessage(tabs[0].id, { moves: bestMoves });
+      //       }
+      //     });
+      //   }
+
+      //   multipvResults.clear();
+      // }
+
       if (multipvResults.size === line) {
-        const bestMoves = Array.from(multipvResults.entries())
-          .sort(([a], [b]) => a - b)
-          .map(([_, val]) => val);
-        
-        console.log(bestMoves)
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-          if (tabs.length > 0) {
-            chrome.tabs.sendMessage(tabs[0].id, { moves: bestMoves });
-          }
-        });
+        if (winningMove) {
+          const bestMoves = Array.from(multipvResults.entries())
+            .sort(([a], [b]) => a - b)
+            .map(([_, val]) => val);
+
+          const winningMoves = bestMoves.filter((move) => {
+            const score = move.score;
+            if (score.startsWith("#")) {
+              const mateValue = parseInt(score.replace("#", ""), 10);
+              if (side === "white") return mateValue > 0;
+              if (side === "black") return mateValue < 0;
+            } else {
+
+              const numericScore = parseFloat(score);
+              if (side === "white") return numericScore >= 2;
+              if (side === "black") return numericScore <= -2;
+            }
+            return false;
+          });
+
+          console.log(winningMoves);
+          chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            if (tabs.length > 0) {
+              chrome.tabs.sendMessage(tabs[0].id, { moves: winningMoves });
+            }
+          });
+        } else {
+          const bestMoves = Array.from(multipvResults.entries())
+            .sort(([a], [b]) => a - b)
+            .map(([_, val]) => val);
+
+          console.log(bestMoves);
+          chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            if (tabs.length > 0) {
+              chrome.tabs.sendMessage(tabs[0].id, { moves: bestMoves });
+            }
+          });
+        }
 
         multipvResults.clear();
       }
@@ -165,35 +231,42 @@ depth = 13
 lines = 4
 skill = 15
 winningMove = false
+[
+{from: 'c2', to: 'c3', score: '+0.12'},
+{from: 'b2', to: 'b3', score: '+0.09'},
+{from: 'f1', to: 'd1', score: '+0.04'},
+{from: 'h2', to: 'h3', score: '-0.42'},
+{from: 'e5', to: 'c6', score: '-0.63'}
+]
+
+
 */
 
-let current_skill = 20
+let current_skill = 20;
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (isExpired) return;
 
   if (request.type === "position" && !isExpired) {
     xxxxx = request.movelist.length;
+    side = request.side;
     multipvResults.clear();
     const fen = getFen(request.movelist);
     currentFen = fen;
     engine.postMessage("stop");
 
-    if(autoSkill){
-      skill_ = eloToSkill(request.elo_)
-      console.log("Elo adaptatif")
-      console.log(skill_)
-      engine.postMessage(`setoption name Skill Level value ${skill_}`)
+    if (autoSkill) {
+      skill_ = eloToSkill(request.elo_);
+      console.log("Elo adaptatif");
+      console.log(skill_);
+      engine.postMessage(`setoption name Skill Level value ${skill_}`);
+      engine.postMessage(`position fen ${fen}`);
+      engine.postMessage(`go depth ${depth}`);
+    } else {
+      engine.postMessage(`setoption name Skill Level value ${current_skill}`);
       engine.postMessage(`position fen ${fen}`);
       engine.postMessage(`go depth ${depth}`);
     }
-    else{
-      engine.postMessage(`setoption name Skill Level value ${current_skill}`)
-      engine.postMessage(`position fen ${fen}`);
-      engine.postMessage(`go depth ${depth}`);
-    }
-
-    
   }
   ////////////////////// COnfiggggggggggggggg
 
@@ -202,10 +275,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     lineConfig = config.lines;
     depth = config.depth;
 
-    autoSkill = config.autoSkill
-    winningMove = config.winningMove
-    current_skill = config.skill
-
+    autoSkill = config.autoSkill;
+    winningMove = config.winningMove;
+    current_skill = config.skill;
 
     engine.postMessage(`setoption name Skill Level value ${current_skill}`);
 
