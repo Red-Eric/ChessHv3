@@ -1,6 +1,4 @@
 if (window.location.hostname.includes("chess.com")) {
-  // alert("hello , mod by red_eric_");
-
   function highlightMovesOnBoard(moves, side) {
     const parent = document.querySelector("wc-chess-board");
     if (!parent) return;
