@@ -1,8 +1,7 @@
 if (window.location.hostname.includes("chess.com")) {
   let lastFEN = "";
   let fen_ = "fen_________";
-  let turnIndex = 0; // 1  white 2 black
-
+  let side_index = 1
   function inject() {
     const s = document.createElement("script");
     s.src = chrome.runtime.getURL("a.js");
@@ -13,7 +12,7 @@ if (window.location.hostname.includes("chess.com")) {
       if (event.source !== window) return;
       if (event.data && event.data.type === "FEN_RESPONSE") {
         fen_ = event.data.fen;
-        turnIndex = event.data.turn;
+        side_index = event.data.side_
       }
     });
   }
@@ -154,11 +153,7 @@ if (window.location.hostname.includes("chess.com")) {
   }
 
   function getSide() {
-    const board = document.querySelector("wc-chess-board");
-    if (!board) {
-      return "white";
-    }
-    return board.classList.contains("flipped") ? "black" : "white";
+    return (side_index === 1) ? "white" : "black";
   }
 
   function checkAndSendMoves() {
@@ -168,7 +163,7 @@ if (window.location.hostname.includes("chess.com")) {
       _elo_ = getOppElo();
 
       if (getSide() === "white") {
-        if (turnIndex !== 2) {
+        if (fen_.split(" ")[1] === "w") {
           chrome.runtime.sendMessage({
             fen: fen_,
             side: getSide(),
@@ -178,8 +173,10 @@ if (window.location.hostname.includes("chess.com")) {
         } else {
           clearHighlightSquares();
         }
-      } else {
-        if (turnIndex !== 1) {
+      } 
+      // black
+      else {
+        if (fen_.split(" ")[1] === "b") {
           chrome.runtime.sendMessage({
             fen: fen_,
             side: getSide(),
