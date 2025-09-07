@@ -1,4 +1,30 @@
 if (window.location.hostname.includes("chess.com")) {
+  let lastFEN = "";
+  let fen_ = "fen_________";
+  let turnIndex = 0; // 1  white 2 black
+
+  function inject() {
+    const s = document.createElement("script");
+    s.src = chrome.runtime.getURL("a.js");
+    (document.head || document.documentElement).appendChild(s);
+    s.onload = () => s.remove();
+
+    window.addEventListener("message", (event) => {
+      if (event.source !== window) return;
+      if (event.data && event.data.type === "FEN_RESPONSE") {
+        fen_ = event.data.fen;
+        turnIndex = event.data.turn;
+      }
+    });
+  }
+
+  inject();
+
+  function requestFen() {
+    // console.log("request fen called")
+    window.postMessage({ type: "GET_FEN" }, "*");
+  }
+
   function highlightMovesOnBoard(moves, side) {
     const parent = document.querySelector("wc-chess-board");
     if (!parent) return;
@@ -111,6 +137,16 @@ if (window.location.hostname.includes("chess.com")) {
     });
   }
 
+  function getOppElo() {
+    // ( 1920 )
+    let elo = document.querySelector(".cc-text-medium").innerText;
+    if (elo) {
+      return parseInt(elo.slice(1, -1));
+    } else {
+      return 3500;
+    }
+  }
+
   function clearHighlightSquares() {
     const parent = document.querySelector("wc-chess-board");
     if (!parent) return;
@@ -125,81 +161,34 @@ if (window.location.hostname.includes("chess.com")) {
     return board.classList.contains("flipped") ? "black" : "white";
   }
 
-  function getMovelistText() {
-    let movelist = [];
-    document.querySelectorAll("div.node").forEach((e) => {
-      movelist.push(e.innerText.replaceAll(" ", ""));
-    });
-    return movelist;
-  }
-
-  function getMovelistFigurine() {
-    const nodes = document.querySelectorAll("span.node-highlight-content");
-    const moves = [];
-
-    nodes.forEach((e) => {
-      if (e.children.length === 0) {
-        moves.push(e.innerText.trim());
-      } else {
-        const figurine = e.children[0]?.getAttribute("data-figurine") || "";
-        const moveText = e.innerText.trim().replace(/\s+/g, "");
-        moves.push(figurine + moveText);
-      }
-    });
-
-    return moves;
-  }
-
-  function getOppElo() {
-    // ( 1920 )
-    let elo = document.querySelector(".cc-text-medium").innerText;
-    if (elo) {
-      return parseInt(elo.slice(1, -1));
-    } else {
-      return 3500;
-    }
-  }
-
-  let lastMovesSerialized = "";
-
   function checkAndSendMoves() {
-    let figure = document.querySelector("span[data-figurine]");
-    let moves = [];
+    requestFen();
+    if (lastFEN !== fen_) {
+      lastFEN = fen_;
+      _elo_ = getOppElo();
 
-    if (figure === null) {
-      moves = getMovelistText();
-    } else {
-      moves = getMovelistFigurine();
-    }
-
-    const currentSerialized = JSON.stringify(moves);
-    if (currentSerialized !== lastMovesSerialized && moves.length > 0) {
-      lastMovesSerialized = currentSerialized;
-      try {
-        side_ = getSide();
-        _elo_ = getOppElo();
-
-        if (side_ === "white") {
-          moves.length % 2 === 0
-            ? chrome.runtime.sendMessage({
-                movelist: moves,
-                side: getSide(),
-                type: "position",
-                elo_: _elo_,
-              })
-            : clearHighlightSquares();
+      if (getSide() === "white") {
+        if (turnIndex !== 2) {
+          chrome.runtime.sendMessage({
+            fen: fen_,
+            side: getSide(),
+            type: "position",
+            elo_: _elo_,
+          });
         } else {
-          moves.length % 2 === 1
-            ? chrome.runtime.sendMessage({
-                movelist: moves,
-                side: getSide(),
-                type: "position",
-                elo_: _elo_,
-              })
-            : clearHighlightSquares();
+          clearHighlightSquares();
         }
-      } catch (error) {
-        console.warn("SendMessage error:", error);
+      } else {
+        if (turnIndex !== 1) {
+          chrome.runtime.sendMessage({
+            fen: fen_,
+            side: getSide(),
+            type: "position",
+            elo_: _elo_,
+          });
+        } else {
+          clearHighlightSquares();
+        }
       }
     }
   }

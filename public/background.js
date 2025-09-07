@@ -84,22 +84,6 @@ checkExpiration();
 
 let legalMoves = 0;
 
-function getFen(movelist) {
-  let chess = Chess();
-  movelist.forEach((move) => {
-    chess.move(move);
-  });
-
-  legalMoves = chess.moves().length;
-
-  if (legalMoves >= 5) {
-    line = lineConfig;
-  } else {
-    line = legalMoves;
-  }
-
-  return chess.fen();
-}
 
 /*
 autoSkill =false
@@ -153,24 +137,6 @@ engine.onmessage = function (event) {
         to,
         score,
       });
-
-      // if (multipvResults.size === line) {
-      //   if (winningMove) {
-      //   } else {
-      //     const bestMoves = Array.from(multipvResults.entries())
-      //       .sort(([a], [b]) => a - b)
-      //       .map(([_, val]) => val);
-
-      //     console.log(bestMoves);
-      //     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      //       if (tabs.length > 0) {
-      //         chrome.tabs.sendMessage(tabs[0].id, { moves: bestMoves });
-      //       }
-      //     });
-      //   }
-
-      //   multipvResults.clear();
-      // }
 
       if (multipvResults.size === line) {
         if (winningMove) {
@@ -248,10 +214,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (isExpired) return;
 
   if (request.type === "position" && !isExpired) {
-    xxxxx = request.movelist.length;
+
     side = request.side;
     multipvResults.clear();
-    const fen = getFen(request.movelist);
+    const fen = request.fen
     currentFen = fen;
     engine.postMessage("stop");
 
