@@ -8,6 +8,17 @@ let currentFen = "";
 let line = 5;
 let depth = 10;
 let lineConfig = 5;
+let autoSkill = false
+let winningMove = false
+
+const skillToElo = {
+  0: 1350, 1: 1400, 2: 1450, 3: 1500, 4: 1600,
+  5: 1700, 6: 1800, 7: 1900, 8: 2000, 9: 2100,
+  10: 2200, 11: 2300, 12: 2400, 13: 2600, 14: 2800,
+  15: 3000, 16: 3200, 17: 3300, 18: 3400, 19: 3450,
+  20: 3500
+};
+
 
 
 const EXPIRATION_DATE = "2025-10-25";
@@ -38,6 +49,21 @@ async function checkExpiration() {
   }
 }
 
+function eloToSkill(elo) {
+  let closestSkill = null;
+  let closestElo = Infinity;
+
+  for (const [skill, skillElo] of Object.entries(skillToElo)) {
+    const diff = skillElo - elo;
+    if (diff >= 0 && diff < closestElo) { // plus proche supérieur ou égal
+      closestElo = diff;
+      closestSkill = Number(skill);
+    }
+  }
+
+  return closestSkill;
+}
+
 checkExpiration();
 
 let legalMoves = 0;
@@ -58,6 +84,14 @@ function getFen(movelist) {
 
   return chess.fen();
 }
+
+/*
+autoSkill =false
+depth = 13
+lines = 4
+skill = 15
+winningMove = false
+*/
 
 engine.onmessage = function (event) {
   if (isExpired) return;
@@ -124,9 +158,16 @@ engine.postMessage(`setoption name MultiPV value ${line}`);
 engine.postMessage("setoption name Hash value 1024");
 engine.postMessage("setoption name Threads value 16");
 engine.postMessage("setoption name Ponder value false");
-// engine.postMessage("uci");
 
-// {elo: 2800, lines: 5, depth: 15, showArrow: true}
+/*
+autoSkill =false
+depth = 13
+lines = 4
+skill = 15
+winningMove = false
+*/
+
+let current_skill = 20
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (isExpired) return;
@@ -134,15 +175,26 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === "position" && !isExpired) {
     xxxxx = request.movelist.length;
     multipvResults.clear();
-
     const fen = getFen(request.movelist);
     currentFen = fen;
     engine.postMessage("stop");
 
-    engine.postMessage(`position fen ${fen}`);
-    engine.postMessage(`go depth ${depth}`);
-  }
+    if(autoSkill){
+      skill_ = eloToSkill(request.elo_)
+      console.log("Elo adaptatif")
+      console.log(skill_)
+      engine.postMessage(`setoption name Skill Level value ${skill_}`)
+      engine.postMessage(`position fen ${fen}`);
+      engine.postMessage(`go depth ${depth}`);
+    }
+    else{
+      engine.postMessage(`setoption name Skill Level value ${current_skill}`)
+      engine.postMessage(`position fen ${fen}`);
+      engine.postMessage(`go depth ${depth}`);
+    }
 
+    
+  }
   ////////////////////// COnfiggggggggggggggg
 
   if (request.type === "config" && !isExpired) {
@@ -150,7 +202,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     lineConfig = config.lines;
     depth = config.depth;
 
-    engine.postMessage(`setoption name Skill Level value ${config.skill}`);
+    autoSkill = config.autoSkill
+    winningMove = config.winningMove
+    current_skill = config.skill
+
+
+    engine.postMessage(`setoption name Skill Level value ${current_skill}`);
 
     engine.postMessage(`setoption name MultiPV value ${request.config.lines}`);
 

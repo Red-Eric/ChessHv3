@@ -28,6 +28,8 @@ if (window.location.hostname.includes("chess.com")) {
       }
     }
 
+    
+
     function drawArrow(fromSquare, toSquare, color, score) {
       const from = squareToPosition(fromSquare);
       const to = squareToPosition(toSquare);
@@ -136,6 +138,17 @@ if (window.location.hostname.includes("chess.com")) {
     return moves;
   }
 
+  function getOppElo(){
+    // ( 1920 )
+    let elo = document.querySelector(".cc-text-medium").innerText
+    if(elo){
+      return parseInt(elo.slice(1,-1))
+    }
+    else{
+      return 3500
+    }
+  }
+
   let lastMovesSerialized = "";
 
   function checkAndSendMoves() {
@@ -154,11 +167,12 @@ if (window.location.hostname.includes("chess.com")) {
       try {
 
         side_ = getSide()
+        _elo_ = getOppElo()
 
         if(side_ === "white"){
-          (moves.length % 2) === 0 ? chrome.runtime.sendMessage({ movelist: moves, side: getSide(), type : "position" }) : clearHighlightSquares()
+          (moves.length % 2) === 0 ? chrome.runtime.sendMessage({ movelist: moves, side: getSide(), type : "position", elo_ : _elo_ }) : clearHighlightSquares()
         }else{
-          (moves.length % 2) === 1 ? chrome.runtime.sendMessage({ movelist: moves, side: getSide(), type : "position" }) : clearHighlightSquares()
+          (moves.length % 2) === 1 ? chrome.runtime.sendMessage({ movelist: moves, side: getSide(), type : "position", elo_ : _elo_ }) : clearHighlightSquares()
           
         }
 
@@ -172,11 +186,11 @@ if (window.location.hostname.includes("chess.com")) {
   setInterval(checkAndSendMoves, 350);
 
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log(message.moves);
+    // console.log(message.moves);
     clearHighlightSquares();
     const moves = message.moves;
     highlightMovesOnBoard(moves, getSide()[0]);
   });
-} else {
-  console.log("ChessCom Only.");
 }
+
+

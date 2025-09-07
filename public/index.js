@@ -16,7 +16,7 @@ const skillToElo = {
   10: 2200, 11: 2300, 12: 2400, 13: 2600, 14: 2800,
   15: 3000, 16: 3200, 17: 3300, 18: 3400, 19: 3450,
   20: 3500
-};
+}; 
 
 // Load config or default
 let config = JSON.parse(localStorage.getItem("chessConfig")) || {
