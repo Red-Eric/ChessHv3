@@ -1,6 +1,6 @@
 if (window.location.hostname.includes("chess.com")) {
   let lastFEN = "";
-  let fen_ = "fen_________";
+  let fen_ = "idjazdjaziodja";
   let side_index = 1
   function inject() {
     const s = document.createElement("script");
