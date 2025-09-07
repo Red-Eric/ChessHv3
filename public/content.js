@@ -138,7 +138,7 @@ if (window.location.hostname.includes("chess.com")) {
 
   function getOppElo() {
     // ( 1920 )
-    let elo = document.querySelector(".cc-text-medium").innerText;
+    let elo = document.querySelector(".cc-text-medium")?.innerText;
     if (elo) {
       return parseInt(elo.slice(1, -1));
     } else {
@@ -161,6 +161,11 @@ if (window.location.hostname.includes("chess.com")) {
     if (lastFEN !== fen_) {
       lastFEN = fen_;
       _elo_ = getOppElo();
+
+
+      console.log("fen    ", fen_)
+      console.log("lastfen", lastFEN)
+      console.log("side   ", getSide())
 
       if (getSide() === "white") {
         if (fen_.split(" ")[1] === "w") {
