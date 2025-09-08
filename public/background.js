@@ -87,7 +87,7 @@ engine.onmessage = function (event) {
   if (isExpired) return;
 
   const msg = event;
-  console.log(msg);
+  // console.log(msg);
 
   if (
     typeof msg === "string" &&
@@ -151,7 +151,8 @@ engine.onmessage = function (event) {
           console.log(winningMoves);
           chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             if (tabs.length > 0) {
-              chrome.tabs.sendMessage(tabs[0].id, { moves: winningMoves });
+
+              chrome.tabs.sendMessage(tabs[0].id, { moves: winningMoves, score : winningMoves[0].score });
             }
           });
         } else {
@@ -162,7 +163,8 @@ engine.onmessage = function (event) {
           console.log(bestMoves);
           chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             if (tabs.length > 0) {
-              chrome.tabs.sendMessage(tabs[0].id, { moves: bestMoves });
+
+              chrome.tabs.sendMessage(tabs[0].id, { moves: bestMoves , score : bestMoves[0].score  });
             }
           });
         }

@@ -5,12 +5,14 @@ if (window.location.hostname.includes("chess.com")) {
 
   function createEvalBar(initialScore = "0.0", initialColor = "white") {
     const boardContainer = document.querySelector(".board");
-    let w_ = boardContainer.offsetWidth
+    let w_ = boardContainer.offsetWidth;
+
     if (!boardContainer) return console.error("Plateau non trouvé !");
 
     // Conteneur principal
     const evalContainer = document.createElement("div");
-    evalContainer.style.width = `${(w_*6)/100}px`
+    evalContainer.id = "customEval";
+    evalContainer.style.width = `${(w_ * 6) / 100}px`;
     evalContainer.style.height = `${boardContainer.offsetWidth}px`;
     evalContainer.style.background = "#eee";
     evalContainer.style.marginLeft = "10px";
@@ -58,7 +60,8 @@ if (window.location.hostname.includes("chess.com")) {
     evalContainer.appendChild(scoreText);
 
     boardContainer.parentNode.style.display = "flex";
-    boardContainer.parentNode.appendChild(evalContainer);
+    // boardContainer.parentNode.appendChild(evalContainer);
+    boardContainer.parentNode.insertBefore(evalContainer, boardContainer);
 
     function parseScore(scoreStr) {
       scoreStr = scoreStr.trim();
@@ -308,8 +311,23 @@ if (window.location.hostname.includes("chess.com")) {
 
   setInterval(checkAndSendMoves, 350);
 
+  let evalObj = null;
+
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    // console.log(message.moves);
+    const flagElem = document.querySelector("#customEval");
+
+    if (!flagElem) {
+      if (document.querySelector(".icon-font-chess.menu.toolbar-action-icon")) {
+        const x = document.querySelector(".board");
+        const xx = x.offsetWidth;
+        x.style.width = `${xx - (xx * 7) / 100}px`;
+        x.style.height = `${xx - (xx * 7) / 100}px`;
+      }
+      evalObj = createEvalBar("0.0", "white");
+    } else if (evalObj) {
+      evalObj.update(message.score, getSide());
+    }
+
     clearHighlightSquares();
     const moves = message.moves;
     highlightMovesOnBoard(moves, getSide()[0]);
