@@ -15,11 +15,27 @@ const onlyShowEvalLabel = document.getElementById("onlyShowEvalLabel");
 
 // Mapping skill to Elo
 const skillToElo = {
-  0: 1350, 1: 1400, 2: 1450, 3: 1500, 4: 1600,
-  5: 1700, 6: 1800, 7: 1900, 8: 2000, 9: 2100,
-  10: 2200, 11: 2300, 12: 2400, 13: 2600, 14: 2800,
-  15: 3000, 16: 3200, 17: 3300, 18: 3400, 19: 3450,
-  20: 3500
+  0: 1000,
+  1: 1200,
+  2: 1350,
+  3: 1450,
+  4: 1550,
+  5: 1650,
+  6: 1750,
+  7: 1850,
+  8: 1950,
+  9: 2050,
+  10: 2150,
+  11: 2250,
+  12: 2350,
+  13: 2450,
+  14: 2550,
+  15: 2650,
+  16: 2750,
+  17: 2850,
+  18: 2950,
+  19: 3050,
+  20: 3200
 };
 
 // Load config or default
@@ -101,7 +117,7 @@ showEval.addEventListener("change", () => {
 // Only Show Eval Bar toggle
 onlyShowEval.addEventListener("change", () => {
   if(!showEval.checked && onlyShowEval.checked){
-    onlyShowEval.checked = false; // can't activate if showEval is off
+    onlyShowEval.checked = false;
     return;
   }
   config.onlyShowEval = onlyShowEval.checked;
@@ -111,7 +127,7 @@ onlyShowEval.addEventListener("change", () => {
 // Save button
 document.getElementById("save").addEventListener("click", () => {
   localStorage.setItem("chessConfig", JSON.stringify(config));
-  console.log("Config saved:", config);
+  console.log(config);
   if (typeof chrome !== "undefined" && chrome.runtime) {
     chrome.runtime.sendMessage({ config: config, type: "config" });
   }

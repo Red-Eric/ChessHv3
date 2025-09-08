@@ -281,31 +281,13 @@ if (window.location.hostname.includes("chess.com")) {
       lastFEN = fen_;
       _elo_ = getOppElo();
 
-      if (getSide() === "white") {
-        if (fen_.split(" ")[1] === "w") {
-          chrome.runtime.sendMessage({
-            fen: fen_,
-            side: getSide(),
-            type: "position",
-            elo_: _elo_,
-          });
-        } else {
-          clearHighlightSquares();
-        }
-      }
-      // black
-      else {
-        if (fen_.split(" ")[1] === "b") {
-          chrome.runtime.sendMessage({
-            fen: fen_,
-            side: getSide(),
-            type: "position",
-            elo_: _elo_,
-          });
-        } else {
-          clearHighlightSquares();
-        }
-      }
+
+      chrome.runtime.sendMessage({
+        fen: fen_,
+        side: getSide(),
+        type: "position",
+        elo_: _elo_,
+      });
     }
   }
 
@@ -316,7 +298,8 @@ if (window.location.hostname.includes("chess.com")) {
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const flagElem = document.querySelector("#customEval");
 
-    if (!flagElem) {
+
+    if (!flagElem && message.showEval) {
       evalObj = createEvalBar("0.0", "white");
     } else if (evalObj) {
       evalObj.update(message.score, getSide());
@@ -324,6 +307,18 @@ if (window.location.hostname.includes("chess.com")) {
 
     clearHighlightSquares();
     const moves = message.moves;
-    highlightMovesOnBoard(moves, getSide()[0]);
+
+    if (!message.onlyShowEval) {
+      const side = getSide();
+
+      if (
+        (side === "white" && fen_.split(" ")[1] === "w") ||
+        (side === "black" && fen_.split(" ")[1] === "b")
+      ) {
+        highlightMovesOnBoard(moves, side[0]);
+      } else {
+        clearHighlightSquares();
+      }
+    }
   });
 }

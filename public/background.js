@@ -11,29 +11,31 @@ let lineConfig = 5;
 let autoSkill = false;
 let winningMove = false;
 let side = "white";
+let showEval = false;
+let onlyShowEval = false;
 
 const skillToElo = {
-  0: 1350,
-  1: 1400,
-  2: 1450,
-  3: 1500,
-  4: 1600,
-  5: 1700,
-  6: 1800,
-  7: 1900,
-  8: 2000,
-  9: 2100,
-  10: 2200,
-  11: 2300,
-  12: 2400,
-  13: 2600,
-  14: 2800,
-  15: 3000,
-  16: 3200,
-  17: 3300,
-  18: 3400,
-  19: 3450,
-  20: 3500,
+  0: 1000,
+  1: 1200,
+  2: 1350,
+  3: 1450,
+  4: 1550,
+  5: 1650,
+  6: 1750,
+  7: 1850,
+  8: 1950,
+  9: 2050,
+  10: 2150,
+  11: 2250,
+  12: 2350,
+  13: 2450,
+  14: 2550,
+  15: 2650,
+  16: 2750,
+  17: 2850,
+  18: 2950,
+  19: 3050,
+  20: 3200,
 };
 
 const EXPIRATION_DATE = "2025-10-25";
@@ -151,8 +153,12 @@ engine.onmessage = function (event) {
           console.log(winningMoves);
           chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             if (tabs.length > 0) {
-
-              chrome.tabs.sendMessage(tabs[0].id, { moves: winningMoves, score : winningMoves[0].score });
+              chrome.tabs.sendMessage(tabs[0].id, {
+                moves: winningMoves,
+                score: winningMoves[0].score,
+                showEval: showEval,
+                onlyShowEval: onlyShowEval,
+              });
             }
           });
         } else {
@@ -163,8 +169,12 @@ engine.onmessage = function (event) {
           console.log(bestMoves);
           chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             if (tabs.length > 0) {
-
-              chrome.tabs.sendMessage(tabs[0].id, { moves: bestMoves , score : bestMoves[0].score  });
+              chrome.tabs.sendMessage(tabs[0].id, {
+                moves: bestMoves,
+                score: bestMoves[0].score,
+                showEval: showEval,
+                onlyShowEval: onlyShowEval,
+              });
             }
           });
         }
@@ -196,11 +206,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     currentFen = fen;
 
     if (game.load(fen)) {
-      legalMoves = game.moves().length // 10
-      if(legalMoves >= lineConfig){ // 2
-        line = lineConfig
-      }else{
-        line = legalMoves
+      legalMoves = game.moves().length; // 10
+      if (legalMoves >= lineConfig) {
+        // 2
+        line = lineConfig;
+      } else {
+        line = legalMoves;
       }
     } else {
       console.log("FEN invalide !");
@@ -227,13 +238,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const config = request.config;
     lineConfig = config.lines;
     depth = config.depth;
-
+    showEval = config.showEval;
+    onlyShowEval = config.onlyShowEval;
     autoSkill = config.autoSkill;
     winningMove = config.winningMove;
     current_skill = config.skill;
 
     engine.postMessage(`setoption name Skill Level value ${current_skill}`);
-
     engine.postMessage(`setoption name MultiPV value ${request.config.lines}`);
 
     if (currentFen) {
