@@ -317,12 +317,6 @@ if (window.location.hostname.includes("chess.com")) {
     const flagElem = document.querySelector("#customEval");
 
     if (!flagElem) {
-      if (document.querySelector(".icon-font-chess.menu.toolbar-action-icon")) {
-        const x = document.querySelector(".board");
-        const xx = x.offsetWidth;
-        x.style.width = `${xx - (xx * 7) / 100}px`;
-        x.style.height = `${xx - (xx * 7) / 100}px`;
-      }
       evalObj = createEvalBar("0.0", "white");
     } else if (evalObj) {
       evalObj.update(message.score, getSide());
