@@ -4,7 +4,7 @@ importScripts("./lib/stockfish.asm.js");
 const engine = STOCKFISH();
 let multipvResults = new Map();
 let xxxxx = 99999;
-let currentFen = "";
+let currentFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 let line = 5;
 let depth = 10;
 let lineConfig = 5;
@@ -81,17 +81,7 @@ function eloToSkill(elo) {
 }
 
 checkExpiration();
-
 let legalMoves = 0;
-
-
-/*
-autoSkill =false
-depth = 13
-lines = 4
-skill = 15
-winningMove = false
-*/
 
 engine.onmessage = function (event) {
   if (isExpired) return;
@@ -151,7 +141,6 @@ engine.onmessage = function (event) {
               if (side === "white") return mateValue > 0;
               if (side === "black") return mateValue < 0;
             } else {
-
               const numericScore = parseFloat(score);
               if (side === "white") return numericScore >= 2;
               if (side === "black") return numericScore <= -2;
@@ -191,34 +180,30 @@ engine.postMessage("setoption name Hash value 1024");
 engine.postMessage("setoption name Threads value 16");
 engine.postMessage("setoption name Ponder value false");
 
-/*
-autoSkill =false
-depth = 13
-lines = 4
-skill = 15
-winningMove = false
-[
-{from: 'c2', to: 'c3', score: '+0.12'},
-{from: 'b2', to: 'b3', score: '+0.09'},
-{from: 'f1', to: 'd1', score: '+0.04'},
-{from: 'h2', to: 'h3', score: '-0.42'},
-{from: 'e5', to: 'c6', score: '-0.63'}
-]
-
-
-*/
-
 let current_skill = 20;
+
+const game = new Chess();
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (isExpired) return;
 
   if (request.type === "position" && !isExpired) {
-
     side = request.side;
     multipvResults.clear();
-    const fen = request.fen
+    const fen = request.fen;
     currentFen = fen;
+
+    if (game.load(fen)) {
+      legalMoves = game.moves().length // 10
+      if(legalMoves >= lineConfig){ // 2
+        line = lineConfig
+      }else{
+        line = legalMoves
+      }
+    } else {
+      console.log("FEN invalide !");
+    }
+
     engine.postMessage("stop");
 
     if (autoSkill) {

@@ -6,9 +6,6 @@
         
         const board = document.querySelector(".board");
         if (board && board.game){
-
-            console.log(board.game.getFEN())
-
             return board.game
         }
 

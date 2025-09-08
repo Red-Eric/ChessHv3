@@ -163,10 +163,6 @@ if (window.location.hostname.includes("chess.com")) {
       _elo_ = getOppElo();
 
 
-      // console.log("fen    ", fen_)
-      // console.log("lastfen", lastFEN)
-      // console.log("side   ", getSide())
-
       if (getSide() === "white") {
         if (fen_.split(" ")[1] === "w") {
           chrome.runtime.sendMessage({
