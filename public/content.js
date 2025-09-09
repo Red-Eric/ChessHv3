@@ -286,6 +286,7 @@ if (window.location.hostname.includes("chess.com")) {
     if (lastFEN !== fen_) {
       lastFEN = fen_;
       _elo_ = getOppElo();
+      console.log(fen_)
 
       chrome.runtime.sendMessage({
         fen: fen_,
