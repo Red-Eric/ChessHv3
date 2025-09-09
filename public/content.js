@@ -64,6 +64,10 @@ if (window.location.hostname.includes("chess.com")) {
     boardContainer.parentNode.insertBefore(evalContainer, boardContainer);
 
     function parseScore(scoreStr) {
+      if (!scoreStr) {
+        return { score: 0, mate: false };
+      }
+
       scoreStr = scoreStr.trim();
       let mate = false;
       let score = 0;
@@ -144,6 +148,8 @@ if (window.location.hostname.includes("chess.com")) {
   }
 
   function highlightMovesOnBoard(moves, side) {
+    if (!Array.isArray(moves)) return;
+
     const parent = document.querySelector("wc-chess-board");
     if (!parent) return;
 
@@ -281,7 +287,6 @@ if (window.location.hostname.includes("chess.com")) {
       lastFEN = fen_;
       _elo_ = getOppElo();
 
-
       chrome.runtime.sendMessage({
         fen: fen_,
         side: getSide(),
@@ -295,20 +300,40 @@ if (window.location.hostname.includes("chess.com")) {
 
   let evalObj = null;
 
+  let showEval = false;
+  let onlyShowEval = false;
+
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const flagElem = document.querySelector("#customEval");
 
+    if (message.showEval === true) {
+      showEval = true;
+    }
+    if (message.showEval === false) {
+      showEval = false;
+    }
 
-    if (!flagElem && message.showEval) {
+    if (flagElem && !showEval) {
+      flagElem.remove();
+    }
+
+    if (message.onlyShowEval === true) {
+      onlyShowEval = true;
+    }
+    if (message.onlyShowEval === false) {
+      onlyShowEval = false;
+    }
+
+    if (!flagElem && showEval) {
       evalObj = createEvalBar("0.0", "white");
-    } else if (evalObj) {
+    } else if (evalObj && message.score !== undefined) {
       evalObj.update(message.score, getSide());
     }
 
     clearHighlightSquares();
     const moves = message.moves;
-
-    if (!message.onlyShowEval) {
+    console.log(moves);
+    if (!onlyShowEval) {
       const side = getSide();
 
       if (

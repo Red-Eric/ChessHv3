@@ -150,7 +150,7 @@ engine.onmessage = function (event) {
             return false;
           });
 
-          console.log(winningMoves);
+          // console.log(winningMoves);
           chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             if (tabs.length > 0) {
               chrome.tabs.sendMessage(tabs[0].id, {
@@ -166,7 +166,7 @@ engine.onmessage = function (event) {
             .sort(([a], [b]) => a - b)
             .map(([_, val]) => val);
 
-          console.log(bestMoves);
+          // console.log(bestMoves);
           chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             if (tabs.length > 0) {
               chrome.tabs.sendMessage(tabs[0].id, {
@@ -243,6 +243,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     autoSkill = config.autoSkill;
     winningMove = config.winningMove;
     current_skill = config.skill;
+
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs.length > 0) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          showEval: showEval,
+          onlyShowEval: onlyShowEval,
+        });
+      }
+    });
 
     engine.postMessage(`setoption name Skill Level value ${current_skill}`);
     engine.postMessage(`setoption name MultiPV value ${request.config.lines}`);
