@@ -61,7 +61,7 @@ async function checkExpiration() {
       isExpired = true;
     }
   } catch (err) {
-    console.error("Erreur expiration :", err);
+    console.error(err);
     isExpired = true;
   }
 }
@@ -96,6 +96,8 @@ engine.onmessage = function (event) {
     msg.includes(`info depth ${depth}`) &&
     !isExpired
   ) {
+    console.log("**** inside ***** on message");
+    console.log(msg);
     const multipvMatch = msg.match(/multipv (\d+)/);
     const scoreMatch = msg.match(/score (cp|mate) (-?\d+)/);
     const pvMatch = msg.match(/pv ([a-h][1-8][a-h][1-8][qrbn]?)/);
@@ -150,7 +152,6 @@ engine.onmessage = function (event) {
             return false;
           });
 
-          // console.log(winningMoves);
           chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             if (tabs.length > 0) {
               chrome.tabs.sendMessage(tabs[0].id, {
@@ -159,6 +160,8 @@ engine.onmessage = function (event) {
                 showEval: showEval,
                 onlyShowEval: onlyShowEval,
               });
+              console.log("******** Winning Move *******");
+              console.log(winningMove);
             }
           });
         } else {
@@ -175,6 +178,9 @@ engine.onmessage = function (event) {
                 showEval: showEval,
                 onlyShowEval: onlyShowEval,
               });
+
+              console.log("******** Best Move *******");
+              console.log(bestMoves);
             }
           });
         }
@@ -200,6 +206,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (isExpired) return;
 
   if (request.type === "position" && !isExpired) {
+    // console.log("*****************position")
     side = request.side;
     multipvResults.clear();
     const fen = request.fen;
@@ -215,14 +222,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }
     } else {
       console.log("FEN invalide !");
+      line = 5
     }
 
     engine.postMessage("stop");
 
     if (autoSkill) {
       skill_ = eloToSkill(request.elo_);
-      console.log("Elo adaptatif");
-      console.log(skill_);
       engine.postMessage(`setoption name Skill Level value ${skill_}`);
       engine.postMessage(`position fen ${fen}`);
       engine.postMessage(`go depth ${depth}`);
@@ -235,7 +241,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   ////////////////////// COnfiggggggggggggggg
 
   if (request.type === "config" && !isExpired) {
+    // console.log("*****************Config")
     const config = request.config;
+    console.table(config)
     lineConfig = config.lines;
     depth = config.depth;
     showEval = config.showEval;
@@ -257,6 +265,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     engine.postMessage(`setoption name MultiPV value ${request.config.lines}`);
 
     if (currentFen) {
+      if (game.load(currentFen)) {
+        l_ = game.moves().length; // 10
+        console.log(game.moves())
+        if (l_ >= lineConfig) {
+          // 2
+          line = lineConfig;
+          
+        } else {
+          line = l_;
+        }
+      } else {
+        console.log("FEN invalide !");
+        line = 5
+      }
       engine.postMessage("stop");
 
       engine.postMessage(`position fen ${currentFen}`);

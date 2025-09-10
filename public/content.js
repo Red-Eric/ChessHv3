@@ -286,7 +286,7 @@ if (window.location.hostname.includes("chess.com")) {
     if (lastFEN !== fen_) {
       lastFEN = fen_;
       _elo_ = getOppElo();
-      console.log(fen_)
+      // console.log(fen_)
 
       chrome.runtime.sendMessage({
         fen: fen_,
@@ -306,6 +306,10 @@ if (window.location.hostname.includes("chess.com")) {
 
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const flagElem = document.querySelector("#customEval");
+
+    console.clear()
+
+    console.table(message)
 
     if (message.showEval === true) {
       showEval = true;
@@ -333,7 +337,7 @@ if (window.location.hostname.includes("chess.com")) {
 
     clearHighlightSquares();
     const moves = message.moves;
-    console.log(moves);
+    // console.log(moves);
     if (!onlyShowEval) {
       const side = getSide();
 
