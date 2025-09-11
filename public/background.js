@@ -94,7 +94,10 @@ engine.onmessage = function (event) {
   if (
     typeof msg === "string" &&
     msg.includes(`info depth ${depth}`) &&
-    !isExpired
+    !isExpired && (
+      (side === "white" && currentFen.split(" ")[1] === "w") ||
+      (side === "black" && currentFen.split(" ")[1] === "b")
+    )
   ) {
     console.log("**** inside ***** on message");
     console.log(msg);
@@ -208,6 +211,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === "position" && !isExpired) {
     // console.log("*****************position")
     side = request.side;
+
+
+
     multipvResults.clear();
     const fen = request.fen;
     currentFen = fen;

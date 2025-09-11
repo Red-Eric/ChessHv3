@@ -307,9 +307,9 @@ if (window.location.hostname.includes("chess.com")) {
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const flagElem = document.querySelector("#customEval");
 
-    console.clear()
+    console.clear();
 
-    console.table(message)
+    console.table(message);
 
     if (message.showEval === true) {
       showEval = true;
@@ -339,16 +339,10 @@ if (window.location.hostname.includes("chess.com")) {
     const moves = message.moves;
     // console.log(moves);
     if (!onlyShowEval) {
-      const side = getSide();
-
-      if (
-        (side === "white" && fen_.split(" ")[1] === "w") ||
-        (side === "black" && fen_.split(" ")[1] === "b")
-      ) {
-        highlightMovesOnBoard(moves, side[0]);
-      } else {
-        clearHighlightSquares();
-      }
+      // highlightMovesOnBoard(moves, side[0]);
+      highlightMovesOnBoard(moves, getSide()[0]);
+    } else {
+      clearHighlightSquares();
     }
   });
 }
