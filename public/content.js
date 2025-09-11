@@ -143,7 +143,7 @@ if (window.location.hostname.includes("chess.com")) {
   inject();
 
   function requestFen() {
-    // console.log("request fen called")
+    console.log("request fen called")
     window.postMessage({ type: "GET_FEN" }, "*");
   }
 
@@ -154,6 +154,7 @@ if (window.location.hostname.includes("chess.com")) {
       !((side === "w" && fen_.split(" ")[1] === "w") ||
       (side === "b" && fen_.split(" ")[1] === "b"))
     ){
+      console.log("wrong side")
       return;
     }
 
@@ -294,7 +295,7 @@ if (window.location.hostname.includes("chess.com")) {
       clearHighlightSquares()
       lastFEN = fen_;
       _elo_ = getOppElo();
-      // console.log(fen_)
+      console.log(fen_)
 
       chrome.runtime.sendMessage({
         fen: fen_,
@@ -342,10 +343,12 @@ if (window.location.hostname.includes("chess.com")) {
     } else if (evalObj && message.score !== undefined) {
       evalObj.update(message.score, getSide());
     }
+    console.log("message from background JS")
+    console.log(message)
 
     clearHighlightSquares();
     const moves = message.moves;
-    // console.log(moves);
+    console.log(moves);
     if (!onlyShowEval) {
       // highlightMovesOnBoard(moves, side[0]);
       highlightMovesOnBoard(moves, getSide()[0]);

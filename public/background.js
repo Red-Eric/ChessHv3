@@ -206,7 +206,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (isExpired) return;
 
   if (request.type === "position" && !isExpired) {
-    // console.log("*****************position")
+    console.log("*****************position")
     side = request.side;
 
 
@@ -244,7 +244,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   ////////////////////// COnfiggggggggggggggg
 
   if (request.type === "config" && !isExpired) {
-    // console.log("*****************Config")
+    console.log("*****************Config")
     const config = request.config;
     console.table(config)
     lineConfig = config.lines;

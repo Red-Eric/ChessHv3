@@ -1,6 +1,7 @@
 const elo = document.getElementById("elo");
 const lines = document.getElementById("lines");
 const depth = document.getElementById("depth");
+const delay = document.getElementById("delay");
 const eloValue = document.getElementById("eloValue");
 const linesValue = document.getElementById("linesValue");
 const depthValue = document.getElementById("depthValue");
@@ -13,7 +14,6 @@ const showEvalLabel = document.getElementById("showEvalLabel");
 const onlyShowEval = document.getElementById("onlyShowEval");
 const onlyShowEvalLabel = document.getElementById("onlyShowEvalLabel");
 
-// Mapping skill to Elo
 const skillToElo = {
   0: 1000,
   1: 1200,
@@ -38,36 +38,35 @@ const skillToElo = {
   20: 3200
 };
 
-// Load config or default
 let config = JSON.parse(localStorage.getItem("chessConfig")) || {
   skill: 20,
   lines: 5,
   depth: 10,
+  delay: 10,
   autoSkill: false,
   winningMove: false,
   showEval: false,
   onlyShowEval: false
 };
 
-// Initialize inputs
 elo.value = config.skill;
 lines.value = config.lines;
 depth.value = config.depth;
+delay.value = config.delay;
 autoSkill.checked = config.autoSkill;
 winningMove.checked = config.winningMove;
 showEval.checked = config.showEval;
 onlyShowEval.checked = config.onlyShowEval;
 
-// Initialize display
 eloValue.textContent = `Skill: ${config.skill} (${skillToElo[config.skill]} Elo)`;
 linesValue.textContent = config.lines;
 depthValue.textContent = config.depth;
+document.querySelector('label[for="delay"] span').textContent = config.delay;
 autoSkillLabel.textContent = `Auto Skill Adjustment (${autoSkill.checked ? "ON" : "OFF"})`;
 winningMoveLabel.textContent = `Only Show Winning Move (${winningMove.checked ? "ON" : "OFF"})`;
 showEvalLabel.textContent = `Show Eval Bar (${showEval.checked ? "ON" : "OFF"})`;
 onlyShowEvalLabel.textContent = `Only Show Eval Bar (${onlyShowEval.checked ? "ON" : "OFF"})`;
 
-// Event listeners
 elo.addEventListener("input", () => {
   config.skill = parseInt(elo.value);
   eloValue.textContent = `Skill: ${config.skill} (${skillToElo[config.skill]} Elo)`;
@@ -83,10 +82,15 @@ depth.addEventListener("input", () => {
   depthValue.textContent = config.depth;
 });
 
+delay.addEventListener("input", () => {
+  config.delay = parseInt(delay.value);
+  document.querySelector('label[for="delay"] span').textContent = config.delay;
+});
+
 autoSkill.addEventListener("change", () => {
-  if(config.winningMove && autoSkill.checked){
+  if (config.winningMove && autoSkill.checked) {
     autoSkill.checked = false;
-    return; // block activation if winningMove is true
+    return;
   }
   config.autoSkill = autoSkill.checked;
   autoSkillLabel.textContent = `Auto Skill Adjustment (${autoSkill.checked ? "ON" : "OFF"})`;
@@ -95,28 +99,25 @@ autoSkill.addEventListener("change", () => {
 winningMove.addEventListener("change", () => {
   config.winningMove = winningMove.checked;
   winningMoveLabel.textContent = `Only Show Winning Move (${winningMove.checked ? "ON" : "OFF"})`;
-  if(config.winningMove){
+  if (config.winningMove) {
     config.autoSkill = false;
     autoSkill.checked = false;
     autoSkillLabel.textContent = `Auto Skill Adjustment (OFF)`;
   }
 });
 
-// Show Eval Bar toggle
 showEval.addEventListener("change", () => {
   config.showEval = showEval.checked;
   showEvalLabel.textContent = `Show Eval Bar (${showEval.checked ? "ON" : "OFF"})`;
-  if(!showEval.checked){
-    // Disable onlyShowEval if showEval is turned off
+  if (!showEval.checked) {
     config.onlyShowEval = false;
     onlyShowEval.checked = false;
     onlyShowEvalLabel.textContent = `Only Show Eval Bar (OFF)`;
   }
 });
 
-// Only Show Eval Bar toggle
 onlyShowEval.addEventListener("change", () => {
-  if(!showEval.checked && onlyShowEval.checked){
+  if (!showEval.checked && onlyShowEval.checked) {
     onlyShowEval.checked = false;
     return;
   }
@@ -124,7 +125,6 @@ onlyShowEval.addEventListener("change", () => {
   onlyShowEvalLabel.textContent = `Only Show Eval Bar (${onlyShowEval.checked ? "ON" : "OFF"})`;
 });
 
-// Save button
 document.getElementById("save").addEventListener("click", () => {
   localStorage.setItem("chessConfig", JSON.stringify(config));
   console.log(config);
