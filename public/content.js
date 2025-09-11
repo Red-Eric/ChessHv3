@@ -150,6 +150,13 @@ if (window.location.hostname.includes("chess.com")) {
   function highlightMovesOnBoard(moves, side) {
     if (!Array.isArray(moves)) return;
 
+    if (
+      !((side === "w" && fen_.split(" ")[1] === "w") ||
+      (side === "b" && fen_.split(" ")[1] === "b"))
+    ){
+      return;
+    }
+
     const parent = document.querySelector("wc-chess-board");
     if (!parent) return;
 

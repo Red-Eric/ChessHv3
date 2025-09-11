@@ -94,10 +94,7 @@ engine.onmessage = function (event) {
   if (
     typeof msg === "string" &&
     msg.includes(`info depth ${depth}`) &&
-    !isExpired && (
-      (side === "white" && currentFen.split(" ")[1] === "w") ||
-      (side === "black" && currentFen.split(" ")[1] === "b")
-    )
+    !isExpired
   ) {
     console.log("**** inside ***** on message");
     console.log(msg);
