@@ -284,6 +284,7 @@ if (window.location.hostname.includes("chess.com")) {
   function checkAndSendMoves() {
     requestFen();
     if (lastFEN !== fen_) {
+      clearHighlightSquares()
       lastFEN = fen_;
       _elo_ = getOppElo();
       // console.log(fen_)
