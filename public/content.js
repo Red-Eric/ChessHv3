@@ -30,7 +30,7 @@ class Engine {
 
   async init() {
     this.worker = await createWorker();
-    this.worker.postMessage("uci");
+
     this.setOptions();
   }
 
@@ -58,9 +58,8 @@ class Engine {
 
     return new Promise((resolve) => {
       const multipvResults = new Map();
-      this.worker.postMessage("uci");
       this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
-
+      this.worker.postMessage("stop");
       const onMessage = (event) => {
         const msg = event.data;
 
@@ -459,7 +458,7 @@ if (window.location.hostname.includes("chess.com")) {
       });
 
       if (!config.showEval && customEval) {
-        customEval.remove()
+        customEval.remove();
       }
 
       engine.getMoves(fen_).then((moves) => {
