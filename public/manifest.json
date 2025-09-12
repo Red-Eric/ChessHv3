@@ -34,7 +34,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["a.js"],
+      "resources": ["a.js", "lib/stockfish.js"],
       "matches": ["<all_urls>"]
     }
   ]

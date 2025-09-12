@@ -1,7 +1,137 @@
+async function createWorker() {
+  const url = chrome.runtime.getURL("lib/stockfish.js");
+  const res = await fetch(url);
+  const src = await res.text();
+  const blob = new Blob([src], { type: "application/javascript" });
+  const blobUrl = URL.createObjectURL(blob);
+  return new Worker(blobUrl);
+}
+
+let config = {
+  skill: 20,
+  lines: 5,
+  depth: 10,
+  delay: 10,
+  autoSkill: false,
+  winningMove: false,
+  showEval: true,
+  onlyShowEval: false,
+};
+
+class Engine {
+  constructor({ elo = 20, depth = 10, multipv = 5, threads = 2, hash = 128 }) {
+    this.elo = elo;
+    this.depth = depth;
+    this.multipv = multipv;
+    this.threads = threads;
+    this.hash = hash;
+    this.ready = this.init(); // init async
+  }
+
+  async init() {
+    this.worker = await createWorker();
+    this.worker.postMessage("uci");
+    this.setOptions();
+  }
+
+  setOptions() {
+    this.worker.postMessage(`setoption name Skill Level value ${this.elo}`);
+    this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
+    // this.worker.postMessage(`setoption name Hash value ${this.hash}`);
+    // this.worker.postMessage(`setoption name Threads value ${this.threads}`);
+    this.worker.postMessage("setoption name Ponder value false");
+  }
+
+  updateConfig({ elo, depth, multipv, threads, hash }) {
+    if (elo !== undefined) this.elo = elo;
+    if (depth !== undefined) this.depth = depth;
+    if (multipv !== undefined) this.multipv = multipv;
+    if (threads !== undefined) this.threads = threads;
+    if (hash !== undefined) this.hash = hash;
+    this.setOptions();
+  }
+
+  async getMoves(fen) {
+    await this.ready;
+
+    const sideToMove = fen.split(" ")[1];
+
+    return new Promise((resolve) => {
+      const multipvResults = new Map();
+      this.worker.postMessage("uci");
+      this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
+
+      const onMessage = (event) => {
+        const msg = event.data;
+
+        if (typeof msg !== "string") return;
+
+        if (msg.includes(`info depth ${this.depth}`)) {
+          const multipvMatch = msg.match(/multipv (\d+)/);
+          const scoreMatch = msg.match(/score (cp|mate) (-?\d+)/);
+          const pvMatch = msg.match(/pv ([a-h][1-8][a-h][1-8][qrbn]?)/);
+
+          if (multipvMatch && scoreMatch && pvMatch) {
+            const multipv = parseInt(multipvMatch[1], 10);
+            const scoreType = scoreMatch[1];
+            let scoreValueRaw = parseInt(scoreMatch[2], 10);
+
+            if (sideToMove === "b" && scoreType === "cp") {
+              scoreValueRaw = -scoreValueRaw;
+            }
+
+            const bestMove = pvMatch[1];
+            let score;
+            if (scoreType === "cp") {
+              const value = +(scoreValueRaw / 100).toFixed(2);
+              score = value > 0 ? `+${value}` : `${value}`;
+            } else if (scoreType === "mate") {
+              score =
+                sideToMove === "b" ? `#${-scoreValueRaw}` : `#${scoreValueRaw}`;
+            }
+
+            const from = bestMove.slice(0, 2);
+            const to = bestMove.slice(2, 4);
+
+            multipvResults.set(multipv, { from, to, eval: score });
+          }
+        }
+
+        if (msg.startsWith("bestmove")) {
+          this.worker.removeEventListener("message", onMessage);
+
+          resolve(
+            Array.from(multipvResults.entries())
+              .sort(([a], [b]) => a - b)
+              .map(([_, val]) => val)
+          );
+        }
+      };
+
+      this.worker.addEventListener("message", onMessage);
+      this.worker.postMessage("stop");
+      this.worker.postMessage(`position fen ${fen}`);
+      this.worker.postMessage(`go depth ${this.depth}`);
+    });
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////////
 if (window.location.hostname.includes("chess.com")) {
   let lastFEN = "";
   let fen_ = "idjazdjaziodja";
   let side_index = 1;
+
+  const engine = new Engine({
+    elo: config.skill,
+    depth: 10,
+    multipv: config.lines,
+    threads: 2,
+    hash: 128,
+  });
+
+  let evalObj = null;
+  let customEval = null;
 
   function createEvalBar(initialScore = "0.0", initialColor = "white") {
     const boardContainer = document.querySelector(".board");
@@ -143,7 +273,7 @@ if (window.location.hostname.includes("chess.com")) {
   inject();
 
   function requestFen() {
-    console.log("request fen called")
+    console.log("request fen called");
     window.postMessage({ type: "GET_FEN" }, "*");
   }
 
@@ -151,10 +281,12 @@ if (window.location.hostname.includes("chess.com")) {
     if (!Array.isArray(moves)) return;
 
     if (
-      !((side === "w" && fen_.split(" ")[1] === "w") ||
-      (side === "b" && fen_.split(" ")[1] === "b"))
-    ){
-      console.log("wrong side")
+      !(
+        (side === "w" && fen_.split(" ")[1] === "w") ||
+        (side === "b" && fen_.split(" ")[1] === "b")
+      )
+    ) {
+      console.log("wrong side");
       return;
     }
 
@@ -265,7 +397,7 @@ if (window.location.hostname.includes("chess.com")) {
 
     moves.slice(0, maxMoves).forEach((move, index) => {
       const color = colors[index] || "red";
-      drawArrow(move.from, move.to, color, move.score);
+      drawArrow(move.from, move.to, color, move.eval);
     });
   }
 
@@ -292,68 +424,51 @@ if (window.location.hostname.includes("chess.com")) {
   function checkAndSendMoves() {
     requestFen();
     if (lastFEN !== fen_) {
-      clearHighlightSquares()
+      clearHighlightSquares();
       lastFEN = fen_;
       _elo_ = getOppElo();
-      console.log(fen_)
+      customEval = document.querySelector("#customEval");
 
-      chrome.runtime.sendMessage({
-        fen: fen_,
-        side: getSide(),
-        type: "position",
-        elo_: _elo_,
-      });
+      if (!customEval && config.showEval) {
+        evalObj = createEvalBar("0.0", "white");
+      }
+
+      if (engine) {
+        console.log(fen_);
+
+        engine.getMoves(fen_).then((moves) => {
+          console.log("Meilleurs coups trouvés :", moves);
+          highlightMovesOnBoard(moves, getSide()[0]);
+          if (moves.length > 0 && evalObj) {
+            evalObj.update(moves[0].eval, getSide());
+          }
+        });
+      }
     }
   }
 
   setInterval(checkAndSendMoves, 350);
 
-  let evalObj = null;
-
-  let showEval = false;
-  let onlyShowEval = false;
-
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    const flagElem = document.querySelector("#customEval");
+    if (message.config && message.type === "config" && engine) {
+      config = message.config;
+      engine.updateConfig({
+        elo: config.skill,
+        depth: config.depth,
+        multipv: config.lines,
+      });
 
-    console.clear();
+      if (!config.showEval && customEval) {
+        customEval.remove()
+      }
 
-    console.table(message);
-
-    if (message.showEval === true) {
-      showEval = true;
-    }
-    if (message.showEval === false) {
-      showEval = false;
-    }
-
-    if (flagElem && !showEval) {
-      flagElem.remove();
-    }
-
-    if (message.onlyShowEval === true) {
-      onlyShowEval = true;
-    }
-    if (message.onlyShowEval === false) {
-      onlyShowEval = false;
-    }
-
-    if (!flagElem && showEval) {
-      evalObj = createEvalBar("0.0", "white");
-    } else if (evalObj && message.score !== undefined) {
-      evalObj.update(message.score, getSide());
-    }
-    console.log("message from background JS")
-    console.log(message)
-
-    clearHighlightSquares();
-    const moves = message.moves;
-    console.log(moves);
-    if (!onlyShowEval) {
-      // highlightMovesOnBoard(moves, side[0]);
-      highlightMovesOnBoard(moves, getSide()[0]);
-    } else {
-      clearHighlightSquares();
+      engine.getMoves(fen_).then((moves) => {
+        console.log("Meilleurs coups trouvés :", moves);
+        highlightMovesOnBoard(moves, getSide()[0]);
+        if (moves.length > 0 && evalObj) {
+          evalObj.update(moves[0].eval, getSide());
+        }
+      });
     }
   });
 }
