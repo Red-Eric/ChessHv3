@@ -527,7 +527,11 @@ const startCheat = () => {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.config && message.type === "config" && engine) {
         config = message.config;
-        
+
+        if(config.onlyShowEval){
+          clearHighlightSquares()
+        }
+
         engine.updateConfig({
           elo: config.skill,
           depth: config.depth,
