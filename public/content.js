@@ -15,7 +15,7 @@ function getRandomInt(max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-let config = {
+let config = JSON.parse(localStorage.getItem("chesshv3")) || {
   skill: 20,
   lines: 5,
   depth: 10,
@@ -26,6 +26,10 @@ let config = {
   showEval: false,
   onlyShowEval: false,
 };
+
+function saveConfig() {
+  localStorage.setItem("chesshv3", JSON.stringify(config));
+}
 
 class Engine {
   constructor({ elo = 20, depth = 10, multipv = 5, threads = 2, hash = 128 }) {
@@ -503,6 +507,7 @@ if (window.location.hostname.includes("chess.com")) {
     if (message.config && message.type === "config" && engine) {
       config = message.config;
       console.log(config);
+      saveConfig();
       engine.updateConfig({
         elo: config.skill,
         depth: config.depth,
