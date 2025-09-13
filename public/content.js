@@ -29,6 +29,7 @@ let config = {
 
 function saveConfig() {
   localStorage.setItem("chessConfig", JSON.stringify(config));
+  console.log("saved")
 }
 
 
@@ -84,6 +85,7 @@ class Engine {
       this.worker.postMessage("stop");
       const onMessage = (event) => {
         const msg = event.data;
+        // console.log(msg)
 
         if (typeof msg !== "string") return;
 
