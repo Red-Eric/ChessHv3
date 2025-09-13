@@ -9,8 +9,8 @@ async function createWorker() {
   return new Worker(blobUrl);
 }
 
-function getRandomInt(max) {
-  min = Math.ceil(100);
+function randomIntBetween(min, max) {
+  min = Math.ceil(min);
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -290,7 +290,7 @@ if (window.location.hostname.includes("chess.com")) {
   }
 
   function requestMove(from, to, promotion = "q") {
-    moveDelay = getRandomInt(config.delay);
+    moveDelay = randomIntBetween(100, config.delay);
     console.log(moveDelay);
     window.postMessage(
       {
