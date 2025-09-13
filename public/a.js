@@ -22,9 +22,9 @@
       setTimeout(() => {
         try {
           game.move({ ...move, animate: true, userGenerated: true });
-        //   console.log("✅ Move joué :", from, "→", to, "promotion :", promotion || "none");
+          // console.log("✅ Move joué :", from, "→", to, "promotion :", promotion || "none");
         } catch (err) {
-          console.log("err")
+          console.log("err de deplacement")
         }
       }, moveDelay);
       return true;

@@ -19,7 +19,7 @@
       "128": "icons/128.png"
     }
   },
-  "permissions": ["activeTab", "debugger", "https://api.timezonedb.com/*"],
+  "permissions": ["activeTab", "debugger"],
   "host_permissions": ["http://127.0.0.1:5000/*"],
   "content_scripts": [
     {

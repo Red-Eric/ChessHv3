@@ -304,6 +304,7 @@ const startCheat = () => {
 
     function requestMove(from, to, promotion = "q") {
       moveDelay = randomIntBetween(100, config.delay);
+      console.log("request MOVE ");
       console.log(moveDelay);
       window.postMessage(
         {
@@ -507,14 +508,15 @@ const startCheat = () => {
 
             if (moves.length > 0 && evalObj) {
               evalObj.update(moves[0].eval, getSide());
+            }
 
-              if (
-                (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-                (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-              ) {
-                if (config.autoMove) {
-                  requestMove(moves[0].from, moves[0].to);
-                }
+            if (
+              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+            ) {
+              if (config.autoMove) {
+                console.log("try to auto move*******");
+                requestMove(moves[0].from, moves[0].to);
               }
             }
           });
@@ -528,8 +530,8 @@ const startCheat = () => {
       if (message.config && message.type === "config" && engine) {
         config = message.config;
 
-        if(config.onlyShowEval){
-          clearHighlightSquares()
+        if (config.onlyShowEval) {
+          clearHighlightSquares();
         }
 
         engine.updateConfig({
@@ -556,13 +558,14 @@ const startCheat = () => {
           highlightMovesOnBoard(moves, getSide()[0]);
           if (moves.length > 0 && evalObj) {
             evalObj.update(moves[0].eval, getSide());
-            if (
-              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-            ) {
-              if (config.autoMove) {
-                requestMove(moves[0].from, moves[0].to);
-              }
+          }
+          if (
+            (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+            (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+          ) {
+            if (config.autoMove) {
+              console.log("try to auto move******* Config");
+              requestMove(moves[0].from, moves[0].to);
             }
           }
         });
