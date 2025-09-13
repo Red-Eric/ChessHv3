@@ -290,9 +290,8 @@ if (window.location.hostname.includes("chess.com")) {
   }
 
   function requestMove(from, to, promotion = "q") {
-    
-    moveDelay = getRandomInt(config.delay)
-    console.log(moveDelay)
+    moveDelay = getRandomInt(config.delay);
+    console.log(moveDelay);
     window.postMessage(
       {
         type: "MOVE",
@@ -492,8 +491,14 @@ if (window.location.hostname.includes("chess.com")) {
 
           if (moves.length > 0 && evalObj) {
             evalObj.update(moves[0].eval, getSide());
-            if (config.autoMove) {
-              requestMove(moves[0].from, moves[0].to);
+
+            if (
+              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+            ) {
+              if (config.autoMove) {
+                requestMove(moves[0].from, moves[0].to);
+              }
             }
           }
         });
@@ -523,8 +528,14 @@ if (window.location.hostname.includes("chess.com")) {
         highlightMovesOnBoard(moves, getSide()[0]);
         if (moves.length > 0 && evalObj) {
           evalObj.update(moves[0].eval, getSide());
-          if (config.autoMove) {
-            requestMove(moves[0].from, moves[0].to);
+
+          if (
+            (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+            (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+          ) {
+            if (config.autoMove) {
+              requestMove(moves[0].from, moves[0].to);
+            }
           }
         }
       });
