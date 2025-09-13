@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "ChessHv3 (GigaChad)",
-  "version": "1.5.2",
-  "description": "Free cheat By R3d__",
+  "name": "CHESS Helper V3",
+  "version": "1.6",
+  "description": "Chess.com Cheat",
   "icons": {
     "16": "icons/16.png",
     "48": "icons/48.png",
