@@ -15,7 +15,7 @@ function randomIntBetween(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-let config = JSON.parse(localStorage.getItem("chesshv3")) || {
+let config = {
   skill: 20,
   lines: 5,
   depth: 10,
@@ -23,7 +23,7 @@ let config = JSON.parse(localStorage.getItem("chesshv3")) || {
   autoSkill: false,
   autoMove: false,
   winningMove: false,
-  showEval: false,
+  showEval: true,
   onlyShowEval: false,
 };
 
@@ -124,9 +124,6 @@ class Engine {
   }
 }
 
-function saveConfig() {
-  localStorage.setItem("chesshv3", JSON.stringify(config));
-}
 let expired = true;
 
 chrome.runtime.sendMessage({ type: "checkExpiration" }, (response) => {
@@ -137,7 +134,7 @@ chrome.runtime.sendMessage({ type: "checkExpiration" }, (response) => {
   }
 
   expired = false;
-  startCheat()
+  startCheat();
 });
 
 const startCheat = () => {
@@ -530,8 +527,7 @@ const startCheat = () => {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.config && message.type === "config" && engine) {
         config = message.config;
-        console.log(config);
-        saveConfig();
+        
         engine.updateConfig({
           elo: config.skill,
           depth: config.depth,
@@ -540,14 +536,22 @@ const startCheat = () => {
 
         if (!config.showEval && customEval) {
           customEval.remove();
+          customEval = null;
+          evalObj = null;
+        }
+
+        if (config.showEval && !customEval) {
+          const boardContainer = document.querySelector(".board");
+          if (boardContainer) {
+            evalObj = createEvalBar("0.0", getSide());
+            customEval = document.querySelector("#customEval");
+          }
         }
 
         engine.getMoves(fen_).then((moves) => {
-          // console.log("Meilleurs coups trouvés :", moves);
           highlightMovesOnBoard(moves, getSide()[0]);
           if (moves.length > 0 && evalObj) {
             evalObj.update(moves[0].eval, getSide());
-
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
