@@ -19,13 +19,8 @@
       "128": "icons/128.png"
     }
   },
-  "permissions": [
-    "activeTab",
-    "debugger"
-  ],
-  "host_permissions": [
-    "http://127.0.0.1:5000/*"
-  ],
+  "permissions": ["activeTab", "debugger"],
+  "host_permissions": ["http://127.0.0.1:5000/*"],
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
@@ -34,8 +29,13 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["a.js", "lib/stockfish.js"],
+      "resources": [
+        "a.js",
+        "lib/stockfish.js"],
       "matches": ["<all_urls>"]
     }
-  ]
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+  }
 }

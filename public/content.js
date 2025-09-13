@@ -1,9 +1,11 @@
 async function createWorker() {
   const url = chrome.runtime.getURL("lib/stockfish.js");
-  const res = await fetch(url);
-  const src = await res.text();
-  const blob = new Blob([src], { type: "application/javascript" });
+
+  const blob = new Blob([`importScripts("${url}");`], {
+    type: "application/javascript",
+  });
   const blobUrl = URL.createObjectURL(blob);
+
   return new Worker(blobUrl);
 }
 
@@ -118,7 +120,7 @@ class Engine {
 ///////////////////////////////////////////////////////////////////////////////////
 if (window.location.hostname.includes("chess.com")) {
   let lastFEN = "";
-  let fen_ = "idjazdjaziodja";
+  let fen_ = "";
   let side_index = 1;
 
   const engine = new Engine({
@@ -272,8 +274,21 @@ if (window.location.hostname.includes("chess.com")) {
   inject();
 
   function requestFen() {
-    console.log("request fen called");
+    // console.log("request fen called");
     window.postMessage({ type: "GET_FEN" }, "*");
+  }
+
+  function requestMove(from, to, promotion = "q", moveDelay = 100) {
+    window.postMessage(
+      {
+        type: "MOVE",
+        from,
+        to,
+        promotion,
+        moveDelay,
+      },
+      "*"
+    );
   }
 
   function highlightMovesOnBoard(moves, side) {
@@ -285,7 +300,7 @@ if (window.location.hostname.includes("chess.com")) {
         (side === "b" && fen_.split(" ")[1] === "b")
       )
     ) {
-      console.log("wrong side");
+      // console.log("wrong side");
       return;
     }
 
@@ -433,13 +448,15 @@ if (window.location.hostname.includes("chess.com")) {
       }
 
       if (engine) {
-        console.log(fen_);
+        // console.log(fen_);
 
         engine.getMoves(fen_).then((moves) => {
-          console.log("Meilleurs coups trouvés :", moves);
+          // console.log("Meilleurs coups trouvés :", moves);
           highlightMovesOnBoard(moves, getSide()[0]);
           if (moves.length > 0 && evalObj) {
             evalObj.update(moves[0].eval, getSide());
+
+            requestMove(moves[0].from, moves[0].to);
           }
         });
       }
@@ -462,10 +479,13 @@ if (window.location.hostname.includes("chess.com")) {
       }
 
       engine.getMoves(fen_).then((moves) => {
-        console.log("Meilleurs coups trouvés :", moves);
+        // console.log("Meilleurs coups trouvés :", moves);
         highlightMovesOnBoard(moves, getSide()[0]);
         if (moves.length > 0 && evalObj) {
           evalObj.update(moves[0].eval, getSide());
+
+          console.log(moves[0]);
+          requestMove(moves[0].from, moves[0].to);
         }
       });
     }
