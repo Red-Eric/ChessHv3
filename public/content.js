@@ -23,9 +23,23 @@ let config = {
   autoSkill: false,
   autoMove: false,
   winningMove: false,
-  showEval: true,
+  showEval: false,
   onlyShowEval: false,
 };
+
+function saveConfig() {
+  localStorage.setItem("chessConfig", JSON.stringify(config));
+}
+
+
+function loadConfig() {
+  const saved = localStorage.getItem("chessConfig");
+  if (saved) {
+    config = JSON.parse(saved);
+  }
+}
+
+loadConfig()
 
 class Engine {
   constructor({ elo = 20, depth = 10, multipv = 5, threads = 2, hash = 128 }) {
@@ -39,14 +53,13 @@ class Engine {
 
   async init() {
     this.worker = await createWorker();
-
+    this.worker.postMessage(`uci`);
     this.setOptions();
   }
 
   setOptions() {
     this.worker.postMessage(`setoption name Skill Level value ${this.elo}`);
     this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
-    // this.worker.postMessage(`setoption name Hash value ${this.hash}`);
     // this.worker.postMessage(`setoption name Threads value ${this.threads}`);
     this.worker.postMessage("setoption name Ponder value false");
   }
@@ -529,7 +542,7 @@ const startCheat = () => {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.config && message.type === "config" && engine) {
         config = message.config;
-
+        saveConfig()
         if (config.onlyShowEval) {
           clearHighlightSquares();
         }
