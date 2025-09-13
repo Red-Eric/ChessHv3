@@ -130,7 +130,6 @@ function saveConfig() {
 let expired = true;
 
 chrome.runtime.sendMessage({ type: "checkExpiration" }, (response) => {
-  console.log("checkkkkinnngggg**********************");
   if (response?.expired) {
     expired = true;
     console.log(expired);
@@ -265,11 +264,11 @@ const startCheat = () => {
         }
 
         if (color === "white") {
-          bottomBar.style.background = "#ffffff";
+          bottomBar.style.background = "#312e2b";
           topBar.style.background = "#000000";
         } else {
           bottomBar.style.background = "#000000";
-          topBar.style.background = "#ffffff";
+          topBar.style.background = "#312e2b";
         }
 
         bottomBar.style.height = percent + "%";
