@@ -129,7 +129,7 @@ let expired = true;
 chrome.runtime.sendMessage({ type: "checkExpiration" }, (response) => {
   if (response?.expired) {
     expired = true;
-    console.log(expired);
+    // console.log(expired);
     return;
   }
 
@@ -304,8 +304,8 @@ const startCheat = () => {
 
     function requestMove(from, to, promotion = "q") {
       moveDelay = randomIntBetween(100, config.delay);
-      console.log("request MOVE ");
-      console.log(moveDelay);
+      // console.log("request MOVE ");
+      // console.log(moveDelay);
       window.postMessage(
         {
           type: "MOVE",
@@ -515,7 +515,7 @@ const startCheat = () => {
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
               if (config.autoMove) {
-                console.log("try to auto move*******");
+                // console.log("try to auto move*******");
                 requestMove(moves[0].from, moves[0].to);
               }
             }
@@ -564,7 +564,7 @@ const startCheat = () => {
             (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
           ) {
             if (config.autoMove) {
-              console.log("try to auto move******* Config");
+              // console.log("try to auto move******* Config");
               requestMove(moves[0].from, moves[0].to);
             }
           }
