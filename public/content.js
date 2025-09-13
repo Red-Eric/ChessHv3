@@ -264,11 +264,11 @@ const startCheat = () => {
         }
 
         if (color === "white") {
-          bottomBar.style.background = "#312e2b";
-          topBar.style.background = "#000000";
-        } else {
-          bottomBar.style.background = "#000000";
+          bottomBar.style.background = "#ffffff";
           topBar.style.background = "#312e2b";
+        } else {
+          bottomBar.style.background = "#312e2b";
+          topBar.style.background = "#ffffff";
         }
 
         bottomBar.style.height = percent + "%";
