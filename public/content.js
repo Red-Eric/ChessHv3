@@ -9,14 +9,21 @@ async function createWorker() {
   return new Worker(blobUrl);
 }
 
+function getRandomInt(max) {
+  min = Math.ceil(100);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 let config = {
   skill: 20,
   lines: 5,
   depth: 10,
-  delay: 10,
+  delay: 100,
   autoSkill: false,
+  autoMove: false,
   winningMove: false,
-  showEval: true,
+  showEval: false,
   onlyShowEval: false,
 };
 
@@ -278,7 +285,10 @@ if (window.location.hostname.includes("chess.com")) {
     window.postMessage({ type: "GET_FEN" }, "*");
   }
 
-  function requestMove(from, to, promotion = "q", moveDelay = 100) {
+  function requestMove(from, to, promotion = "q") {
+    
+    moveDelay = getRandomInt(config.delay)
+    console.log(moveDelay)
     window.postMessage(
       {
         type: "MOVE",
@@ -300,9 +310,11 @@ if (window.location.hostname.includes("chess.com")) {
         (side === "b" && fen_.split(" ")[1] === "b")
       )
     ) {
-      // console.log("wrong side");
       return;
     }
+
+    // Si onlyShowEval est activé, on n'affiche rien
+    if (config.onlyShowEval) return;
 
     const parent = document.querySelector("wc-chess-board");
     if (!parent) return;
@@ -409,7 +421,26 @@ if (window.location.hostname.includes("chess.com")) {
 
     parent.style.position = "relative";
 
-    moves.slice(0, maxMoves).forEach((move, index) => {
+    // Filtrage des coups si config.winningMove est actif
+    let filteredMoves = moves;
+    if (config.winningMove) {
+      filteredMoves = moves.filter((move) => {
+        const evalValue = parseFloat(move.eval);
+        if (side === "w") {
+          return (
+            evalValue >= 2 ||
+            (move.eval.startsWith("#") && parseInt(move.eval.slice(1)) > 0)
+          );
+        } else {
+          return (
+            evalValue <= -2 ||
+            (move.eval.startsWith("#-") && parseInt(move.eval.slice(2)) > 0)
+          );
+        }
+      });
+    }
+
+    filteredMoves.slice(0, maxMoves).forEach((move, index) => {
       const color = colors[index] || "red";
       drawArrow(move.from, move.to, color, move.eval);
     });
@@ -437,26 +468,29 @@ if (window.location.hostname.includes("chess.com")) {
 
   function checkAndSendMoves() {
     requestFen();
+
+    if (!customEval && config.showEval) {
+      const boardContainer = document.querySelector(".board");
+      if (boardContainer) {
+        evalObj = createEvalBar("0.0", getSide());
+        customEval = document.querySelector("#customEval");
+      }
+    }
+
     if (lastFEN !== fen_) {
       clearHighlightSquares();
       lastFEN = fen_;
       _elo_ = getOppElo();
-      customEval = document.querySelector("#customEval");
-
-      if (!customEval && config.showEval) {
-        evalObj = createEvalBar("0.0", "white");
-      }
 
       if (engine) {
-        // console.log(fen_);
-
         engine.getMoves(fen_).then((moves) => {
-          // console.log("Meilleurs coups trouvés :", moves);
           highlightMovesOnBoard(moves, getSide()[0]);
+
           if (moves.length > 0 && evalObj) {
             evalObj.update(moves[0].eval, getSide());
-
-            requestMove(moves[0].from, moves[0].to);
+            if (config.autoMove) {
+              requestMove(moves[0].from, moves[0].to);
+            }
           }
         });
       }
@@ -468,6 +502,7 @@ if (window.location.hostname.includes("chess.com")) {
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.config && message.type === "config" && engine) {
       config = message.config;
+      console.log(config);
       engine.updateConfig({
         elo: config.skill,
         depth: config.depth,
@@ -483,9 +518,9 @@ if (window.location.hostname.includes("chess.com")) {
         highlightMovesOnBoard(moves, getSide()[0]);
         if (moves.length > 0 && evalObj) {
           evalObj.update(moves[0].eval, getSide());
-
-          console.log(moves[0]);
-          requestMove(moves[0].from, moves[0].to);
+          if (config.autoMove) {
+            requestMove(moves[0].from, moves[0].to);
+          }
         }
       });
     }

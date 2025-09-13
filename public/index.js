@@ -5,8 +5,11 @@ const delay = document.getElementById("delay");
 const eloValue = document.getElementById("eloValue");
 const linesValue = document.getElementById("linesValue");
 const depthValue = document.getElementById("depthValue");
+const delayValue = document.getElementById("delayValue");
 const autoSkill = document.getElementById("autoSkill");
 const autoSkillLabel = document.getElementById("autoSkillLabel");
+const autoMove = document.getElementById("autoMove");
+const autoMoveLabel = document.getElementById("autoMoveLabel");
 const winningMove = document.getElementById("winningMove");
 const winningMoveLabel = document.getElementById("winningMoveLabel");
 const showEval = document.getElementById("showEval");
@@ -15,45 +18,31 @@ const onlyShowEval = document.getElementById("onlyShowEval");
 const onlyShowEvalLabel = document.getElementById("onlyShowEvalLabel");
 
 const skillToElo = {
-  0: 1000,
-  1: 1200,
-  2: 1350,
-  3: 1450,
-  4: 1550,
-  5: 1650,
-  6: 1750,
-  7: 1850,
-  8: 1950,
-  9: 2050,
-  10: 2150,
-  11: 2250,
-  12: 2350,
-  13: 2450,
-  14: 2550,
-  15: 2650,
-  16: 2750,
-  17: 2850,
-  18: 2950,
-  19: 3050,
-  20: 3200
+  0: 1000, 1: 1200, 2: 1350, 3: 1450, 4: 1550, 5: 1650,
+  6: 1750, 7: 1850, 8: 1950, 9: 2050, 10: 2150, 11: 2250,
+  12: 2350, 13: 2450, 14: 2550, 15: 2650, 16: 2750, 17: 2850,
+  18: 2950, 19: 3050, 20: 3200
 };
 
 let config = JSON.parse(localStorage.getItem("chessConfig")) || {
   skill: 20,
   lines: 5,
   depth: 10,
-  delay: 10,
+  delay: 100,
   autoSkill: false,
+  autoMove: false,
   winningMove: false,
   showEval: false,
   onlyShowEval: false
 };
 
+// Initialiser les valeurs
 elo.value = config.skill;
 lines.value = config.lines;
 depth.value = config.depth;
 delay.value = config.delay;
 autoSkill.checked = config.autoSkill;
+autoMove.checked = config.autoMove;
 winningMove.checked = config.winningMove;
 showEval.checked = config.showEval;
 onlyShowEval.checked = config.onlyShowEval;
@@ -61,30 +50,45 @@ onlyShowEval.checked = config.onlyShowEval;
 eloValue.textContent = `Skill: ${config.skill} (${skillToElo[config.skill]} Elo)`;
 linesValue.textContent = config.lines;
 depthValue.textContent = config.depth;
-document.querySelector('label[for="delay"] span').textContent = config.delay;
+delayValue.textContent = config.delay;
 autoSkillLabel.textContent = `Auto Skill Adjustment (${autoSkill.checked ? "ON" : "OFF"})`;
+autoMoveLabel.textContent = `Auto Move (${autoMove.checked ? "ON" : "OFF"})`;
 winningMoveLabel.textContent = `Only Show Winning Move (${winningMove.checked ? "ON" : "OFF"})`;
 showEvalLabel.textContent = `Show Eval Bar (${showEval.checked ? "ON" : "OFF"})`;
 onlyShowEvalLabel.textContent = `Only Show Eval Bar (${onlyShowEval.checked ? "ON" : "OFF"})`;
 
+// Fonction pour sauvegarder automatiquement
+function saveConfig() {
+  localStorage.setItem("chessConfig", JSON.stringify(config));
+  console.log(config)
+  if (typeof chrome !== "undefined" && chrome.runtime) {
+    chrome.runtime.sendMessage({ config: config, type: "config" });
+  }
+}
+
+// Listeners
 elo.addEventListener("input", () => {
   config.skill = parseInt(elo.value);
   eloValue.textContent = `Skill: ${config.skill} (${skillToElo[config.skill]} Elo)`;
+  saveConfig();
 });
 
 lines.addEventListener("input", () => {
   config.lines = parseInt(lines.value);
   linesValue.textContent = config.lines;
+  saveConfig();
 });
 
 depth.addEventListener("input", () => {
   config.depth = parseInt(depth.value);
   depthValue.textContent = config.depth;
+  saveConfig();
 });
 
 delay.addEventListener("input", () => {
   config.delay = parseInt(delay.value);
-  document.querySelector('label[for="delay"] span').textContent = config.delay;
+  delayValue.textContent = config.delay;
+  saveConfig();
 });
 
 autoSkill.addEventListener("change", () => {
@@ -94,6 +98,13 @@ autoSkill.addEventListener("change", () => {
   }
   config.autoSkill = autoSkill.checked;
   autoSkillLabel.textContent = `Auto Skill Adjustment (${autoSkill.checked ? "ON" : "OFF"})`;
+  saveConfig();
+});
+
+autoMove.addEventListener("change", () => {
+  config.autoMove = autoMove.checked;
+  autoMoveLabel.textContent = `Auto Move (${autoMove.checked ? "ON" : "OFF"})`;
+  saveConfig();
 });
 
 winningMove.addEventListener("change", () => {
@@ -104,6 +115,7 @@ winningMove.addEventListener("change", () => {
     autoSkill.checked = false;
     autoSkillLabel.textContent = `Auto Skill Adjustment (OFF)`;
   }
+  saveConfig();
 });
 
 showEval.addEventListener("change", () => {
@@ -114,6 +126,7 @@ showEval.addEventListener("change", () => {
     onlyShowEval.checked = false;
     onlyShowEvalLabel.textContent = `Only Show Eval Bar (OFF)`;
   }
+  saveConfig();
 });
 
 onlyShowEval.addEventListener("change", () => {
@@ -123,12 +136,5 @@ onlyShowEval.addEventListener("change", () => {
   }
   config.onlyShowEval = onlyShowEval.checked;
   onlyShowEvalLabel.textContent = `Only Show Eval Bar (${onlyShowEval.checked ? "ON" : "OFF"})`;
-});
-
-document.getElementById("save").addEventListener("click", () => {
-  localStorage.setItem("chessConfig", JSON.stringify(config));
-  console.log(config);
-  if (typeof chrome !== "undefined" && chrome.runtime) {
-    chrome.runtime.sendMessage({ config: config, type: "config" });
-  }
+  saveConfig();
 });

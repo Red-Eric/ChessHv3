@@ -10,73 +10,80 @@
   <div class="container">
     <h1>ChessHv3 Settings</h1>
 
-    <!-- Skill Level -->
     <div class="setting">
-      <label for="elo"><span id="eloValue">Skill: 20 (3500 Elo)</span></label>
-      <input type="range" id="elo" min="0" max="20" value="20" step="1">
+      <label for="elo"><span id="eloValue">Skill: 20 (3200 Elo)</span></label>
+      <input type="range" id="elo" min="0" max="20" value="20" step="1" />
     </div>
 
-    <!-- Lines -->
     <div class="setting">
       <label for="lines">Lines: <span id="linesValue">3</span></label>
-      <input type="range" id="lines" min="1" max="5" value="3" step="1">
+      <input type="range" id="lines" min="1" max="5" value="3" step="1" />
     </div>
 
-    <!-- Depth -->
     <div class="setting">
       <label for="depth">Depth: <span id="depthValue">10</span></label>
-      <input type="range" id="depth" min="1" max="15" value="10" step="1">
+      <input type="range" id="depth" min="1" max="15" value="10" step="1" />
     </div>
-    
-    
-    <!-- Delay  -->
-    <div class="setting">
-      <label for="delay">Auto Move Delay Limit : <span id="depthValue">10</span></label>
-      <input type="range" id="delay" min="1" max="20" value="10" step="1">
-      <div class="description">The auto move delay will be chosen randomly between 1 and the selected value (seconds).</div>
-    </div>
-    
 
-    <!-- Auto Skill Adjustment Toggle -->
+    <div class="setting">
+      <label for="delay">Auto Move Delay Limit: <span id="delayValue">100</span> ms</label>
+      <input type="range" id="delay" min="100" max="20000" value="100" step="50" />
+      <div class="description">
+        Auto move delay will be randomly chosen between 100 ms and the selected limit.
+      </div>
+    </div>
+
+    <div class="setting">
+      <span id="autoMoveLabel">Auto Move (OFF)</span>
+      <label class="switch">
+        <input type="checkbox" id="autoMove" />
+        <span class="slider"></span>
+      </label>
+      <div class="description">
+        Automatically plays moves for you with a random delay between 100 ms and the selected delay limit.
+      </div>
+    </div>
+
     <div class="setting">
       <span id="autoSkillLabel">Auto Skill Adjustment (OFF)</span>
       <label class="switch">
-        <input type="checkbox" id="autoSkill">
+        <input type="checkbox" id="autoSkill" />
         <span class="slider"></span>
       </label>
-      <div class="description">Doesn't work with "Only Show Winning Move"</div>
+      <div class="description">
+        Doesn't work with "Only Show Winning Move".
+      </div>
     </div>
 
-    <!-- Only Show Winning Move Toggle -->
     <div class="setting">
       <span id="winningMoveLabel">Only Show Winning Move (OFF)</span>
       <label class="switch">
-        <input type="checkbox" id="winningMove">
+        <input type="checkbox" id="winningMove" />
         <span class="slider"></span>
       </label>
-      <div class="description">Show only moves that win more than 2 points of material or result in checkmate</div>
+      <div class="description">
+        Show only moves that win more than 2 points of material or result in checkmate.
+      </div>
     </div>
 
-    <!-- Show Eval Bar Toggle -->
     <div class="setting">
       <span id="showEvalLabel">Show Eval Bar (OFF)</span>
       <label class="switch">
-        <input type="checkbox" id="showEval">
+        <input type="checkbox" id="showEval" />
         <span class="slider"></span>
       </label>
     </div>
 
-    <!-- Only Show Eval Bar Toggle -->
     <div class="setting">
       <span id="onlyShowEvalLabel">Only Show Eval Bar (OFF)</span>
       <label class="switch">
-        <input type="checkbox" id="onlyShowEval">
+        <input type="checkbox" id="onlyShowEval" />
         <span class="slider"></span>
       </label>
-      <div class="description">Cannot be active unless "Show Eval Bar" is active</div>
+      <div class="description">
+        Cannot be active unless "Show Eval Bar" is active.
+      </div>
     </div>
-
-    <button id="save">Save Settings</button>
   </div>
 
   <script src="index.js"></script>
