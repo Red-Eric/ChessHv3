@@ -15,6 +15,12 @@ function randomIntBetween(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function getRandomElement(arr) {
+  if (!Array.isArray(arr) || arr.length === 0) return null;
+  const index = Math.floor(Math.random() * arr.length);
+  return arr[index];
+}
+
 let config = {
   skill: 20,
   lines: 5,
@@ -29,9 +35,8 @@ let config = {
 
 function saveConfig() {
   localStorage.setItem("chessConfig", JSON.stringify(config));
-  console.log("saved")
+  console.log("saved");
 }
-
 
 function loadConfig() {
   const saved = localStorage.getItem("chessConfig");
@@ -40,7 +45,7 @@ function loadConfig() {
   }
 }
 
-loadConfig()
+loadConfig();
 
 class Engine {
   constructor({ elo = 20, depth = 10, multipv = 5, threads = 2, hash = 128 }) {
@@ -85,7 +90,7 @@ class Engine {
       this.worker.postMessage("stop");
       const onMessage = (event) => {
         const msg = event.data;
-        // console.log(msg)
+        console.log(msg);
 
         if (typeof msg !== "string") return;
 
@@ -531,7 +536,9 @@ const startCheat = () => {
             ) {
               if (config.autoMove) {
                 // console.log("try to auto move*******");
-                requestMove(moves[0].from, moves[0].to);
+                // [0,2,3,4,5]
+                randMove = getRandomElement(moves);
+                requestMove(randMove.from, randMove.to);
               }
             }
           });
@@ -544,7 +551,7 @@ const startCheat = () => {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.config && message.type === "config" && engine) {
         config = message.config;
-        saveConfig()
+        saveConfig();
         if (config.onlyShowEval) {
           clearHighlightSquares();
         }
@@ -580,7 +587,8 @@ const startCheat = () => {
           ) {
             if (config.autoMove) {
               // console.log("try to auto move******* Config");
-              requestMove(moves[0].from, moves[0].to);
+              randMove = getRandomElement(moves);
+              requestMove(randMove.from, randMove.to);
             }
           }
         });
