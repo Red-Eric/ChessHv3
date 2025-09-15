@@ -81,6 +81,7 @@ class Engine {
 
   async getMoves(fen) {
     await this.ready;
+    this.worker.postMessage("uci");
 
     const sideToMove = fen.split(" ")[1];
 
@@ -90,7 +91,7 @@ class Engine {
       this.worker.postMessage("stop");
       const onMessage = (event) => {
         const msg = event.data;
-        // console.log(msg);
+        console.log(msg);
 
         if (typeof msg !== "string") return;
 
@@ -552,10 +553,7 @@ const startCheat = () => {
       if (message.config && message.type === "config" && engine) {
         config = message.config;
         saveConfig();
-        if (config.onlyShowEval) {
-          clearHighlightSquares();
-        }
-
+        clearHighlightSquares();
         engine.updateConfig({
           elo: config.skill,
           depth: config.depth,
