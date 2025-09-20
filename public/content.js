@@ -47,6 +47,7 @@ function loadConfig() {
 
 loadConfig();
 
+
 class Engine {
   constructor({ elo = 20, depth = 10, multipv = 5, threads = 2, hash = 128 }) {
     this.elo = elo;
@@ -54,19 +55,21 @@ class Engine {
     this.multipv = multipv;
     this.threads = threads;
     this.hash = hash;
-    this.ready = this.init(); // init async
+    this.ready = this.init();
+
+    this.progressBar = null;
+    this.progressBarCreated = false;
   }
 
   async init() {
     this.worker = await createWorker();
-    this.worker.postMessage(`uci`);
+    this.worker.postMessage("uci");
     this.setOptions();
   }
 
   setOptions() {
     this.worker.postMessage(`setoption name Skill Level value ${this.elo}`);
     this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
-    // this.worker.postMessage(`setoption name Threads value ${this.threads}`);
     this.worker.postMessage("setoption name Ponder value false");
   }
 
@@ -79,9 +82,66 @@ class Engine {
     this.setOptions();
   }
 
+  createProgressBar() {
+    const boardContainer = document.querySelector(".board");
+    if (!boardContainer) return null;
+
+    const progressContainer = document.createElement("div");
+    progressContainer.id = "customProgress";
+    progressContainer.style.width = boardContainer.offsetWidth + "px";
+    progressContainer.style.height = "15px";
+    progressContainer.style.background = "black";
+    progressContainer.style.marginTop = boardContainer.offsetHeight + "px";
+    progressContainer.style.border = "1px solid #555";
+    progressContainer.style.borderRadius = "4px";
+    progressContainer.style.overflow = "hidden";
+    progressContainer.style.position = "relative";
+    progressContainer.style.display = "none";
+    boardContainer.appendChild(progressContainer);
+
+    const progressFill = document.createElement("div");
+    progressFill.style.height = "100%";
+    progressFill.style.width = "0%";
+    progressFill.style.background = "green";
+    progressFill.style.transition = "width 0.1s linear";
+    progressContainer.appendChild(progressFill);
+
+    const progressText = document.createElement("div");
+    progressText.style.position = "absolute";
+    progressText.style.top = "50%";
+    progressText.style.left = "50%";
+    progressText.style.transform = "translate(-50%, -50%)";
+    progressText.style.color = "white";
+    progressText.style.fontSize = "12px";
+    progressText.style.fontWeight = "bold";
+    progressText.textContent = "Thinking... 0%";
+    progressContainer.appendChild(progressText);
+
+    this.progressBarCreated = true;
+    return {
+      show: () => {
+        progressContainer.style.display = "block";
+        progressFill.style.width = "0%";
+      },
+      hide: () => {
+        progressContainer.style.display = "none";
+      },
+      update: (currentDepth) => {
+        const percent = Math.min(100, (currentDepth / this.depth) * 100);
+        progressFill.style.width = percent + "%";
+        progressText.textContent = `Thinking... ${Math.round(percent)}%`;
+      },
+    };
+  }
+
   async getMoves(fen) {
     await this.ready;
     this.worker.postMessage("uci");
+
+    // créer la barre si elle n'existe pas encore
+    if (!this.progressBarCreated) {
+      this.progressBar = this.createProgressBar();
+    }
 
     const sideToMove = fen.split(" ")[1];
 
@@ -89,12 +149,20 @@ class Engine {
       const multipvResults = new Map();
       this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
       this.worker.postMessage("stop");
+
       const onMessage = (event) => {
         const msg = event.data;
-        console.log(msg);
-
         if (typeof msg !== "string") return;
 
+        // Mettre à jour la barre pendant le calcul
+        const depthMatch = msg.match(/info depth (\d+)/);
+        if (depthMatch && this.progressBar) {
+          const currentDepth = parseInt(depthMatch[1], 10);
+          this.progressBar.show();
+          this.progressBar.update(currentDepth);
+        }
+
+        // Analyse des coups
         if (msg.includes(`info depth ${this.depth}`)) {
           const multipvMatch = msg.match(/multipv (\d+)/);
           const scoreMatch = msg.match(/score (cp|mate) (-?\d+)/);
@@ -105,9 +173,7 @@ class Engine {
             const scoreType = scoreMatch[1];
             let scoreValueRaw = parseInt(scoreMatch[2], 10);
 
-            if (sideToMove === "b" && scoreType === "cp") {
-              scoreValueRaw = -scoreValueRaw;
-            }
+            if (sideToMove === "b" && scoreType === "cp") scoreValueRaw = -scoreValueRaw;
 
             const bestMove = pvMatch[1];
             let score;
@@ -115,8 +181,7 @@ class Engine {
               const value = +(scoreValueRaw / 100).toFixed(2);
               score = value > 0 ? `+${value}` : `${value}`;
             } else if (scoreType === "mate") {
-              score =
-                sideToMove === "b" ? `#${-scoreValueRaw}` : `#${scoreValueRaw}`;
+              score = scoreValueRaw;
             }
 
             const from = bestMove.slice(0, 2);
@@ -127,6 +192,10 @@ class Engine {
         }
 
         if (msg.startsWith("bestmove")) {
+          if (this.progressBar) {
+            this.progressBar.update(this.depth);
+            setTimeout(() => this.progressBar.hide(), 300);
+          }
           this.worker.removeEventListener("message", onMessage);
 
           resolve(
@@ -144,6 +213,9 @@ class Engine {
     });
   }
 }
+
+
+
 
 let expired = true;
 
@@ -594,3 +666,5 @@ const startCheat = () => {
     });
   }
 };
+
+
