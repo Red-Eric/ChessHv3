@@ -47,7 +47,6 @@ function loadConfig() {
 
 loadConfig();
 
-
 class Engine {
   constructor({ elo = 20, depth = 10, multipv = 5, threads = 2, hash = 128 }) {
     this.elo = elo;
@@ -59,6 +58,7 @@ class Engine {
 
     this.progressBar = null;
     this.progressBarCreated = false;
+    this.progressObserver = null;
   }
 
   async init() {
@@ -118,6 +118,7 @@ class Engine {
     progressContainer.appendChild(progressText);
 
     this.progressBarCreated = true;
+
     return {
       show: () => {
         progressContainer.style.display = "block";
@@ -134,13 +135,30 @@ class Engine {
     };
   }
 
+  initProgressBarWatcher() {
+    if (this.progressObserver) return;
+
+    this.progressObserver = new MutationObserver(() => {
+      const boardContainer = document.querySelector(".board");
+      if (boardContainer && !document.querySelector("#customProgress")) {
+        this.progressBar = this.createProgressBar();
+      }
+    });
+
+    this.progressObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  }
+
   async getMoves(fen) {
     await this.ready;
     this.worker.postMessage("uci");
 
-    // créer la barre si elle n'existe pas encore
+
     if (!this.progressBarCreated) {
       this.progressBar = this.createProgressBar();
+      this.initProgressBarWatcher();
     }
 
     const sideToMove = fen.split(" ")[1];
@@ -154,7 +172,6 @@ class Engine {
         const msg = event.data;
         if (typeof msg !== "string") return;
 
-        // Mettre à jour la barre pendant le calcul
         const depthMatch = msg.match(/info depth (\d+)/);
         if (depthMatch && this.progressBar) {
           const currentDepth = parseInt(depthMatch[1], 10);
@@ -162,7 +179,7 @@ class Engine {
           this.progressBar.update(currentDepth);
         }
 
-        // Analyse des coups
+
         if (msg.includes(`info depth ${this.depth}`)) {
           const multipvMatch = msg.match(/multipv (\d+)/);
           const scoreMatch = msg.match(/score (cp|mate) (-?\d+)/);
@@ -173,7 +190,8 @@ class Engine {
             const scoreType = scoreMatch[1];
             let scoreValueRaw = parseInt(scoreMatch[2], 10);
 
-            if (sideToMove === "b" && scoreType === "cp") scoreValueRaw = -scoreValueRaw;
+            if (sideToMove === "b" && scoreType === "cp")
+              scoreValueRaw = -scoreValueRaw;
 
             const bestMove = pvMatch[1];
             let score;
@@ -213,8 +231,6 @@ class Engine {
     });
   }
 }
-
-
 
 
 let expired = true;
