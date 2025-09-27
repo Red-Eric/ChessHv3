@@ -21,7 +21,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       for (let tab of tabs) {
-        chrome.tabs.sendMessage(tab.id, { type: "config", config: currentConfig });
+        chrome.tabs.sendMessage(tab.id, { type: "config2", config: currentConfig });
       }
     });
   }

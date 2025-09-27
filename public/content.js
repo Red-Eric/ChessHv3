@@ -41,7 +41,13 @@ let config = {
 
 function saveConfig() {
   localStorage.setItem("chessConfig", JSON.stringify(config));
-  console.log("saved");
+  console.log("saved chess.com");
+}
+
+function saveConfig2() {
+  // lichess
+  localStorage.setItem("chessConfig2", JSON.stringify(config));
+  console.log("saved lichess");
 }
 
 function loadConfig() {
@@ -51,7 +57,13 @@ function loadConfig() {
   }
 }
 
-loadConfig();
+function loadConfig2() {
+  // lichess
+  const saved = localStorage.getItem("chessConfig2");
+  if (saved) {
+    config = JSON.parse(saved);
+  }
+}
 
 class Engine {
   constructor({ elo = 20, depth = 10, multipv = 5, threads = 2, hash = 128 }) {
@@ -179,6 +191,7 @@ const startCheat = () => {
                                                  
   */
   if (window.location.hostname.includes("chess.com") && !expired) {
+    loadConfig();
     let lastFEN = "";
     let fen_ = "";
     let side_index = 1;
@@ -620,6 +633,7 @@ const startCheat = () => {
 */
 
   if (window.location.hostname.includes("lichess")) {
+    loadConfig2();
     let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     let evalObj = null;
     let customEval = null;
@@ -948,7 +962,7 @@ const startCheat = () => {
               highlightMovesOnBoard(moves, getSide()[0]);
 
               if (moves.length > 0 && evalObj) {
-                // evalObj.update(moves[0].eval, getSide());
+                evalObj.update(moves[0].eval, getSide());
               }
             });
           }
@@ -959,10 +973,8 @@ const startCheat = () => {
     inject();
 
     setInterval(() => {
-
-
-      if (!customEval) {
-        const boardContainer = document.querySelector(".board");
+      if (!customEval && config.showEval) {
+        const boardContainer = document.querySelector("cg-container");
         if (boardContainer) {
           evalObj = createEvalBar("0.0", getSide());
           customEval = document.querySelector("#customEval");
@@ -973,9 +985,38 @@ const startCheat = () => {
     }, 350);
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.config && message.type === "config2" && engine) {
+      // console.log(message)
+      if (message.type === "config2" && engine) {
         config = message.config;
-        console.log(config)
+        // console.log(config)
+        saveConfig2();
+        clearHighlightSquares();
+        engine.updateConfig({
+          elo: config.skill,
+          depth: config.depth,
+          multipv: config.lines,
+        });
+
+        if (!config.showEval && customEval) {
+          customEval.remove();
+          customEval = null;
+          evalObj = null;
+        }
+
+        if (config.showEval && !customEval) {
+          const boardContainer = document.querySelector("cg-container");
+          if (boardContainer) {
+            evalObj = createEvalBar("0.0", getSide());
+            customEval = document.querySelector("#customEval");
+          }
+        }
+
+        engine.getMoves(fen_).then((moves) => {
+          highlightMovesOnBoard(moves, getSide()[0]);
+          if (moves.length > 0 && evalObj) {
+            evalObj.update(moves[0].eval, getSide());
+          }
+        });
       }
     });
   }
