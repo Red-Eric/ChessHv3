@@ -41,13 +41,13 @@ let config = {
 
 function saveConfig() {
   localStorage.setItem("chessConfig", JSON.stringify(config));
-  console.log("saved chess.com");
+  // console.log("saved chess.com");
 }
 
 function saveConfig2() {
   // lichess
   localStorage.setItem("chessConfig2", JSON.stringify(config));
-  console.log("saved lichess");
+  // console.log("saved lichess");
 }
 
 function loadConfig() {
@@ -660,6 +660,7 @@ const startCheat = () => {
       evalContainer.style.background = "#eee";
       evalContainer.style.marginLeft = "10px";
       evalContainer.style.position = "relative";
+      evalContainer.style.left = "-50px"
       evalContainer.style.border = "1px solid #aaa";
       evalContainer.style.borderRadius = "4px";
       evalContainer.style.overflow = "hidden";

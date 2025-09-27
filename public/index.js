@@ -52,7 +52,7 @@ winningMove.checked = chessConfig.winningMove;
 showEval.checked = chessConfig.showEval;
 onlyShowEval.checked = chessConfig.onlyShowEval;
 
-eloValue.textContent = `Skill: ${chessConfig.skill} (${skillToElo[chessConfig.skill]} Elo)`;
+eloValue.textContent = `Skill: ${chessConfig.skill}`;
 linesValue.textContent = chessConfig.lines;
 depthValue.textContent = chessConfig.depth;
 delayValue.textContent = chessConfig.delay;
@@ -76,7 +76,7 @@ function saveChessConfig() {
 // ----- Listeners Chess.com -----
 elo.addEventListener("input", ()=>{
   chessConfig.skill = parseInt(elo.value);
-  eloValue.textContent = `Skill: ${chessConfig.skill} (${skillToElo[chessConfig.skill]} Elo)`;
+  eloValue.textContent = `Skill: ${chessConfig.skill}`;
   saveChessConfig();
 });
 lines.addEventListener("input", ()=>{
