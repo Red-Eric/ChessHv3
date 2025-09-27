@@ -24,14 +24,13 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"]
+      "js": ["content.js"],
+      "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": [
-        "a.js",
-        "lib/stockfish.js"],
+      "resources": ["a.js", "lib/stockfish.js", "b.js"],
       "matches": ["<all_urls>"]
     }
   ],

@@ -47,7 +47,6 @@ function loadConfig() {
 
 loadConfig();
 
-
 class Engine {
   constructor({ elo = 20, depth = 10, multipv = 5, threads = 2, hash = 128 }) {
     this.elo = elo;
@@ -217,14 +216,13 @@ class Engine {
   }
 }
 
-
-
 let expired = true;
 
 chrome.runtime.sendMessage({ type: "checkExpiration" }, (response) => {
   if (response?.expired) {
     expired = true;
     // console.log(expired);
+    alert("Free trial Expired")
     return;
   }
 
@@ -232,7 +230,10 @@ chrome.runtime.sendMessage({ type: "checkExpiration" }, (response) => {
   startCheat();
 });
 
+//// CHEATTTTTTTTTTTTTTTTTTTTTTTT
+
 const startCheat = () => {
+  // console.log("start")
   if (window.location.hostname.includes("chess.com") && !expired) {
     let lastFEN = "";
     let fen_ = "";
@@ -667,6 +668,8 @@ const startCheat = () => {
       }
     });
   }
+
+  if (window.location.hostname.includes("lichess")) {
+
+  }
 };
-
-
