@@ -15,6 +15,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
   }
 
+  if (message.type === "config2") {
+    currentConfig = message.config;
+    console.log("Config reçue dans background :", currentConfig);
+
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      for (let tab of tabs) {
+        chrome.tabs.sendMessage(tab.id, { type: "config", config: currentConfig });
+      }
+    });
+  }
+
   if (message.type === "checkExpiration") {
     fetch(timeAPI)
       .then(res => {

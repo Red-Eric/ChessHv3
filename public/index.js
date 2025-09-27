@@ -155,7 +155,7 @@ function saveLichessConfig() {
   localStorage.setItem("lichessConfig", JSON.stringify(lichessConfig));
   console.log("Lichess config:", lichessConfig);
   if(typeof chrome !== "undefined" && chrome.runtime){
-    chrome.runtime.sendMessage({type:"config", config:lichessConfig});
+    chrome.runtime.sendMessage({type:"config2", config:lichessConfig});
   }
 }
 

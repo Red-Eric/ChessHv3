@@ -21,6 +21,12 @@ function getRandomElement(arr) {
   return arr[index];
 }
 
+function clearHighlightSquares() {
+  // const parent = document.querySelector("wc-chess-board");
+  // if (!parent) return;
+  document.querySelectorAll(".customH").forEach((el) => el.remove());
+}
+
 let config = {
   skill: 20,
   lines: 5,
@@ -46,7 +52,6 @@ function loadConfig() {
 }
 
 loadConfig();
-
 
 class Engine {
   constructor({ elo = 20, depth = 10, multipv = 5, threads = 2, hash = 128 }) {
@@ -114,7 +119,10 @@ class Engine {
               const value = +(scoreValueRaw / 100).toFixed(2);
               score = value > 0 ? `+${value}` : `${value}`;
             } else if (scoreType === "mate") {
-              score = scoreValueRaw > 0 ? `#${scoreValueRaw}` : `#-${Math.abs(scoreValueRaw)}`;
+              score =
+                scoreValueRaw > 0
+                  ? `#${scoreValueRaw}`
+                  : `#-${Math.abs(scoreValueRaw)}`;
             }
 
             const from = bestMove.slice(0, 2);
@@ -141,7 +149,6 @@ class Engine {
     });
   }
 }
-
 
 let expired = true;
 
@@ -510,12 +517,6 @@ const startCheat = () => {
       }
     }
 
-    function clearHighlightSquares() {
-      const parent = document.querySelector("wc-chess-board");
-      if (!parent) return;
-      parent.querySelectorAll(".customH").forEach((el) => el.remove());
-    }
-
     function getSide() {
       return side_index === 1 ? "white" : "black";
     }
@@ -607,8 +608,7 @@ const startCheat = () => {
     });
   }
 
-
-/*
+  /*
 
   _     _      _                   
  | |   (_) ___| |__   ___  ___ ___ 
@@ -620,43 +620,16 @@ const startCheat = () => {
 */
 
   if (window.location.hostname.includes("lichess")) {
-
-    let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-
-    function requestFen() {
-      // console.log("request fen called");
-      if (!expired) {
-        window.postMessage({ type: "FEN" }, "*");
-      }
-    }
-
-    function inject() {
-      const s = document.createElement("script");
-      s.src = chrome.runtime.getURL("lib/chess_min.js");
-      (document.head || document.documentElement).appendChild(s);
-      s.onload = () => s.remove();
-
-      const s2 = document.createElement("script");
-      s2.src = chrome.runtime.getURL("b.js");
-      (document.head || document.documentElement).appendChild(s2);
-      s2.onload = () => s2.remove();
-
-      window.addEventListener("message", (event) => {
-        if (event.source !== window) return;
-        if (event.data && event.data.type === "FEN_RESPONSE") {
-          // code here
-
-          // console.log(event.data.fen)
-          if(event.data.fen !== fen_){
-            fen_ = event.data.fen
-            console.log(fen_)
-          }
-
-        }
-      });
-    }
-
-    inject()
+    let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    let evalObj = null;
+    let customEval = null;
+    const engine = new Engine({
+      elo: config.skill,
+      depth: 10,
+      multipv: config.lines,
+      threads: 2,
+      hash: 128,
+    });
 
     function createEvalBar(initialScore = "0.0", initialColor = "white") {
       const boardContainer = document.querySelector("cg-board");
@@ -781,6 +754,154 @@ const startCheat = () => {
       return { update };
     }
 
+    function highlightMovesOnBoard(moves, side) {
+      if (!Array.isArray(moves)) return;
+
+      if (
+        !(
+          (side === "w" && fen_.split(" ")[1] === "w") ||
+          (side === "b" && fen_.split(" ")[1] === "b")
+        )
+      ) {
+        return;
+      }
+
+      // Si onlyShowEval est activé, on n'affiche rien
+      if (config.onlyShowEval) return;
+
+      const parent = document.querySelector("cg-container");
+      if (!parent) return;
+
+      const squareSize = parent.offsetWidth / 8;
+      const maxMoves = 5;
+      let colors = ["blue", "green", "yellow", "orange", "red"];
+
+      parent.querySelectorAll(".customH").forEach((el) => el.remove());
+
+      function squareToPosition(square) {
+        const fileChar = square[0];
+        const rankChar = square[1];
+        const rank = parseInt(rankChar, 10) - 1;
+
+        let file;
+        if (side === "w") {
+          file = fileChar.charCodeAt(0) - "a".charCodeAt(0);
+          const y = (7 - rank) * squareSize;
+          const x = file * squareSize;
+          return { x, y };
+        } else {
+          file = "h".charCodeAt(0) - fileChar.charCodeAt(0);
+          const y = rank * squareSize;
+          const x = file * squareSize;
+          return { x, y };
+        }
+      }
+
+      function drawArrow(fromSquare, toSquare, color, score) {
+        const from = squareToPosition(fromSquare);
+        const to = squareToPosition(toSquare);
+
+        const svg = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "svg"
+        );
+        svg.setAttribute("class", "customH");
+        svg.setAttribute("width", parent.offsetWidth);
+        svg.setAttribute("height", parent.offsetWidth);
+        svg.style.position = "absolute";
+        svg.style.left = "0";
+        svg.style.top = "0";
+        svg.style.pointerEvents = "none";
+        svg.style.overflow = "visible";
+        svg.style.zIndex = "10";
+
+        const defs = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "defs"
+        );
+        const marker = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "marker"
+        );
+        marker.setAttribute("id", `arrowhead-${color}`);
+        marker.setAttribute("markerWidth", "3.5");
+        marker.setAttribute("markerHeight", "2.5");
+        marker.setAttribute("refX", "1.75");
+        marker.setAttribute("refY", "1.25");
+        marker.setAttribute("orient", "auto");
+        marker.setAttribute("markerUnits", "strokeWidth");
+
+        const arrowPath = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "path"
+        );
+        arrowPath.setAttribute("d", "M0,0 L3.5,1.25 L0,2.5 Z");
+        arrowPath.setAttribute("fill", color);
+        marker.appendChild(arrowPath);
+        defs.appendChild(marker);
+        svg.appendChild(defs);
+
+        const line = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "line"
+        );
+        line.setAttribute("x1", from.x + squareSize / 2);
+        line.setAttribute("y1", from.y + squareSize / 2);
+        line.setAttribute("x2", to.x + squareSize / 2);
+        line.setAttribute("y2", to.y + squareSize / 2);
+        line.setAttribute("stroke", color);
+        line.setAttribute("stroke-width", "5");
+        line.setAttribute("marker-end", `url(#arrowhead-${color})`);
+        line.setAttribute("opacity", "0.6");
+        svg.appendChild(line);
+
+        if (score !== undefined) {
+          const text = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "text"
+          );
+          text.setAttribute("x", to.x + squareSize - 4);
+          text.setAttribute("y", to.y + 12);
+          text.setAttribute("fill", color);
+          text.setAttribute("font-size", "13");
+          text.setAttribute("font-weight", "bold");
+          text.setAttribute("text-anchor", "end");
+          text.setAttribute("alignment-baseline", "hanging");
+          text.setAttribute("opacity", "1");
+          text.textContent = score;
+          svg.appendChild(text);
+        }
+
+        parent.appendChild(svg);
+      }
+
+      parent.style.position = "relative";
+
+      // Filtrage des coups si config.winningMove est actif
+      let filteredMoves = moves;
+      if (config.winningMove) {
+        filteredMoves = moves.filter((move) => {
+          const evalValue = parseFloat(move.eval);
+          if (side === "w") {
+            return (
+              evalValue >= 2 ||
+              (move.eval.startsWith("#") && parseInt(move.eval.slice(1)) > 0)
+            );
+          } else {
+            return (
+              evalValue <= -2 ||
+              (move.eval.startsWith("#-") && parseInt(move.eval.slice(2)) > 0)
+            );
+          }
+        });
+      }
+
+      filteredMoves.slice(0, maxMoves).forEach((move, index) => {
+        const color = colors[index] || "red";
+        drawArrow(move.from, move.to, color, move.eval);
+      });
+    }
+
     function getSide() {
       const board = document.querySelector(".cg-wrap");
       if (!board) return null; // si le plateau n'est pas trouvé
@@ -794,8 +915,68 @@ const startCheat = () => {
       }
     }
 
+    function requestFen() {
+      // console.log("request fen called");
+      if (!expired) {
+        window.postMessage({ type: "FEN" }, "*");
+      }
+    }
+
+    function inject() {
+      const s = document.createElement("script");
+      s.src = chrome.runtime.getURL("lib/chess_min.js");
+      (document.head || document.documentElement).appendChild(s);
+      s.onload = () => s.remove();
+
+      const s2 = document.createElement("script");
+      s2.src = chrome.runtime.getURL("b.js");
+      (document.head || document.documentElement).appendChild(s2);
+      s2.onload = () => s2.remove();
+
+      window.addEventListener("message", (event) => {
+        if (event.source !== window) return;
+        if (event.data && event.data.type === "FEN_RESPONSE") {
+          // code here
+
+          // console.log(event.data.fen)
+          if (event.data.fen !== fen_) {
+            clearHighlightSquares();
+            fen_ = event.data.fen;
+            // console.log(fen_);
+
+            engine.getMoves(fen_).then((moves) => {
+              highlightMovesOnBoard(moves, getSide()[0]);
+
+              if (moves.length > 0 && evalObj) {
+                // evalObj.update(moves[0].eval, getSide());
+              }
+            });
+          }
+        }
+      });
+    }
+
+    inject();
+
     setInterval(() => {
-      requestFen()
+
+
+      if (!customEval) {
+        const boardContainer = document.querySelector(".board");
+        if (boardContainer) {
+          evalObj = createEvalBar("0.0", getSide());
+          customEval = document.querySelector("#customEval");
+        }
+      }
+
+      requestFen();
     }, 350);
+
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      if (message.config && message.type === "config2" && engine) {
+        config = message.config;
+        console.log(config)
+      }
+    });
   }
 };
