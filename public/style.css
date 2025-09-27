@@ -3,11 +3,38 @@ body {
   font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
   background: radial-gradient(circle at top, #0f1713, #0a0d0b);
   color: #e8e8e8;
+  min-height: 100vh;
+}
+
+.tabs {
+  display: flex;
+  background: #0f1713;
+  border-bottom: 1px solid rgba(0,255,153,0.15);
+}
+.tab {
+  flex: 1;
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  font-weight: 600;
+  background: rgba(15, 23, 20, 0.8);
+  color: #ccc;
+  transition: 0.2s;
+}
+.tab.active {
+  color: #22c55e;
+  border-bottom: 3px solid #22c55e;
+  background: rgba(10, 13, 11, 0.95);
+}
+.panel {
+  display: none;
+}
+.panel.active {
+  display: block;
   display: flex;
   justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  padding: 1rem;
+  align-items: flex-start;
+  padding: 2rem;
 }
 
 .container {

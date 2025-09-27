@@ -222,7 +222,7 @@ chrome.runtime.sendMessage({ type: "checkExpiration" }, (response) => {
   if (response?.expired) {
     expired = true;
     // console.log(expired);
-    alert("Free trial Expired");
+    alert("If u see this , update chessHv3 (https://discord.gg/XbVsywukFU)");
     return;
   }
 
