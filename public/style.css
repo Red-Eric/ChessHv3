@@ -1,8 +1,8 @@
 body {
   margin: 0;
   font-family: 'Segoe UI', Roboto, sans-serif;
-  background: linear-gradient(135deg, #1e1e2f, #2c2c3e);
-  color: #f0f0f5;
+  background: #121212; /* sombre profond */
+  color: #e0e0e0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -11,14 +11,15 @@ body {
 }
 
 .container {
-  background-color: #2a2a3d;
+  background-color: #1e1e1e; /* gris sombre moderne */
   border-radius: 12px;
-  padding: 2rem;
-  max-width: 400px;
+  padding: 2.5rem;
+  max-width: 420px;
+  min-width: 375px;
   width: 100%;
-  border: 1px solid #6c63ff;
+  border: 1px solid #333;
   box-sizing: border-box;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
 }
 
 h1 {
@@ -26,8 +27,8 @@ h1 {
   margin-bottom: 2rem;
   font-size: 2rem;
   font-weight: 700;
-  color: #6c63ff;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+  color: #00ffa3; /* vert néon moderne */
+  text-shadow: 0 0 10px rgba(0, 255, 163, 0.5);
 }
 
 .setting {
@@ -45,7 +46,7 @@ label {
 
 .value-span {
   font-weight: bold;
-  color: #e0e0ff;
+  color: #fff;
 }
 
 input[type="range"] {
@@ -53,7 +54,7 @@ input[type="range"] {
   height: 6px;
   margin-top: 0.5rem;
   -webkit-appearance: none;
-  background: #444;
+  background: #333;
   border-radius: 3px;
   outline: none;
 }
@@ -63,9 +64,14 @@ input[type="range"]::-webkit-slider-thumb {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #6c63ff;
+  background: #00ffa3;
   cursor: pointer;
-  border: 2px solid #fff;
+  border: 2px solid #111;
+  transition: 0.2s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  background: #00e88f;
 }
 
 /* Toggle Switch */
@@ -87,7 +93,7 @@ input[type="range"]::-webkit-slider-thumb {
   position: absolute;
   cursor: pointer;
   top: 0; left: 0; right: 0; bottom: 0;
-  background-color: #555;
+  background-color: #333;
   transition: 0.3s;
   border-radius: 24px;
 }
@@ -99,13 +105,13 @@ input[type="range"]::-webkit-slider-thumb {
   width: 20px;
   left: 2px;
   bottom: 2px;
-  background-color: #6c63ff;
+  background-color: #00ffa3;
   transition: 0.3s;
   border-radius: 50%;
 }
 
 input:checked + .slider {
-  background-color: #3f3fbf;
+  background-color: #00ffa3;
 }
 
 input:checked + .slider:before {
@@ -118,22 +124,23 @@ button {
   padding: 0.75rem;
   border: none;
   border-radius: 8px;
-  background-color: #6c63ff;
-  color: #f0f0f5;
+  background-color: #00ffa3;
+  color: #121212;
   font-size: 1rem;
   cursor: pointer;
   font-weight: bold;
-  transition: 0.2s;
+  transition: 0.3s;
   margin-top: 1rem;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
 button:hover {
-  background-color: #5951d4;
+  background-color: #00e88f;
+  transform: translateY(-2px);
 }
 
 .description {
-  font-size: 0.8rem;
-  color: #ff6b6b;
+  font-size: 0.85rem;
+  color: #888;
   margin-top: 0.25rem;
 }
