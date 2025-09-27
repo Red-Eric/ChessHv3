@@ -47,6 +47,7 @@ function loadConfig() {
 
 loadConfig();
 
+
 class Engine {
   constructor({ elo = 20, depth = 10, multipv = 5, threads = 2, hash = 128 }) {
     this.elo = elo;
@@ -55,9 +56,6 @@ class Engine {
     this.threads = threads;
     this.hash = hash;
     this.ready = this.init();
-
-    this.progressBar = null;
-    this.progressBarCreated = false;
   }
 
   async init() {
@@ -81,65 +79,9 @@ class Engine {
     this.setOptions();
   }
 
-  createProgressBar() {
-    const boardContainer = document.querySelector(".board");
-    if (!boardContainer) return null;
-
-    const progressContainer = document.createElement("div");
-    progressContainer.id = "customProgress";
-    progressContainer.style.width = boardContainer.offsetWidth + "px";
-    progressContainer.style.height = "15px";
-    progressContainer.style.background = "black";
-    progressContainer.style.marginTop = boardContainer.offsetHeight + "px";
-    progressContainer.style.border = "1px solid #555";
-    progressContainer.style.borderRadius = "4px";
-    progressContainer.style.overflow = "hidden";
-    progressContainer.style.position = "relative";
-    progressContainer.style.display = "none";
-    boardContainer.appendChild(progressContainer);
-
-    const progressFill = document.createElement("div");
-    progressFill.style.height = "100%";
-    progressFill.style.width = "0%";
-    progressFill.style.background = "green";
-    progressFill.style.transition = "width 0.1s linear";
-    progressContainer.appendChild(progressFill);
-
-    const progressText = document.createElement("div");
-    progressText.style.position = "absolute";
-    progressText.style.top = "50%";
-    progressText.style.left = "50%";
-    progressText.style.transform = "translate(-50%, -50%)";
-    progressText.style.color = "white";
-    progressText.style.fontSize = "12px";
-    progressText.style.fontWeight = "bold";
-    progressText.textContent = "Thinking... 0%";
-    progressContainer.appendChild(progressText);
-
-    this.progressBarCreated = true;
-    return {
-      show: () => {
-        progressContainer.style.display = "block";
-        progressFill.style.width = "0%";
-      },
-      hide: () => {
-        progressContainer.style.display = "none";
-      },
-      update: (currentDepth) => {
-        const percent = Math.min(100, (currentDepth / this.depth) * 100);
-        progressFill.style.width = percent + "%";
-        progressText.textContent = `Thinking... ${Math.round(percent)}%`;
-      },
-    };
-  }
-
   async getMoves(fen) {
     await this.ready;
     this.worker.postMessage("uci");
-
-    if (!this.progressBarCreated) {
-      this.progressBar = this.createProgressBar();
-    }
 
     const sideToMove = fen.split(" ")[1];
 
@@ -152,13 +94,6 @@ class Engine {
         const msg = event.data;
         if (typeof msg !== "string") return;
 
-        const depthMatch = msg.match(/info depth (\d+)/);
-        if (depthMatch && this.progressBar) {
-          const currentDepth = parseInt(depthMatch[1], 10);
-          this.progressBar.show();
-          this.progressBar.update(currentDepth);
-        }
-
         if (msg.includes(`info depth ${this.depth}`)) {
           const multipvMatch = msg.match(/multipv (\d+)/);
           const scoreMatch = msg.match(/score (cp|mate) (-?\d+)/);
@@ -169,7 +104,6 @@ class Engine {
             const scoreType = scoreMatch[1];
             let scoreValueRaw = parseInt(scoreMatch[2], 10);
 
-            // inversion côté noir
             if (sideToMove === "b") {
               scoreValueRaw = -scoreValueRaw;
             }
@@ -180,10 +114,7 @@ class Engine {
               const value = +(scoreValueRaw / 100).toFixed(2);
               score = value > 0 ? `+${value}` : `${value}`;
             } else if (scoreType === "mate") {
-              score =
-                scoreValueRaw > 0
-                  ? `#${scoreValueRaw}`
-                  : `#-${Math.abs(scoreValueRaw)}`;
+              score = scoreValueRaw > 0 ? `#${scoreValueRaw}` : `#-${Math.abs(scoreValueRaw)}`;
             }
 
             const from = bestMove.slice(0, 2);
@@ -194,12 +125,7 @@ class Engine {
         }
 
         if (msg.startsWith("bestmove")) {
-          if (this.progressBar) {
-            this.progressBar.update(this.depth);
-            setTimeout(() => this.progressBar.hide(), 300);
-          }
           this.worker.removeEventListener("message", onMessage);
-
           resolve(
             Array.from(multipvResults.entries())
               .sort(([a], [b]) => a - b)
@@ -215,6 +141,7 @@ class Engine {
     });
   }
 }
+
 
 let expired = true;
 
@@ -234,6 +161,16 @@ chrome.runtime.sendMessage({ type: "checkExpiration" }, (response) => {
 
 const startCheat = () => {
   // console.log("start")
+
+  /*
+  
+        _                                        
+   ___| |__   ___  ___ ___   ___ ___  _ __ ___  
+  / __| '_ \ / _ \/ __/ __| / __/ _ \| '_ ` _ \ 
+ | (__| | | |  __/\__ \__ \| (_| (_) | | | | | |
+  \___|_| |_|\___||___/___(_)___\___/|_| |_| |_|
+                                                 
+  */
   if (window.location.hostname.includes("chess.com") && !expired) {
     let lastFEN = "";
     let fen_ = "";
@@ -670,7 +607,57 @@ const startCheat = () => {
     });
   }
 
+
+/*
+
+  _     _      _                   
+ | |   (_) ___| |__   ___  ___ ___ 
+ | |   | |/ __| '_ \ / _ \/ __/ __|
+ | |___| | (__| | | |  __/\__ \__ \
+ |_____|_|\___|_| |_|\___||___/___/
+                                   
+
+*/
+
   if (window.location.hostname.includes("lichess")) {
+
+    let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+
+    function requestFen() {
+      // console.log("request fen called");
+      if (!expired) {
+        window.postMessage({ type: "FEN" }, "*");
+      }
+    }
+
+    function inject() {
+      const s = document.createElement("script");
+      s.src = chrome.runtime.getURL("lib/chess_min.js");
+      (document.head || document.documentElement).appendChild(s);
+      s.onload = () => s.remove();
+
+      const s2 = document.createElement("script");
+      s2.src = chrome.runtime.getURL("b.js");
+      (document.head || document.documentElement).appendChild(s2);
+      s2.onload = () => s2.remove();
+
+      window.addEventListener("message", (event) => {
+        if (event.source !== window) return;
+        if (event.data && event.data.type === "FEN_RESPONSE") {
+          // code here
+
+          // console.log(event.data.fen)
+          if(event.data.fen !== fen_){
+            fen_ = event.data.fen
+            console.log(fen_)
+          }
+
+        }
+      });
+    }
+
+    inject()
+
     function createEvalBar(initialScore = "0.0", initialColor = "white") {
       const boardContainer = document.querySelector("cg-board");
       let w_ = boardContainer.offsetWidth;
@@ -807,7 +794,8 @@ const startCheat = () => {
       }
     }
 
-
-    
+    setInterval(() => {
+      requestFen()
+    }, 350);
   }
 };

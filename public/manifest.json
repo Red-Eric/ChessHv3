@@ -30,7 +30,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["a.js", "lib/stockfish.js", "b.js"],
+      "resources": ["a.js", "lib/stockfish.js", "b.js" , "lib/chess_min.js"],
       "matches": ["<all_urls>"]
     }
   ],
