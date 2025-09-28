@@ -174,3 +174,9 @@ button:hover {
   color: #ff0000;
   margin-top: 0.5rem;
 }
+
+.tab-logo {
+  width: 20px;       /* taille du logo */
+  height: 20px;
+  margin-right: 8px; /* espace entre logo et texte */
+}
