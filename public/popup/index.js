@@ -1,14 +1,34 @@
 // Navigate
 
+let panelIndex = 0;
+
 const tabs = document.querySelectorAll(".tab");
 const panels = document.querySelectorAll(".panel");
-tabs.forEach((tab) => {
+tabs.forEach((tab, index) => {
   tab.addEventListener("click", () => {
+    // console.log(index)
+    panelIndex = index;
+    if (index === 2) {
+      bc = document.querySelector("#stream");
+      bc.style.display = "flex";
+    } else {
+      bc = document.querySelector("#stream");
+      bc.style.display = "none";
+    }
     tabs.forEach((t) => t.classList.remove("active"));
     panels.forEach((p) => p.classList.remove("active"));
     tab.classList.add("active");
     document.getElementById(tab.dataset.panel).classList.add("active");
   });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("Loaded");
+
+  if (panelIndex !== 2) {
+    bc = document.querySelector("#stream");
+    bc.style.display = "none";
+  }
 });
 
 // ----- Chess.com -----
@@ -85,7 +105,7 @@ winningMoveLabel.textContent = `Only Show Winning Move (${
 showEvalLabel.textContent = `Show Eval Bar (${
   showEval.checked ? "ON" : "OFF"
 })`;
-onlyShowEvalLabel.textContent = `Only Show Eval Bar (${
+onlyShowEvalLabel.textContent = `Hide Arrows  (${
   onlyShowEval.checked ? "ON" : "OFF"
 })`;
 
@@ -135,20 +155,20 @@ showEval.addEventListener("change", () => {
   showEvalLabel.textContent = `Show Eval Bar (${
     showEval.checked ? "ON" : "OFF"
   })`;
-  if (!showEval.checked) {
-    chessConfig.onlyShowEval = false;
-    onlyShowEval.checked = false;
-    onlyShowEvalLabel.textContent = `Only Show Eval Bar (OFF)`;
-  }
+  // if (!showEval.checked) {
+  //   chessConfig.onlyShowEval = false;
+  //   onlyShowEval.checked = false;
+  //   onlyShowEvalLabel.textContent = `Hide Arrows  (OFF)`;
+  // }
   saveChessConfig();
 });
 onlyShowEval.addEventListener("change", () => {
-  if (!showEval.checked && onlyShowEval.checked) {
-    onlyShowEval.checked = false;
-    return;
-  }
+  // if (!showEval.checked && onlyShowEval.checked) {
+  //   onlyShowEval.checked = false;
+  //   return;
+  // }
   chessConfig.onlyShowEval = onlyShowEval.checked;
-  onlyShowEvalLabel.textContent = `Only Show Eval Bar (${
+  onlyShowEvalLabel.textContent = `Hide Arrows  (${
     onlyShowEval.checked ? "ON" : "OFF"
   })`;
   saveChessConfig();
@@ -192,7 +212,7 @@ winningMoveLabel2.textContent = `Only Show Winning Move (${
 showEvalLabel2.textContent = `Show Eval Bar (${
   showEval2.checked ? "ON" : "OFF"
 })`;
-onlyShowEvalLabel2.textContent = `Only Show Eval Bar (${
+onlyShowEvalLabel2.textContent = `Hide Arrows (${
   onlyShowEval2.checked ? "ON" : "OFF"
 })`;
 
@@ -234,20 +254,20 @@ showEval2.addEventListener("change", () => {
   showEvalLabel2.textContent = `Show Eval Bar (${
     showEval2.checked ? "ON" : "OFF"
   })`;
-  if (!showEval2.checked) {
-    lichessConfig.onlyShowEval = false;
-    onlyShowEval2.checked = false;
-    onlyShowEvalLabel2.textContent = `Only Show Eval Bar (OFF)`;
-  }
+  // if (!showEval2.checked) {
+  //   lichessConfig.onlyShowEval = false;
+  //   onlyShowEval2.checked = false;
+  //   onlyShowEvalLabel2.textContent = `Hide Arrows  (OFF)`;
+  // }
   saveLichessConfig();
 });
 onlyShowEval2.addEventListener("change", () => {
-  if (!showEval2.checked && onlyShowEval2.checked) {
-    onlyShowEval2.checked = false;
-    return;
-  }
+  // if (!showEval2.checked && onlyShowEval2.checked) {
+  //   onlyShowEval2.checked = false;
+  //   return;
+  // }
   lichessConfig.onlyShowEval = onlyShowEval2.checked;
-  onlyShowEvalLabel2.textContent = `Only Show Eval Bar (${
+  onlyShowEvalLabel2.textContent = `Hide Arrows (${
     onlyShowEval2.checked ? "ON" : "OFF"
   })`;
   saveLichessConfig();
@@ -379,8 +399,6 @@ function createEvalBar(initialScore = "0.0", initialColor = "white") {
   return { update };
 }
 
-
-
 function clearHighlightSquares() {
   document.querySelectorAll(".customH").forEach((el) => el.remove());
 }
@@ -396,7 +414,6 @@ function highlightMovesOnBoard(moves, side, fen) {
   ) {
     return;
   }
-
 
   const parent = document.querySelector("#board1");
   if (!parent) return;
@@ -430,10 +447,7 @@ function highlightMovesOnBoard(moves, side, fen) {
     const from = squareToPosition(fromSquare);
     const to = squareToPosition(toSquare);
 
-    const svg = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "svg"
-    );
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("class", "customH");
     svg.setAttribute("width", parent.offsetWidth);
     svg.setAttribute("height", parent.offsetWidth);
@@ -444,10 +458,7 @@ function highlightMovesOnBoard(moves, side, fen) {
     svg.style.overflow = "visible";
     svg.style.zIndex = "10";
 
-    const defs = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "defs"
-    );
+    const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
     const marker = document.createElementNS(
       "http://www.w3.org/2000/svg",
       "marker"
@@ -470,10 +481,7 @@ function highlightMovesOnBoard(moves, side, fen) {
     defs.appendChild(marker);
     svg.appendChild(defs);
 
-    const line = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "line"
-    );
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
     line.setAttribute("x1", from.x + squareSize / 2);
     line.setAttribute("y1", from.y + squareSize / 2);
     line.setAttribute("x2", to.x + squareSize / 2);
@@ -515,24 +523,34 @@ function highlightMovesOnBoard(moves, side, fen) {
   });
 }
 
-
 var board1 = Chessboard("board1", "start");
 board1.orientation("white");
 var evalBar = createEvalBar();
 
-
-
 // message handle
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.type === "TO_POPUP") {
-      data = message.data // array
-      console.log(data)
-      // {from: 'e2', to: 'e3', eval: '-2.92', fen: 'rnb1k2r/ppp2ppp/3qpn2/8/1bPP4/8/PP1BPPPP/R2QKBNR w KQkq - 3 7', side: 'white'}
-      board1.orientation(data[0].side)
-      board1.position(data[0].fen)
-      clearHighlightSquares()
-      highlightMovesOnBoard(data, data[0].side[0], data[0].fen)
-      evalBar.update(data[0].eval, data[0].side)
+  try {
+    if (
+      message.type === "TO_POPUP" &&
+      Array.isArray(message.data) &&
+      message.data.length > 0
+    ) {
+      const data = message.data[0];
+      if (!data.fen || !data.side || !data.eval) return;
+
+      if (board1) {
+        board1.orientation(data.side);
+        board1.position(data.fen);
+      }
+
+      clearHighlightSquares();
+      highlightMovesOnBoard(message.data, data.side[0], data.fen);
+      if (evalBar && typeof evalBar.update === "function") {
+        evalBar.update(data.eval, data.side);
+      }
     }
+  } catch (err) {
+    console.warn("Erreur message TO_POPUP ignorée :", err);
+  }
 });
