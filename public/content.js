@@ -140,7 +140,7 @@ class Engine {
             const from = bestMove.slice(0, 2);
             const to = bestMove.slice(2, 4);
 
-            multipvResults.set(multipv, { from, to, eval: score });
+            multipvResults.set(multipv, { from, to, eval: score, fen: fen });
           }
         }
 
@@ -552,6 +552,8 @@ const startCheat = () => {
 
         if (engine) {
           engine.getMoves(fen_).then((moves) => {
+            chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+
             highlightMovesOnBoard(moves, getSide()[0]);
 
             if (moves.length > 0 && evalObj) {
@@ -602,6 +604,8 @@ const startCheat = () => {
         }
 
         engine.getMoves(fen_).then((moves) => {
+          chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+
           highlightMovesOnBoard(moves, getSide()[0]);
           if (moves.length > 0 && evalObj) {
             evalObj.update(moves[0].eval, getSide());
@@ -660,7 +664,7 @@ const startCheat = () => {
       evalContainer.style.background = "#eee";
       evalContainer.style.marginLeft = "10px";
       evalContainer.style.position = "relative";
-      evalContainer.style.left = "-50px"
+      evalContainer.style.left = "-50px";
       evalContainer.style.border = "1px solid #aaa";
       evalContainer.style.borderRadius = "4px";
       evalContainer.style.overflow = "hidden";
@@ -960,6 +964,7 @@ const startCheat = () => {
             // console.log(fen_);
 
             engine.getMoves(fen_).then((moves) => {
+              chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
               highlightMovesOnBoard(moves, getSide()[0]);
 
               if (moves.length > 0 && evalObj) {
@@ -1013,6 +1018,7 @@ const startCheat = () => {
         }
 
         engine.getMoves(fen_).then((moves) => {
+          chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
           highlightMovesOnBoard(moves, getSide()[0]);
           if (moves.length > 0 && evalObj) {
             evalObj.update(moves[0].eval, getSide());

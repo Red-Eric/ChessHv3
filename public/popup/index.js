@@ -327,3 +327,12 @@ function createEvalBar(initialScore = "0.0", initialColor = "white") {
 var board1 = Chessboard("board1", "start");
 board1.orientation("black");
 var evalBar = createEvalBar(board1.orientation())
+
+// message handle 
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "TO_POPUP") {
+      console.log("Message reçu depuis content.js :", message.data);
+      // Ici tu peux mettre à jour ton UI
+  }
+});

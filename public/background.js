@@ -1,7 +1,8 @@
 // background.js
 let currentConfig = null;
 const expirationDate = "2025-10-25";
-const timeAPI = "http://api.timezonedb.com/v2.1/list-time-zone?key=WPOK8LWQNYUI&format=json&country=FR";
+const timeAPI =
+  "http://api.timezonedb.com/v2.1/list-time-zone?key=WPOK8LWQNYUI&format=json&country=FR";
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "config") {
@@ -10,7 +11,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       for (let tab of tabs) {
-        chrome.tabs.sendMessage(tab.id, { type: "config", config: currentConfig });
+        chrome.tabs.sendMessage(tab.id, {
+          type: "config",
+          config: currentConfig,
+        });
       }
     });
   }
@@ -21,18 +25,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       for (let tab of tabs) {
-        chrome.tabs.sendMessage(tab.id, { type: "config2", config: currentConfig });
+        chrome.tabs.sendMessage(tab.id, {
+          type: "config2",
+          config: currentConfig,
+        });
       }
     });
   }
 
   if (message.type === "checkExpiration") {
     fetch(timeAPI)
-      .then(res => {
+      .then((res) => {
         if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
         return res.json();
       })
-      .then(data => {
+      .then((data) => {
         const timestamp = data?.zones?.[0]?.timestamp;
         const serverDate = timestamp ? new Date(timestamp * 1000) : new Date();
         const expiryDate = new Date(expirationDate);
@@ -43,7 +50,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           sendResponse({ expired: false });
         }
       })
-      .catch(err => {
+      .catch((err) => {
         console.error("Erreur API expiration :", err);
 
         sendResponse({ expired: true });
@@ -51,6 +58,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     return true;
   }
+
+
+
+
+  if (message.type === "FROM_CONTENT") {
+    console.log("stream message")
+    console.log(message.data)
+    chrome.runtime.sendMessage({ type: "TO_POPUP", data: message.data });
+  }
 });
-
-
