@@ -61,10 +61,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 
 
+  // debug 
+
 
   if (message.type === "FROM_CONTENT") {
-    console.log("stream message")
-    console.log(message.data)
+    // console.log("stream message")
+    // console.log(message.data)
     chrome.runtime.sendMessage({ type: "TO_POPUP", data: message.data });
   }
 });

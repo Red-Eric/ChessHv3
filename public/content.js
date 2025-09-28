@@ -96,7 +96,7 @@ class Engine {
     this.setOptions();
   }
 
-  async getMoves(fen) {
+  async getMoves(fen, side = "white") {
     await this.ready;
     this.worker.postMessage("uci");
 
@@ -140,7 +140,7 @@ class Engine {
             const from = bestMove.slice(0, 2);
             const to = bestMove.slice(2, 4);
 
-            multipvResults.set(multipv, { from, to, eval: score, fen: fen });
+            multipvResults.set(multipv, { from, to, eval: score, fen: fen, side : side });
           }
         }
 
@@ -551,7 +551,7 @@ const startCheat = () => {
         _elo_ = getOppElo();
 
         if (engine) {
-          engine.getMoves(fen_).then((moves) => {
+          engine.getMoves(fen_, getSide()).then((moves) => {
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
 
             highlightMovesOnBoard(moves, getSide()[0]);
@@ -603,7 +603,7 @@ const startCheat = () => {
           }
         }
 
-        engine.getMoves(fen_).then((moves) => {
+        engine.getMoves(fen_, getSide()).then((moves) => {
           chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
 
           highlightMovesOnBoard(moves, getSide()[0]);
@@ -923,7 +923,7 @@ const startCheat = () => {
 
     function getSide() {
       const board = document.querySelector(".cg-wrap");
-      if (!board) return null; // si le plateau n'est pas trouvé
+      if (!board) return "white"; // si le plateau n'est pas trouvé
 
       if (board.classList.contains("orientation-black")) {
         return "black";
@@ -963,7 +963,7 @@ const startCheat = () => {
             fen_ = event.data.fen;
             // console.log(fen_);
 
-            engine.getMoves(fen_).then((moves) => {
+            engine.getMoves(fen_, getSide()).then((moves) => {
               chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
               highlightMovesOnBoard(moves, getSide()[0]);
 
@@ -1017,7 +1017,7 @@ const startCheat = () => {
           }
         }
 
-        engine.getMoves(fen_).then((moves) => {
+        engine.getMoves(fen_, getSide()).then((moves) => {
           chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
           highlightMovesOnBoard(moves, getSide()[0]);
           if (moves.length > 0 && evalObj) {

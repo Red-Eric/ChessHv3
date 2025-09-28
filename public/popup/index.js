@@ -1,15 +1,15 @@
 // Navigate
 
 const tabs = document.querySelectorAll(".tab");
-    const panels = document.querySelectorAll(".panel");
-    tabs.forEach(tab => {
-      tab.addEventListener("click", () => {
-        tabs.forEach(t => t.classList.remove("active"));
-        panels.forEach(p => p.classList.remove("active"));
-        tab.classList.add("active");
-        document.getElementById(tab.dataset.panel).classList.add("active");
-      });
-    });
+const panels = document.querySelectorAll(".panel");
+tabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    tabs.forEach((t) => t.classList.remove("active"));
+    panels.forEach((p) => p.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById(tab.dataset.panel).classList.add("active");
+  });
+});
 
 // ----- Chess.com -----
 const elo = document.getElementById("elo");
@@ -30,16 +30,38 @@ const onlyShowEval = document.getElementById("onlyShowEval");
 const onlyShowEvalLabel = document.getElementById("onlyShowEvalLabel");
 
 const skillToElo = {
-  0:1000,1:1200,2:1350,3:1450,4:1550,5:1650,
-  6:1750,7:1850,8:1950,9:2050,10:2150,11:2250,
-  12:2350,13:2450,14:2550,15:2650,16:2750,17:2850,
-  18:2950,19:3050,20:3200
+  0: 1000,
+  1: 1200,
+  2: 1350,
+  3: 1450,
+  4: 1550,
+  5: 1650,
+  6: 1750,
+  7: 1850,
+  8: 1950,
+  9: 2050,
+  10: 2150,
+  11: 2250,
+  12: 2350,
+  13: 2450,
+  14: 2550,
+  15: 2650,
+  16: 2750,
+  17: 2850,
+  18: 2950,
+  19: 3050,
+  20: 3200,
 };
 
 let chessConfig = JSON.parse(localStorage.getItem("chessConfig")) || {
-  skill:20, lines:5, depth:10, delay:100,
-  autoMove:false, winningMove:false,
-  showEval:false, onlyShowEval:false
+  skill: 20,
+  lines: 5,
+  depth: 10,
+  delay: 100,
+  autoMove: false,
+  winningMove: false,
+  showEval: false,
+  onlyShowEval: false,
 };
 
 // ----- Init Chess.com -----
@@ -57,67 +79,78 @@ linesValue.textContent = chessConfig.lines;
 depthValue.textContent = chessConfig.depth;
 delayValue.textContent = chessConfig.delay;
 autoMoveLabel.textContent = `Auto Move (${autoMove.checked ? "ON" : "OFF"})`;
-winningMoveLabel.textContent = `Only Show Winning Move (${winningMove.checked ? "ON" : "OFF"})`;
-showEvalLabel.textContent = `Show Eval Bar (${showEval.checked ? "ON" : "OFF"})`;
-onlyShowEvalLabel.textContent = `Only Show Eval Bar (${onlyShowEval.checked ? "ON" : "OFF"})`;
+winningMoveLabel.textContent = `Only Show Winning Move (${
+  winningMove.checked ? "ON" : "OFF"
+})`;
+showEvalLabel.textContent = `Show Eval Bar (${
+  showEval.checked ? "ON" : "OFF"
+})`;
+onlyShowEvalLabel.textContent = `Only Show Eval Bar (${
+  onlyShowEval.checked ? "ON" : "OFF"
+})`;
 
 function saveChessConfig() {
   localStorage.setItem("chessConfig", JSON.stringify(chessConfig));
   console.log("Chess.com config:", chessConfig);
   if (typeof chrome !== "undefined" && chrome.runtime) {
-    chrome.runtime.sendMessage({ type:"config", config:chessConfig });
-
+    chrome.runtime.sendMessage({ type: "config", config: chessConfig });
   }
 }
 
-
-
-
 // ----- Listeners Chess.com -----
-elo.addEventListener("input", ()=>{
+elo.addEventListener("input", () => {
   chessConfig.skill = parseInt(elo.value);
   eloValue.textContent = `Skill: ${chessConfig.skill}`;
   saveChessConfig();
 });
-lines.addEventListener("input", ()=>{
+lines.addEventListener("input", () => {
   chessConfig.lines = parseInt(lines.value);
   linesValue.textContent = chessConfig.lines;
   saveChessConfig();
 });
-depth.addEventListener("input", ()=>{
+depth.addEventListener("input", () => {
   chessConfig.depth = parseInt(depth.value);
   depthValue.textContent = chessConfig.depth;
   saveChessConfig();
 });
-delay.addEventListener("input", ()=>{
+delay.addEventListener("input", () => {
   chessConfig.delay = parseInt(delay.value);
   delayValue.textContent = chessConfig.delay;
   saveChessConfig();
 });
-autoMove.addEventListener("change", ()=>{
+autoMove.addEventListener("change", () => {
   chessConfig.autoMove = autoMove.checked;
-  autoMoveLabel.textContent = `Auto Move (${autoMove.checked ? "ON":"OFF"})`;
+  autoMoveLabel.textContent = `Auto Move (${autoMove.checked ? "ON" : "OFF"})`;
   saveChessConfig();
 });
-winningMove.addEventListener("change", ()=>{
+winningMove.addEventListener("change", () => {
   chessConfig.winningMove = winningMove.checked;
-  winningMoveLabel.textContent = `Only Show Winning Move (${winningMove.checked ? "ON":"OFF"})`;
+  winningMoveLabel.textContent = `Only Show Winning Move (${
+    winningMove.checked ? "ON" : "OFF"
+  })`;
   saveChessConfig();
 });
-showEval.addEventListener("change", ()=>{
+showEval.addEventListener("change", () => {
   chessConfig.showEval = showEval.checked;
-  showEvalLabel.textContent=`Show Eval Bar (${showEval.checked ? "ON":"OFF"})`;
-  if(!showEval.checked){
-    chessConfig.onlyShowEval=false;
-    onlyShowEval.checked=false;
-    onlyShowEvalLabel.textContent=`Only Show Eval Bar (OFF)`;
+  showEvalLabel.textContent = `Show Eval Bar (${
+    showEval.checked ? "ON" : "OFF"
+  })`;
+  if (!showEval.checked) {
+    chessConfig.onlyShowEval = false;
+    onlyShowEval.checked = false;
+    onlyShowEvalLabel.textContent = `Only Show Eval Bar (OFF)`;
   }
   saveChessConfig();
 });
-onlyShowEval.addEventListener("change", ()=>{
-  if(!showEval.checked && onlyShowEval.checked){ onlyShowEval.checked=false; return; }
+onlyShowEval.addEventListener("change", () => {
+  if (!showEval.checked && onlyShowEval.checked) {
+    onlyShowEval.checked = false;
+    return;
+  }
   chessConfig.onlyShowEval = onlyShowEval.checked;
-  onlyShowEvalLabel.textContent=`Only Show Eval Bar (${onlyShowEval.checked?"ON":"OFF"})`;
+  onlyShowEvalLabel.textContent = `Only Show Eval Bar (${
+    onlyShowEval.checked ? "ON" : "OFF"
+  })`;
   saveChessConfig();
 });
 
@@ -133,8 +166,12 @@ const onlyShowEval2 = document.getElementById("onlyShowEval2");
 const onlyShowEvalLabel2 = document.getElementById("onlyShowEvalLabel2");
 
 let lichessConfig = JSON.parse(localStorage.getItem("lichessConfig")) || {
-  skill:20, lines:5, depth:10,
-  winningMove:false, showEval:false, onlyShowEval:false
+  skill: 20,
+  lines: 5,
+  depth: 10,
+  winningMove: false,
+  showEval: false,
+  onlyShowEval: false,
 };
 
 elo2.value = lichessConfig.skill;
@@ -144,59 +181,77 @@ winningMove2.checked = lichessConfig.winningMove;
 showEval2.checked = lichessConfig.showEval;
 onlyShowEval2.checked = lichessConfig.onlyShowEval;
 
-eloValue2.textContent = `Skill: ${lichessConfig.skill} (${skillToElo[lichessConfig.skill]} Elo)`;
+eloValue2.textContent = `Skill: ${lichessConfig.skill} (${
+  skillToElo[lichessConfig.skill]
+} Elo)`;
 linesValue2.textContent = lichessConfig.lines;
 depthValue2.textContent = lichessConfig.depth;
-winningMoveLabel2.textContent = `Only Show Winning Move (${winningMove2.checked ? "ON" : "OFF"})`;
-showEvalLabel2.textContent = `Show Eval Bar (${showEval2.checked ? "ON" : "OFF"})`;
-onlyShowEvalLabel2.textContent = `Only Show Eval Bar (${onlyShowEval2.checked ? "ON" : "OFF"})`;
+winningMoveLabel2.textContent = `Only Show Winning Move (${
+  winningMove2.checked ? "ON" : "OFF"
+})`;
+showEvalLabel2.textContent = `Show Eval Bar (${
+  showEval2.checked ? "ON" : "OFF"
+})`;
+onlyShowEvalLabel2.textContent = `Only Show Eval Bar (${
+  onlyShowEval2.checked ? "ON" : "OFF"
+})`;
 
 function saveLichessConfig() {
   localStorage.setItem("lichessConfig", JSON.stringify(lichessConfig));
   console.log("Lichess config:", lichessConfig);
-  if(typeof chrome !== "undefined" && chrome.runtime){
-    chrome.runtime.sendMessage({type:"config2", config:lichessConfig});
+  if (typeof chrome !== "undefined" && chrome.runtime) {
+    chrome.runtime.sendMessage({ type: "config2", config: lichessConfig });
   }
 }
 
 // ----- Listeners Lichess -----
-elo2.addEventListener("input", ()=>{
-  lichessConfig.skill=parseInt(elo2.value);
-  eloValue2.textContent=`Skill: ${lichessConfig.skill} (${skillToElo[lichessConfig.skill]} Elo)`;
+elo2.addEventListener("input", () => {
+  lichessConfig.skill = parseInt(elo2.value);
+  eloValue2.textContent = `Skill: ${lichessConfig.skill} (${
+    skillToElo[lichessConfig.skill]
+  } Elo)`;
   saveLichessConfig();
 });
-lines2.addEventListener("input", ()=>{
-  lichessConfig.lines=parseInt(lines2.value);
-  linesValue2.textContent=lichessConfig.lines;
+lines2.addEventListener("input", () => {
+  lichessConfig.lines = parseInt(lines2.value);
+  linesValue2.textContent = lichessConfig.lines;
   saveLichessConfig();
 });
-depth2.addEventListener("input", ()=>{
-  lichessConfig.depth=parseInt(depth2.value);
-  depthValue2.textContent=lichessConfig.depth;
+depth2.addEventListener("input", () => {
+  lichessConfig.depth = parseInt(depth2.value);
+  depthValue2.textContent = lichessConfig.depth;
   saveLichessConfig();
 });
-winningMove2.addEventListener("change", ()=>{
-  lichessConfig.winningMove=winningMove2.checked;
-  winningMoveLabel2.textContent=`Only Show Winning Move (${winningMove2.checked?"ON":"OFF"})`;
+winningMove2.addEventListener("change", () => {
+  lichessConfig.winningMove = winningMove2.checked;
+  winningMoveLabel2.textContent = `Only Show Winning Move (${
+    winningMove2.checked ? "ON" : "OFF"
+  })`;
   saveLichessConfig();
 });
-showEval2.addEventListener("change", ()=>{
-  lichessConfig.showEval=showEval2.checked;
-  showEvalLabel2.textContent=`Show Eval Bar (${showEval2.checked?"ON":"OFF"})`;
-  if(!showEval2.checked){
-    lichessConfig.onlyShowEval=false;
-    onlyShowEval2.checked=false;
-    onlyShowEvalLabel2.textContent=`Only Show Eval Bar (OFF)`;
+showEval2.addEventListener("change", () => {
+  lichessConfig.showEval = showEval2.checked;
+  showEvalLabel2.textContent = `Show Eval Bar (${
+    showEval2.checked ? "ON" : "OFF"
+  })`;
+  if (!showEval2.checked) {
+    lichessConfig.onlyShowEval = false;
+    onlyShowEval2.checked = false;
+    onlyShowEvalLabel2.textContent = `Only Show Eval Bar (OFF)`;
   }
   saveLichessConfig();
 });
-onlyShowEval2.addEventListener("change", ()=>{
-  if(!showEval2.checked && onlyShowEval2.checked){ onlyShowEval2.checked=false; return; }
-  lichessConfig.onlyShowEval=onlyShowEval2.checked;
-  onlyShowEvalLabel2.textContent=`Only Show Eval Bar (${onlyShowEval2.checked?"ON":"OFF"})`;
+onlyShowEval2.addEventListener("change", () => {
+  if (!showEval2.checked && onlyShowEval2.checked) {
+    onlyShowEval2.checked = false;
+    return;
+  }
+  lichessConfig.onlyShowEval = onlyShowEval2.checked;
+  onlyShowEvalLabel2.textContent = `Only Show Eval Bar (${
+    onlyShowEval2.checked ? "ON" : "OFF"
+  })`;
   saveLichessConfig();
 });
-
 
 // Chess Board
 
@@ -212,7 +267,7 @@ function createEvalBar(initialScore = "0.0", initialColor = "white") {
   evalContainer.style.zIndex = "9999";
   evalContainer.style.width = `20px`;
   evalContainer.style.height = `400px`;
-  evalContainer.style.marginRight = "10px"
+  evalContainer.style.marginRight = "10px";
   evalContainer.style.background = "#eee";
   evalContainer.style.marginLeft = "10px";
   evalContainer.style.position = "relative";
@@ -324,15 +379,160 @@ function createEvalBar(initialScore = "0.0", initialColor = "white") {
   return { update };
 }
 
-var board1 = Chessboard("board1", "start");
-board1.orientation("black");
-var evalBar = createEvalBar(board1.orientation())
 
-// message handle 
+
+function clearHighlightSquares() {
+  document.querySelectorAll(".customH").forEach((el) => el.remove());
+}
+
+function highlightMovesOnBoard(moves, side, fen) {
+  if (!Array.isArray(moves)) return;
+
+  if (
+    !(
+      (side === "w" && fen.split(" ")[1] === "w") ||
+      (side === "b" && fen.split(" ")[1] === "b")
+    )
+  ) {
+    return;
+  }
+
+
+  const parent = document.querySelector("#board1");
+  if (!parent) return;
+
+  const squareSize = parent.offsetWidth / 8;
+  const maxMoves = 5;
+  let colors = ["blue", "green", "yellow", "orange", "red"];
+
+  parent.querySelectorAll(".customH").forEach((el) => el.remove());
+
+  function squareToPosition(square) {
+    const fileChar = square[0];
+    const rankChar = square[1];
+    const rank = parseInt(rankChar, 10) - 1;
+
+    let file;
+    if (side === "w") {
+      file = fileChar.charCodeAt(0) - "a".charCodeAt(0);
+      const y = (7 - rank) * squareSize;
+      const x = file * squareSize;
+      return { x, y };
+    } else {
+      file = "h".charCodeAt(0) - fileChar.charCodeAt(0);
+      const y = rank * squareSize;
+      const x = file * squareSize;
+      return { x, y };
+    }
+  }
+
+  function drawArrow(fromSquare, toSquare, color, score) {
+    const from = squareToPosition(fromSquare);
+    const to = squareToPosition(toSquare);
+
+    const svg = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "svg"
+    );
+    svg.setAttribute("class", "customH");
+    svg.setAttribute("width", parent.offsetWidth);
+    svg.setAttribute("height", parent.offsetWidth);
+    svg.style.position = "absolute";
+    svg.style.left = "0";
+    svg.style.top = "0";
+    svg.style.pointerEvents = "none";
+    svg.style.overflow = "visible";
+    svg.style.zIndex = "10";
+
+    const defs = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "defs"
+    );
+    const marker = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "marker"
+    );
+    marker.setAttribute("id", `arrowhead-${color}`);
+    marker.setAttribute("markerWidth", "3.5");
+    marker.setAttribute("markerHeight", "2.5");
+    marker.setAttribute("refX", "1.75");
+    marker.setAttribute("refY", "1.25");
+    marker.setAttribute("orient", "auto");
+    marker.setAttribute("markerUnits", "strokeWidth");
+
+    const arrowPath = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "path"
+    );
+    arrowPath.setAttribute("d", "M0,0 L3.5,1.25 L0,2.5 Z");
+    arrowPath.setAttribute("fill", color);
+    marker.appendChild(arrowPath);
+    defs.appendChild(marker);
+    svg.appendChild(defs);
+
+    const line = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "line"
+    );
+    line.setAttribute("x1", from.x + squareSize / 2);
+    line.setAttribute("y1", from.y + squareSize / 2);
+    line.setAttribute("x2", to.x + squareSize / 2);
+    line.setAttribute("y2", to.y + squareSize / 2);
+    line.setAttribute("stroke", color);
+    line.setAttribute("stroke-width", "5");
+    line.setAttribute("marker-end", `url(#arrowhead-${color})`);
+    line.setAttribute("opacity", "0.6");
+    svg.appendChild(line);
+
+    if (score !== undefined) {
+      const text = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "text"
+      );
+      text.setAttribute("x", to.x + squareSize - 4);
+      text.setAttribute("y", to.y + 12);
+      text.setAttribute("fill", color);
+      text.setAttribute("font-size", "13");
+      text.setAttribute("font-weight", "bold");
+      text.setAttribute("text-anchor", "end");
+      text.setAttribute("alignment-baseline", "hanging");
+      text.setAttribute("opacity", "1");
+      text.textContent = score;
+      svg.appendChild(text);
+    }
+
+    parent.appendChild(svg);
+  }
+
+  parent.style.position = "relative";
+
+  // Filtrage des coups si config.winningMove est actif
+  let filteredMoves = moves;
+
+  filteredMoves.slice(0, maxMoves).forEach((move, index) => {
+    const color = colors[index] || "red";
+    drawArrow(move.from, move.to, color, move.eval);
+  });
+}
+
+
+var board1 = Chessboard("board1", "start");
+board1.orientation("white");
+var evalBar = createEvalBar();
+
+
+
+// message handle
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "TO_POPUP") {
-      console.log("Message reçu depuis content.js :", message.data);
-      // Ici tu peux mettre à jour ton UI
-  }
+      data = message.data // array
+      console.log(data)
+      // {from: 'e2', to: 'e3', eval: '-2.92', fen: 'rnb1k2r/ppp2ppp/3qpn2/8/1bPP4/8/PP1BPPPP/R2QKBNR w KQkq - 3 7', side: 'white'}
+      board1.orientation(data[0].side)
+      board1.position(data[0].fen)
+      clearHighlightSquares()
+      highlightMovesOnBoard(data, data[0].side[0], data[0].fen)
+      evalBar.update(data[0].eval, data[0].side)
+    }
 });
