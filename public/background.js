@@ -2,7 +2,7 @@
 let currentConfig = null;
 const expirationDate = "2025-10-25";
 const timeAPI =
-  "http://api.timezonedb.com/v2.1/list-time-zone?key=WPOK8LWQNYUI&format=json&country=FR";
+  "https://api.timezonedb.com/v2.1/list-time-zone?key=WPOK8LWQNYUI&format=json&country=FR";
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "config") {
