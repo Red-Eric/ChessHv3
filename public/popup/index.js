@@ -196,3 +196,6 @@ onlyShowEval2.addEventListener("change", ()=>{
   onlyShowEvalLabel2.textContent=`Only Show Eval Bar (${onlyShowEval2.checked?"ON":"OFF"})`;
   saveLichessConfig();
 });
+
+
+// Chess Board
