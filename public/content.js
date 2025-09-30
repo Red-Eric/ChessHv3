@@ -109,6 +109,7 @@ class Engine {
 
       const onMessage = (event) => {
         const msg = event.data;
+        console.log(msg)
         if (typeof msg !== "string") return;
 
         if (msg.includes(`info depth ${this.depth}`)) {
@@ -1028,3 +1029,5 @@ const startCheat = () => {
     });
   }
 };
+
+
