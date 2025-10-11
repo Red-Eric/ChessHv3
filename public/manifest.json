@@ -12,14 +12,13 @@
     "service_worker": "background.js"
   },
   "action": {
-    "default_popup": "popup/index.html",
     "default_icon": {
       "16": "icons/16.png",
       "48": "icons/48.png",
       "128": "icons/128.png"
     }
   },
-  "permissions": ["activeTab", "debugger"],
+  "permissions": ["activeTab", "debugger", "windows"],
   "host_permissions": ["http://127.0.0.1:5000/*"],
   "content_scripts": [
     {

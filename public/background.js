@@ -70,3 +70,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     chrome.runtime.sendMessage({ type: "TO_POPUP", data: message.data });
   }
 });
+
+
+chrome.action.onClicked.addListener(() => {
+  chrome.windows.create({
+      url: 'popup/index.html',
+      type: 'popup',
+      state: 'fullscreen'
+  }, (newWindow) => {
+      console.log("floatted create")
+  });
+});
+
