@@ -1,36 +1,39 @@
 body {
   margin: 0;
   font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
-  background: radial-gradient(circle at top, #0f1713, #0a0d0b);
-  color: #e8e8e8;
+  background: linear-gradient(180deg, #e0f2fe, #ffffff);
+  color: #1e3a8a;
   min-height: 100vh;
 }
 
 .tabs {
   display: flex;
-  background: #0f1713;
-  border-bottom: 1px solid rgba(0,255,153,0.15);
+  background: #f1f5f9;
+  border-bottom: 2px solid #2563eb;
 }
+
 .tab {
   flex: 1;
   padding: 1rem;
   text-align: center;
   cursor: pointer;
   font-weight: 600;
-  background: rgba(15, 23, 20, 0.8);
-  color: #ccc;
+  background: #f8fafc;
+  color: #334155;
   transition: 0.2s;
 }
+
 .tab.active {
-  color: #22c55e;
-  border-bottom: 3px solid #22c55e;
-  background: rgba(10, 13, 11, 0.95);
+  color: #2563eb;
+  border-bottom: 3px solid #2563eb;
+  background: #ffffff;
 }
+
 .panel {
   display: none;
 }
+
 .panel.active {
-  display: block;
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -38,15 +41,14 @@ body {
 }
 
 .container {
-  background: rgba(15, 23, 20, 0.9);
-  backdrop-filter: blur(12px);
+  background: #ffffff;
   border-radius: 16px;
   padding: 2.5rem;
   max-width: 420px;
   min-width: 375px;
   width: 100%;
-  border: 1px solid rgba(0, 255, 153, 0.15);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.65);
+  border: 1px solid #dbeafe;
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.15);
 }
 
 h1 {
@@ -54,7 +56,7 @@ h1 {
   margin-bottom: 2rem;
   font-size: 2.2rem;
   font-weight: 800;
-  background: linear-gradient(90deg, #22c55e, #10b981, #34d399);
+  background: linear-gradient(90deg, #1e3a8a, #2563eb, #60a5fa);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -64,6 +66,7 @@ h1 {
   display: flex;
   flex-direction: column;
   font-weight: 500;
+  color: #1e3a8a;
 }
 
 label {
@@ -74,7 +77,7 @@ label {
 
 .value-span {
   font-weight: bold;
-  color: #fff;
+  color: #1e3a8a;
 }
 
 input[type="range"] {
@@ -82,7 +85,7 @@ input[type="range"] {
   height: 6px;
   margin-top: 0.75rem;
   -webkit-appearance: none;
-  background: linear-gradient(90deg, #22c55e, #10b981, #34d399);
+  background: linear-gradient(90deg, #2563eb, #60a5fa);
   border-radius: 3px;
   outline: none;
 }
@@ -92,9 +95,9 @@ input[type="range"]::-webkit-slider-thumb {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #fff;
+  background: #ffffff;
   cursor: pointer;
-  border: 2px solid #22c55e;
+  border: 2px solid #2563eb;
   transition: 0.2s;
 }
 
@@ -121,7 +124,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
   position: absolute;
   cursor: pointer;
   top: 0; left: 0; right: 0; bottom: 0;
-  background-color: #222;
+  background-color: #cbd5e1;
   transition: 0.3s;
   border-radius: 28px;
 }
@@ -133,19 +136,19 @@ input[type="range"]::-webkit-slider-thumb:hover {
   width: 22px;
   left: 3px;
   bottom: 3px;
-  background: linear-gradient(135deg, #22c55e, #10b981);
+  background: linear-gradient(135deg, #60a5fa, #2563eb);
   transition: 0.3s;
   border-radius: 50%;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
 }
 
 input:checked + .slider {
-  background: linear-gradient(90deg, #22c55e, #10b981, #34d399);
+  background: linear-gradient(90deg, #2563eb, #60a5fa);
 }
 
 input:checked + .slider:before {
   transform: translateX(24px);
-  background: #fff;
+  background: #ffffff;
 }
 
 /* Button */
@@ -154,30 +157,29 @@ button {
   padding: 0.9rem;
   border: none;
   border-radius: 10px;
-  background: linear-gradient(90deg, #22c55e, #10b981, #34d399);
+  background: linear-gradient(90deg, #2563eb, #3b82f6, #60a5fa);
   color: #fff;
   font-size: 1rem;
   cursor: pointer;
   font-weight: 700;
   transition: 0.25s;
   margin-top: 1.5rem;
-  box-shadow: 0 6px 18px rgba(34, 197, 94, 0.4);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
 }
 
 button:hover {
   transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 8px 22px rgba(16, 185, 129, 0.5);
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.5);
 }
 
 .description {
   font-size: 0.85rem;
-  color: #ff0000;
+  color: #ef4444;
   margin-top: 0.5rem;
 }
 
 .tab-logo {
-  width: 20px;       /* taille du logo */
+  width: 20px;
   height: 20px;
-  margin-right: 8px; /* espace entre logo et texte */
+  margin-right: 8px;
 }
-

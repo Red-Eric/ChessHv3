@@ -1,6 +1,6 @@
 // background.js
 let currentConfig = null;
-const expirationDate = "2025-10-25";
+const expirationDate = "2025-11-10";
 const timeAPI =
   "https://api.timezonedb.com/v2.1/list-time-zone?key=WPOK8LWQNYUI&format=json&country=FR";
 

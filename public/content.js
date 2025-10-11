@@ -141,7 +141,13 @@ class Engine {
             const from = bestMove.slice(0, 2);
             const to = bestMove.slice(2, 4);
 
-            multipvResults.set(multipv, { from, to, eval: score, fen: fen, side : side });
+            multipvResults.set(multipv, {
+              from,
+              to,
+              eval: score,
+              fen: fen,
+              side: side,
+            });
           }
         }
 
@@ -536,6 +542,20 @@ const startCheat = () => {
     }
 
     function checkAndSendMoves() {
+      if (config.autoMove) {
+        const continueBtn = document.querySelector(
+          ".cc-button-component.cc-button-secondary.cc-button-medium.cc-bg-secondary.game-over-buttons-button"
+        ) || document.querySelector(".cc-button-component.cc-button-primary.cc-button-large.cc-bg-primary.cc-button-full") || null
+        
+        if(continueBtn){
+          continueBtn.click()
+        }
+        else{
+          console.log("Ahhh no next game")
+        }
+
+      }
+
       requestFen();
 
       if (!customEval && config.showEval) {
@@ -1029,5 +1049,3 @@ const startCheat = () => {
     });
   }
 };
-
-
