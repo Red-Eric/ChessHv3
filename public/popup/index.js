@@ -1,5 +1,13 @@
 // Navigate
 
+document.addEventListener("DOMContentLoaded", () => {
+  if (typeof chrome !== "undefined" && chrome.runtime) {
+    chrome.runtime.sendMessage({ type: "popupReady" });
+  }
+});
+
+
+
 let panelIndex = 0;
 
 const tabs = document.querySelectorAll(".tab");

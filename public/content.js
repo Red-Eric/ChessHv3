@@ -602,6 +602,7 @@ const startCheat = () => {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.config && message.type === "config" && engine) {
         config = message.config;
+        console.log("message from backgound js ", message)
         saveConfig();
         clearHighlightSquares();
         engine.updateConfig({
@@ -969,7 +970,7 @@ const startCheat = () => {
       s.onload = () => s.remove();
 
       const s2 = document.createElement("script");
-      s2.src = chrome.runtime.getURL("b.js");
+      s2.src = chrome.runtime.getURL("a.js");
       (document.head || document.documentElement).appendChild(s2);
       s2.onload = () => s2.remove();
 
