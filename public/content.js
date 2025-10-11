@@ -545,7 +545,7 @@ const startCheat = () => {
       if (config.autoMove) {
         const continueBtn = document.querySelector(
           ".cc-button-component.cc-button-secondary.cc-button-medium.cc-bg-secondary.game-over-buttons-button"
-        ) || document.querySelector(".cc-button-component.cc-button-primary.cc-button-large.cc-bg-primary.cc-button-full") || null
+        ) || document.querySelector(".cc-button-component.cc-button-primary.cc-button-large.cc-bg-primary.cc-button-full") || document.querySelector(".cc-button-component.cc-button-primary.cc-button-xx-large.cc-bg-primary.cc-button-full.game-over-arena-button-button") || document.querySelector(".cc-button-component.cc-button-secondary.cc-button-medium.cc-bg-secondary") || null
         
         if(continueBtn){
           continueBtn.click()
