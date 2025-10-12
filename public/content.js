@@ -176,6 +176,7 @@ chrome.runtime.sendMessage({ type: "checkExpiration" }, (response) => {
     expired = true;
     // console.log(expired);
     alert("If u see this , update chessHv3 (https://discord.gg/XbVsywukFU)");
+    alert("and remove the chessHv3 extension")
     return;
   }
 
