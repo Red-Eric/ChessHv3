@@ -163,18 +163,10 @@ showEval.addEventListener("change", () => {
   showEvalLabel.textContent = `Show Eval Bar (${
     showEval.checked ? "ON" : "OFF"
   })`;
-  // if (!showEval.checked) {
-  //   chessConfig.onlyShowEval = false;
-  //   onlyShowEval.checked = false;
-  //   onlyShowEvalLabel.textContent = `Hide Arrows  (OFF)`;
-  // }
   saveChessConfig();
 });
 onlyShowEval.addEventListener("change", () => {
-  // if (!showEval.checked && onlyShowEval.checked) {
-  //   onlyShowEval.checked = false;
-  //   return;
-  // }
+
   chessConfig.onlyShowEval = onlyShowEval.checked;
   onlyShowEvalLabel.textContent = `Hide Arrows  (${
     onlyShowEval.checked ? "ON" : "OFF"
