@@ -29,7 +29,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["a.js", "lib/stockfish.js","lib/chess_min.js", "lib/stockfish17.js", "lib/stockfish-17.1-lite-single-03e3232.js", "lib/stockfish-17.1-lite-single-03e3232.wasm"],
+      "resources": ["a.js", "lib/stockfish.js","lib/chess_min.js", "data.json"],
       "matches": ["<all_urls>"]
     }
   ],
