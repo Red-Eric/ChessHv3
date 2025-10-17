@@ -1,3 +1,12 @@
+
+fetch(chrome.runtime.getURL('data.json'))
+  .then(res => res.json())
+  .then(data => {
+    console.log(data);
+  });
+
+
+  
 async function createWorker() {
   const url = chrome.runtime.getURL("lib/stockfish.js");
 

@@ -1,0 +1,21 @@
+[
+    {
+      "fen": "rnbqkbnr/pppppppp/8/8/2P5/8/PP1PPPPP/RNBQKBNR b KQkq c3 0 1",
+      "moves": [
+        {
+          "from": "c2",
+          "to": "c4"
+        }
+      ]
+    },
+    {
+      "fen": "rnbqkbnr/pppp1ppp/8/4p3/2P5/8/PP1PPPPP/RNBQKBNR w KQkq e6 0 2",
+      "moves": [
+        {
+          "from": "e7",
+          "to": "e5"
+        }
+      ]
+    }
+]
+  
