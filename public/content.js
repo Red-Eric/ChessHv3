@@ -1,14 +1,3 @@
-bookMoves = []
-
-fetch(chrome.runtime.getURL('data.json'))
-  .then(res => res.json())
-  .then(data => {
-    bookMoves = data
-  });
-
-
-bookMove = false;
-  
 async function createWorker() {
   const url = chrome.runtime.getURL("lib/stockfish.js");
 
