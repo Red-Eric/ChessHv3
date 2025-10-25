@@ -34,9 +34,7 @@
         "lib/stockfish.js",
         "lib/chess_min.js",
         "data.json",
-        "lib/stockfish-17.1-asm-341ff22.js",
-        "iframe.html",
-        "iframe.js"
+        "lib/stockfish-17.1-asm-341ff22.js"
       ],
       "matches": ["<all_urls>"]
     }

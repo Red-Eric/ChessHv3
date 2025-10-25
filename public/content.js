@@ -1,5 +1,6 @@
 async function createWorker() {
-  const url = chrome.runtime.getURL("lib/stockfish.js");
+  // stockfish 17 = stockfish-17.1-asm-341ff22.js
+  const url = chrome.runtime.getURL("lib/stockfish-17.1-asm-341ff22.js");
 
   const blob = new Blob([`importScripts("${url}");`], {
     type: "application/javascript",
@@ -75,41 +76,44 @@ class Engine {
     this.ready = this.init();
   }
 
-  async init() {
-    this.worker = await createWorker();
-    this.worker.postMessage("uci");
-    this.setOptions();
+  sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  setOptions() {
+  async init() {
+    this.worker = await createWorker();
+    await this.sleep(100);
+    this.worker.postMessage("uci");
+    await this.setOptions();
+  }
+
+  async setOptions() {
+    await this.sleep(100);
     this.worker.postMessage(`setoption name Skill Level value ${this.elo}`);
+    await this.sleep(100);
     this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
+    await this.sleep(100);
     this.worker.postMessage("setoption name Ponder value false");
   }
 
-  updateConfig({ elo, depth, multipv, threads, hash }) {
+  async updateConfig({ elo, depth, multipv, threads, hash }) {
     if (elo !== undefined) this.elo = elo;
     if (depth !== undefined) this.depth = depth;
     if (multipv !== undefined) this.multipv = multipv;
     if (threads !== undefined) this.threads = threads;
     if (hash !== undefined) this.hash = hash;
-    this.setOptions();
+    await this.setOptions();
   }
 
   async getMoves(fen, side = "white") {
     await this.ready;
-    this.worker.postMessage("uci");
-
     const sideToMove = fen.split(" ")[1];
 
     return new Promise((resolve) => {
       const multipvResults = new Map();
-      this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
-      this.worker.postMessage("stop");
 
       const onMessage = (event) => {
         const msg = event.data;
-        // console.log(msg)
         if (typeof msg !== "string") return;
 
         if (msg.includes(`info depth ${this.depth}`)) {
@@ -132,6 +136,7 @@ class Engine {
               const value = +(scoreValueRaw / 100).toFixed(2);
               score = value > 0 ? `+${value}` : `${value}`;
             } else if (scoreType === "mate") {
+              scoreValueRaw = scoreValueRaw || 0;
               score =
                 scoreValueRaw > 0
                   ? `#${scoreValueRaw}`
@@ -141,13 +146,7 @@ class Engine {
             const from = bestMove.slice(0, 2);
             const to = bestMove.slice(2, 4);
 
-            multipvResults.set(multipv, {
-              from,
-              to,
-              eval: score,
-              fen: fen,
-              side: side,
-            });
+            multipvResults.set(multipv, { from, to, eval: score, fen, side });
           }
         }
 
@@ -162,12 +161,119 @@ class Engine {
       };
 
       this.worker.addEventListener("message", onMessage);
-      this.worker.postMessage("stop");
-      this.worker.postMessage(`position fen ${fen}`);
-      this.worker.postMessage(`go depth ${this.depth}`);
+
+      // Envoi avec delay
+      (async () => {
+        await this.sleep(100);
+        this.worker.postMessage(`position fen ${fen}`);
+        await this.sleep(100);
+        this.worker.postMessage("stop");
+        await this.sleep(100);
+        this.worker.postMessage(`go depth ${this.depth}`);
+      })();
     });
   }
 }
+
+// class Engine {
+//   constructor({ elo = 20, depth = 10, multipv = 5, threads = 2, hash = 128 }) {
+//     this.elo = elo;
+//     this.depth = depth;
+//     this.multipv = multipv;
+//     this.threads = threads;
+//     this.hash = hash;
+//     this.ready = this.init();
+//   }
+
+//   async init() {
+//     this.worker = await createWorker();
+//     this.worker.postMessage("uci");
+//     this.setOptions();
+//   }
+
+//   setOptions() {
+//     this.worker.postMessage(`setoption name Skill Level value ${this.elo}`);
+//     this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
+//     this.worker.postMessage("setoption name Ponder value false");
+//   }
+
+//   updateConfig({ elo, depth, multipv, threads, hash }) {
+//     if (elo !== undefined) this.elo = elo;
+//     if (depth !== undefined) this.depth = depth;
+//     if (multipv !== undefined) this.multipv = multipv;
+//     if (threads !== undefined) this.threads = threads;
+//     if (hash !== undefined) this.hash = hash;
+//     this.setOptions();
+//   }
+
+//   async getMoves(fen, side = "white") {
+//     await this.ready;
+//     const sideToMove = fen.split(" ")[1];
+
+//     return new Promise((resolve) => {
+//       const multipvResults = new Map();
+
+//       const onMessage = (event) => {
+//         const msg = event.data;
+//         // console.log(msg)
+//         if (typeof msg !== "string") return;
+
+//         if (msg.includes(`info depth ${this.depth}`)) {
+//           const multipvMatch = msg.match(/multipv (\d+)/);
+//           const scoreMatch = msg.match(/score (cp|mate) (-?\d+)/);
+//           const pvMatch = msg.match(/pv ([a-h][1-8][a-h][1-8][qrbn]?)/);
+
+//           if (multipvMatch && scoreMatch && pvMatch) {
+//             const multipv = parseInt(multipvMatch[1], 10);
+//             const scoreType = scoreMatch[1];
+//             let scoreValueRaw = parseInt(scoreMatch[2], 10);
+
+//             if (sideToMove === "b") {
+//               scoreValueRaw = -scoreValueRaw;
+//             }
+
+//             const bestMove = pvMatch[1];
+//             let score;
+//             if (scoreType === "cp") {
+//               const value = +(scoreValueRaw / 100).toFixed(2);
+//               score = value > 0 ? `+${value}` : `${value}`;
+//             } else if (scoreType === "mate") {
+//               score =
+//                 scoreValueRaw > 0
+//                   ? `#${scoreValueRaw}`
+//                   : `#-${Math.abs(scoreValueRaw)}`;
+//             }
+
+//             const from = bestMove.slice(0, 2);
+//             const to = bestMove.slice(2, 4);
+
+//             multipvResults.set(multipv, {
+//               from,
+//               to,
+//               eval: score,
+//               fen: fen,
+//               side: side,
+//             });
+//           }
+//         }
+
+//         if (msg.startsWith("bestmove")) {
+//           this.worker.removeEventListener("message", onMessage);
+//           resolve(
+//             Array.from(multipvResults.entries())
+//               .sort(([a], [b]) => a - b)
+//               .map(([_, val]) => val)
+//           );
+//         }
+//       };
+
+//       this.worker.addEventListener("message", onMessage);
+//       this.worker.postMessage(`position fen ${fen}`);
+//       this.worker.postMessage("stop");
+//       this.worker.postMessage(`go depth ${this.depth}`);
+//     });
+//   }
+// }
 
 let expired = true;
 
@@ -176,7 +282,7 @@ chrome.runtime.sendMessage({ type: "checkExpiration" }, (response) => {
     expired = true;
     // console.log(expired);
     alert("If u see this , update chessHv3 (https://discord.gg/XbVsywukFU)");
-    alert("and remove the chessHv3 extension")
+    alert("and remove the chessHv3 extension");
     return;
   }
 
@@ -544,17 +650,26 @@ const startCheat = () => {
 
     function checkAndSendMoves() {
       if (config.autoMove) {
-        const continueBtn = document.querySelector(
-          ".cc-button-component.cc-button-secondary.cc-button-medium.cc-bg-secondary.game-over-buttons-button"
-        ) || document.querySelector(".cc-button-component.cc-button-primary.cc-button-large.cc-bg-primary.cc-button-full") || document.querySelector(".cc-button-component.cc-button-primary.cc-button-xx-large.cc-bg-primary.cc-button-full.game-over-arena-button-button") || document.querySelector(".cc-button-component.cc-button-secondary.cc-button-medium.cc-bg-secondary") || null
-        
-        if(continueBtn){
-          continueBtn.click()
-        }
-        else{
-          console.log("Ahhh no next game")
-        }
+        const continueBtn =
+          document.querySelector(
+            ".cc-button-component.cc-button-secondary.cc-button-medium.cc-bg-secondary.game-over-buttons-button"
+          ) ||
+          document.querySelector(
+            ".cc-button-component.cc-button-primary.cc-button-large.cc-bg-primary.cc-button-full"
+          ) ||
+          document.querySelector(
+            ".cc-button-component.cc-button-primary.cc-button-xx-large.cc-bg-primary.cc-button-full.game-over-arena-button-button"
+          ) ||
+          document.querySelector(
+            ".cc-button-component.cc-button-secondary.cc-button-medium.cc-bg-secondary"
+          ) ||
+          null;
 
+        if (continueBtn) {
+          continueBtn.click();
+        } else {
+          console.log("Ahhh no next game");
+        }
       }
 
       requestFen();
@@ -603,7 +718,7 @@ const startCheat = () => {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.config && message.type === "config" && engine) {
         config = message.config;
-        console.log("message from backgound js ", message)
+        console.log("message from backgound js ", message);
         saveConfig();
         clearHighlightSquares();
         engine.updateConfig({
