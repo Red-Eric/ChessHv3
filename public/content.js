@@ -112,10 +112,26 @@ class Engine {
 
 let engine = new Engine({ elo: 20, depth: 10, multipv: 5 });
 
+
+async function runTurns() {
+  console.log(1);
+  let moves1 = await engine.getMoves(
+    "r1bqkbnr/pppppppp/n7/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+  );
+  console.log(moves1);
+
+  console.log(2);
+  engine.updateConfig({ elo: 20, depth: 10, multipv: 3 });
+
+  console.log(3);
+  let moves2 = await engine.getMoves(
+    "r1bqkbnr/pppppppp/n7/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+  );
+  console.log(moves2);
+}
+
 setTimeout(() => {
-  engine
-    .getMoves("r1bqkbnr/pppppppp/n7/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-    .then((moves) => console.log(moves));
+  runTurns();
 }, 2000);
 
 // function randomIntBetween(min, max) {
