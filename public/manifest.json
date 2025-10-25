@@ -24,12 +24,20 @@
     {
       "matches": ["<all_urls>"],
       "js": ["content.js"],
-      "run_at": "document_start"
+      "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["a.js", "lib/stockfish.js","lib/chess_min.js", "data.json"],
+      "resources": [
+        "a.js",
+        "lib/stockfish.js",
+        "lib/chess_min.js",
+        "data.json",
+        "lib/stockfish-17.1-asm-341ff22.js",
+        "iframe.html",
+        "iframe.js"
+      ],
       "matches": ["<all_urls>"]
     }
   ],
