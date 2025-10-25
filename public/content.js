@@ -712,7 +712,7 @@ const startCheat = () => {
         if (continueBtn) {
           continueBtn.click();
         } else {
-          console.log("Ahhh no next game");
+          // console.log("no next game")
         }
       }
 
