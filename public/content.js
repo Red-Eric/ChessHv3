@@ -1,11 +1,9 @@
 async function createWorker() {
   const url = chrome.runtime.getURL("lib/stockfish.js");
-
   const blob = new Blob([`importScripts("${url}");`], {
     type: "application/javascript",
   });
   const blobUrl = URL.createObjectURL(blob);
-
   return new Worker(blobUrl);
 }
 

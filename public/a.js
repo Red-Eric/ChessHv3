@@ -28,7 +28,6 @@ if (window.location.hostname.includes("chess.com")) {
       setTimeout(() => {
         try {
           game.move({ ...move, animate: true, userGenerated: true });
-          // console.log("✅ Move joué :", from, "→", to, "promotion :", promotion || "none");
         } catch (err) {
           console.log("err de deplacement");
         }
@@ -69,10 +68,7 @@ if(window.location.hostname.includes("lichess.org")){
     el.forEach((element) => {
       // console.log(element.innerText)
       if(element.innerText){
-  
-  
           moves.push(element.innerText.split("\n")[0]);
-  
       }
       
     });

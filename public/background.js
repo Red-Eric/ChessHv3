@@ -100,3 +100,6 @@ chrome.action.onClicked.addListener(() => {
     }
   );
 });
+
+
+////////////////// WORKER 
