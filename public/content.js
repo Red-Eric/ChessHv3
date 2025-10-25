@@ -201,20 +201,23 @@ class Engine {
     this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
     this.worker.postMessage("setoption name Ponder value false");
 
-    if (this.style === 0) {// neutre
+    if (this.style === 0) {
+      // neutre
       this.worker.postMessage("setoption name Contempt value 20");
-    }
-    if (this.style === 1) {// agressif
+    } else if (this.style === 1) {
+      // agressif
       this.worker.postMessage("setoption name Contempt value -100");
-    }
-    if (this.style === -1) {// defensif
+    } else if (this.style === -1) {
+      // defensif
       this.worker.postMessage("setoption name Contempt value 100");
     }
 
-    // agressif < 0 && 20 default > 0 defensif
-    if (this.skill) {
+    if (this.skill >= 0 && this.skill <= 20) {
       const maxError = Math.round((20 - this.skill) * 250);
-      const probability = Math.round((20 - this.skill) * 50 + 1);
+      const probability = Math.min(
+        Math.round((20 - this.skill) * 50 + 1),
+        1000
+      );
       this.worker.postMessage(
         `setoption name Skill Level Maximum Error value ${maxError}`
       );
@@ -224,7 +227,7 @@ class Engine {
     }
   }
 
-  updateConfig({ elo, depth, multipv, threads, hash, style}) {
+  updateConfig({ elo, depth, multipv, threads, hash, style }) {
     if (elo !== undefined) this.elo = elo;
     if (depth !== undefined) this.depth = depth;
     if (multipv !== undefined) this.multipv = multipv;
