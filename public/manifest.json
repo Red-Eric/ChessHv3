@@ -32,9 +32,7 @@
       "resources": [
         "a.js",
         "lib/stockfish.js",
-        "lib/chess_min.js",
-        "data.json",
-        "lib/stockfish-17.1-asm-341ff22.js"
+        "lib/chess_min.js"
       ],
       "matches": ["<all_urls>"]
     }
