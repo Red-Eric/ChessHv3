@@ -73,6 +73,7 @@ class Engine {
     this.multipv = multipv;
     this.threads = threads;
     this.hash = hash;
+    this.delay = 20;
     this.ready = this.init();
   }
 
@@ -82,17 +83,17 @@ class Engine {
 
   async init() {
     this.worker = await createWorker();
-    await this.sleep(100);
+    await this.sleep(this.delay);
     this.worker.postMessage("uci");
     await this.setOptions();
   }
 
   async setOptions() {
-    await this.sleep(100);
+    await this.sleep(this.delay);
     this.worker.postMessage(`setoption name Skill Level value ${this.elo}`);
-    await this.sleep(100);
+    await this.sleep(this.delay);
     this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
-    await this.sleep(100);
+    await this.sleep(this.delay);
     this.worker.postMessage("setoption name Ponder value false");
   }
 
@@ -164,11 +165,11 @@ class Engine {
 
       // Envoi avec delay
       (async () => {
-        await this.sleep(100);
-        this.worker.postMessage(`position fen ${fen}`);
-        await this.sleep(100);
+        await this.sleep(this.delay);
         this.worker.postMessage("stop");
-        await this.sleep(100);
+        await this.sleep(this.delay);
+        this.worker.postMessage(`position fen ${fen}`);
+        await this.sleep(this.delay);
         this.worker.postMessage(`go depth ${this.depth}`);
       })();
     });
