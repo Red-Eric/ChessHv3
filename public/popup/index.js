@@ -158,6 +158,16 @@ winningMove.addEventListener("change", () => {
   })`;
   saveChessConfig();
 });
+
+const styleSelect = document.getElementById("styleSelect");
+chessConfig.style = chessConfig.style || 0; // default Normal
+styleSelect.value = chessConfig.style;
+
+styleSelect.addEventListener("change", () => {
+  chessConfig.style = parseInt(styleSelect.value);
+  saveChessConfig();
+});
+
 showEval.addEventListener("change", () => {
   chessConfig.showEval = showEval.checked;
   showEvalLabel.textContent = `Show Eval Bar (${
@@ -249,23 +259,24 @@ winningMove2.addEventListener("change", () => {
   })`;
   saveLichessConfig();
 });
+
+const styleSelect2 = document.getElementById("styleSelect2");
+lichessConfig.style = lichessConfig.style || 0;
+styleSelect2.value = lichessConfig.style;
+
+styleSelect2.addEventListener("change", () => {
+  lichessConfig.style = parseInt(styleSelect2.value);
+  saveLichessConfig();
+});
+
 showEval2.addEventListener("change", () => {
   lichessConfig.showEval = showEval2.checked;
   showEvalLabel2.textContent = `Show Eval Bar (${
     showEval2.checked ? "ON" : "OFF"
   })`;
-  // if (!showEval2.checked) {
-  //   lichessConfig.onlyShowEval = false;
-  //   onlyShowEval2.checked = false;
-  //   onlyShowEvalLabel2.textContent = `Hide Arrows  (OFF)`;
-  // }
   saveLichessConfig();
 });
 onlyShowEval2.addEventListener("change", () => {
-  // if (!showEval2.checked && onlyShowEval2.checked) {
-  //   onlyShowEval2.checked = false;
-  //   return;
-  // }
   lichessConfig.onlyShowEval = onlyShowEval2.checked;
   onlyShowEvalLabel2.textContent = `Hide Arrows (${
     onlyShowEval2.checked ? "ON" : "OFF"
@@ -274,7 +285,6 @@ onlyShowEval2.addEventListener("change", () => {
 });
 
 // Chess Board
-
 function createEvalBar(initialScore = "0.0", initialColor = "white") {
   const boardContainer = document.querySelector("#board1");
   let w_ = boardContainer.offsetWidth;
