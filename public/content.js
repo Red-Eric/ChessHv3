@@ -748,8 +748,8 @@ const startCheat = () => {
               if (config.autoMove) {
                 // console.log("try to auto move*******");
                 // [0,2,3,4,5]
-                randMove = getRandomElement(moves);
-                requestMove(randMove.from, randMove.to);
+                // randMove = getRandomElement(moves);
+                requestMove(moves[0].from , moves[0].to);
               }
             }
           });
