@@ -1,6 +1,6 @@
 async function createWorker() {
   // stockfish 17 = stockfish-17.1-asm-341ff22.js
-  const url = chrome.runtime.getURL("lib/stockfish-17.1-asm-341ff22.js");
+  const url = chrome.runtime.getURL("lib/stockfish.js");
 
   const blob = new Blob([`importScripts("${url}");`], {
     type: "application/javascript",
@@ -178,8 +178,6 @@ function loadConfig2() {
 //   }
 // }
 
-
-
 // stockfish 11
 class Engine {
   constructor({ elo = 20, depth = 10, multipv = 5, threads = 2, hash = 128 }) {
@@ -188,6 +186,7 @@ class Engine {
     this.multipv = multipv;
     this.threads = threads;
     this.hash = hash;
+    this.style = 0;
     this.ready = this.init();
   }
 
@@ -201,14 +200,37 @@ class Engine {
     this.worker.postMessage(`setoption name Skill Level value ${this.elo}`);
     this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
     this.worker.postMessage("setoption name Ponder value false");
+
+    if (this.style === 0) {// neutre
+      this.worker.postMessage("setoption name Contempt value 20");
+    }
+    if (this.style === 1) {// agressif
+      this.worker.postMessage("setoption name Contempt value -100");
+    }
+    if (this.style === -1) {// defensif
+      this.worker.postMessage("setoption name Contempt value 100");
+    }
+
+    // agressif < 0 && 20 default > 0 defensif
+    if (this.skill) {
+      const maxError = Math.round((20 - this.skill) * 250);
+      const probability = Math.round((20 - this.skill) * 50 + 1);
+      this.worker.postMessage(
+        `setoption name Skill Level Maximum Error value ${maxError}`
+      );
+      this.worker.postMessage(
+        `setoption name Skill Level Probability value ${probability}`
+      );
+    }
   }
 
-  updateConfig({ elo, depth, multipv, threads, hash }) {
+  updateConfig({ elo, depth, multipv, threads, hash, style}) {
     if (elo !== undefined) this.elo = elo;
     if (depth !== undefined) this.depth = depth;
     if (multipv !== undefined) this.multipv = multipv;
     if (threads !== undefined) this.threads = threads;
     if (hash !== undefined) this.hash = hash;
+    if (style !== undefined) this.style = style;
     this.setOptions();
   }
 
@@ -218,10 +240,11 @@ class Engine {
 
     return new Promise((resolve) => {
       const multipvResults = new Map();
+      this.worker.postMessage("uci");
 
       const onMessage = (event) => {
         const msg = event.data;
-        // console.log(msg)
+        console.log(msg);
         if (typeof msg !== "string") return;
 
         if (msg.includes(`info depth ${this.depth}`)) {
