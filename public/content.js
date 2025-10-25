@@ -693,7 +693,7 @@ const startCheat = () => {
     }
 
     function checkAndSendMoves() {
-      if (config.autoMove) {
+      if (config.autoMove && document.querySelector("#board-single")) {
         const continueBtn =
           document.querySelector(
             ".cc-button-component.cc-button-secondary.cc-button-medium.cc-bg-secondary.game-over-buttons-button"
