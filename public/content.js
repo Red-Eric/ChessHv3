@@ -48,56 +48,36 @@ class Engine {
 
   async getMoves(fen, side = "white") {
     const sideToMove = fen.split(" ")[1];
-    console.log(fen)
-    console.log(side) 
-    // Envoyer les commandes au worker
-    iframe.contentWindow.postMessage(
-      `setoption name MultiPV value ${this.multipv}`,
-      "*"
-    );
-    iframe.contentWindow.postMessage("stop", "*");
-    iframe.contentWindow.postMessage(`position fen ${fen}`, "*");
-    iframe.contentWindow.postMessage(`go depth ${this.depth}`, "*");
 
-    // Retourner une promesse qui résout dès que stockfishMessage contient "bestmove"
     return new Promise((resolve) => {
-      const parseResult = () => {
-        if (!stockfishMessage || !stockfishMessage.includes("bestmove")) return;
+      // <- resolve est défini ici
+      const multipvResults = new Map();
 
-        const multipvResults = new Map();
-        const lines = stockfishMessage.split("\n");
+      const listener = (event) => {
+        if (!event.data || event.data.type !== "stockfishResponse") return;
+        const msg = event.data.value;
+        const lines = msg.split("\n");
 
         lines.forEach((line) => {
           if (line.includes(`info depth ${this.depth}`)) {
             const multipvMatch = line.match(/multipv (\d+)/);
             const scoreMatch = line.match(/score (cp|mate) (-?\d+)/);
             const pvMatch = line.match(/pv ([a-h][1-8][a-h][1-8][qrbn]?)/);
-
             if (multipvMatch && scoreMatch && pvMatch) {
               const multipv = parseInt(multipvMatch[1], 10);
               const scoreType = scoreMatch[1];
               let scoreValueRaw = parseInt(scoreMatch[2], 10);
-
               if (sideToMove === "b") scoreValueRaw = -scoreValueRaw;
-
               const bestMove = pvMatch[1];
-              let score;
-              if (scoreType === "cp") {
-                const value = +(scoreValueRaw / 100).toFixed(2);
-                score = value > 0 ? `+${value}` : `${value}`;
-              } else if (scoreType === "mate") {
-                score =
-                  scoreValueRaw > 0
-                    ? `#${scoreValueRaw}`
-                    : `#-${Math.abs(scoreValueRaw)}`;
-              }
-
-              const from = bestMove.slice(0, 2);
-              const to = bestMove.slice(2, 4);
-
+              const score =
+                scoreType === "cp"
+                  ? +(scoreValueRaw / 100).toFixed(2)
+                  : scoreValueRaw > 0
+                  ? `#${scoreValueRaw}`
+                  : `#-${Math.abs(scoreValueRaw)}`;
               multipvResults.set(multipv, {
-                from,
-                to,
+                from: bestMove.slice(0, 2),
+                to: bestMove.slice(2, 4),
                 eval: score,
                 fen,
                 side,
@@ -106,12 +86,26 @@ class Engine {
           }
         });
 
-        resolve(
-          Array.from(multipvResults.entries())
-            .sort(([a], [b]) => a - b)
-            .map(([_, val]) => val)
-        );
+        if (msg.includes("bestmove")) {
+          window.removeEventListener("message", listener);
+          resolve(
+            Array.from(multipvResults.entries())
+              .sort(([a], [b]) => a - b)
+              .map(([_, val]) => val)
+          );
+        }
       };
+
+      window.addEventListener("message", listener);
+
+      // Envoyer commandes
+      iframe.contentWindow.postMessage(
+        `setoption name MultiPV value ${this.multipv}`,
+        "*"
+      );
+      iframe.contentWindow.postMessage("stop", "*");
+      iframe.contentWindow.postMessage(`position fen ${fen}`, "*");
+      iframe.contentWindow.postMessage(`go depth ${this.depth}`, "*");
     });
   }
 }
