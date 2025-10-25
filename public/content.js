@@ -1,11 +1,128 @@
-// async function createWorker() {
-//   const url = chrome.runtime.getURL("lib/stockfish-17.1-single-a496a04.js");
-//   const blob = new Blob([`importScripts("${url}");`], {
-//     type: "application/javascript",
-//   });
-//   const blobUrl = URL.createObjectURL(blob);
-//   return new Worker(blobUrl);
-// }
+let stockfishMessage = "";
+
+function setUpIFrame() {
+  const iframe = document.createElement("iframe");
+  iframe.style.display = "none";
+  iframe.src = chrome.runtime.getURL("iframe.html");
+  document.body.appendChild(iframe);
+
+  window.addEventListener("message", (e) => {
+    if (e.data.type === "stockfishResponse") {
+      // console.log("Content script received:", e.data.value);
+      stockfishMessage = e.data.value;
+    }
+  });
+
+  iframe.onload = () => {};
+
+  return iframe;
+}
+
+const iframe = setUpIFrame();
+
+class Engine {
+  constructor({ elo = 20, depth = 10, multipv = 5 }) {
+    this.elo = elo;
+    this.depth = depth;
+    this.multipv = multipv;
+  }
+
+  setOptions() {
+    iframe.contentWindow.postMessage(
+      `setoption name Skill Level value ${this.elo}`,
+      "*"
+    );
+    iframe.contentWindow.postMessage(
+      `setoption name MultiPV value ${this.multipv}`,
+      "*"
+    );
+    iframe.contentWindow.postMessage("setoption name Ponder value false", "*");
+  }
+
+  updateConfig({ elo, depth, multipv }) {
+    if (elo !== undefined) this.elo = elo;
+    if (depth !== undefined) this.depth = depth;
+    if (multipv !== undefined) this.multipv = multipv;
+    this.setOptions();
+  }
+
+  async getMoves(fen, side = "white") {
+    const sideToMove = fen.split(" ")[1];
+    console.log(fen)
+    console.log(side) 
+    // Envoyer les commandes au worker
+    iframe.contentWindow.postMessage(
+      `setoption name MultiPV value ${this.multipv}`,
+      "*"
+    );
+    iframe.contentWindow.postMessage("stop", "*");
+    iframe.contentWindow.postMessage(`position fen ${fen}`, "*");
+    iframe.contentWindow.postMessage(`go depth ${this.depth}`, "*");
+
+    // Retourner une promesse qui résout dès que stockfishMessage contient "bestmove"
+    return new Promise((resolve) => {
+      const parseResult = () => {
+        if (!stockfishMessage || !stockfishMessage.includes("bestmove")) return;
+
+        const multipvResults = new Map();
+        const lines = stockfishMessage.split("\n");
+
+        lines.forEach((line) => {
+          if (line.includes(`info depth ${this.depth}`)) {
+            const multipvMatch = line.match(/multipv (\d+)/);
+            const scoreMatch = line.match(/score (cp|mate) (-?\d+)/);
+            const pvMatch = line.match(/pv ([a-h][1-8][a-h][1-8][qrbn]?)/);
+
+            if (multipvMatch && scoreMatch && pvMatch) {
+              const multipv = parseInt(multipvMatch[1], 10);
+              const scoreType = scoreMatch[1];
+              let scoreValueRaw = parseInt(scoreMatch[2], 10);
+
+              if (sideToMove === "b") scoreValueRaw = -scoreValueRaw;
+
+              const bestMove = pvMatch[1];
+              let score;
+              if (scoreType === "cp") {
+                const value = +(scoreValueRaw / 100).toFixed(2);
+                score = value > 0 ? `+${value}` : `${value}`;
+              } else if (scoreType === "mate") {
+                score =
+                  scoreValueRaw > 0
+                    ? `#${scoreValueRaw}`
+                    : `#-${Math.abs(scoreValueRaw)}`;
+              }
+
+              const from = bestMove.slice(0, 2);
+              const to = bestMove.slice(2, 4);
+
+              multipvResults.set(multipv, {
+                from,
+                to,
+                eval: score,
+                fen,
+                side,
+              });
+            }
+          }
+        });
+
+        resolve(
+          Array.from(multipvResults.entries())
+            .sort(([a], [b]) => a - b)
+            .map(([_, val]) => val)
+        );
+      };
+    });
+  }
+}
+
+let engine = new Engine({ elo: 20, depth: 10, multipv: 5 });
+
+setTimeout(() => {
+  engine
+    .getMoves("r1bqkbnr/pppppppp/n7/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    .then((moves) => console.log(moves));
+}, 2000);
 
 // function randomIntBetween(min, max) {
 //   min = Math.ceil(min);
@@ -174,7 +291,7 @@
 //     expired = true;
 //     // console.log(expired);
 //     alert("If u see this , update chessHv3 (https://discord.gg/XbVsywukFU)");
-//     alert("and remove the chessHv3 extension")
+//     alert("and remove the chessHv3 extension");
 //     return;
 //   }
 
@@ -188,13 +305,13 @@
 //   // console.log("start")
 
 //   /*
-  
-//         _                                        
-//    ___| |__   ___  ___ ___   ___ ___  _ __ ___  
-//   / __| '_ \ / _ \/ __/ __| / __/ _ \| '_ ` _ \ 
+
+//         _
+//    ___| |__   ___  ___ ___   ___ ___  _ __ ___
+//   / __| '_ \ / _ \/ __/ __| / __/ _ \| '_ ` _ \
 //  | (__| | | |  __/\__ \__ \| (_| (_) | | | | | |
 //   \___|_| |_|\___||___/___(_)___\___/|_| |_| |_|
-                                                 
+
 //   */
 //   if (window.location.hostname.includes("chess.com") && !expired) {
 //     loadConfig();
@@ -542,17 +659,26 @@
 
 //     function checkAndSendMoves() {
 //       if (config.autoMove) {
-//         const continueBtn = document.querySelector(
-//           ".cc-button-component.cc-button-secondary.cc-button-medium.cc-bg-secondary.game-over-buttons-button"
-//         ) || document.querySelector(".cc-button-component.cc-button-primary.cc-button-large.cc-bg-primary.cc-button-full") || document.querySelector(".cc-button-component.cc-button-primary.cc-button-xx-large.cc-bg-primary.cc-button-full.game-over-arena-button-button") || document.querySelector(".cc-button-component.cc-button-secondary.cc-button-medium.cc-bg-secondary") || null
-        
-//         if(continueBtn){
-//           continueBtn.click()
-//         }
-//         else{
-//           console.log("Ahhh no next game")
-//         }
+//         const continueBtn =
+//           document.querySelector(
+//             ".cc-button-component.cc-button-secondary.cc-button-medium.cc-bg-secondary.game-over-buttons-button"
+//           ) ||
+//           document.querySelector(
+//             ".cc-button-component.cc-button-primary.cc-button-large.cc-bg-primary.cc-button-full"
+//           ) ||
+//           document.querySelector(
+//             ".cc-button-component.cc-button-primary.cc-button-xx-large.cc-bg-primary.cc-button-full.game-over-arena-button-button"
+//           ) ||
+//           document.querySelector(
+//             ".cc-button-component.cc-button-secondary.cc-button-medium.cc-bg-secondary"
+//           ) ||
+//           null;
 
+//         if (continueBtn) {
+//           continueBtn.click();
+//         } else {
+//           console.log("Ahhh no next game");
+//         }
 //       }
 
 //       requestFen();
@@ -601,7 +727,7 @@
 //     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 //       if (message.config && message.type === "config" && engine) {
 //         config = message.config;
-//         console.log("message from backgound js ", message)
+//         console.log("message from backgound js ", message);
 //         saveConfig();
 //         clearHighlightSquares();
 //         engine.updateConfig({
@@ -648,12 +774,11 @@
 
 //   /*
 
-//   _     _      _                   
-//  | |   (_) ___| |__   ___  ___ ___ 
+//   _     _      _
+//  | |   (_) ___| |__   ___  ___ ___
 //  | |   | |/ __| '_ \ / _ \/ __/ __|
 //  | |___| | (__| | | |  __/\__ \__ \
 //  |_____|_|\___|_| |_|\___||___/___/
-                                   
 
 // */
 
@@ -1049,21 +1174,3 @@
 //     });
 //   }
 // };
-
-
-
-const iframe = document.createElement('iframe');
-iframe.style.display = 'none';
-iframe.src = chrome.runtime.getURL('iframe.html');
-document.body.appendChild(iframe);
-
-window.addEventListener('message', (e) => {
-  if (e.data.action === 'stockfishResponse') {
-    console.log('Content script received:', e.data.value);
-  }
-});
-
-iframe.onload = () => {
-  iframe.contentWindow.postMessage({ action: 'startStockfish' }, '*');
-};
-
