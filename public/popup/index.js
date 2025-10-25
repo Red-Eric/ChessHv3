@@ -128,9 +128,11 @@ function saveChessConfig() {
 // ----- Listeners Chess.com -----
 elo.addEventListener("input", () => {
   chessConfig.skill = parseInt(elo.value);
-  eloValue.textContent = `Skill: ${chessConfig.skill}`;
+  // Mettre à jour le texte avec le Skill et l'Elo correspondant
+  eloValue.textContent = `Skill: ${chessConfig.skill} (${skillToElo[chessConfig.skill]} Elo)`;
   saveChessConfig();
 });
+
 lines.addEventListener("input", () => {
   chessConfig.lines = parseInt(lines.value);
   linesValue.textContent = chessConfig.lines;
@@ -237,9 +239,7 @@ function saveLichessConfig() {
 // ----- Listeners Lichess -----
 elo2.addEventListener("input", () => {
   lichessConfig.skill = parseInt(elo2.value);
-  eloValue2.textContent = `Skill: ${lichessConfig.skill} (${
-    skillToElo[lichessConfig.skill]
-  } Elo)`;
+  eloValue2.textContent = `Skill: ${lichessConfig.skill} (${skillToElo[lichessConfig.skill]} Elo)`;
   saveLichessConfig();
 });
 lines2.addEventListener("input", () => {

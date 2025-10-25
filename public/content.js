@@ -38,6 +38,7 @@ let config = {
   winningMove: false,
   showEval: false,
   onlyShowEval: false,
+  style : 0
 };
 
 function saveConfig() {
@@ -757,6 +758,7 @@ const startCheat = () => {
           elo: config.skill,
           depth: config.depth,
           multipv: config.lines,
+          style : config.style
         });
 
         if (!config.showEval && customEval) {
@@ -1171,6 +1173,7 @@ const startCheat = () => {
           elo: config.skill,
           depth: config.depth,
           multipv: config.lines,
+          style:config.style
         });
 
         if (!config.showEval && customEval) {
