@@ -38,7 +38,7 @@ let config = {
   winningMove: false,
   showEval: false,
   onlyShowEval: false,
-  style : 0
+  style: 0,
 };
 
 function saveConfig() {
@@ -248,7 +248,7 @@ class Engine {
 
       const onMessage = (event) => {
         const msg = event.data;
-        console.log(msg);
+        // console.log(msg);
         if (typeof msg !== "string") return;
 
         if (msg.includes(`info depth ${this.depth}`)) {
@@ -389,15 +389,15 @@ const startCheat = () => {
       evalContainer.appendChild(bottomBar);
 
       // Ligne médiane
-      const midLine = document.createElement("div");
-      midLine.style.position = "absolute";
-      midLine.style.top = "50%";
-      midLine.style.left = "0";
-      midLine.style.width = "100%";
-      midLine.style.height = "2px";
-      midLine.style.background = "red";
-      midLine.style.transform = "translateY(-50%)";
-      evalContainer.appendChild(midLine);
+      // const midLine = document.createElement("div");
+      // midLine.style.position = "absolute";
+      // midLine.style.top = "50%";
+      // midLine.style.left = "0";
+      // midLine.style.width = "100%";
+      // midLine.style.height = "2px";
+      // midLine.style.background = "red";
+      // midLine.style.transform = "translateY(-50%)";
+      // evalContainer.appendChild(midLine);
 
       // Texte en bas
       const scoreText = document.createElement("div");
@@ -678,7 +678,18 @@ const startCheat = () => {
     }
 
     function getSide() {
-      return side_index === 1 ? "white" : "black";
+      board = document.querySelector("#board-single");
+      side = null;
+
+      if (board) {
+        side = board.className.includes("flipped") ? "black" : "white";
+      }
+
+      if (side) {
+        return side
+      } else {
+        return side_index === 1 ? "white" : "black";
+      }
     }
 
     function checkAndSendMoves() {
@@ -758,7 +769,7 @@ const startCheat = () => {
           elo: config.skill,
           depth: config.depth,
           multipv: config.lines,
-          style : config.style
+          style: config.style,
         });
 
         if (!config.showEval && customEval) {
@@ -857,15 +868,15 @@ const startCheat = () => {
       evalContainer.appendChild(bottomBar);
 
       // Ligne médiane
-      const midLine = document.createElement("div");
-      midLine.style.position = "absolute";
-      midLine.style.top = "50%";
-      midLine.style.left = "0";
-      midLine.style.width = "100%";
-      midLine.style.height = "2px";
-      midLine.style.background = "red";
-      midLine.style.transform = "translateY(-50%)";
-      evalContainer.appendChild(midLine);
+      // const midLine = document.createElement("div");
+      // midLine.style.position = "absolute";
+      // midLine.style.top = "50%";
+      // midLine.style.left = "0";
+      // midLine.style.width = "100%";
+      // midLine.style.height = "2px";
+      // midLine.style.background = "red";
+      // midLine.style.transform = "translateY(-50%)";
+      // evalContainer.appendChild(midLine);
 
       // Texte en bas
       const scoreText = document.createElement("div");
@@ -1173,7 +1184,7 @@ const startCheat = () => {
           elo: config.skill,
           depth: config.depth,
           multipv: config.lines,
-          style:config.style
+          style: config.style,
         });
 
         if (!config.showEval && customEval) {
