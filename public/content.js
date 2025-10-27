@@ -686,7 +686,7 @@ const startCheat = () => {
       }
 
       if (side) {
-        return side
+        return side;
       } else {
         return side_index === 1 ? "white" : "black";
       }
@@ -710,7 +710,9 @@ const startCheat = () => {
           null;
 
         if (continueBtn) {
-          continueBtn.click();
+          setTimeout(() => {
+            continueBtn.click();
+          }, 2000);
         } else {
           // console.log("no next game")
         }
@@ -748,8 +750,8 @@ const startCheat = () => {
               if (config.autoMove) {
                 // console.log("try to auto move*******");
                 // [0,2,3,4,5]
-                // randMove = getRandomElement(moves);
-                requestMove(moves[0].from , moves[0].to);
+                randMove = getRandomElement(moves);
+                requestMove(randMove.from, randMove.to);
               }
             }
           });
@@ -757,7 +759,7 @@ const startCheat = () => {
       }
     }
 
-    setInterval(checkAndSendMoves, 350);
+    setInterval(checkAndSendMoves, 100);
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.config && message.type === "config" && engine) {
@@ -1171,7 +1173,7 @@ const startCheat = () => {
       }
 
       requestFen();
-    }, 350);
+    }, 100);
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       // console.log(message)
