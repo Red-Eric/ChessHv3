@@ -387,18 +387,6 @@ const startCheat = () => {
 
       evalContainer.appendChild(topBar);
       evalContainer.appendChild(bottomBar);
-
-      // Ligne médiane
-      // const midLine = document.createElement("div");
-      // midLine.style.position = "absolute";
-      // midLine.style.top = "50%";
-      // midLine.style.left = "0";
-      // midLine.style.width = "100%";
-      // midLine.style.height = "2px";
-      // midLine.style.background = "red";
-      // midLine.style.transform = "translateY(-50%)";
-      // evalContainer.appendChild(midLine);
-
       // Texte en bas
       const scoreText = document.createElement("div");
       scoreText.style.position = "absolute";
@@ -678,18 +666,7 @@ const startCheat = () => {
     }
 
     function getSide() {
-      board = document.querySelector("#board-single");
-      side = null;
-
-      if (board) {
-        side = board.className.includes("flipped") ? "black" : "white";
-      }
-
-      if (side) {
-        return side;
-      } else {
-        return side_index === 1 ? "white" : "black";
-      }
+      return side_index === 1 ? "white" : "black";
     }
 
     function checkAndSendMoves() {
