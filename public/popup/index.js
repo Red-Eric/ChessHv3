@@ -90,6 +90,7 @@ function updateChessUI() {
   lines.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
   styleSelect.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
   winningMove.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
+  winningMoveLabel.style.display = hideIfNotStockfish ? "none" : "inline";
 }
 updateChessUI();
 
@@ -182,6 +183,7 @@ function updateLichessUI() {
   lines2.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
   styleSelect2.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
   winningMove2.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
+  winningMoveLabel2.style.display = hideIfNotStockfish ? "none" : "inline";
 }
 updateLichessUI();
 
