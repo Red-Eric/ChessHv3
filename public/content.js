@@ -1,8 +1,8 @@
-const getMoveByWukong = async (fen, depth) => {
-  let wukongEngine = new Wukong()
-  wukongEngine.setBoard(fen)
-  return await wukongEngine.search(depth)
-}
+const getMoveByWukong = (fen, depth) => {
+  let wukongEngine = new Wukong();
+  wukongEngine.setBoard(fen);
+  return wukongEngine.search(depth);
+};
 
 //////////////////////////////////////////
 async function createWorker() {
@@ -36,6 +36,7 @@ function clearHighlightSquares() {
 }
 
 let config = {
+  engine: "wukong",
   skill: 20,
   lines: 5,
   depth: 10,
@@ -741,7 +742,6 @@ const startCheat = () => {
       evalContainer.appendChild(topBar);
       evalContainer.appendChild(bottomBar);
 
-
       // Texte en bas
       const scoreText = document.createElement("div");
       scoreText.style.position = "absolute";
@@ -821,7 +821,7 @@ const startCheat = () => {
     }
 
     function highlightMovesOnBoard(moves, side) {
-      console.log(moves)
+      console.log(moves);
       if (!Array.isArray(moves)) return;
 
       if (
@@ -1011,9 +1011,17 @@ const startCheat = () => {
             fen_ = event.data.fen;
             // console.log(fen_);
 
+            // if(config.engine === "wukong"){
+            let xxx = getMoveByWukong(fen_, 10);
+            console.log(xxx);
+            highlightMovesOnBoard(xxx);
+
             engine.getMoves(fen_, getSide()).then((moves) => {
               chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-              highlightMovesOnBoard(moves, getSide()[0]);
+
+              if (config.engine === "stockfish") {
+                highlightMovesOnBoard(moves, getSide()[0]);
+              }
 
               if (moves.length > 0 && evalObj) {
                 evalObj.update(moves[0].eval, getSide());
