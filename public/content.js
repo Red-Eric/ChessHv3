@@ -731,13 +731,15 @@ const startCheat = () => {
               evalObj.update(moves[0].eval, getSide());
             }
 
-            if (
-              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-            ) {
-              if (config.autoMove) {
-                randMove = getRandomElement(moves);
-                requestMove(randMove.from, randMove.to);
+            if (config.engine === "stockfish") {
+              if (
+                (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+                (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+              ) {
+                if (config.autoMove) {
+                  randMove = getRandomElement(moves);
+                  requestMove(randMove.from, randMove.to);
+                }
               }
             }
           });
@@ -811,14 +813,16 @@ const startCheat = () => {
           if (moves.length > 0 && evalObj) {
             evalObj.update(moves[0].eval, getSide());
           }
-          if (
-            (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-            (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-          ) {
-            if (config.autoMove) {
-              // console.log("try to auto move******* Config");
-              randMove = getRandomElement(moves);
-              requestMove(randMove.from, randMove.to);
+
+          if (config.engine === "stockfish") {
+            if (
+              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+            ) {
+              if (config.autoMove) {
+                randMove = getRandomElement(moves);
+                requestMove(randMove.from, randMove.to);
+              }
             }
           }
         });
