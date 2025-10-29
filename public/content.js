@@ -1,10 +1,3 @@
-const getMoveByWukong = (fen, depth) => {
-  let wukongEngine = new Wukong();
-  wukongEngine.setBoard(fen);
-  return wukongEngine.search(depth);
-};
-
-//////////////////////////////////////////
 async function createWorker() {
   // stockfish 17 = stockfish-17.1-asm-341ff22.js
   const url = chrome.runtime.getURL("lib/stockfish.js");
@@ -35,11 +28,7 @@ function clearHighlightSquares() {
   document.querySelectorAll(".customH").forEach((el) => el.remove());
 }
 
-// 0 stockfish
-// 1 wukong
-
 let config = {
-  engine: 1,
   skill: 20,
   lines: 5,
   depth: 10,
@@ -66,28 +55,129 @@ function saveConfig2() {
 function loadConfig() {
   const saved = localStorage.getItem("chessConfig");
   if (saved) {
-    const parsed = JSON.parse(saved);
-    for (let key in parsed) {
-      if (config.hasOwnProperty(key)) {
-        config[key] = parsed[key];
-      }
-    }
+    config = JSON.parse(saved);
   }
 }
 
 function loadConfig2() {
+  // lichess
   const saved = localStorage.getItem("chessConfig2");
   if (saved) {
-    const parsed = JSON.parse(saved);
-    for (let key in parsed) {
-      if (config.hasOwnProperty(key)) {
-        config[key] = parsed[key];
-      }
-    }
+    config = JSON.parse(saved);
   }
 }
 
+/* for stockfish 17 */
 
+// class Engine {
+//   constructor({ elo = 20, depth = 10, multipv = 5, threads = 2, hash = 128 }) {
+//     this.elo = elo;
+//     this.depth = depth;
+//     this.multipv = multipv;
+//     this.threads = threads;
+//     this.hash = hash;
+//     this.delay = 20;
+//     this.ready = this.init();
+//   }
+
+//   sleep(ms) {
+//     return new Promise((resolve) => setTimeout(resolve, ms));
+//   }
+
+//   async init() {
+//     this.worker = await createWorker();
+//     await this.sleep(this.delay);
+//     this.worker.postMessage("uci");
+//     await this.setOptions();
+//   }
+
+//   async setOptions() {
+//     await this.sleep(this.delay);
+//     this.worker.postMessage(`setoption name Skill Level value ${this.elo}`);
+//     await this.sleep(this.delay);
+//     this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
+//     await this.sleep(this.delay);
+//     this.worker.postMessage("setoption name Ponder value false");
+//   }
+
+//   async updateConfig({ elo, depth, multipv, threads, hash }) {
+//     if (elo !== undefined) this.elo = elo;
+//     if (depth !== undefined) this.depth = depth;
+//     if (multipv !== undefined) this.multipv = multipv;
+//     if (threads !== undefined) this.threads = threads;
+//     if (hash !== undefined) this.hash = hash;
+//     await this.setOptions();
+//   }
+
+//   async getMoves(fen, side = "white") {
+//     await this.ready;
+//     const sideToMove = fen.split(" ")[1];
+
+//     return new Promise((resolve) => {
+//       const multipvResults = new Map();
+
+//       const onMessage = (event) => {
+//         const msg = event.data;
+//         if (typeof msg !== "string") return;
+
+//         if (msg.includes(`info depth ${this.depth}`)) {
+//           const multipvMatch = msg.match(/multipv (\d+)/);
+//           const scoreMatch = msg.match(/score (cp|mate) (-?\d+)/);
+//           const pvMatch = msg.match(/pv ([a-h][1-8][a-h][1-8][qrbn]?)/);
+
+//           if (multipvMatch && scoreMatch && pvMatch) {
+//             const multipv = parseInt(multipvMatch[1], 10);
+//             const scoreType = scoreMatch[1];
+//             let scoreValueRaw = parseInt(scoreMatch[2], 10);
+
+//             if (sideToMove === "b") {
+//               scoreValueRaw = -scoreValueRaw;
+//             }
+
+//             const bestMove = pvMatch[1];
+//             let score;
+//             if (scoreType === "cp") {
+//               const value = +(scoreValueRaw / 100).toFixed(2);
+//               score = value > 0 ? `+${value}` : `${value}`;
+//             } else if (scoreType === "mate") {
+//               scoreValueRaw = scoreValueRaw || 0;
+//               score =
+//                 scoreValueRaw > 0
+//                   ? `#${scoreValueRaw}`
+//                   : `#-${Math.abs(scoreValueRaw)}`;
+//             }
+
+//             const from = bestMove.slice(0, 2);
+//             const to = bestMove.slice(2, 4);
+
+//             multipvResults.set(multipv, { from, to, eval: score, fen, side });
+//           }
+//         }
+
+//         if (msg.startsWith("bestmove")) {
+//           this.worker.removeEventListener("message", onMessage);
+//           resolve(
+//             Array.from(multipvResults.entries())
+//               .sort(([a], [b]) => a - b)
+//               .map(([_, val]) => val)
+//           );
+//         }
+//       };
+
+//       this.worker.addEventListener("message", onMessage);
+
+//       // Envoi avec delay
+//       (async () => {
+//         await this.sleep(this.delay);
+//         this.worker.postMessage("stop");
+//         await this.sleep(this.delay);
+//         this.worker.postMessage(`position fen ${fen}`);
+//         await this.sleep(this.delay);
+//         this.worker.postMessage(`go depth ${this.depth}`);
+//       })();
+//     });
+//   }
+// }
 
 // stockfish 11
 class Engine {
@@ -756,6 +846,17 @@ const startCheat = () => {
       evalContainer.appendChild(topBar);
       evalContainer.appendChild(bottomBar);
 
+      // Ligne médiane
+      // const midLine = document.createElement("div");
+      // midLine.style.position = "absolute";
+      // midLine.style.top = "50%";
+      // midLine.style.left = "0";
+      // midLine.style.width = "100%";
+      // midLine.style.height = "2px";
+      // midLine.style.background = "red";
+      // midLine.style.transform = "translateY(-50%)";
+      // evalContainer.appendChild(midLine);
+
       // Texte en bas
       const scoreText = document.createElement("div");
       scoreText.style.position = "absolute";
@@ -835,7 +936,6 @@ const startCheat = () => {
     }
 
     function highlightMovesOnBoard(moves, side) {
-      console.log(moves);
       if (!Array.isArray(moves)) return;
 
       if (
@@ -1023,19 +1123,11 @@ const startCheat = () => {
           if (event.data.fen !== fen_) {
             clearHighlightSquares();
             fen_ = event.data.fen;
-            console.log(config)
-            console.log(config.engine)
-            if (config.engine === 1) {
-              let wukongMove = getMoveByWukong(fen_, config.depth);
-              highlightMovesOnBoard(wukongMove, getSide()[0]);
-            }
+            // console.log(fen_);
 
             engine.getMoves(fen_, getSide()).then((moves) => {
               chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-
-              if (config.engine === "stockfish") {
-                highlightMovesOnBoard(moves, getSide()[0]);
-              }
+              highlightMovesOnBoard(moves, getSide()[0]);
 
               if (moves.length > 0 && evalObj) {
                 evalObj.update(moves[0].eval, getSide());
