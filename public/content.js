@@ -1113,7 +1113,7 @@ const startCheat = () => {
             clearHighlightSquares();
             fen_ = event.data.fen;
             // console.log(fen_);
-            console.log(config);
+            // console.log(config);
             if (config.engine === "wukong") {
               wukongEngine.getMove(fen_, config.depth).then((moves) => {
                 highlightMovesOnBoard(moves, getSide()[0]);
