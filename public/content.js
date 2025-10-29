@@ -35,8 +35,11 @@ function clearHighlightSquares() {
   document.querySelectorAll(".customH").forEach((el) => el.remove());
 }
 
+// 0 stockfish
+// 1 wukong
+
 let config = {
-  engine: "wukong",
+  engine: 1,
   skill: 20,
   lines: 5,
   depth: 10,
@@ -63,15 +66,16 @@ function saveConfig2() {
 function loadConfig() {
   const saved = localStorage.getItem("chessConfig");
   if (saved) {
-    config = JSON.parse(saved);
+    const parsed = JSON.parse(saved);
+    config = { ...defaultConfig, ...parsed };
   }
 }
 
 function loadConfig2() {
-  // lichess
   const saved = localStorage.getItem("chessConfig2");
   if (saved) {
-    config = JSON.parse(saved);
+    const parsed = JSON.parse(saved);
+    config = { ...defaultConfig, ...parsed };
   }
 }
 
@@ -1009,12 +1013,12 @@ const startCheat = () => {
           if (event.data.fen !== fen_) {
             clearHighlightSquares();
             fen_ = event.data.fen;
-            // console.log(fen_);
-
-            // if(config.engine === "wukong"){
-            let xxx = getMoveByWukong(fen_, 10);
-            console.log(xxx);
-            highlightMovesOnBoard(xxx);
+            console.log(config)
+            console.log(config.engine)
+            if (config.engine === 1) {
+              let wukongMove = getMoveByWukong(fen_, config.depth);
+              highlightMovesOnBoard(wukongMove, getSide()[0]);
+            }
 
             engine.getMoves(fen_, getSide()).then((moves) => {
               chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
