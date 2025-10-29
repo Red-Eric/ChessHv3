@@ -67,7 +67,6 @@ function loadConfig2() {
   }
 }
 
-
 // stockfish 11
 class Engine {
   constructor({ elo = 20, depth = 10, multipv = 5, threads = 2, hash = 128 }) {
@@ -197,6 +196,97 @@ class Engine {
   }
 }
 
+// Wukong
+class Wukong {
+  constructor() {
+    this.ready = this.init();
+  }
+
+  async init() {
+    this.worker = await this.createWorker();
+    // Ici, tu peux envoyer une commande "uci" ou équivalent si Wukong le supporte
+    // par exemple : this.worker.postMessage({ command: "uci" });
+  }
+
+  async createWorker() {
+    const url = chrome.runtime.getURL("wukong.js");
+    const blob = new Blob([`importScripts("${url}");`], {
+      type: "application/javascript",
+    });
+    const blobUrl = URL.createObjectURL(blob);
+    return new Worker(blobUrl);
+  }
+
+  async getMove(fen, depth) {
+    await this.ready;
+
+    return new Promise((resolve) => {
+      const onMessage = (e) => {
+        const { type, text } = e.data;
+        if (type === "log" && text.startsWith("Best move:")) {
+          this.worker.removeEventListener("message", onMessage);
+          const bestMove = text.replace("Best move: ", "").trim();
+          const moveObj = {
+            from: bestMove.slice(0, 2),
+            to: bestMove.slice(2, 4),
+          };
+          resolve([moveObj]);
+        }
+      };
+
+      this.worker.addEventListener("message", onMessage);
+      // Envoi des commandes au moteur Wukong
+      this.worker.postMessage({ command: `position fen ${fen}` });
+      this.worker.postMessage({ command: `go depth ${depth}` });
+    });
+  }
+}
+
+// Lozza8
+class Lozza {
+  constructor() {
+    this.ready = this.init();
+  }
+
+  async init() {
+    const url = chrome.runtime.getURL("lozza.js");
+    const blob = new Blob([`importScripts("${url}");`], {
+      type: "application/javascript",
+    });
+    const blobUrl = URL.createObjectURL(blob);
+    this.worker = new Worker(blobUrl);
+
+    URL.revokeObjectURL(blobUrl);
+
+    return true;
+  }
+
+  async getMove(fen, depth) {
+    await this.ready;
+
+    return new Promise((resolve) => {
+      const onMessage = (e) => {
+        const msg = e.data;
+        if (typeof msg === "string" && msg.toLowerCase().startsWith("bestmove")) {
+          this.worker.removeEventListener("message", onMessage);
+
+          const moveParts = msg.split(" ")[1];
+          const moveObj = {
+            from: moveParts.slice(0, 2),
+            to: moveParts.slice(2, 4),
+          };
+
+          resolve([moveObj]);
+        }
+      };
+      this.worker.addEventListener("message", onMessage);
+      this.worker.postMessage(`position fen ${fen}`);
+      this.worker.postMessage(`go depth ${depth}`);
+    });
+  }
+}
+
+
 let expired = true;
 
 chrome.runtime.sendMessage({ type: "checkExpiration" }, (response) => {
@@ -239,6 +329,8 @@ const startCheat = () => {
       threads: 2,
       hash: 128,
     });
+
+    const wukongEngine = new Wukong()
 
     let evalObj = null;
     let customEval = null;
@@ -699,6 +791,7 @@ const startCheat = () => {
       threads: 2,
       hash: 128,
     });
+    const wukongEngine = new Wukong()
 
     function createEvalBar(initialScore = "0.0", initialColor = "white") {
       const boardContainer = document.querySelector("cg-board");
@@ -992,6 +1085,10 @@ const startCheat = () => {
       }
     }
 
+
+    /////////////////////////////////////////////   calculation /////////////////////////////////////////////
+
+
     function inject() {
       const s = document.createElement("script");
       s.src = chrome.runtime.getURL("lib/chess_min.js");
@@ -1014,8 +1111,11 @@ const startCheat = () => {
             fen_ = event.data.fen;
             // console.log(fen_);
 
+            // wukongEngine.getMove(fen_, config.depth).then(moves => highlightMovesOnBoard(moves, getSide()[0]))
+
             engine.getMoves(fen_, getSide()).then((moves) => {
               chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+              
               highlightMovesOnBoard(moves, getSide()[0]);
 
               if (moves.length > 0 && evalObj) {
