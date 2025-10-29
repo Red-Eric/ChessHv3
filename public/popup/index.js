@@ -13,6 +13,7 @@ tabs.forEach((tab, index) => {
     panelIndex = index;
     const streamPanel = document.querySelector("#stream");
     streamPanel.style.display = index === 2 ? "flex" : "none";
+
     tabs.forEach((t) => t.classList.remove("active"));
     panels.forEach((p) => p.classList.remove("active"));
     tab.classList.add("active");
@@ -37,7 +38,7 @@ let chessConfig = JSON.parse(localStorage.getItem("chessConfig")) || {
   engine: "stockfish", style: 0
 };
 
-// ===== DOM Elements =====
+// ===== DOM Elements Chess.com =====
 const elo = document.getElementById("elo");
 const lines = document.getElementById("lines");
 const depth = document.getElementById("depth");
@@ -59,6 +60,7 @@ const winningMoveLabel = document.getElementById("winningMoveLabel");
 const showEvalLabel = document.getElementById("showEvalLabel");
 const onlyShowEvalLabel = document.getElementById("onlyShowEvalLabel");
 
+// ===== Update Chess.com UI =====
 function updateChessUI() {
   elo.value = chessConfig.skill;
   lines.value = chessConfig.lines;
@@ -81,6 +83,12 @@ function updateChessUI() {
   onlyShowEvalLabel.textContent = `Hide Arrows (${onlyShowEval.checked ? "ON" : "OFF"})`;
 
   engineInfo.textContent = `${chessConfig.engine === "stockfish" ? "Default engine" : "Selected engine"}: ${chessConfig.engine.toUpperCase()}`;
+
+  // === MASQUER LES ELEMENTS SI PAS STOCKFISH ===
+  const hideIfNotStockfish = chessConfig.engine !== "stockfish";
+  elo.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
+  lines.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
+  styleSelect.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
 }
 updateChessUI();
 
@@ -90,9 +98,9 @@ function saveChessConfig() {
     chrome.runtime.sendMessage({ type: "config", config: chessConfig });
 }
 
-// ===== Event Listeners =====
+// ===== Event Listeners Chess.com =====
 elo.addEventListener("input", () => {
-  chessConfig.skill = parseInt(elo.value); // fix ici pour slider skill
+  chessConfig.skill = parseInt(elo.value);
   updateChessUI();
   saveChessConfig();
 });
@@ -122,7 +130,6 @@ engineSelect.addEventListener("change", () => {
   saveChessConfig();
 });
 
-
 // ===== Lichess Config =====
 let lichessConfig = JSON.parse(localStorage.getItem("lichessConfig")) || {
   skill: 20, lines: 5, depth: 10,
@@ -130,7 +137,7 @@ let lichessConfig = JSON.parse(localStorage.getItem("lichessConfig")) || {
   engine: "stockfish", style: 0
 };
 
-// ===== DOM Elements =====
+// ===== DOM Elements Lichess =====
 const elo2 = document.getElementById("elo2");
 const lines2 = document.getElementById("lines2");
 const depth2 = document.getElementById("depth2");
@@ -148,6 +155,7 @@ const winningMoveLabel2 = document.getElementById("winningMoveLabel2");
 const showEvalLabel2 = document.getElementById("showEvalLabel2");
 const onlyShowEvalLabel2 = document.getElementById("onlyShowEvalLabel2");
 
+// ===== Update Lichess UI =====
 function updateLichessUI() {
   elo2.value = lichessConfig.skill;
   lines2.value = lichessConfig.lines;
@@ -164,8 +172,14 @@ function updateLichessUI() {
   winningMoveLabel2.textContent = `Only Show Winning Move (${winningMove2.checked ? "ON" : "OFF"})`;
   showEvalLabel2.textContent = `Show Eval Bar (${showEval2.checked ? "ON" : "OFF"})`;
   onlyShowEvalLabel2.textContent = `Hide Arrows (${onlyShowEval2.checked ? "ON" : "OFF"})`;
-  
+
   engineInfo2.textContent = `${lichessConfig.engine === "stockfish" ? "Default engine" : "Selected engine"}: ${lichessConfig.engine.toUpperCase()}`;
+
+  // === MASQUER LES ELEMENTS SI PAS STOCKFISH ===
+  const hideIfNotStockfish = lichessConfig.engine !== "stockfish";
+  elo2.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
+  lines2.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
+  styleSelect2.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
 }
 updateLichessUI();
 
@@ -175,7 +189,7 @@ function saveLichessConfig() {
     chrome.runtime.sendMessage({ type: "config2", config: lichessConfig });
 }
 
-// ===== Event Listeners =====
+// ===== Event Listeners Lichess =====
 elo2.addEventListener("input", () => {
   lichessConfig.skill = parseInt(elo2.value);
   updateLichessUI();
@@ -207,6 +221,6 @@ engineSelect2.addEventListener("change", () => {
   saveLichessConfig();
 });
 
-
+// ===== Chessboard Panel =====
 var board1 = Chessboard("board1", "start");
 board1.orientation("white");
