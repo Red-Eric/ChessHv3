@@ -323,7 +323,7 @@ const startCheat = () => {
   */
   if (window.location.hostname.includes("chess.com") && !expired) {
     loadConfig();
-    let lastFEN = "";
+    let lastFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     let fen_ = "";
     let side_index = 1;
 
@@ -494,6 +494,7 @@ const startCheat = () => {
     }
 
     function highlightMovesOnBoard(moves, side) {
+      console.log(side)
       if (!Array.isArray(moves)) return;
 
       if (
@@ -981,6 +982,7 @@ const startCheat = () => {
     }
 
     function highlightMovesOnBoard(moves, side) {
+      console.log(side)
       if (!Array.isArray(moves)) return;
 
       if (
