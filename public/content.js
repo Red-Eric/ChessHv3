@@ -67,7 +67,11 @@ function loadConfig() {
   const saved = localStorage.getItem("chessConfig");
   if (saved) {
     const parsed = JSON.parse(saved);
-    config = { ...defaultConfig, ...parsed };
+    for (let key in parsed) {
+      if (config.hasOwnProperty(key)) {
+        config[key] = parsed[key];
+      }
+    }
   }
 }
 
@@ -75,9 +79,15 @@ function loadConfig2() {
   const saved = localStorage.getItem("chessConfig2");
   if (saved) {
     const parsed = JSON.parse(saved);
-    config = { ...defaultConfig, ...parsed };
+    for (let key in parsed) {
+      if (config.hasOwnProperty(key)) {
+        config[key] = parsed[key];
+      }
+    }
   }
 }
+
+
 
 // stockfish 11
 class Engine {
