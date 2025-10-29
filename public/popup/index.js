@@ -82,7 +82,7 @@ function updateChessUI() {
   showEvalLabel.textContent = `Show Eval Bar (${showEval.checked ? "ON" : "OFF"})`;
   onlyShowEvalLabel.textContent = `Hide Arrows (${onlyShowEval.checked ? "ON" : "OFF"})`;
 
-  engineInfo.textContent = `${chessConfig.engine === "stockfish" ? "Default engine" : "Selected engine"}: ${chessConfig.engine.toUpperCase()}`;
+  // engineInfo.textContent = `${chessConfig.engine === "stockfish" ? "Default engine" : "Selected engine"}: ${chessConfig.engine.toUpperCase()}`;
 
   // === MASQUER LES ELEMENTS SI PAS STOCKFISH ===
   const hideIfNotStockfish = chessConfig.engine !== "stockfish";
@@ -175,7 +175,7 @@ function updateLichessUI() {
   showEvalLabel2.textContent = `Show Eval Bar (${showEval2.checked ? "ON" : "OFF"})`;
   onlyShowEvalLabel2.textContent = `Hide Arrows (${onlyShowEval2.checked ? "ON" : "OFF"})`;
 
-  engineInfo2.textContent = `${lichessConfig.engine === "stockfish" ? "Default engine" : "Selected engine"}: ${lichessConfig.engine.toUpperCase()}`;
+  // engineInfo2.textContent = `${lichessConfig.engine === "stockfish" ? "Default engine" : "Selected engine"}: ${lichessConfig.engine.toUpperCase()}`;
 
   // === MASQUER LES ELEMENTS SI PAS STOCKFISH ===
   const hideIfNotStockfish = lichessConfig.engine !== "stockfish";

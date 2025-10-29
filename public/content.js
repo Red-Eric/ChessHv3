@@ -212,7 +212,7 @@ class Wukong {
   }
 
   async createWorker() {
-    const url = chrome.runtime.getURL("wukong.js");
+    const url = chrome.runtime.getURL("lib/wukong.js");
     const blob = new Blob([`importScripts("${url}");`], {
       type: "application/javascript",
     });
@@ -252,7 +252,7 @@ class Lozza {
   }
 
   async init() {
-    const url = chrome.runtime.getURL("lozza.js");
+    const url = chrome.runtime.getURL("lib/lozza.js");
     const blob = new Blob([`importScripts("${url}");`], {
       type: "application/javascript",
     });
@@ -1113,7 +1113,7 @@ const startCheat = () => {
             clearHighlightSquares();
             fen_ = event.data.fen;
             // console.log(fen_);
-
+            console.log(config);
             if (config.engine === "wukong") {
               wukongEngine.getMove(fen_, config.depth).then((moves) => {
                 highlightMovesOnBoard(moves, getSide()[0]);
@@ -1196,7 +1196,9 @@ const startCheat = () => {
 
         engine.getMoves(fen_, getSide()).then((moves) => {
           chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-          highlightMovesOnBoard(moves, getSide()[0]);
+          if (config.engine === "stockfish") {
+            highlightMovesOnBoard(moves, getSide()[0]);
+          }
           if (moves.length > 0 && evalObj) {
             evalObj.update(moves[0].eval, getSide());
           }
