@@ -1,3 +1,10 @@
+const getMoveByWukong = async (fen, depth) => {
+  let wukongEngine = new Wukong()
+  wukongEngine.setBoard(fen)
+  return await wukongEngine.search(depth)
+}
+
+//////////////////////////////////////////
 async function createWorker() {
   // stockfish 17 = stockfish-17.1-asm-341ff22.js
   const url = chrome.runtime.getURL("lib/stockfish.js");
@@ -734,16 +741,6 @@ const startCheat = () => {
       evalContainer.appendChild(topBar);
       evalContainer.appendChild(bottomBar);
 
-      // Ligne médiane
-      // const midLine = document.createElement("div");
-      // midLine.style.position = "absolute";
-      // midLine.style.top = "50%";
-      // midLine.style.left = "0";
-      // midLine.style.width = "100%";
-      // midLine.style.height = "2px";
-      // midLine.style.background = "red";
-      // midLine.style.transform = "translateY(-50%)";
-      // evalContainer.appendChild(midLine);
 
       // Texte en bas
       const scoreText = document.createElement("div");
@@ -824,6 +821,7 @@ const startCheat = () => {
     }
 
     function highlightMovesOnBoard(moves, side) {
+      console.log(moves)
       if (!Array.isArray(moves)) return;
 
       if (
