@@ -89,6 +89,7 @@ function updateChessUI() {
   elo.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
   lines.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
   styleSelect.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
+  winningMove.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
 }
 updateChessUI();
 
@@ -180,6 +181,7 @@ function updateLichessUI() {
   elo2.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
   lines2.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
   styleSelect2.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
+  winningMove2.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
 }
 updateLichessUI();
 
