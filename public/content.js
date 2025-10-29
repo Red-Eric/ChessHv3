@@ -28,9 +28,10 @@ function clearHighlightSquares() {
   document.querySelectorAll(".customH").forEach((el) => el.remove());
 }
 
-const interval = 100
+const interval = 100;
 
 let config = {
+  engine: "stockfish",
   skill: 20,
   lines: 5,
   depth: 10,
@@ -269,7 +270,10 @@ class Lozza {
     return new Promise((resolve) => {
       const onMessage = (e) => {
         const msg = e.data;
-        if (typeof msg === "string" && msg.toLowerCase().startsWith("bestmove")) {
+        if (
+          typeof msg === "string" &&
+          msg.toLowerCase().startsWith("bestmove")
+        ) {
           this.worker.removeEventListener("message", onMessage);
 
           const moveParts = msg.split(" ")[1];
@@ -287,7 +291,6 @@ class Lozza {
     });
   }
 }
-
 
 let expired = true;
 
@@ -331,8 +334,8 @@ const startCheat = () => {
       threads: 2,
       hash: 128,
     });
-    const wukongEngine = new Wukong()
-    const lozzaEngine = new Lozza()
+    const wukongEngine = new Wukong();
+    const lozzaEngine = new Lozza();
 
     let evalObj = null;
     let customEval = null;
@@ -793,8 +796,8 @@ const startCheat = () => {
       threads: 2,
       hash: 128,
     });
-    const wukongEngine = new Wukong()
-    const lozzaEngine = new Lozza()
+    const wukongEngine = new Wukong();
+    const lozzaEngine = new Lozza();
 
     function createEvalBar(initialScore = "0.0", initialColor = "white") {
       const boardContainer = document.querySelector("cg-board");
@@ -1088,7 +1091,6 @@ const startCheat = () => {
       }
     }
 
-
     /////////////////////////////////////////////   calculation /////////////////////////////////////////////
     function inject() {
       const s = document.createElement("script");
@@ -1112,13 +1114,22 @@ const startCheat = () => {
             fen_ = event.data.fen;
             // console.log(fen_);
 
-            // wukongEngine.getMove(fen_, config.depth).then(moves => highlightMovesOnBoard(moves, getSide()[0]))
+            if (config.engine === "wukong") {
+              wukongEngine.getMove(fen_, config.depth).then((moves) => {
+                highlightMovesOnBoard(moves, getSide()[0]);
+              });
+            }
+            if (config.engine === "lozza") {
+              lozzaEngine.getMove(fen_, config.depth).then((moves) => {
+                highlightMovesOnBoard(moves, getSide()[0]);
+              });
+            }
 
             engine.getMoves(fen_, getSide()).then((moves) => {
               chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-              
-              highlightMovesOnBoard(moves, getSide()[0]);
-
+              if (config.engine === "stockfish") {
+                highlightMovesOnBoard(moves, getSide()[0]);
+              }
               if (moves.length > 0 && evalObj) {
                 evalObj.update(moves[0].eval, getSide());
               }
@@ -1168,6 +1179,19 @@ const startCheat = () => {
             evalObj = createEvalBar("0.0", getSide());
             customEval = document.querySelector("#customEval");
           }
+        }
+
+        // Stream
+
+        if (config.engine === "wukong") {
+          wukongEngine.getMove(fen_, config.depth).then((moves) => {
+            highlightMovesOnBoard(moves, getSide()[0]);
+          });
+        }
+        if (config.engine === "lozza") {
+          lozzaEngine.getMove(fen_, config.depth).then((moves) => {
+            highlightMovesOnBoard(moves, getSide()[0]);
+          });
         }
 
         engine.getMoves(fen_, getSide()).then((moves) => {
