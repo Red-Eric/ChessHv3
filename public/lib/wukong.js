@@ -3974,7 +3974,7 @@ var Wukong = function (boardSize, lightSquare, darkSquare, selectColor) {
       for (let count = 0; count < pvLength[0]; count++)
         info += moveToString(pvTable[count]) + " ";
 
-      console.log(info);
+      // console.log(info);
 
       if (typeof document != "undefined") {
         if (uciScore == 49000) uciScore = "M1";
@@ -3990,13 +3990,8 @@ var Wukong = function (boardSize, lightSquare, darkSquare, selectColor) {
     let bestMove = timing.stopped == 1 ? lastBestMove : pvTable[0];
     console.log("bestmove " + moveToString(bestMove));
     // return bestMove;
-    let movetemp = moveToString(bestMove); // e2e4
-    return [
-      {
-        from: movetemp[0] + movetemp[1],
-        to: movetemp[2] + movetemp[3],
-      },
-    ];
+    return moveToString(bestMove);
+    
   }
 
   /****************************\
@@ -4705,5 +4700,29 @@ var Wukong = function (boardSize, lightSquare, darkSquare, selectColor) {
   };
 };
 
-// export as nodejs module
-if (typeof exports != "undefined") exports.Engine = Engine;
+
+let engine = null;
+
+self.onmessage = function(e) {
+    const { command } = e.data;
+
+    if(command.startsWith('position fen ')) {
+        const fen = command.replace('position fen ', '').trim();
+        engine = new Wukong();
+        engine.setBoard(fen);
+        self.postMessage({ type: 'log', text: `Board set to FEN: ${fen}` });
+    }
+
+    if(command.startsWith('go depth ')) {
+        if(!engine) {
+            self.postMessage({ type: 'log', text: 'Erreur : board non initialisé' });
+            return;
+        }
+
+        const depth = parseInt(command.replace('go depth ', '').trim(), 10);
+        self.postMessage({ type: 'log', text: `Recherche profondeur ${depth}...` });
+
+        let bestMove = engine.search(depth);
+        self.postMessage({ type: 'log', text: `Best move: ${bestMove}` });
+    }
+};
