@@ -122,15 +122,91 @@ engineSelect.addEventListener("change", () => {
   saveChessConfig();
 });
 
+
 // ===== Lichess Config =====
-// Même logique que Chess.com mais avec "_2" suffix pour ids
 let lichessConfig = JSON.parse(localStorage.getItem("lichessConfig")) || {
   skill: 20, lines: 5, depth: 10,
   winningMove: false, showEval: false, onlyShowEval: false,
   engine: "stockfish", style: 0
 };
 
-// ... implémentation identique pour Lichess (_2)
+// ===== DOM Elements =====
+const elo2 = document.getElementById("elo2");
+const lines2 = document.getElementById("lines2");
+const depth2 = document.getElementById("depth2");
+const winningMove2 = document.getElementById("winningMove2");
+const showEval2 = document.getElementById("showEval2");
+const onlyShowEval2 = document.getElementById("onlyShowEval2");
+const styleSelect2 = document.getElementById("styleSelect2");
+const engineSelect2 = document.getElementById("engineSelect2");
+const engineInfo2 = document.getElementById("engineInfo2");
+
+const eloValue2 = document.getElementById("eloValue2");
+const linesValue2 = document.getElementById("linesValue2");
+const depthValue2 = document.getElementById("depthValue2");
+const winningMoveLabel2 = document.getElementById("winningMoveLabel2");
+const showEvalLabel2 = document.getElementById("showEvalLabel2");
+const onlyShowEvalLabel2 = document.getElementById("onlyShowEvalLabel2");
+
+function updateLichessUI() {
+  elo2.value = lichessConfig.skill;
+  lines2.value = lichessConfig.lines;
+  depth2.value = lichessConfig.depth;
+  winningMove2.checked = lichessConfig.winningMove;
+  showEval2.checked = lichessConfig.showEval;
+  onlyShowEval2.checked = lichessConfig.onlyShowEval;
+  styleSelect2.value = lichessConfig.style;
+  engineSelect2.value = lichessConfig.engine;
+
+  eloValue2.textContent = `Skill: ${lichessConfig.skill} (${skillToElo[lichessConfig.skill]} Elo)`;
+  linesValue2.textContent = lichessConfig.lines;
+  depthValue2.textContent = lichessConfig.depth;
+  winningMoveLabel2.textContent = `Only Show Winning Move (${winningMove2.checked ? "ON" : "OFF"})`;
+  showEvalLabel2.textContent = `Show Eval Bar (${showEval2.checked ? "ON" : "OFF"})`;
+  onlyShowEvalLabel2.textContent = `Hide Arrows (${onlyShowEval2.checked ? "ON" : "OFF"})`;
+  
+  engineInfo2.textContent = `${lichessConfig.engine === "stockfish" ? "Default engine" : "Selected engine"}: ${lichessConfig.engine.toUpperCase()}`;
+}
+updateLichessUI();
+
+function saveLichessConfig() {
+  localStorage.setItem("lichessConfig", JSON.stringify(lichessConfig));
+  if (typeof chrome !== "undefined" && chrome.runtime)
+    chrome.runtime.sendMessage({ type: "config2", config: lichessConfig });
+}
+
+// ===== Event Listeners =====
+elo2.addEventListener("input", () => {
+  lichessConfig.skill = parseInt(elo2.value);
+  updateLichessUI();
+  saveLichessConfig();
+});
+
+[lines2, depth2].forEach(el => el.addEventListener("input", () => {
+  lichessConfig[el.id.replace('2','')] = parseInt(el.value);
+  updateLichessUI();
+  saveLichessConfig();
+}));
+
+[winningMove2, showEval2, onlyShowEval2].forEach(el =>
+  el.addEventListener("change", () => {
+    lichessConfig[el.id.replace('2','')] = el.checked;
+    updateLichessUI();
+    saveLichessConfig();
+  })
+);
+
+styleSelect2.addEventListener("change", () => {
+  lichessConfig.style = parseInt(styleSelect2.value);
+  saveLichessConfig();
+});
+
+engineSelect2.addEventListener("change", () => {
+  lichessConfig.engine = engineSelect2.value;
+  updateLichessUI();
+  saveLichessConfig();
+});
+
 
 var board1 = Chessboard("board1", "start");
 board1.orientation("white");
