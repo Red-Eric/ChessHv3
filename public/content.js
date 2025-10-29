@@ -708,9 +708,14 @@ const startCheat = () => {
         if (config.engine === "lozza") {
           lozzaEngine.getMove(fen_, config.depth).then((moves) => {
             highlightMovesOnBoard(moves, getSide()[0]);
-            if (config.autoMove) {
-              randMove = getRandomElement(moves);
-              requestMove(randMove.from, randMove.to);
+            if (
+              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+            ) {
+              if (config.autoMove) {
+                randMove = getRandomElement(moves);
+                requestMove(randMove.from, randMove.to);
+              }
             }
           });
         }
@@ -731,8 +736,6 @@ const startCheat = () => {
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
               if (config.autoMove) {
-                // console.log("try to auto move*******");
-                // [0,2,3,4,5]
                 randMove = getRandomElement(moves);
                 requestMove(randMove.from, randMove.to);
               }
@@ -774,18 +777,28 @@ const startCheat = () => {
         if (config.engine === "wukong") {
           wukongEngine.getMove(fen_, config.depth).then((moves) => {
             highlightMovesOnBoard(moves, getSide()[0]);
-            if (config.autoMove) {
-              randMove = getRandomElement(moves);
-              requestMove(randMove.from, randMove.to);
+            if (
+              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+            ) {
+              if (config.autoMove) {
+                randMove = getRandomElement(moves);
+                requestMove(randMove.from, randMove.to);
+              }
             }
           });
         }
         if (config.engine === "lozza") {
           lozzaEngine.getMove(fen_, config.depth).then((moves) => {
             highlightMovesOnBoard(moves, getSide()[0]);
-            if (config.autoMove) {
-              randMove = getRandomElement(moves);
-              requestMove(randMove.from, randMove.to);
+            if (
+              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+            ) {
+              if (config.autoMove) {
+                randMove = getRandomElement(moves);
+                requestMove(randMove.from, randMove.to);
+              }
             }
           });
         }
