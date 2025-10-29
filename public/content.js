@@ -28,6 +28,8 @@ function clearHighlightSquares() {
   document.querySelectorAll(".customH").forEach((el) => el.remove());
 }
 
+const interval = 100
+
 let config = {
   skill: 20,
   lines: 5,
@@ -196,7 +198,7 @@ class Engine {
   }
 }
 
-// Wukong
+// Wukong 1750
 class Wukong {
   constructor() {
     this.ready = this.init();
@@ -242,7 +244,7 @@ class Wukong {
   }
 }
 
-// Lozza8
+// Lozza8 2400 elo
 class Lozza {
   constructor() {
     this.ready = this.init();
@@ -329,8 +331,8 @@ const startCheat = () => {
       threads: 2,
       hash: 128,
     });
-
     const wukongEngine = new Wukong()
+    const lozzaEngine = new Lozza()
 
     let evalObj = null;
     let customEval = null;
@@ -717,7 +719,7 @@ const startCheat = () => {
       }
     }
 
-    setInterval(checkAndSendMoves, 100);
+    setInterval(checkAndSendMoves, interval);
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.config && message.type === "config" && engine) {
@@ -792,6 +794,7 @@ const startCheat = () => {
       hash: 128,
     });
     const wukongEngine = new Wukong()
+    const lozzaEngine = new Lozza()
 
     function createEvalBar(initialScore = "0.0", initialColor = "white") {
       const boardContainer = document.querySelector("cg-board");
@@ -1087,8 +1090,6 @@ const startCheat = () => {
 
 
     /////////////////////////////////////////////   calculation /////////////////////////////////////////////
-
-
     function inject() {
       const s = document.createElement("script");
       s.src = chrome.runtime.getURL("lib/chess_min.js");
@@ -1139,7 +1140,7 @@ const startCheat = () => {
       }
 
       requestFen();
-    }, 100);
+    }, interval);
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       // console.log(message)
