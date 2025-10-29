@@ -10,14 +10,16 @@
   <body>
     <div class="tabs">
       <div class="tab active" data-panel="chess">
-        <img src="logo/chess.png" alt="Chess.com" class="tab-logo" width="20px" height="20px" />
+        <img src="logo/chess.png" alt="Chess.com" class="tab-logo" width="20" height="20" />
         Chess.com
       </div>
       <div class="tab" data-panel="lichess">
-        <img src="logo/lichess.png" alt="Lichess" class="tab-logo"  width="20px" height="20px" /> Lichess
+        <img src="logo/lichess.png" alt="Lichess" class="tab-logo" width="20" height="20" />
+        Lichess
       </div>
       <div class="tab" data-panel="stream">
-        <img src="logo/hide.png" alt="Stream" class="tab-logo"  width="20px" height="20px" /> Stream
+        <img src="logo/hide.png" alt="Stream" class="tab-logo" width="20" height="20" />
+        Stream
       </div>
     </div>
 
@@ -25,11 +27,18 @@
     <div class="panel active" id="chess">
       <div class="container">
         <h1>ChessHv3 - Chess.com</h1>
+        <div class="setting">
+          <label for="engineSelect">Engine:</label>
+          <select id="engineSelect">
+            <option value="stockfish">Stockfish</option>
+            <option value="wukong">Wukong</option>
+            <option value="lozza">Lozza</option>
+          </select>
+          <span id="engineInfo" style="margin-left:6px;font-size:13px;color:#666;"></span>
+        </div>
 
         <div class="setting">
-          <label for="elo"
-            ><span id="eloValue">Skill: 20 (3200 Elo)</span></label
-          >
+          <label for="elo"><span id="eloValue">Skill: 20 (3200 Elo)</span></label>
           <input type="range" id="elo" min="0" max="20" value="20" step="1" />
         </div>
 
@@ -44,21 +53,8 @@
         </div>
 
         <div class="setting">
-          <label for="delay"
-            >Auto Move Delay Limit: <span id="delayValue">100</span> ms</label
-          >
-          <input
-            type="range"
-            id="delay"
-            min="100"
-            max="20000"
-            value="100"
-            step="50"
-          />
-          <div class="description">
-            Auto move delay will be randomly chosen between 100 ms and the
-            selected limit.
-          </div>
+          <label for="delay">Auto Move Delay Limit: <span id="delayValue">100</span> ms</label>
+          <input type="range" id="delay" min="100" max="20000" value="100" step="50" />
         </div>
 
         <div class="setting">
@@ -76,10 +72,6 @@
             <input type="checkbox" id="autoMove" />
             <span class="slider"></span>
           </label>
-          <div class="description">
-            Automatically plays moves for you with a random delay between 100 ms
-            and the selected delay limit.
-          </div>
         </div>
 
         <div class="setting">
@@ -88,10 +80,6 @@
             <input type="checkbox" id="winningMove" />
             <span class="slider"></span>
           </label>
-          <div class="description">
-            Show only moves that win more than 2 points of material or result in
-            checkmate.
-          </div>
         </div>
 
         <div class="setting">
@@ -108,7 +96,6 @@
             <input type="checkbox" id="onlyShowEval" />
             <span class="slider"></span>
           </label>
-          <div class="description">Hide move suggestions (Stream Mode)</div>
         </div>
       </div>
     </div>
@@ -117,11 +104,18 @@
     <div class="panel" id="lichess">
       <div class="container">
         <h1>ChessHv3 - Lichess</h1>
+        <div class="setting">
+          <label for="engineSelect2">Engine:</label>
+          <select id="engineSelect2">
+            <option value="stockfish">Stockfish</option>
+            <option value="wukong">Wukong</option>
+            <option value="lozza">Lozza</option>
+          </select>
+          <span id="engineInfo2" style="margin-left:6px;font-size:13px;color:#666;"></span>
+        </div>
 
         <div class="setting">
-          <label for="elo2"
-            ><span id="eloValue2">Skill: 20 (3200 Elo)</span></label
-          >
+          <label for="elo2"><span id="eloValue2">Skill: 20 (3200 Elo)</span></label>
           <input type="range" id="elo2" min="0" max="20" value="20" step="1" />
         </div>
 
@@ -132,14 +126,7 @@
 
         <div class="setting">
           <label for="depth2">Depth: <span id="depthValue2">10</span></label>
-          <input
-            type="range"
-            id="depth2"
-            min="1"
-            max="20"
-            value="10"
-            step="1"
-          />
+          <input type="range" id="depth2" min="1" max="20" value="10" step="1" />
         </div>
 
         <div class="setting">
@@ -157,10 +144,6 @@
             <input type="checkbox" id="winningMove2" />
             <span class="slider"></span>
           </label>
-          <div class="description">
-            Show only moves that win more than 2 points of material or result in
-            checkmate.
-          </div>
         </div>
 
         <div class="setting">
@@ -177,12 +160,11 @@
             <input type="checkbox" id="onlyShowEval2" />
             <span class="slider"></span>
           </label>
-          <div class="description">Hide move suggestions (Stream Mode)</div>
         </div>
       </div>
     </div>
 
-    <!-- Panel 3 Empty -->
+    <!-- Panel 3 -->
     <div class="panel" id="stream">
       <div id="board1" style="width: 400px"></div>
     </div>
