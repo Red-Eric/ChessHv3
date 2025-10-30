@@ -201,98 +201,191 @@ class Engine {
   }
 }
 
-// Wukong 1750
+// // Wukong 1750
+// class Wukong {
+//   constructor() {
+//     this.ready = this.init();
+//   }
+
+//   async init() {
+//     this.worker = await this.createWorker();
+//     // Ici, tu peux envoyer une commande "uci" ou équivalent si Wukong le supporte
+//     // par exemple : this.worker.postMessage({ command: "uci" });
+//   }
+
+//   async createWorker() {
+//     const url = chrome.runtime.getURL("lib/wukong.js");
+//     const blob = new Blob([`importScripts("${url}");`], {
+//       type: "application/javascript",
+//     });
+//     const blobUrl = URL.createObjectURL(blob);
+//     return new Worker(blobUrl);
+//   }
+
+//   async getMove(fen, depth) {
+//     await this.ready;
+
+//     return new Promise((resolve) => {
+//       const onMessage = (e) => {
+//         const { type, text } = e.data;
+//         if (type === "log" && text.startsWith("Best move:")) {
+//           this.worker.removeEventListener("message", onMessage);
+//           const bestMove = text.replace("Best move: ", "").trim();
+//           const moveObj = {
+//             from: bestMove.slice(0, 2),
+//             to: bestMove.slice(2, 4),
+//           };
+//           resolve([moveObj]);
+//         }
+//       };
+
+//       this.worker.addEventListener("message", onMessage);
+//       // Envoi des commandes au moteur Wukong
+//       this.worker.postMessage({ command: `position fen ${fen}` });
+//       this.worker.postMessage({ command: `go depth ${depth}` });
+//     });
+//   }
+// }
+
+// // Lozza8 2400 elo
+// class Lozza {
+//   constructor() {
+//     this.ready = this.init();
+//   }
+
+//   async init() {
+//     const url = chrome.runtime.getURL("lib/lozza.js");
+//     const blob = new Blob([`importScripts("${url}");`], {
+//       type: "application/javascript",
+//     });
+//     const blobUrl = URL.createObjectURL(blob);
+//     this.worker = new Worker(blobUrl);
+
+//     URL.revokeObjectURL(blobUrl);
+
+//     return true;
+//   }
+
+//   async getMove(fen, depth) {
+//     await this.ready;
+
+//     return new Promise((resolve) => {
+//       const onMessage = (e) => {
+//         const msg = e.data;
+//         if (
+//           typeof msg === "string" &&
+//           msg.toLowerCase().startsWith("bestmove")
+//         ) {
+//           this.worker.removeEventListener("message", onMessage);
+
+//           const moveParts = msg.split(" ")[1];
+//           const moveObj = {
+//             from: moveParts.slice(0, 2),
+//             to: moveParts.slice(2, 4),
+//           };
+
+//           resolve([moveObj]);
+//         }
+//       };
+//       this.worker.addEventListener("message", onMessage);
+//       this.worker.postMessage(`position fen ${fen}`);
+//       this.worker.postMessage(`go depth ${depth}`);
+//     });
+//   }
+// }
+
+
+// Exemple pour Wukong
 class Wukong {
   constructor() {
     this.ready = this.init();
   }
 
   async init() {
-    this.worker = await this.createWorker();
-    // Ici, tu peux envoyer une commande "uci" ou équivalent si Wukong le supporte
-    // par exemple : this.worker.postMessage({ command: "uci" });
+    await this.createWorker();
   }
 
   async createWorker() {
+    if (this.worker) this.worker.terminate();
     const url = chrome.runtime.getURL("lib/wukong.js");
     const blob = new Blob([`importScripts("${url}");`], {
       type: "application/javascript",
     });
     const blobUrl = URL.createObjectURL(blob);
-    return new Worker(blobUrl);
+    this.worker = new Worker(blobUrl);
+    URL.revokeObjectURL(blobUrl);
+  }
+
+  stop() {
+    if (this.worker) this.worker.terminate();
   }
 
   async getMove(fen, depth) {
     await this.ready;
+    await this.createWorker();
 
     return new Promise((resolve) => {
       const onMessage = (e) => {
         const { type, text } = e.data;
         if (type === "log" && text.startsWith("Best move:")) {
           this.worker.removeEventListener("message", onMessage);
-          const bestMove = text.replace("Best move: ", "").trim();
-          const moveObj = {
-            from: bestMove.slice(0, 2),
-            to: bestMove.slice(2, 4),
-          };
-          resolve([moveObj]);
+          resolve([{ from: text.slice(11, 13), to: text.slice(13, 15) }]);
         }
       };
 
       this.worker.addEventListener("message", onMessage);
-      // Envoi des commandes au moteur Wukong
       this.worker.postMessage({ command: `position fen ${fen}` });
       this.worker.postMessage({ command: `go depth ${depth}` });
     });
   }
 }
 
-// Lozza8 2400 elo
+// Même principe pour Lozza
 class Lozza {
   constructor() {
     this.ready = this.init();
   }
 
   async init() {
+    await this.createWorker();
+  }
+
+  async createWorker() {
+    if (this.worker) this.worker.terminate();
     const url = chrome.runtime.getURL("lib/lozza.js");
     const blob = new Blob([`importScripts("${url}");`], {
       type: "application/javascript",
     });
     const blobUrl = URL.createObjectURL(blob);
     this.worker = new Worker(blobUrl);
-
     URL.revokeObjectURL(blobUrl);
+  }
 
-    return true;
+  stop() {
+    if (this.worker) this.worker.terminate();
   }
 
   async getMove(fen, depth) {
     await this.ready;
+    await this.createWorker();
 
     return new Promise((resolve) => {
       const onMessage = (e) => {
         const msg = e.data;
-        if (
-          typeof msg === "string" &&
-          msg.toLowerCase().startsWith("bestmove")
-        ) {
+        if (typeof msg === "string" && msg.toLowerCase().startsWith("bestmove")) {
           this.worker.removeEventListener("message", onMessage);
-
           const moveParts = msg.split(" ")[1];
-          const moveObj = {
-            from: moveParts.slice(0, 2),
-            to: moveParts.slice(2, 4),
-          };
-
-          resolve([moveObj]);
+          resolve([{ from: moveParts.slice(0, 2), to: moveParts.slice(2, 4) }]);
         }
       };
+
       this.worker.addEventListener("message", onMessage);
       this.worker.postMessage(`position fen ${fen}`);
       this.worker.postMessage(`go depth ${depth}`);
     });
   }
 }
+
 
 let expired = true;
 
@@ -325,8 +418,8 @@ const startCheat = () => {
   */
   if (window.location.hostname.includes("chess.com") && !expired) {
     loadConfig();
-    let lastFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    let fen_ = "";
+    let lastFEN = "Bomboclat";
+    let fen_ = "aa";
     let side_index = 1;
 
     const engine = new Engine({
@@ -480,7 +573,7 @@ const startCheat = () => {
     }
 
     function requestMove(from, to, promotion = "q") {
-      moveDelay = randomIntBetween(10, config.delay);
+      moveDelay = randomIntBetween(100, config.delay);
       // console.log("request MOVE ");
       // console.log(moveDelay);
       window.postMessage(
@@ -499,20 +592,8 @@ const startCheat = () => {
 
     window.onkeyup = (e)=>{
       if(MoveKeyArray.length > 0){
-        if(e.key === "1"){
+        if(e.key === "Shift"){
           requestMove(MoveKeyArray[0].from , MoveKeyArray[0].to)
-        }
-        if(e.key === "2"){
-          requestMove(MoveKeyArray[1].from , MoveKeyArray[1].to)
-        }
-        if(e.key === "3"){
-          requestMove(MoveKeyArray[2].from , MoveKeyArray[2].to)
-        }
-        if(e.key === "4"){
-          requestMove(MoveKeyArray[3].from , MoveKeyArray[3].to)
-        }
-        if(e.key === "5"){
-          requestMove(MoveKeyArray[4].from , MoveKeyArray[4].to)
         }
       }
     }
