@@ -478,8 +478,8 @@ const startCheat = () => {
       }
     }
 
-    function requestMove(from, to, promotion = "q") {
-      moveDelay = randomIntBetween(100, config.delay);
+    function requestMove(from, to, promotion = "q", key = false) {
+      key ? moveDelay = randomIntBetween(100, 101) : moveDelay = randomIntBetween(100, config.delay);
       // console.log("request MOVE ");
       // console.log(moveDelay);
       window.postMessage(
@@ -499,7 +499,7 @@ const startCheat = () => {
     window.onkeyup = (e)=>{
       if(MoveKeyArray.length > 0){
         if(e.key === "Shift"){
-          requestMove(MoveKeyArray[0].from , MoveKeyArray[0].to)
+          requestMove(MoveKeyArray[0].from , MoveKeyArray[0].to, "q" , true)
         }
       }
     }
