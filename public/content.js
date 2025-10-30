@@ -201,101 +201,7 @@ class Engine {
   }
 }
 
-// // Wukong 1750
-// class Wukong {
-//   constructor() {
-//     this.ready = this.init();
-//   }
-
-//   async init() {
-//     this.worker = await this.createWorker();
-//     // Ici, tu peux envoyer une commande "uci" ou équivalent si Wukong le supporte
-//     // par exemple : this.worker.postMessage({ command: "uci" });
-//   }
-
-//   async createWorker() {
-//     const url = chrome.runtime.getURL("lib/wukong.js");
-//     const blob = new Blob([`importScripts("${url}");`], {
-//       type: "application/javascript",
-//     });
-//     const blobUrl = URL.createObjectURL(blob);
-//     return new Worker(blobUrl);
-//   }
-
-//   async getMove(fen, depth) {
-//     await this.ready;
-
-//     return new Promise((resolve) => {
-//       const onMessage = (e) => {
-//         const { type, text } = e.data;
-//         if (type === "log" && text.startsWith("Best move:")) {
-//           this.worker.removeEventListener("message", onMessage);
-//           const bestMove = text.replace("Best move: ", "").trim();
-//           const moveObj = {
-//             from: bestMove.slice(0, 2),
-//             to: bestMove.slice(2, 4),
-//           };
-//           resolve([moveObj]);
-//         }
-//       };
-
-//       this.worker.addEventListener("message", onMessage);
-//       // Envoi des commandes au moteur Wukong
-//       this.worker.postMessage({ command: `position fen ${fen}` });
-//       this.worker.postMessage({ command: `go depth ${depth}` });
-//     });
-//   }
-// }
-
-// // Lozza8 2400 elo
-// class Lozza {
-//   constructor() {
-//     this.ready = this.init();
-//   }
-
-//   async init() {
-//     const url = chrome.runtime.getURL("lib/lozza.js");
-//     const blob = new Blob([`importScripts("${url}");`], {
-//       type: "application/javascript",
-//     });
-//     const blobUrl = URL.createObjectURL(blob);
-//     this.worker = new Worker(blobUrl);
-
-//     URL.revokeObjectURL(blobUrl);
-
-//     return true;
-//   }
-
-//   async getMove(fen, depth) {
-//     await this.ready;
-
-//     return new Promise((resolve) => {
-//       const onMessage = (e) => {
-//         const msg = e.data;
-//         if (
-//           typeof msg === "string" &&
-//           msg.toLowerCase().startsWith("bestmove")
-//         ) {
-//           this.worker.removeEventListener("message", onMessage);
-
-//           const moveParts = msg.split(" ")[1];
-//           const moveObj = {
-//             from: moveParts.slice(0, 2),
-//             to: moveParts.slice(2, 4),
-//           };
-
-//           resolve([moveObj]);
-//         }
-//       };
-//       this.worker.addEventListener("message", onMessage);
-//       this.worker.postMessage(`position fen ${fen}`);
-//       this.worker.postMessage(`go depth ${depth}`);
-//     });
-//   }
-// }
-
-
-// Exemple pour Wukong
+// Wukong 1780
 class Wukong {
   constructor() {
     this.ready = this.init();
@@ -340,7 +246,7 @@ class Wukong {
   }
 }
 
-// Même principe pour Lozza
+// Lozza 8
 class Lozza {
   constructor() {
     this.ready = this.init();
