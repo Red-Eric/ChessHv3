@@ -10,6 +10,8 @@ async function createWorker() {
   return new Worker(blobUrl);
 }
 
+let MoveKeyArray = []
+
 function randomIntBetween(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
@@ -478,7 +480,7 @@ const startCheat = () => {
     }
 
     function requestMove(from, to, promotion = "q") {
-      moveDelay = randomIntBetween(100, config.delay);
+      moveDelay = randomIntBetween(10, config.delay);
       // console.log("request MOVE ");
       // console.log(moveDelay);
       window.postMessage(
@@ -491,6 +493,28 @@ const startCheat = () => {
         },
         "*"
       );
+    }
+
+    // Key Input
+
+    window.onkeyup = (e)=>{
+      if(MoveKeyArray.length > 0){
+        if(e.key === "1"){
+          requestMove(MoveKeyArray[0].from , MoveKeyArray[0].to)
+        }
+        if(e.key === "2"){
+          requestMove(MoveKeyArray[1].from , MoveKeyArray[1].to)
+        }
+        if(e.key === "3"){
+          requestMove(MoveKeyArray[2].from , MoveKeyArray[2].to)
+        }
+        if(e.key === "4"){
+          requestMove(MoveKeyArray[3].from , MoveKeyArray[3].to)
+        }
+        if(e.key === "5"){
+          requestMove(MoveKeyArray[4].from , MoveKeyArray[4].to)
+        }
+      }
     }
 
     function highlightMovesOnBoard(moves, side) {
@@ -723,6 +747,7 @@ const startCheat = () => {
 
         if (engine) {
           engine.getMoves(fen_, getSide()).then((moves) => {
+            MoveKeyArray = moves
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
             if (config.engine === "stockfish") {
               highlightMovesOnBoard(moves, getSide()[0]);
@@ -807,6 +832,7 @@ const startCheat = () => {
         }
 
         engine.getMoves(fen_, getSide()).then((moves) => {
+          MoveKeyArray = moves
           chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
           if (config.engine === "stockfish") {
             highlightMovesOnBoard(moves, getSide()[0]);
@@ -1266,3 +1292,5 @@ const startCheat = () => {
     });
   }
 };
+
+
