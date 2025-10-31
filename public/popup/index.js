@@ -150,7 +150,7 @@ const styleSelect2 = document.getElementById("styleSelect2");
 const engineSelect2 = document.getElementById("engineSelect2");
 const engineInfo2 = document.getElementById("engineInfo2");
 
-const eloValue2 = document.getElementById("eloValue2");
+// const eloValue2 = document.getElementById("eloValue2");
 const linesValue2 = document.getElementById("linesValue2");
 const depthValue2 = document.getElementById("depthValue2");
 const winningMoveLabel2 = document.getElementById("winningMoveLabel2");
@@ -168,7 +168,7 @@ function updateLichessUI() {
   styleSelect2.value = lichessConfig.style;
   engineSelect2.value = lichessConfig.engine;
 
-  eloValue2.textContent = `Skill: ${lichessConfig.skill} (${skillToElo[lichessConfig.skill]} Elo)`;
+  // eloValue2.textContent = `Skill: ${lichessConfig.skill} (${skillToElo[lichessConfig.skill]} Elo)`;
   linesValue2.textContent = lichessConfig.lines;
   depthValue2.textContent = lichessConfig.depth;
   winningMoveLabel2.textContent = `Only Show Winning Move (${winningMove2.checked ? "ON" : "OFF"})`;
