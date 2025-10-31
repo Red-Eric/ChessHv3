@@ -10,6 +10,7 @@ async function createWorker() {
   return new Worker(blobUrl);
 }
 
+
 let MoveKeyArray = []
 
 function randomIntBetween(min, max) {
