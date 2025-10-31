@@ -39,7 +39,7 @@ let chessConfig = JSON.parse(localStorage.getItem("chessConfig")) || {
 };
 
 // ===== DOM Elements Chess.com =====
-const elo = document.getElementById("elo");
+// const elo = document.getElementById("elo");
 const lines = document.getElementById("lines");
 const depth = document.getElementById("depth");
 const delay = document.getElementById("delay");
@@ -51,7 +51,7 @@ const styleSelect = document.getElementById("styleSelect");
 const engineSelect = document.getElementById("engineSelect");
 const engineInfo = document.getElementById("engineInfo");
 
-const eloValue = document.getElementById("eloValue");
+// const eloValue = document.getElementById("eloValue");
 const linesValue = document.getElementById("linesValue");
 const depthValue = document.getElementById("depthValue");
 const delayValue = document.getElementById("delayValue");
@@ -62,7 +62,7 @@ const onlyShowEvalLabel = document.getElementById("onlyShowEvalLabel");
 
 // ===== Update Chess.com UI =====
 function updateChessUI() {
-  elo.value = chessConfig.skill;
+  // elo.value = chessConfig.skill;
   lines.value = chessConfig.lines;
   depth.value = chessConfig.depth;
   delay.value = chessConfig.delay;
@@ -73,7 +73,7 @@ function updateChessUI() {
   styleSelect.value = chessConfig.style;
   engineSelect.value = chessConfig.engine;
 
-  eloValue.textContent = `Skill: ${chessConfig.skill} (${skillToElo[chessConfig.skill]} Elo)`;
+  // eloValue.textContent = `Skill: ${chessConfig.skill} (${skillToElo[chessConfig.skill]} Elo)`;
   linesValue.textContent = chessConfig.lines;
   depthValue.textContent = chessConfig.depth;
   delayValue.textContent = chessConfig.delay;
@@ -86,7 +86,7 @@ function updateChessUI() {
 
   // === MASQUER LES ELEMENTS SI PAS STOCKFISH ===
   const hideIfNotStockfish = chessConfig.engine !== "stockfish";
-  elo.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
+  // elo.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
   lines.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
   styleSelect.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
   winningMove.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
@@ -101,11 +101,11 @@ function saveChessConfig() {
 }
 
 // ===== Event Listeners Chess.com =====
-elo.addEventListener("input", () => {
-  chessConfig.skill = parseInt(elo.value);
-  updateChessUI();
-  saveChessConfig();
-});
+// elo.addEventListener("input", () => {
+//   chessConfig.skill = parseInt(elo.value);
+//   updateChessUI();
+//   saveChessConfig();
+// });
 
 [lines, depth, delay].forEach(el => el.addEventListener("input", () => {
   chessConfig[el.id] = parseInt(el.value);
@@ -140,7 +140,7 @@ let lichessConfig = JSON.parse(localStorage.getItem("lichessConfig")) || {
 };
 
 // ===== DOM Elements Lichess =====
-const elo2 = document.getElementById("elo2");
+// const elo2 = document.getElementById("elo2");
 const lines2 = document.getElementById("lines2");
 const depth2 = document.getElementById("depth2");
 const winningMove2 = document.getElementById("winningMove2");
@@ -159,7 +159,7 @@ const onlyShowEvalLabel2 = document.getElementById("onlyShowEvalLabel2");
 
 // ===== Update Lichess UI =====
 function updateLichessUI() {
-  elo2.value = lichessConfig.skill;
+  // elo2.value = lichessConfig.skill;
   lines2.value = lichessConfig.lines;
   depth2.value = lichessConfig.depth;
   winningMove2.checked = lichessConfig.winningMove;
@@ -179,7 +179,7 @@ function updateLichessUI() {
 
   // === MASQUER LES ELEMENTS SI PAS STOCKFISH ===
   const hideIfNotStockfish = lichessConfig.engine !== "stockfish";
-  elo2.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
+  // elo2.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
   lines2.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
   styleSelect2.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
   winningMove2.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
@@ -194,11 +194,11 @@ function saveLichessConfig() {
 }
 
 // ===== Event Listeners Lichess =====
-elo2.addEventListener("input", () => {
-  lichessConfig.skill = parseInt(elo2.value);
-  updateLichessUI();
-  saveLichessConfig();
-});
+// elo2.addEventListener("input", () => {
+//   lichessConfig.skill = parseInt(elo2.value);
+//   updateLichessUI();
+//   saveLichessConfig();
+// });
 
 [lines2, depth2].forEach(el => el.addEventListener("input", () => {
   lichessConfig[el.id.replace('2','')] = parseInt(el.value);
