@@ -34,9 +34,7 @@
         "lib/stockfish.js",
         "lib/chess_min.js",
         "lib/wukong.js",
-        "lib/lozza.js",
-        "lib/0/stockfish-17.1-lite-single-03e3232.js",
-        "lib/0/stockfish-17.1-lite-single-03e3232.wasm"
+        "lib/lozza.js"
       ],
       "matches": ["<all_urls>"]
     }
