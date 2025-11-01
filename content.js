@@ -23,10 +23,8 @@ fetch(chrome.runtime.getURL("book.json"))
 // Book move
 
 function getMoveFromBook(fen) {
-  // Supprimer tout entre parenthèses
   let cleanFen = fen.replace(/\(.*?\)/g, "").trim();
 
-  // Ne garder que les 3 premiers champs
   const parts = cleanFen.split(" ");
   const fenKey = parts.slice(0, 3).join(" ");
 
