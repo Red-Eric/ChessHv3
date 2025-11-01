@@ -149,7 +149,7 @@ class Engine {
     if (style !== undefined) this.style = style;
     this.setOptions();
   }
-
+  
   async getMoves(fen, side = "white") {
     await this.ready;
     const sideToMove = fen.split(" ")[1];
@@ -764,7 +764,7 @@ const startCheat = () => {
             if (moves.length > 0 && evalObj) {
               evalObj.update(moves[0].eval, getSide());
             }
-
+            // stockfish go depth 10
             if (config.engine === "stockfish") {
               if (
                 (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
