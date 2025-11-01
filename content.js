@@ -149,7 +149,7 @@ class Engine {
     if (style !== undefined) this.style = style;
     this.setOptions();
   }
-  
+
   async getMoves(fen, side = "white") {
     await this.ready;
     const sideToMove = fen.split(" ")[1];
@@ -520,33 +520,39 @@ const startCheat = () => {
 
     window.onkeyup = (e) => {
       if (MoveKeyArray.length > 0) {
-        if (e.key === "Shift") { // play best Move By stockfish not other engine
+        if (e.key === "Shift") {
+          // play best Move By stockfish not other engine
           requestMove(MoveKeyArray[0].from, MoveKeyArray[0].to, "q", true);
         }
-        if(e.key === "f1"){ // auto move
-          config.autoMove = !(config.autoMove)
+        if (e.key === "1") {
+          // auto move
+          config.autoMove = !config.autoMove;
         }
-        if(e.key === "f2"){ // show eval
-          config.showEval = !(config.showEval)
+        if (e.key === "2") {
+          // show eval
+          config.showEval = !config.showEval;
         }
-        if(e.key === "f3"){ // Hide Arrow
-          config.onlyShowEval = !(config.onlyShowEval)
+        if (e.key === "3") {
+          // Hide Arrow
+          config.onlyShowEval = !config.onlyShowEval;
         }
-        if(e.key === "f4"){ // Only winning Move
-          config.winningMove = !(config.winningMove)
+        if (e.key === "4") {
+          // Only winning Move
+          config.winningMove = !config.winningMove;
         }
-        if(e.key === "f5"){ // Only winning Move
-          config.winningMove = !(config.winningMove)
+        if (e.key === "5") {
+          // Only winning Move
+          config.winningMove = !config.winningMove;
         }
-        if(e.key === "f6"){ // Auto play
-          config.autoMove = !(config.autoMove)
+        if (e.key === "6") {
+          // Auto play
+          config.autoMove = !config.autoMove;
         }
-        
       }
     };
 
     function highlightMovesOnBoard(moves, side) {
-      console.log(side);
+      // console.log(side);
       if (!Array.isArray(moves)) return;
 
       if (
@@ -557,7 +563,7 @@ const startCheat = () => {
       ) {
         return;
       }
-      
+
       if (config.onlyShowEval) return;
 
       const parent = document.querySelector("wc-chess-board");
@@ -690,6 +696,12 @@ const startCheat = () => {
         const color = colors[index] || "red";
         drawArrow(move.from, move.to, color, move.eval);
       });
+
+      const bookMove = getMoveFromBook(fen_);
+      if (bookMove) {
+        // {from : , to : }
+        drawArrow(bookMove.from, bookMove.to, "#000000", "book");
+      }
     }
 
     function getOppElo() {
@@ -1023,7 +1035,7 @@ const startCheat = () => {
     }
 
     function highlightMovesOnBoard(moves, side) {
-      console.log(side);
+      // console.log(side);
       if (!Array.isArray(moves)) return;
 
       if (
@@ -1169,11 +1181,14 @@ const startCheat = () => {
         drawArrow(move.from, move.to, color, move.eval);
       });
 
-      console.log(fen_)
+      // console.log(fen_)
 
       const bookMove = getMoveFromBook(fen_);
       if (bookMove) {
         // {from : , to : }
+        console.log(fen_)
+        console.log(bookMove)
+
         drawArrow(bookMove.from, bookMove.to, "#000000", "book");
       }
     }

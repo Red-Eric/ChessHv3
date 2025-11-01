@@ -1,9 +1,15 @@
 let currentConfig = null;
 let currentConfig2 = null; 
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // YYYY - MM -DD
 const expirationDate = "2025-11-30";
 const timeAPI =
   "https://api.timezonedb.com/v2.1/list-time-zone?key=WPOK8LWQNYUI&format=json&country=FR";
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 
 let popupTabs = [];
 
@@ -19,7 +25,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   switch (message.type) {
     case "config":
       currentConfig = message.config;
-      console.log("Config Chess.com reçue :", currentConfig);
+      // console.log("Config Chess.com reçue :", currentConfig);
 
       sendConfigToSite("config", currentConfig, "*://*.chess.com/*");
 
