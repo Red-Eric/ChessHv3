@@ -177,7 +177,7 @@ class Engine {
               scoreValueRaw = -scoreValueRaw;
             }
 
-            const bestMove = pvMatch[1];
+            const bestMove = pvMatch[1]; // best Move
             let score;
             if (scoreType === "cp") {
               const value = +(scoreValueRaw / 100).toFixed(2);
@@ -498,7 +498,6 @@ const startCheat = () => {
         window.postMessage({ type: "GET_FEN" }, "*");
       }
     }
-
     function requestMove(from, to, promotion = "q", key = false) {
       key
         ? (moveDelay = randomIntBetween(100, 101))
@@ -521,9 +520,28 @@ const startCheat = () => {
 
     window.onkeyup = (e) => {
       if (MoveKeyArray.length > 0) {
-        if (e.key === "Shift") {
+        if (e.key === "Shift") { // play best Move By stockfish not other engine
           requestMove(MoveKeyArray[0].from, MoveKeyArray[0].to, "q", true);
         }
+        if(e.key === "f1"){ // auto move
+          config.autoMove = !(config.autoMove)
+        }
+        if(e.key === "f2"){ // show eval
+          config.showEval = !(config.showEval)
+        }
+        if(e.key === "f3"){ // Hide Arrow
+          config.onlyShowEval = !(config.onlyShowEval)
+        }
+        if(e.key === "f4"){ // Only winning Move
+          config.winningMove = !(config.winningMove)
+        }
+        if(e.key === "f5"){ // Only winning Move
+          config.winningMove = !(config.winningMove)
+        }
+        if(e.key === "f6"){ // Auto play
+          config.autoMove = !(config.autoMove)
+        }
+        
       }
     };
 

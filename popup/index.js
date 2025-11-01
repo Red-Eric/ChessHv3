@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     chrome.runtime.sendMessage({ type: "popupReady" });
 });
 
-// ===== Tabs =====
+// ===== Tabs =====//
 let panelIndex = 0;
 const tabs = document.querySelectorAll(".tab");
 const panels = document.querySelectorAll(".panel");
