@@ -539,8 +539,7 @@ const startCheat = () => {
       ) {
         return;
       }
-
-      // Si onlyShowEval est activé, on n'affiche rien
+      
       if (config.onlyShowEval) return;
 
       const parent = document.querySelector("wc-chess-board");
@@ -651,7 +650,6 @@ const startCheat = () => {
 
       parent.style.position = "relative";
 
-      // Filtrage des coups si config.winningMove est actif
       let filteredMoves = moves;
       if (config.winningMove) {
         filteredMoves = moves.filter((move) => {
