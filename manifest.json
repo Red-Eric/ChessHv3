@@ -34,7 +34,8 @@
         "lib/stockfish.js",
         "lib/chess_min.js",
         "lib/wukong.js",
-        "lib/lozza.js"
+        "lib/lozza.js",
+        "book.json"
       ],
       "matches": ["<all_urls>"]
     }

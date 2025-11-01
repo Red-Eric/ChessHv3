@@ -10,8 +10,26 @@ async function createWorker() {
   return new Worker(blobUrl);
 }
 
+let book = [];
 
-let MoveKeyArray = []
+fetch(chrome.runtime.getURL("book.json"))
+  .then((response) => response.json())
+  .then((data) => {
+    book = data;
+    console.log("Book loaded:", book.length);
+  })
+  .catch((err) => console.error("Erreur lors du chargement du book:", err));
+
+function getMoveFromBook(fen) {
+  const moves = book.filter((entry) => entry.fen === fen);
+  if (moves.length === 0) {
+    return null;
+  }
+  const choice = moves[Math.floor(Math.random() * moves.length)];
+  return { from: choice.from, to: choice.to };
+}
+
+let MoveKeyArray = [];
 
 function randomIntBetween(min, max) {
   min = Math.ceil(min);
@@ -279,7 +297,10 @@ class Lozza {
     return new Promise((resolve) => {
       const onMessage = (e) => {
         const msg = e.data;
-        if (typeof msg === "string" && msg.toLowerCase().startsWith("bestmove")) {
+        if (
+          typeof msg === "string" &&
+          msg.toLowerCase().startsWith("bestmove")
+        ) {
           this.worker.removeEventListener("message", onMessage);
           const moveParts = msg.split(" ")[1];
           resolve([{ from: moveParts.slice(0, 2), to: moveParts.slice(2, 4) }]);
@@ -292,7 +313,6 @@ class Lozza {
     });
   }
 }
-
 
 let expired = true;
 
@@ -480,7 +500,9 @@ const startCheat = () => {
     }
 
     function requestMove(from, to, promotion = "q", key = false) {
-      key ? moveDelay = randomIntBetween(100, 101) : moveDelay = randomIntBetween(100, config.delay);
+      key
+        ? (moveDelay = randomIntBetween(100, 101))
+        : (moveDelay = randomIntBetween(100, config.delay));
       // console.log("request MOVE ");
       // console.log(moveDelay);
       window.postMessage(
@@ -497,16 +519,16 @@ const startCheat = () => {
 
     // Key Input
 
-    window.onkeyup = (e)=>{
-      if(MoveKeyArray.length > 0){
-        if(e.key === "Shift"){
-          requestMove(MoveKeyArray[0].from , MoveKeyArray[0].to, "q" , true)
+    window.onkeyup = (e) => {
+      if (MoveKeyArray.length > 0) {
+        if (e.key === "Shift") {
+          requestMove(MoveKeyArray[0].from, MoveKeyArray[0].to, "q", true);
         }
       }
-    }
+    };
 
     function highlightMovesOnBoard(moves, side) {
-      console.log(side)
+      console.log(side);
       if (!Array.isArray(moves)) return;
 
       if (
@@ -735,7 +757,7 @@ const startCheat = () => {
 
         if (engine) {
           engine.getMoves(fen_, getSide()).then((moves) => {
-            MoveKeyArray = moves
+            MoveKeyArray = moves;
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
             if (config.engine === "stockfish") {
               highlightMovesOnBoard(moves, getSide()[0]);
@@ -820,7 +842,7 @@ const startCheat = () => {
         }
 
         engine.getMoves(fen_, getSide()).then((moves) => {
-          MoveKeyArray = moves
+          MoveKeyArray = moves;
           chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
           if (config.engine === "stockfish") {
             highlightMovesOnBoard(moves, getSide()[0]);
@@ -906,17 +928,6 @@ const startCheat = () => {
       evalContainer.appendChild(topBar);
       evalContainer.appendChild(bottomBar);
 
-      // Ligne médiane
-      // const midLine = document.createElement("div");
-      // midLine.style.position = "absolute";
-      // midLine.style.top = "50%";
-      // midLine.style.left = "0";
-      // midLine.style.width = "100%";
-      // midLine.style.height = "2px";
-      // midLine.style.background = "red";
-      // midLine.style.transform = "translateY(-50%)";
-      // evalContainer.appendChild(midLine);
-
       // Texte en bas
       const scoreText = document.createElement("div");
       scoreText.style.position = "absolute";
@@ -996,7 +1007,7 @@ const startCheat = () => {
     }
 
     function highlightMovesOnBoard(moves, side) {
-      console.log(side)
+      console.log(side);
       if (!Array.isArray(moves)) return;
 
       if (
@@ -1119,7 +1130,6 @@ const startCheat = () => {
 
       parent.style.position = "relative";
 
-      // Filtrage des coups si config.winningMove est actif
       let filteredMoves = moves;
       if (config.winningMove) {
         filteredMoves = moves.filter((move) => {
@@ -1142,6 +1152,14 @@ const startCheat = () => {
         const color = colors[index] || "red";
         drawArrow(move.from, move.to, color, move.eval);
       });
+
+      console.log(fen_)
+
+      const bookMove = getMoveFromBook(fen_);
+      if (bookMove) {
+        // {from : , to : }
+        drawArrow(bookMove.from, bookMove.to, "#000000", "book");
+      }
     }
 
     function getSide() {
@@ -1280,4 +1298,3 @@ const startCheat = () => {
     });
   }
 };
-
