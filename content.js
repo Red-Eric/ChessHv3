@@ -20,14 +20,28 @@ fetch(chrome.runtime.getURL("book.json"))
   })
   .catch((err) => console.error("Erreur lors du chargement du book:", err));
 
+// Book move
+
 function getMoveFromBook(fen) {
-  const moves = book.filter((entry) => entry.fen === fen);
-  if (moves.length === 0) {
-    return null;
-  }
+  // Supprimer tout entre parenthèses
+  let cleanFen = fen.replace(/\(.*?\)/g, "").trim();
+
+  // Ne garder que les 3 premiers champs
+  const parts = cleanFen.split(" ");
+  const fenKey = parts.slice(0, 3).join(" ");
+
+  const moves = book.filter((entry) => {
+    const entryClean = entry.fen.replace(/\(.*?\)/g, "").trim();
+    const entryKey = entryClean.split(" ").slice(0, 3).join(" ");
+    return entryKey === fenKey;
+  });
+
+  if (moves.length === 0) return null;
+
   const choice = moves[Math.floor(Math.random() * moves.length)];
   return { from: choice.from, to: choice.to };
 }
+
 
 let MoveKeyArray = [];
 
@@ -1049,6 +1063,7 @@ const startCheat = () => {
 
       // Si onlyShowEval est activé, on n'affiche rien
       if (config.onlyShowEval) return;
+      const bookMove = getMoveFromBook(fen_);
 
       const parent = document.querySelector("cg-container");
       if (!parent) return;
@@ -1183,7 +1198,7 @@ const startCheat = () => {
 
       // console.log(fen_)
 
-      const bookMove = getMoveFromBook(fen_);
+      
       if (bookMove) {
         // {from : , to : }
         console.log(fen_)
