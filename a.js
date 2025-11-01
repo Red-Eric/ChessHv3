@@ -94,4 +94,4 @@ if(window.location.hostname.includes("lichess.org")){
   
 }
 
-// Worker added
+// Chess COm Fix
