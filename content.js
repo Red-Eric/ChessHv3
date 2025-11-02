@@ -506,6 +506,7 @@ const startCheat = () => {
 
     function requestFen() {
       // console.log("request fen called");
+      isExpired()
       if (!expired) {
         window.postMessage({ type: "GET_FEN" }, "*");
       }
@@ -1221,6 +1222,7 @@ const startCheat = () => {
 
     function requestFen() {
       // console.log("request fen called");
+      isExpired()
       if (!expired) {
         window.postMessage({ type: "FEN" }, "*");
       }
@@ -1342,3 +1344,11 @@ const startCheat = () => {
     });
   }
 };
+
+
+function isExpired() {
+  const expirationDate = "2026-01-01";
+  const now = new Date();
+  const expire = new Date(expirationDate);
+  expired = now > expire;
+}
