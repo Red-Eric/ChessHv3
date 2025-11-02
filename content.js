@@ -24,10 +24,10 @@ fetch(chrome.runtime.getURL("book.json"))
 
 function getMoveFromBook(fen) {
   let cleanFen = fen.replace(/\(.*?\)/g, "").trim();
-
   const parts = cleanFen.split(" ");
   const fenKey = parts.slice(0, 3).join(" ");
 
+  // Filtrer les coups correspondants
   const moves = book.filter((entry) => {
     const entryClean = entry.fen.replace(/\(.*?\)/g, "").trim();
     const entryKey = entryClean.split(" ").slice(0, 3).join(" ");
@@ -36,10 +36,14 @@ function getMoveFromBook(fen) {
 
   if (moves.length === 0) return null;
 
-  const choice = moves[Math.floor(Math.random() * moves.length)];
-  return { from: choice.from, to: choice.to };
-}
+  // Prendre celui avec le plus grand sequence
+  const bestMove = moves.reduce(
+    (max, move) => (move.sequence > max.sequence ? move : max),
+    moves[0]
+  );
 
+  return { from: bestMove.from, to: bestMove.to };
+}
 
 let MoveKeyArray = [];
 
@@ -506,7 +510,7 @@ const startCheat = () => {
 
     function requestFen() {
       // console.log("request fen called");
-      isExpired()
+      isExpired();
       if (!expired) {
         window.postMessage({ type: "GET_FEN" }, "*");
       }
@@ -713,7 +717,7 @@ const startCheat = () => {
       const bookMove = getMoveFromBook(fen_);
       if (bookMove) {
         // {from : , to : }
-        drawArrow(bookMove.from, bookMove.to, "#000000", "book");
+        drawArrow(bookMove.from, bookMove.to, "#000000", `book`);
       }
     }
 
@@ -1192,16 +1196,16 @@ const startCheat = () => {
 
       filteredMoves.slice(0, maxMoves).forEach((move, index) => {
         const color = colors[index] || "red";
+        // drawArrow(move.from, move.to, color, move.eval);
         drawArrow(move.from, move.to, color, move.eval);
       });
 
       // console.log(fen_)
 
-      
       if (bookMove) {
         // {from : , to : }
-        console.log(fen_)
-        console.log(bookMove)
+        console.log(fen_);
+        console.log(bookMove);
 
         drawArrow(bookMove.from, bookMove.to, "#000000", "book");
       }
@@ -1222,7 +1226,7 @@ const startCheat = () => {
 
     function requestFen() {
       // console.log("request fen called");
-      isExpired()
+      isExpired();
       if (!expired) {
         window.postMessage({ type: "FEN" }, "*");
       }
@@ -1344,7 +1348,6 @@ const startCheat = () => {
     });
   }
 };
-
 
 function isExpired() {
   const expirationDate = "2026-01-01";
