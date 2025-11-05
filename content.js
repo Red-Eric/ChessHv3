@@ -544,26 +544,23 @@ const startCheat = () => {
         if (e.key === "1") {
           // auto move
           config.autoMove = !config.autoMove;
+          saveConfig()
         }
         if (e.key === "2") {
           // show eval
           config.showEval = !config.showEval;
+          saveConfig()
+
         }
         if (e.key === "3") {
           // Hide Arrow
           config.onlyShowEval = !config.onlyShowEval;
+          saveConfig()
         }
         if (e.key === "4") {
           // Only winning Move
           config.winningMove = !config.winningMove;
-        }
-        if (e.key === "5") {
-          // Only winning Move
-          config.winningMove = !config.winningMove;
-        }
-        if (e.key === "6") {
-          // Auto play
-          config.autoMove = !config.autoMove;
+          saveConfig()
         }
       }
     };
