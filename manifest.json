@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ChessHv3 ",
-  "version": "2.0",
+  "version": "2.1",
   "description": "Chess Helper Version 3",
   "icons": {
     "16": "icons/16.png",
