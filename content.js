@@ -10,6 +10,7 @@ async function createWorker() {
   return new Worker(blobUrl);
 }
 
+
 let book = [];
 
 fetch(chrome.runtime.getURL("book.json"))
