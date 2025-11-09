@@ -1,5 +1,5 @@
 async function createWorker() {
-  // stockfish 17 = stockfish-17.1-asm-341ff22.js
+
   const url = chrome.runtime.getURL("lib/stockfish.js");
 
   const blob = new Blob([`importScripts("${url}");`], {
