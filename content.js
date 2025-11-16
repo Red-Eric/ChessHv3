@@ -389,7 +389,6 @@ const startCheat = () => {
     const wukongEngine = new Wukong();
     const lozzaEngine = new Lozza();
 
-    currentEngine = createEngineByName(config.engine)
 
     let evalObj = null;
     let customEval = null;
@@ -520,9 +519,9 @@ const startCheat = () => {
       });
     }
 
-    function clearHighlightSquares() {
-      document.querySelectorAll(".customH").forEach((el) => el.remove());
-    }
+    // function clearHighlightSquares() {
+    //   document.querySelectorAll(".customH").forEach((el) => el.remove());
+    // }
 
     if (!expired) {
       inject();
@@ -794,33 +793,17 @@ const startCheat = () => {
         _elo_ = getOppElo();
 
 
-        if (config.engine === "stockfish") {
-
-          currentEngine.getMoves(fen_, getSide()).then((moves) => {
-            MoveKeyArray = moves;
-            chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-            if (config.engine === "stockfish") {
-              highlightMovesOnBoard(moves, getSide()[0]);
-            }
-            if (moves.length > 0 && evalObj) {
-              evalObj.update(moves[0].eval, getSide());
-            }
-
-            if (config.engine === "stockfish") {
-              if (
-                (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-                (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-              ) {
-                if (config.autoMove) {
-                  randMove = getRandomElement(moves);
-                  requestMove(randMove.from, randMove.to);
-                }
-              }
+        if (config.engine === "wukong") {
+          wukongEngine.getMove(fen_, config.depth).then((moves) => {
+            highlightMovesOnBoard(moves, getSide()[0]);
+            if (config.autoMove) {
+              randMove = getRandomElement(moves);
+              requestMove(randMove.from, randMove.to);
             }
           });
-
-        } else {
-          currentEngine.getMove(fen_, config.depth).then((moves) => {
+        }
+        if (config.engine === "lozza") {
+          lozzaEngine.getMove(fen_, config.depth).then((moves) => {
             highlightMovesOnBoard(moves, getSide()[0]);
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
@@ -833,6 +816,32 @@ const startCheat = () => {
             }
           });
         }
+
+        if (engine) {
+          engine.getMoves(fen_, getSide()).then((moves) => {
+            MoveKeyArray = moves;
+            chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+            if (config.engine === "stockfish") {
+              highlightMovesOnBoard(moves, getSide()[0]);
+            }
+
+            if (moves.length > 0 && evalObj) {
+              evalObj.update(moves[0].eval, getSide());
+            }
+            // stockfish go depth 10
+            if (config.engine === "stockfish") {
+              if (
+                (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+                (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+              ) {
+                if (config.autoMove) {
+                  randMove = getRandomElement(moves);
+                  requestMove(randMove.from, randMove.to);
+                }
+              }
+            }
+          });
+        }
       }
 
     }
@@ -840,17 +849,17 @@ const startCheat = () => {
     setInterval(checkAndSendMoves, interval);
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.config && message.type === "config") {
+      if (message.config && message.type === "config" && engine) {
         config = message.config;
-        // console.log("message from backgound js ", message);
+        console.log("message from backgound js ", message);
         saveConfig();
         clearHighlightSquares();
-        // engine.updateConfig({
-        //   elo: config.skill,
-        //   depth: config.depth,
-        //   multipv: config.lines,
-        //   style: config.style,
-        // });
+        engine.updateConfig({
+          elo: config.skill,
+          depth: config.depth,
+          multipv: config.lines,
+          style: config.style,
+        });
 
         if (!config.showEval && customEval) {
           customEval.remove();
@@ -866,43 +875,8 @@ const startCheat = () => {
           }
         }
 
-        currentEngine = createEngineByName(config.engine);
-
-
-        if (config.engine === "stockfish") {
-
-          currentEngine.updateConfig({
-            elo: config.skill,
-            depth: config.depth,
-            multipv: config.lines,
-            style: config.style,
-          });
-
-          currentEngine.getMoves(fen_, getSide()).then((moves) => {
-            MoveKeyArray = moves;
-            chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-            if (config.engine === "stockfish") {
-              highlightMovesOnBoard(moves, getSide()[0]);
-            }
-            if (moves.length > 0 && evalObj) {
-              evalObj.update(moves[0].eval, getSide());
-            }
-
-            if (config.engine === "stockfish") {
-              if (
-                (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-                (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-              ) {
-                if (config.autoMove) {
-                  randMove = getRandomElement(moves);
-                  requestMove(randMove.from, randMove.to);
-                }
-              }
-            }
-          });
-
-        } else {
-          currentEngine.getMove(fen_, config.depth).then((moves) => {
+        if (config.engine === "wukong") {
+          wukongEngine.getMove(fen_, config.depth).then((moves) => {
             highlightMovesOnBoard(moves, getSide()[0]);
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
@@ -915,9 +889,44 @@ const startCheat = () => {
             }
           });
         }
+        if (config.engine === "lozza") {
+          lozzaEngine.getMove(fen_, config.depth).then((moves) => {
+            highlightMovesOnBoard(moves, getSide()[0]);
+            if (
+              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+            ) {
+              if (config.autoMove) {
+                randMove = getRandomElement(moves);
+                requestMove(randMove.from, randMove.to);
+              }
+            }
+          });
+        }
+
+        engine.getMoves(fen_, getSide()).then((moves) => {
+          MoveKeyArray = moves;
+          chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+          if (config.engine === "stockfish") {
+            highlightMovesOnBoard(moves, getSide()[0]);
+          }
+          if (moves.length > 0 && evalObj) {
+            evalObj.update(moves[0].eval, getSide());
+          }
+
+          if (config.engine === "stockfish") {
+            if (
+              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+            ) {
+              if (config.autoMove) {
+                randMove = getRandomElement(moves);
+                requestMove(randMove.from, randMove.to);
+              }
+            }
+          }
+        });
       }
-
-
     });
   }
 
@@ -932,17 +941,20 @@ const startCheat = () => {
   
   */
 
-  if (window.location.hostname.includes("lichess") && !expired) {
+  if (window.location.hostname.includes("lichess")) {
     loadConfig2();
     let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     let evalObj = null;
     let customEval = null;
-
-    currentEngine = createEngineByName(config.engine)
-
-    function clearHighlightSquares() {
-      document.querySelectorAll(".customH").forEach((el) => el.remove());
-    }
+    const engine = new Engine({
+      elo: config.skill,
+      depth: 10,
+      multipv: config.lines,
+      threads: 2,
+      hash: 128,
+    });
+    const wukongEngine = new Wukong();
+    const lozzaEngine = new Lozza();
 
     function createEvalBar(initialScore = "0.0", initialColor = "white") {
       const boardContainer = document.querySelector("cg-board");
@@ -1210,8 +1222,8 @@ const startCheat = () => {
 
       if (bookMove) {
         // {from : , to : }
-        // console.log(fen_);
-        // console.log(bookMove);
+        console.log(fen_);
+        console.log(bookMove);
 
         drawArrow(bookMove.from, bookMove.to, "#000000", "book");
       }
@@ -1259,48 +1271,28 @@ const startCheat = () => {
           if (event.data.fen !== fen_) {
             clearHighlightSquares();
             fen_ = event.data.fen;
-
-            if (config.engine === "stockfish") {
-
-              currentEngine.getMoves(fen_, getSide()).then((moves) => {
-                MoveKeyArray = moves;
-                chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-                if (config.engine === "stockfish") {
-                  highlightMovesOnBoard(moves, getSide()[0]);
-                }
-                if (moves.length > 0 && evalObj) {
-                  evalObj.update(moves[0].eval, getSide());
-                }
-
-                if (config.engine === "stockfish") {
-                  if (
-                    (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-                    (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-                  ) {
-                    if (config.autoMove) {
-                      randMove = getRandomElement(moves);
-                      requestMove(randMove.from, randMove.to);
-                    }
-                  }
-                }
-              });
-
-            } else {
-              currentEngine.getMove(fen_, config.depth).then((moves) => {
+            // console.log(fen_);
+            // console.log(config);
+            if (config.engine === "wukong") {
+              wukongEngine.getMove(fen_, config.depth).then((moves) => {
                 highlightMovesOnBoard(moves, getSide()[0]);
-                if (
-                  (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-                  (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-                ) {
-                  if (config.autoMove) {
-                    randMove = getRandomElement(moves);
-                    requestMove(randMove.from, randMove.to);
-                  }
-                }
+              });
+            }
+            if (config.engine === "lozza") {
+              lozzaEngine.getMove(fen_, config.depth).then((moves) => {
+                highlightMovesOnBoard(moves, getSide()[0]);
               });
             }
 
-
+            engine.getMoves(fen_, getSide()).then((moves) => {
+              chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+              if (config.engine === "stockfish") {
+                highlightMovesOnBoard(moves, getSide()[0]);
+              }
+              if (moves.length > 0 && evalObj) {
+                evalObj.update(moves[0].eval, getSide());
+              }
+            });
           }
         }
       });
@@ -1309,7 +1301,6 @@ const startCheat = () => {
     inject();
 
     setInterval(() => {
-
       if (!customEval && config.showEval) {
         const boardContainer = document.querySelector("cg-container");
         if (boardContainer) {
@@ -1323,12 +1314,17 @@ const startCheat = () => {
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       // console.log(message)
-      if (message.type === "config2" && currentEngine) {
+      if (message.type === "config2" && engine) {
         config = message.config;
         // console.log(config)
         saveConfig2();
         clearHighlightSquares();
-
+        engine.updateConfig({
+          elo: config.skill,
+          depth: config.depth,
+          multipv: config.lines,
+          style: config.style,
+        });
 
         if (!config.showEval && customEval) {
           customEval.remove();
@@ -1344,65 +1340,28 @@ const startCheat = () => {
           }
         }
 
+        // Stream
 
-        //////////////////////
-
-        currentEngine = createEngineByName(config.engine);
-
-
-        if (config.engine === "stockfish") {
-
-          // currentEngine.updateConfig({
-          //   elo: config.skill,
-          //   depth: config.depth,
-          //   multipv: config.lines,
-          //   style: config.style,
-          // });
-
-          currentEngine.getMoves(fen_, getSide()).then((moves) => {
-            MoveKeyArray = moves;
-            currentEngine.updateConfig({
-              elo: config.skill,
-              depth: config.depth,
-              multipv: config.lines,
-              style: config.style,
-            });
-            chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-            if (config.engine === "stockfish") {
-              highlightMovesOnBoard(moves, getSide()[0]);
-            }
-            if (moves.length > 0 && evalObj) {
-              evalObj.update(moves[0].eval, getSide());
-            }
-
-            if (config.engine === "stockfish") {
-              if (
-                (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-                (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-              ) {
-                if (config.autoMove) {
-                  randMove = getRandomElement(moves);
-                  requestMove(randMove.from, randMove.to);
-                }
-              }
-            }
-          });
-
-        } else {
-          currentEngine.getMove(fen_, config.depth).then((moves) => {
+        if (config.engine === "wukong") {
+          wukongEngine.getMove(fen_, config.depth).then((moves) => {
             highlightMovesOnBoard(moves, getSide()[0]);
-            if (
-              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-            ) {
-              if (config.autoMove) {
-                randMove = getRandomElement(moves);
-                requestMove(randMove.from, randMove.to);
-              }
-            }
+          });
+        }
+        if (config.engine === "lozza") {
+          lozzaEngine.getMove(fen_, config.depth).then((moves) => {
+            highlightMovesOnBoard(moves, getSide()[0]);
           });
         }
 
+        engine.getMoves(fen_, getSide()).then((moves) => {
+          chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+          if (config.engine === "stockfish") {
+            highlightMovesOnBoard(moves, getSide()[0]);
+          }
+          if (moves.length > 0 && evalObj) {
+            evalObj.update(moves[0].eval, getSide());
+          }
+        });
       }
     });
   }
@@ -1416,13 +1375,25 @@ const startCheat = () => {
             \__,_|_|  \___|_| |_|\__,_|
   */
 
-  if (window.location.hostname.includes("worldchess") && expired) {
+  if (window.location.hostname.includes("worldchess")) {
     let fen_ = ""
     let currentFen = ""
     let evalObj = null;
     let customEval = null;
-    currentEngine = createEngineByName(config.engine)
     loadConfig2()
+    
+
+    const engine = new Engine({
+      elo: config.skill,
+      depth: 10,
+      multipv: config.lines,
+      threads: 2,
+      hash: 128,
+    });
+    const wukongEngine = new Wukong();
+    const lozzaEngine = new Lozza();
+
+
 
     function getFEN() {
       const pTags = document.querySelectorAll("p");
@@ -1437,19 +1408,12 @@ const startCheat = () => {
         }
       });
 
-      if (expired) {
-        return "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1"
-      } else {
-        return result[0];
-
-      }
+      return result[0]
 
     }
 
     function getSide() {
       const cgBoard = document.querySelector("cg-board")
-
-
       let side = "white"
 
       if (cgBoard) {
@@ -1460,6 +1424,9 @@ const startCheat = () => {
           side = "white"
         }
       }
+
+      console.log("Getside called")
+      console.log("side")
 
       // console.log(side)
 
@@ -1622,9 +1589,9 @@ const startCheat = () => {
     }
 
 
-    function clearHighlightSquares() {
-      document.querySelectorAll(".customH").forEach((el) => el.remove());
-    }
+    // function clearHighlightSquares() {
+    //   document.querySelectorAll(".customH").forEach((el) => el.remove());
+    // }
 
     function createEvalBar(initialScore = "0.0", initialColor = "white") {
       const boardContainer = document.querySelector("cg-board");
@@ -1752,49 +1719,29 @@ const startCheat = () => {
       // Fen
       fen_ = getFEN()
       if (fen_ && (fen_ !== currentFen)) {
-        // console.log(fen_)
+        console.log(fen_)
         currentFen = fen_
         clearHighlightSquares()
 
-        if (config.engine === "stockfish") {
-
-          currentEngine.getMoves(fen_, getSide()).then((moves) => {
-            MoveKeyArray = moves;
-            chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-            if (config.engine === "stockfish") {
-              highlightMovesOnBoard(moves, getSide()[0]);
-            }
-            if (moves.length > 0 && evalObj) {
-              evalObj.update(moves[0].eval, getSide());
-            }
-
-            if (config.engine === "stockfish") {
-              if (
-                (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-                (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-              ) {
-                if (config.autoMove) {
-                  randMove = getRandomElement(moves);
-                  requestMove(randMove.from, randMove.to);
-                }
-              }
-            }
-          });
-
-        } else {
-          currentEngine.getMove(fen_, config.depth).then((moves) => {
+        if (config.engine === "wukong") {
+          wukongEngine.getMove(fen_, config.depth).then((moves) => {
             highlightMovesOnBoard(moves, getSide()[0]);
-            if (
-              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-            ) {
-              if (config.autoMove) {
-                randMove = getRandomElement(moves);
-                requestMove(randMove.from, randMove.to);
-              }
-            }
           });
         }
+        if (config.engine === "lozza") {
+          lozzaEngine.getMove(fen_, config.depth).then((moves) => {
+            highlightMovesOnBoard(moves, getSide()[0]);
+          });
+        }
+
+        engine.getMoves(fen_, getSide()).then((moves) => {
+          if (config.engine === "stockfish") {
+            highlightMovesOnBoard(moves, getSide()[0]);
+          }
+          if (moves.length > 0 && evalObj) {
+            evalObj.update(moves[0].eval, getSide());
+          }
+        });
 
       }
     }, interval);
@@ -1803,11 +1750,17 @@ const startCheat = () => {
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       // console.log(message)
-      if (message.type === "config2" && currentEngine) {
+      if (message.type === "config2" && engine) {
         config = message.config;
-        console.log(config)
+        // console.log(config)
         saveConfig2();
         clearHighlightSquares();
+        engine.updateConfig({
+          elo: config.skill,
+          depth: config.depth,
+          multipv: config.lines,
+          style: config.style,
+        });
 
         if (!config.showEval && customEval) {
           customEval.remove();
@@ -1816,73 +1769,36 @@ const startCheat = () => {
         }
 
         if (config.showEval && !customEval) {
-          const boardContainer = document.querySelector("cg-board");
+          const boardContainer = document.querySelector("cg-container");
           if (boardContainer) {
             evalObj = createEvalBar("0.0", getSide());
             customEval = document.querySelector("#customEval");
           }
         }
 
+        // Stream
 
-        //////////////////////
-
-        currentEngine = createEngineByName(config.engine);
-
-
-        if (config.engine === "stockfish") {
-
-          // currentEngine.updateConfig({
-          //   elo: config.skill,
-          //   depth: config.depth,
-          //   multipv: config.lines,
-          //   style: config.style,
-          // });
-
-          currentEngine.getMoves(fen_, getSide()).then((moves) => {
-            MoveKeyArray = moves;
-            currentEngine.updateConfig({
-              elo: config.skill,
-              depth: config.depth,
-              multipv: config.lines,
-              style: config.style,
-            });
-            chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-            if (config.engine === "stockfish") {
-              highlightMovesOnBoard(moves, getSide()[0]);
-            }
-            if (moves.length > 0 && evalObj) {
-              evalObj.update(moves[0].eval, getSide());
-            }
-
-            if (config.engine === "stockfish") {
-              if (
-                (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-                (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-              ) {
-                if (config.autoMove) {
-                  randMove = getRandomElement(moves);
-                  requestMove(randMove.from, randMove.to);
-                }
-              }
-            }
-          });
-
-        } else {
-          currentEngine.getMove(fen_, config.depth).then((moves) => {
+        if (config.engine === "wukong") {
+          wukongEngine.getMove(fen_, config.depth).then((moves) => {
             highlightMovesOnBoard(moves, getSide()[0]);
-            if (
-              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-            ) {
-              if (config.autoMove) {
-                randMove = getRandomElement(moves);
-                requestMove(randMove.from, randMove.to);
-              }
-            }
           });
         }
-      }
+        if (config.engine === "lozza") {
+          lozzaEngine.getMove(fen_, config.depth).then((moves) => {
+            highlightMovesOnBoard(moves, getSide()[0]);
+          });
+        }
 
+        engine.getMoves(fen_, getSide()).then((moves) => {
+          chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+          if (config.engine === "stockfish") {
+            highlightMovesOnBoard(moves, getSide()[0]);
+          }
+          if (moves.length > 0 && evalObj) {
+            evalObj.update(moves[0].eval, getSide());
+          }
+        });
+      }
     });
 
   }
