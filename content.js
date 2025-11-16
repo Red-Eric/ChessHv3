@@ -1461,7 +1461,7 @@ const startCheat = () => {
       // Si onlyShowEval est activé, on n'affiche rien
       if (config.onlyShowEval) return;
 
-      // const parent = document.querySelector("cg-board");
+      const parent = document.querySelector("cg-board");
 
       if (!parent) return;
 
@@ -1594,8 +1594,13 @@ const startCheat = () => {
         const color = colors[index] || "red";
         // drawArrow(move.from, move.to, color, move.eval);
         drawArrow(move.from, move.to, color, move.eval);
+        if(side === "b"){
+          document.querySelectorAll(".customH").forEach((el) => el.style.transform = "rotate(180deg)");
+        }
       });
     }
+
+
     function clearHighlightSquares() {
       document.querySelectorAll(".customH").forEach((el) => el.remove());
     }
