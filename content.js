@@ -1326,7 +1326,7 @@ const startCheat = () => {
         // console.log(config)
         saveConfig2();
         clearHighlightSquares();
-        
+
 
         if (!config.showEval && customEval) {
           customEval.remove();
@@ -1350,15 +1350,21 @@ const startCheat = () => {
 
         if (config.engine === "stockfish") {
 
-          currentEngine.updateConfig({
-            elo: config.skill,
-            depth: config.depth,
-            multipv: config.lines,
-            style: config.style,
-          });
+          // currentEngine.updateConfig({
+          //   elo: config.skill,
+          //   depth: config.depth,
+          //   multipv: config.lines,
+          //   style: config.style,
+          // });
 
           currentEngine.getMoves(fen_, getSide()).then((moves) => {
             MoveKeyArray = moves;
+            currentEngine.updateConfig({
+              elo: config.skill,
+              depth: config.depth,
+              multipv: config.lines,
+              style: config.style,
+            });
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
             if (config.engine === "stockfish") {
               highlightMovesOnBoard(moves, getSide()[0]);
@@ -1817,15 +1823,21 @@ const startCheat = () => {
 
         if (config.engine === "stockfish") {
 
-          currentEngine.updateConfig({
-            elo: config.skill,
-            depth: config.depth,
-            multipv: config.lines,
-            style: config.style,
-          });
+          // currentEngine.updateConfig({
+          //   elo: config.skill,
+          //   depth: config.depth,
+          //   multipv: config.lines,
+          //   style: config.style,
+          // });
 
           currentEngine.getMoves(fen_, getSide()).then((moves) => {
             MoveKeyArray = moves;
+            currentEngine.updateConfig({
+              elo: config.skill,
+              depth: config.depth,
+              multipv: config.lines,
+              style: config.style,
+            });
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
             if (config.engine === "stockfish") {
               highlightMovesOnBoard(moves, getSide()[0]);
