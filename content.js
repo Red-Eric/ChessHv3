@@ -791,59 +791,6 @@ const startCheat = () => {
         lastFEN = fen_;
         _elo_ = getOppElo();
 
-        // if (config.engine === "wukong") {
-        //   wukongEngine.getMove(fen_, config.depth).then((moves) => {
-        //     highlightMovesOnBoard(moves, getSide()[0]);
-        //     if (config.autoMove) {
-        //       randMove = getRandomElement(moves);
-        //       requestMove(randMove.from, randMove.to);
-        //     }
-        //   });
-        // }
-        // if (config.engine === "lozza") {
-        //   lozzaEngine.getMove(fen_, config.depth).then((moves) => {
-        //     highlightMovesOnBoard(moves, getSide()[0]);
-        //     if (
-        //       (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-        //       (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-        //     ) {
-        //       if (config.autoMove) {
-        //         randMove = getRandomElement(moves);
-        //         requestMove(randMove.from, randMove.to);
-        //       }
-        //     }
-        //   });
-        // }
-
-        //   if (engine) {
-        //     engine.getMoves(fen_, getSide()).then((moves) => {
-        //       MoveKeyArray = moves;
-        //       chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-        //       if (config.engine === "stockfish") {
-        //         highlightMovesOnBoard(moves, getSide()[0]);
-        //       }
-
-        //       if (moves.length > 0 && evalObj) {
-        //         evalObj.update(moves[0].eval, getSide());
-        //       }
-        //       // stockfish go depth 10
-        //       if (config.engine === "stockfish") {
-        //         if (
-        //           (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-        //           (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-        //         ) {
-        //           if (config.autoMove) {
-        //             randMove = getRandomElement(moves);
-        //             requestMove(randMove.from, randMove.to);
-        //           }
-        //         }
-        //       }
-        //     });
-        //   }
-        // }
-
-        // currentEngine = createEngineByName(config.engine);
-
 
         if (config.engine === "stockfish") {
 
@@ -918,58 +865,6 @@ const startCheat = () => {
         }
 
         currentEngine = createEngineByName(config.engine);
-
-        // if (config.engine === "wukong") {
-        //   wukongEngine.getMove(fen_, config.depth).then((moves) => {
-        //     highlightMovesOnBoard(moves, getSide()[0]);
-        //     if (
-        //       (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-        //       (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-        //     ) {
-        //       if (config.autoMove) {
-        //         randMove = getRandomElement(moves);
-        //         requestMove(randMove.from, randMove.to);
-        //       }
-        //     }
-        //   });
-        // }
-        // if (config.engine === "lozza") {
-        //   lozzaEngine.getMove(fen_, config.depth).then((moves) => {
-        //     highlightMovesOnBoard(moves, getSide()[0]);
-        //     if (
-        //       (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-        //       (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-        //     ) {
-        //       if (config.autoMove) {
-        //         randMove = getRandomElement(moves);
-        //         requestMove(randMove.from, randMove.to);
-        //       }
-        //     }
-        //   });
-        // }
-
-        // engine.getMoves(fen_, getSide()).then((moves) => {
-        //   MoveKeyArray = moves;
-        //   chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-        //   if (config.engine === "stockfish") {
-        //     highlightMovesOnBoard(moves, getSide()[0]);
-        //   }
-        //   if (moves.length > 0 && evalObj) {
-        //     evalObj.update(moves[0].eval, getSide());
-        //   }
-
-        //   if (config.engine === "stockfish") {
-        //     if (
-        //       (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-        //       (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-        //     ) {
-        //       if (config.autoMove) {
-        //         randMove = getRandomElement(moves);
-        //         requestMove(randMove.from, randMove.to);
-        //       }
-        //     }
-        //   }
-        // });
 
 
         if (config.engine === "stockfish") {
@@ -1369,28 +1264,6 @@ const startCheat = () => {
           if (event.data.fen !== fen_) {
             clearHighlightSquares();
             fen_ = event.data.fen;
-            // console.log(fen_);
-            // console.log(config);
-            // if (config.engine === "wukong") {
-            //   wukongEngine.getMove(fen_, config.depth).then((moves) => {
-            //     highlightMovesOnBoard(moves, getSide()[0]);
-            //   });
-            // }
-            // if (config.engine === "lozza") {
-            //   lozzaEngine.getMove(fen_, config.depth).then((moves) => {
-            //     highlightMovesOnBoard(moves, getSide()[0]);
-            //   });
-            // }
-
-            // engine.getMoves(fen_, getSide()).then((moves) => {
-            //   chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-            //   if (config.engine === "stockfish") {
-            //     highlightMovesOnBoard(moves, getSide()[0]);
-            //   }
-            //   if (moves.length > 0 && evalObj) {
-            //     evalObj.update(moves[0].eval, getSide());
-            //   }
-            // });
 
             if (config.engine === "stockfish") {
 
@@ -1459,12 +1332,12 @@ const startCheat = () => {
         // console.log(config)
         saveConfig2();
         clearHighlightSquares();
-        engine.updateConfig({
-          elo: config.skill,
-          depth: config.depth,
-          multipv: config.lines,
-          style: config.style,
-        });
+        // engine.updateConfig({
+        //   elo: config.skill,
+        //   depth: config.depth,
+        //   multipv: config.lines,
+        //   style: config.style,
+        // });
 
         if (!config.showEval && customEval) {
           customEval.remove();
@@ -1479,29 +1352,6 @@ const startCheat = () => {
             customEval = document.querySelector("#customEval");
           }
         }
-
-        // Stream
-
-        // if (config.engine === "wukong") {
-        //   wukongEngine.getMove(fen_, config.depth).then((moves) => {
-        //     highlightMovesOnBoard(moves, getSide()[0]);
-        //   });
-        // }
-        // if (config.engine === "lozza") {
-        //   lozzaEngine.getMove(fen_, config.depth).then((moves) => {
-        //     highlightMovesOnBoard(moves, getSide()[0]);
-        //   });
-        // }
-
-        // engine.getMoves(fen_, getSide()).then((moves) => {
-        //   chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-        //   if (config.engine === "stockfish") {
-        //     highlightMovesOnBoard(moves, getSide()[0]);
-        //   }
-        //   if (moves.length > 0 && evalObj) {
-        //     evalObj.update(moves[0].eval, getSide());
-        //   }
-        // });
 
 
         //////////////////////
