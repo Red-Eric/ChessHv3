@@ -17,7 +17,7 @@ fetch(chrome.runtime.getURL("book.json"))
   .then((response) => response.json())
   .then((data) => {
     book = data;
-    console.log("Book loaded:", book.length);
+    // console.log("Book loaded:", book.length);
   })
   .catch((err) => console.error("Erreur lors du chargement du book:", err));
 
@@ -840,7 +840,7 @@ const startCheat = () => {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.config && message.type === "config") {
         config = message.config;
-        console.log("message from backgound js ", message);
+        // console.log("message from backgound js ", message);
         saveConfig();
         clearHighlightSquares();
         // engine.updateConfig({
@@ -1205,8 +1205,8 @@ const startCheat = () => {
 
       if (bookMove) {
         // {from : , to : }
-        console.log(fen_);
-        console.log(bookMove);
+        // console.log(fen_);
+        // console.log(bookMove);
 
         drawArrow(bookMove.from, bookMove.to, "#000000", "book");
       }
@@ -1416,6 +1416,7 @@ const startCheat = () => {
     let evalObj = null;
     let customEval = null;
     currentEngine = createEngineByName(config.engine)
+    loadConfig2()
 
     function getFEN() {
       const pTags = document.querySelectorAll("p");
@@ -1454,7 +1455,7 @@ const startCheat = () => {
     }
 
     function highlightMovesOnBoard(moves, side) {
-      console.log(side);
+      // console.log(side);
       if (!Array.isArray(moves)) return;
 
       if (
@@ -1739,7 +1740,7 @@ const startCheat = () => {
       // Fen
       fen_ = getFEN()
       if (fen_ && (fen_ !== currentFen)) {
-        console.log(fen_)
+        // console.log(fen_)
         currentFen = fen_
         clearHighlightSquares()
 
@@ -1789,7 +1790,7 @@ const startCheat = () => {
     // PArametre chessARENA
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      console.log(message)
+      // console.log(message)
       if (message.type === "config2" && currentEngine) {
         config = message.config;
         console.log(config)
@@ -1862,15 +1863,7 @@ const startCheat = () => {
             }
           });
         }
-
-      
       }
-
-
-
-
-
-
 
     });
     

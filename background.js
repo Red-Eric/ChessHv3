@@ -1,5 +1,5 @@
 let currentConfig = null;
-let currentConfig2 = null; 
+let currentConfig2 = null;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // YYYY - MM -DD
@@ -41,6 +41,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendConfigToSite("config2", currentConfig2, "*://*.lichess.org/*");
       sendConfigToSite("config2", currentConfig2, "*://*.worldchess.com/*");
       sendConfigToSite("config2", currentConfig2, "*://worldchess.com/*");
+      sendConfigToSite("config2", currentConfig2, "*://worldchess.com/game/*");
+      sendConfigToSite("config2", currentConfig2, "*://*.worldchess.com/game/*");
 
 
       for (let tabId of popupTabs) {
