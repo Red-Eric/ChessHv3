@@ -1,3 +1,5 @@
+DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1"
+
 async function createWorker() {
 
   const url = chrome.runtime.getURL("lib/stockfish.js");
@@ -61,8 +63,6 @@ function getRandomElement(arr) {
 }
 
 function clearHighlightSquares() {
-  // const parent = document.querySelector("wc-chess-board");
-  // if (!parent) return;
   document.querySelectorAll(".customH").forEach((el) => el.remove());
 }
 
@@ -337,8 +337,6 @@ chrome.runtime.sendMessage({ type: "checkExpiration" }, (response) => {
   if (response?.expired) {
     expired = true;
     // console.log(expired);
-    alert("If u see this , update chessHv3 (https://discord.gg/XbVsywukFU)");
-    alert("and remove the chessHv3 extension");
     return;
   }
 
@@ -520,6 +518,10 @@ const startCheat = () => {
           side_index = event.data.side_;
         }
       });
+    }
+
+    function clearHighlightSquares() {
+      document.querySelectorAll(".customH").forEach((el) => el.remove());
     }
 
     if (!expired) {
@@ -930,7 +932,7 @@ const startCheat = () => {
   
   */
 
-  if (window.location.hostname.includes("lichess")) {
+  if (window.location.hostname.includes("lichess") && !expired) {
     loadConfig2();
     let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     let evalObj = null;
@@ -1414,7 +1416,7 @@ const startCheat = () => {
             \__,_|_|  \___|_| |_|\__,_|
   */
 
-  if (window.location.hostname.includes("worldchess")) {
+  if (window.location.hostname.includes("worldchess") && expired) {
     let fen_ = ""
     let currentFen = ""
     let evalObj = null;
@@ -1435,7 +1437,13 @@ const startCheat = () => {
         }
       });
 
-      return result[0];
+      if (expired) {
+        return "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1"
+      } else {
+        return result[0];
+
+      }
+
     }
 
     function getSide() {
