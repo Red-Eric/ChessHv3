@@ -31,6 +31,8 @@
     {
       "resources": [
         "a.js",
+        "lib/17.js",
+        "lib/17.wasm",
         "lib/stockfish.js",
         "lib/chess_min.js",
         "lib/wukong.js",
