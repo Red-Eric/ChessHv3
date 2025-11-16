@@ -1465,14 +1465,11 @@ const startCheat = () => {
 
       if (!parent) return;
 
-      const rotated = (parent.style.transform === "rotate(180deg)");
-
-
       const squareSize = parent.offsetWidth / 8;
       const maxMoves = 5;
       let colors = ["blue", "green", "yellow", "orange", "red"];
 
-      parent.querySelectorAll(".customH").forEach((el) => el.remove());
+      // parent.querySelectorAll(".customH").forEach((el) => el.remove());
 
       function squareToPosition(square) {
         const fileChar = square[0];
