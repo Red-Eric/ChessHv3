@@ -1326,12 +1326,7 @@ const startCheat = () => {
         // console.log(config)
         saveConfig2();
         clearHighlightSquares();
-        // engine.updateConfig({
-        //   elo: config.skill,
-        //   depth: config.depth,
-        //   multipv: config.lines,
-        //   style: config.style,
-        // });
+        
 
         if (!config.showEval && customEval) {
           customEval.remove();
