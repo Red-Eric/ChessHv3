@@ -39,6 +39,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       console.log("Config Lichess reçue :", currentConfig2);
 
       sendConfigToSite("config2", currentConfig2, "*://*.lichess.org/*");
+      sendConfigToSite("config2", currentConfig2, "*://*.worldchess.com/*");
+      sendConfigToSite("config2", currentConfig2, "*://worldchess.com/*");
+
 
       for (let tabId of popupTabs) {
         chrome.tabs.sendMessage(tabId, { type: "config2", config: currentConfig2 });

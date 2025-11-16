@@ -838,7 +838,7 @@ const startCheat = () => {
     setInterval(checkAndSendMoves, interval);
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.config && message.type === "config" && engine) {
+      if (message.config && message.type === "config") {
         config = message.config;
         console.log("message from backgound js ", message);
         saveConfig();
@@ -1400,7 +1400,15 @@ const startCheat = () => {
       }
     });
   }
-  //////////////////////////////////////////////////////// CHESS ARENA
+
+
+
+/*
+            __ _ _ __ ___ _ __   __ _ 
+           / _` | '__/ _ \ '_ \ / _` |
+          | (_| | | |  __/ | | | (_| |
+          \__,_|_|  \___|_| |_|\__,_|
+*/
 
   if (window.location.hostname.includes("worldchess")) {
     let fen_ = ""
@@ -1855,8 +1863,17 @@ const startCheat = () => {
           });
         }
 
+      
       }
+
+
+
+
+
+
+
     });
+    
   }
 };
 
