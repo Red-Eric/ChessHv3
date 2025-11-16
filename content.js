@@ -348,6 +348,21 @@ chrome.runtime.sendMessage({ type: "checkExpiration" }, (response) => {
 
 //// CHEATTTTTTTTTTTTTTTTTTTTTTTT
 
+let currentEngine = null;
+
+function createEngineByName(name) {
+  if (currentEngine?.stop) currentEngine.stop();  // si Wukong/Lozza
+  if (currentEngine?.worker) currentEngine.worker.terminate(); // si Stockfish
+
+  if (name === "stockfish") return new Engine({ ...config });
+  if (name === "wukong") return new Wukong();
+  if (name === "lozza") return new Lozza();
+
+  return null;
+}
+
+
+
 const startCheat = () => {
   // console.log("start")
 
@@ -375,6 +390,8 @@ const startCheat = () => {
     });
     const wukongEngine = new Wukong();
     const lozzaEngine = new Lozza();
+
+    currentEngine = createEngineByName(config.engine)
 
     let evalObj = null;
     let customEval = null;
@@ -774,42 +791,72 @@ const startCheat = () => {
         lastFEN = fen_;
         _elo_ = getOppElo();
 
-        if (config.engine === "wukong") {
-          wukongEngine.getMove(fen_, config.depth).then((moves) => {
-            highlightMovesOnBoard(moves, getSide()[0]);
-            if (config.autoMove) {
-              randMove = getRandomElement(moves);
-              requestMove(randMove.from, randMove.to);
-            }
-          });
-        }
-        if (config.engine === "lozza") {
-          lozzaEngine.getMove(fen_, config.depth).then((moves) => {
-            highlightMovesOnBoard(moves, getSide()[0]);
-            if (
-              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-            ) {
-              if (config.autoMove) {
-                randMove = getRandomElement(moves);
-                requestMove(randMove.from, randMove.to);
-              }
-            }
-          });
-        }
+        // if (config.engine === "wukong") {
+        //   wukongEngine.getMove(fen_, config.depth).then((moves) => {
+        //     highlightMovesOnBoard(moves, getSide()[0]);
+        //     if (config.autoMove) {
+        //       randMove = getRandomElement(moves);
+        //       requestMove(randMove.from, randMove.to);
+        //     }
+        //   });
+        // }
+        // if (config.engine === "lozza") {
+        //   lozzaEngine.getMove(fen_, config.depth).then((moves) => {
+        //     highlightMovesOnBoard(moves, getSide()[0]);
+        //     if (
+        //       (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+        //       (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+        //     ) {
+        //       if (config.autoMove) {
+        //         randMove = getRandomElement(moves);
+        //         requestMove(randMove.from, randMove.to);
+        //       }
+        //     }
+        //   });
+        // }
 
-        if (engine) {
-          engine.getMoves(fen_, getSide()).then((moves) => {
+        //   if (engine) {
+        //     engine.getMoves(fen_, getSide()).then((moves) => {
+        //       MoveKeyArray = moves;
+        //       chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+        //       if (config.engine === "stockfish") {
+        //         highlightMovesOnBoard(moves, getSide()[0]);
+        //       }
+
+        //       if (moves.length > 0 && evalObj) {
+        //         evalObj.update(moves[0].eval, getSide());
+        //       }
+        //       // stockfish go depth 10
+        //       if (config.engine === "stockfish") {
+        //         if (
+        //           (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+        //           (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+        //         ) {
+        //           if (config.autoMove) {
+        //             randMove = getRandomElement(moves);
+        //             requestMove(randMove.from, randMove.to);
+        //           }
+        //         }
+        //       }
+        //     });
+        //   }
+        // }
+
+        // currentEngine = createEngineByName(config.engine);
+
+
+        if (config.engine === "stockfish") {
+
+          currentEngine.getMoves(fen_, getSide()).then((moves) => {
             MoveKeyArray = moves;
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
             if (config.engine === "stockfish") {
               highlightMovesOnBoard(moves, getSide()[0]);
             }
-
             if (moves.length > 0 && evalObj) {
               evalObj.update(moves[0].eval, getSide());
             }
-            // stockfish go depth 10
+
             if (config.engine === "stockfish") {
               if (
                 (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
@@ -822,8 +869,23 @@ const startCheat = () => {
               }
             }
           });
+
+        } else {
+          currentEngine.getMove(fen_, config.depth).then((moves) => {
+            highlightMovesOnBoard(moves, getSide()[0]);
+            if (
+              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+            ) {
+              if (config.autoMove) {
+                randMove = getRandomElement(moves);
+                requestMove(randMove.from, randMove.to);
+              }
+            }
+          });
         }
       }
+
     }
 
     setInterval(checkAndSendMoves, interval);
@@ -855,8 +917,89 @@ const startCheat = () => {
           }
         }
 
-        if (config.engine === "wukong") {
-          wukongEngine.getMove(fen_, config.depth).then((moves) => {
+        currentEngine = createEngineByName(config.engine);
+
+
+        // if (config.engine === "wukong") {
+        //   wukongEngine.getMove(fen_, config.depth).then((moves) => {
+        //     highlightMovesOnBoard(moves, getSide()[0]);
+        //     if (
+        //       (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+        //       (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+        //     ) {
+        //       if (config.autoMove) {
+        //         randMove = getRandomElement(moves);
+        //         requestMove(randMove.from, randMove.to);
+        //       }
+        //     }
+        //   });
+        // }
+        // if (config.engine === "lozza") {
+        //   lozzaEngine.getMove(fen_, config.depth).then((moves) => {
+        //     highlightMovesOnBoard(moves, getSide()[0]);
+        //     if (
+        //       (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+        //       (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+        //     ) {
+        //       if (config.autoMove) {
+        //         randMove = getRandomElement(moves);
+        //         requestMove(randMove.from, randMove.to);
+        //       }
+        //     }
+        //   });
+        // }
+
+        // engine.getMoves(fen_, getSide()).then((moves) => {
+        //   MoveKeyArray = moves;
+        //   chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+        //   if (config.engine === "stockfish") {
+        //     highlightMovesOnBoard(moves, getSide()[0]);
+        //   }
+        //   if (moves.length > 0 && evalObj) {
+        //     evalObj.update(moves[0].eval, getSide());
+        //   }
+
+        //   if (config.engine === "stockfish") {
+        //     if (
+        //       (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+        //       (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+        //     ) {
+        //       if (config.autoMove) {
+        //         randMove = getRandomElement(moves);
+        //         requestMove(randMove.from, randMove.to);
+        //       }
+        //     }
+        //   }
+        // });
+
+
+        if (config.engine === "stockfish") {
+
+          currentEngine.getMoves(fen_, getSide()).then((moves) => {
+            MoveKeyArray = moves;
+            chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+            if (config.engine === "stockfish") {
+              highlightMovesOnBoard(moves, getSide()[0]);
+            }
+            if (moves.length > 0 && evalObj) {
+              evalObj.update(moves[0].eval, getSide());
+            }
+
+            if (config.engine === "stockfish") {
+              if (
+                (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+                (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+              ) {
+                if (config.autoMove) {
+                  randMove = getRandomElement(moves);
+                  requestMove(randMove.from, randMove.to);
+                }
+              }
+            }
+          });
+
+        } else {
+          currentEngine.getMove(fen_, config.depth).then((moves) => {
             highlightMovesOnBoard(moves, getSide()[0]);
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
@@ -869,57 +1012,22 @@ const startCheat = () => {
             }
           });
         }
-        if (config.engine === "lozza") {
-          lozzaEngine.getMove(fen_, config.depth).then((moves) => {
-            highlightMovesOnBoard(moves, getSide()[0]);
-            if (
-              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-            ) {
-              if (config.autoMove) {
-                randMove = getRandomElement(moves);
-                requestMove(randMove.from, randMove.to);
-              }
-            }
-          });
-        }
-
-        engine.getMoves(fen_, getSide()).then((moves) => {
-          MoveKeyArray = moves;
-          chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-          if (config.engine === "stockfish") {
-            highlightMovesOnBoard(moves, getSide()[0]);
-          }
-          if (moves.length > 0 && evalObj) {
-            evalObj.update(moves[0].eval, getSide());
-          }
-
-          if (config.engine === "stockfish") {
-            if (
-              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-            ) {
-              if (config.autoMove) {
-                randMove = getRandomElement(moves);
-                requestMove(randMove.from, randMove.to);
-              }
-            }
-          }
-        });
       }
+
+
     });
   }
 
   /*
-
+  
   _     _      _                   
- | |   (_) ___| |__   ___  ___ ___ 
- | |   | |/ __| '_ \ / _ \/ __/ __|
- | |___| | (__| | | |  __/\__ \__ \
- |_____|_|\___|_| |_|\___||___/___/
+  | |   (_) ___| |__   ___  ___ ___ 
+  | |   | |/ __| '_ \ / _ \/ __/ __|
+  | |___| | (__| | | |  __/\__ \__ \
+  |_____|_|\___|_| |_|\___||___/___/
                                    
-
-*/
+  
+  */
 
   if (window.location.hostname.includes("lichess")) {
     loadConfig2();
