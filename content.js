@@ -935,16 +935,6 @@ const startCheat = () => {
     let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     let evalObj = null;
     let customEval = null;
-    const engine = new Engine({
-      elo: config.skill,
-      depth: 10,
-      multipv: config.lines,
-      threads: 2,
-      hash: 128,
-    });
-    const wukongEngine = new Wukong();
-    const lozzaEngine = new Lozza();
-
 
     currentEngine = createEngineByName(config.engine)
 
@@ -1414,19 +1404,50 @@ const startCheat = () => {
   if (window.location.hostname.includes("worldchess")) {
     let fen_ = ""
     let currentFen = ""
+    let evalObj = null;
+    let customEval = null;
     currentEngine = createEngineByName(config.engine)
 
     function getFEN() {
-      fen = document.getElementsByTagName("p")[10].innerText
-      if (fen) {
-        return fen
-      }
-      else {
-        return null
-      }
+      const pTags = document.querySelectorAll("p");
+      const result = [];
+
+      const fenRegex = /^([rnbqkpRNBQKP1-8]+\/){7}[rnbqkpRNBQKP1-8]+\s[wb]\s(K?Q?k?q?-?)\s(-|[a-h][36])\s\d+\s\d+$/;
+
+      pTags.forEach(p => {
+        const text = p.textContent.trim();
+        if (fenRegex.test(text)) {
+          result.push(text);
+        }
+      });
+
+      return result[0];
     }
+
+    function getSide() {
+      const cgBoard = document.querySelector("cg-board")
+
+      let side = "white"
+
+      if (cgBoard) {
+        const indicator = cgBoard.style.transform // "rotate(180)"
+        if (indicator.includes("180")) {
+          side = "black"
+          console.log("get black")
+        } else {
+          side = "white"
+          console.log("get white")
+
+        }
+      }
+
+      // console.log(side)
+
+      return side
+    }
+
     function highlightMovesOnBoard(moves, side) {
-      // console.log(side);
+      console.log(side);
       if (!Array.isArray(moves)) return;
 
       if (
@@ -1691,20 +1712,72 @@ const startCheat = () => {
     }
 
     setInterval(() => {
+      // eval bar
+      if (!customEval && config.showEval) {
+        const boardContainer = document.querySelector("cg-board");
+        if (boardContainer) {
+          evalObj = createEvalBar("0.0", getSide());
+          customEval = document.querySelector("#customEval");
+        }
+      }
+
+      // Fen
       fen_ = getFEN()
       if (fen_ && (fen_ !== currentFen)) {
         console.log(fen_)
         currentFen = fen_
+        clearHighlightSquares()
+
+        if (config.engine === "stockfish") {
+
+          currentEngine.getMoves(fen_, getSide()).then((moves) => {
+            MoveKeyArray = moves;
+            chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+            if (config.engine === "stockfish") {
+              highlightMovesOnBoard(moves, getSide()[0]);
+            }
+            if (moves.length > 0 && evalObj) {
+              evalObj.update(moves[0].eval, getSide());
+            }
+
+            if (config.engine === "stockfish") {
+              if (
+                (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+                (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+              ) {
+                if (config.autoMove) {
+                  randMove = getRandomElement(moves);
+                  requestMove(randMove.from, randMove.to);
+                }
+              }
+            }
+          });
+
+        } else {
+          currentEngine.getMove(fen_, config.depth).then((moves) => {
+            highlightMovesOnBoard(moves, getSide()[0]);
+            if (
+              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+            ) {
+              if (config.autoMove) {
+                randMove = getRandomElement(moves);
+                requestMove(randMove.from, randMove.to);
+              }
+            }
+          });
+        }
+
       }
     }, interval);
 
     // PArametre chessARENA
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      // console.log(message)
+      console.log(message)
       if (message.type === "config2" && currentEngine) {
         config = message.config;
-        // console.log(config)
+        console.log(config)
         saveConfig2();
         clearHighlightSquares();
 
@@ -1715,7 +1788,7 @@ const startCheat = () => {
         }
 
         if (config.showEval && !customEval) {
-          const boardContainer = document.querySelector("cg-container");
+          const boardContainer = document.querySelector("cg-board");
           if (boardContainer) {
             evalObj = createEvalBar("0.0", getSide());
             customEval = document.querySelector("#customEval");
@@ -1777,7 +1850,6 @@ const startCheat = () => {
 
       }
     });
-
   }
 };
 
