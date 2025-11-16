@@ -938,6 +938,9 @@ const startCheat = () => {
 
     currentEngine = createEngineByName(config.engine)
 
+    function clearHighlightSquares() {
+      document.querySelectorAll(".customH").forEach((el) => el.remove());
+    }
 
     function createEvalBar(initialScore = "0.0", initialColor = "white") {
       const boardContainer = document.querySelector("cg-board");
@@ -1403,12 +1406,12 @@ const startCheat = () => {
 
 
 
-/*
-            __ _ _ __ ___ _ __   __ _ 
-           / _` | '__/ _ \ '_ \ / _` |
-          | (_| | | |  __/ | | | (_| |
-          \__,_|_|  \___|_| |_|\__,_|
-*/
+  /*
+              __ _ _ __ ___ _ __   __ _ 
+             / _` | '__/ _ \ '_ \ / _` |
+            | (_| | | |  __/ | | | (_| |
+            \__,_|_|  \___|_| |_|\__,_|
+  */
 
   if (window.location.hostname.includes("worldchess")) {
     let fen_ = ""
@@ -1603,7 +1606,7 @@ const startCheat = () => {
         const color = colors[index] || "red";
         // drawArrow(move.from, move.to, color, move.eval);
         drawArrow(move.from, move.to, color, move.eval);
-        if(side === "b"){
+        if (side === "b") {
           document.querySelectorAll(".customH").forEach((el) => el.style.transform = "rotate(180deg)");
         }
       });
@@ -1866,7 +1869,7 @@ const startCheat = () => {
       }
 
     });
-    
+
   }
 };
 
