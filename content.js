@@ -1304,6 +1304,7 @@ const startCheat = () => {
     inject();
 
     setInterval(() => {
+
       if (!customEval && config.showEval) {
         const boardContainer = document.querySelector("cg-container");
         if (boardContainer) {
@@ -1427,17 +1428,15 @@ const startCheat = () => {
     function getSide() {
       const cgBoard = document.querySelector("cg-board")
 
+
       let side = "white"
 
       if (cgBoard) {
         const indicator = cgBoard.style.transform // "rotate(180)"
-        if (indicator.includes("180")) {
+        if (indicator === "rotate(180deg)") {
           side = "black"
-          console.log("get black")
-        } else {
+        } if (indicator === "rotate(0deg)") {
           side = "white"
-          console.log("get white")
-
         }
       }
 
@@ -1462,8 +1461,12 @@ const startCheat = () => {
       // Si onlyShowEval est activé, on n'affiche rien
       if (config.onlyShowEval) return;
 
-      const parent = document.querySelector("cg-board");
+      // const parent = document.querySelector("cg-board");
+
       if (!parent) return;
+
+      const rotated = (parent.style.transform === "rotate(180deg)");
+
 
       const squareSize = parent.offsetWidth / 8;
       const maxMoves = 5;
@@ -1489,6 +1492,8 @@ const startCheat = () => {
           return { x, y };
         }
       }
+
+
 
       function drawArrow(fromSquare, toSquare, color, score) {
         const from = squareToPosition(fromSquare);
