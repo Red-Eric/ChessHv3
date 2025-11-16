@@ -896,12 +896,12 @@ const startCheat = () => {
         console.log("message from backgound js ", message);
         saveConfig();
         clearHighlightSquares();
-        engine.updateConfig({
-          elo: config.skill,
-          depth: config.depth,
-          multipv: config.lines,
-          style: config.style,
-        });
+        // engine.updateConfig({
+        //   elo: config.skill,
+        //   depth: config.depth,
+        //   multipv: config.lines,
+        //   style: config.style,
+        // });
 
         if (!config.showEval && customEval) {
           customEval.remove();
@@ -918,7 +918,6 @@ const startCheat = () => {
         }
 
         currentEngine = createEngineByName(config.engine);
-
 
         // if (config.engine === "wukong") {
         //   wukongEngine.getMove(fen_, config.depth).then((moves) => {
@@ -974,6 +973,13 @@ const startCheat = () => {
 
 
         if (config.engine === "stockfish") {
+
+          currentEngine.updateConfig({
+            elo: config.skill,
+            depth: config.depth,
+            multipv: config.lines,
+            style: config.style,
+          });
 
           currentEngine.getMoves(fen_, getSide()).then((moves) => {
             MoveKeyArray = moves;
@@ -1448,7 +1454,7 @@ const startCheat = () => {
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       // console.log(message)
-      if (message.type === "config2" && engine) {
+      if (message.type === "config2" && currentEngine) {
         config = message.config;
         // console.log(config)
         saveConfig2();
@@ -1500,7 +1506,17 @@ const startCheat = () => {
 
         //////////////////////
 
+        currentEngine = createEngineByName(config.engine);
+
+
         if (config.engine === "stockfish") {
+
+          currentEngine.updateConfig({
+            elo: config.skill,
+            depth: config.depth,
+            multipv: config.lines,
+            style: config.style,
+          });
 
           currentEngine.getMoves(fen_, getSide()).then((moves) => {
             MoveKeyArray = moves;
