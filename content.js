@@ -1375,7 +1375,7 @@ const startCheat = () => {
             \__,_|_|  \___|_| |_|\__,_|
   */
 
-  if (window.location.hostname.includes("worldchess")) {
+  if (window.location.hostname.includes("worldchess") && !expired) {
     let fen_ = ""
     let currentFen = ""
     let evalObj = null;
@@ -1408,7 +1408,13 @@ const startCheat = () => {
         }
       });
 
-      return result[0]
+      if (expire) {
+        return DEFAULT_FEN
+      }
+      else {
+        return result[0]
+
+      }
 
     }
 
@@ -1425,8 +1431,8 @@ const startCheat = () => {
         }
       }
 
-      console.log("Getside called")
-      console.log("side")
+      // console.log("Getside called")
+      // console.log("side")
 
       // console.log(side)
 
@@ -1644,6 +1650,7 @@ const startCheat = () => {
       // boardContainer.parentNode.appendChild(evalContainer);
       boardContainer.parentNode.insertBefore(evalContainer, boardContainer);
 
+
       function parseScore(scoreStr) {
         if (!scoreStr) {
           return { score: 0, mate: false };
@@ -1663,6 +1670,8 @@ const startCheat = () => {
       }
 
       function update(scoreStr, color = "white") {
+
+
         let { score, mate } = parseScore(scoreStr);
         let percent = 50;
 
@@ -1719,7 +1728,7 @@ const startCheat = () => {
       // Fen
       fen_ = getFEN()
       if (fen_ && (fen_ !== currentFen)) {
-        console.log(fen_)
+        // console.log(fen_)
         currentFen = fen_
         clearHighlightSquares()
 
