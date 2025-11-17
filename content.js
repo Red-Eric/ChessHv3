@@ -70,6 +70,7 @@ const interval = 100;
 
 let config = {
   engine: "stockfish",
+  server: true,
   skill: 20,
   lines: 5,
   depth: 10,
@@ -96,7 +97,9 @@ function saveConfig2() {
 function loadConfig() {
   const saved = localStorage.getItem("chessConfig");
   if (saved) {
-    config = JSON.parse(saved);
+    // config = JSON.parse(saved);
+    config = { ...config, ...JSON.parse(saved) };
+
   }
 }
 
@@ -104,7 +107,8 @@ function loadConfig2() {
   // lichess
   const saved = localStorage.getItem("chessConfig2");
   if (saved) {
-    config = JSON.parse(saved);
+    // config = JSON.parse(saved);
+    config = { ...config, ...JSON.parse(saved) };
   }
 }
 
@@ -737,6 +741,7 @@ const startCheat = () => {
       }
     }
 
+
     function getOppElo() {
       // ( 1920 )
       let elo = document.querySelector(".cc-text-medium")?.innerText;
@@ -796,7 +801,9 @@ const startCheat = () => {
 
         if (config.engine === "wukong") {
           wukongEngine.getMove(fen_, config.depth).then((moves) => {
-            highlightMovesOnBoard(moves, getSide()[0]);
+            if (!config.server) {
+              highlightMovesOnBoard(moves, getSide()[0]);
+            }
             if (config.autoMove) {
               randMove = getRandomElement(moves);
               requestMove(randMove.from, randMove.to);
@@ -805,7 +812,9 @@ const startCheat = () => {
         }
         if (config.engine === "lozza") {
           lozzaEngine.getMove(fen_, config.depth).then((moves) => {
-            highlightMovesOnBoard(moves, getSide()[0]);
+            if (!config.server) {
+              highlightMovesOnBoard(moves, getSide()[0]);
+            }
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
@@ -824,7 +833,9 @@ const startCheat = () => {
             // console.log("")
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
             if (config.engine === "stockfish") {
-              highlightMovesOnBoard(moves, getSide()[0]);
+              if (!config.server) {
+                highlightMovesOnBoard(moves, getSide()[0]);
+              }
             }
 
             if (moves.length > 0 && evalObj) {
@@ -852,8 +863,10 @@ const startCheat = () => {
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.config && message.type === "config" && engine) {
-        config = message.config;
-        console.log("message from backgound js ", message);
+        // config = message.config;
+        config = { ...config, ...message.config };
+
+        // console.log("message from backgound js ", message);
         saveConfig();
         clearHighlightSquares();
         engine.updateConfig({
@@ -879,7 +892,9 @@ const startCheat = () => {
 
         if (config.engine === "wukong") {
           wukongEngine.getMove(fen_, config.depth).then((moves) => {
-            highlightMovesOnBoard(moves, getSide()[0]);
+            if (!config.server) {
+              highlightMovesOnBoard(moves, getSide()[0]);
+            }
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
@@ -893,7 +908,12 @@ const startCheat = () => {
         }
         if (config.engine === "lozza") {
           lozzaEngine.getMove(fen_, config.depth).then((moves) => {
-            highlightMovesOnBoard(moves, getSide()[0]);
+
+            if (!config.server) {
+              highlightMovesOnBoard(moves, getSide()[0]);
+            }
+
+
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
@@ -910,7 +930,11 @@ const startCheat = () => {
           MoveKeyArray = moves;
           chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
           if (config.engine === "stockfish") {
-            highlightMovesOnBoard(moves, getSide()[0]);
+
+            if (!config.server) {
+              highlightMovesOnBoard(moves, getSide()[0]);
+            }
+
           }
           if (moves.length > 0 && evalObj) {
             evalObj.update(moves[0].eval, getSide());
@@ -929,6 +953,17 @@ const startCheat = () => {
           }
         });
       }
+
+      if (message.type === "komodo") {
+        // console.log(message)
+        // highlightMovesOnBoard2(message.data, getSide()[0])
+        console.log(config)
+        if (config.server) {
+          // console.log(message.data)
+          highlightMovesOnBoard(message.data, getSide()[0])
+        }
+      }
+
     });
   }
 

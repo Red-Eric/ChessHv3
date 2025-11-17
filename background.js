@@ -144,6 +144,18 @@ function connectWebSocket() {
     try {
       const bestMoves = JSON.parse(event.data);
       console.log(bestMoves);
+      
+      
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]) {
+          chrome.tabs.sendMessage(tabs[0].id, {
+            type: "komodo",
+            data: bestMoves
+          });
+          console.log("send")
+        }
+      });
+
 
 
     } catch (e) {
