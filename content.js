@@ -1735,6 +1735,7 @@ const startCheat = () => {
         }
 
         engine.getMoves(fen_, getSide()).then((moves) => {
+          chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
           if (config.engine === "stockfish") {
             highlightMovesOnBoard(moves, getSide()[0]);
           }
