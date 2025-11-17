@@ -941,7 +941,7 @@ const startCheat = () => {
   
   */
 
-  if (window.location.hostname.includes("")) {
+  if (window.location.hostname.includes("lichess")) {
     loadConfig2();
     let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     let evalObj = null;
@@ -1261,18 +1261,6 @@ const startCheat = () => {
       s2.src = chrome.runtime.getURL("a.js");
       (document.head || document.documentElement).appendChild(s2);
       s2.onload = () => s2.remove();
-      
-
-
-      // const s3 = document.createElement("script");
-      // s3.src = chrome.runtime.getURL("lib/17.js");
-      // (document.head || document.documentElement).appendChild(s3);
-      // s3.onload = () => s3.remove();
-      
-      // const s4 = document.createElement("script");
-      // s4.src = chrome.runtime.getURL("lib/17.wasm");
-      // (document.head || document.documentElement).appendChild(s4);
-      // s4.onload = () => s4.remove();
 
       window.addEventListener("message", (event) => {
         if (event.source !== window) return;
@@ -1393,7 +1381,7 @@ const startCheat = () => {
     let evalObj = null;
     let customEval = null;
     loadConfig2()
-    
+
 
     const engine = new Engine({
       elo: config.skill,
