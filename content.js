@@ -790,6 +790,7 @@ const startCheat = () => {
       if (lastFEN !== fen_) {
         clearHighlightSquares();
         lastFEN = fen_;
+        chrome.runtime.sendMessage({ type: "chess.com_fen", data: fen_ });
         _elo_ = getOppElo();
 
 
@@ -820,6 +821,7 @@ const startCheat = () => {
         if (engine) {
           engine.getMoves(fen_, getSide()).then((moves) => {
             MoveKeyArray = moves;
+            // console.log("")
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
             if (config.engine === "stockfish") {
               highlightMovesOnBoard(moves, getSide()[0]);

@@ -2,6 +2,7 @@ let currentConfig = null;
 let currentConfig2 = null;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
 // YYYY - MM -DD
 const expirationDate = "2026-01-01";
 const timeAPI =
@@ -127,4 +128,42 @@ chrome.action.onClicked.addListener(() => {
       });
     }
   );
+});
+
+
+/// ServerSide engine
+
+let ws;
+
+function connectWebSocket() {
+  ws = new WebSocket("ws://localhost:8080/ws/");
+
+  ws.onopen = () => console.log("WebSocket connected");
+
+  ws.onmessage = (event) => {
+    try {
+      const bestMoves = JSON.parse(event.data);
+      console.log(bestMoves);
+
+
+    } catch (e) {
+      console.error("Failed to parse C# response:", e);
+    }
+  };
+
+  ws.onclose = () => {
+    console.log("WebSocket closed, reconnect in 1s");
+    setTimeout(connectWebSocket, 1000);
+  };
+}
+
+connectWebSocket();
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "chess.com_fen") {
+    console.log("Sending FEN to C#:", message.data);
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(message.data);
+    }
+  }
 });
