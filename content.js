@@ -1,4 +1,5 @@
-DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1"
+const DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1"
+const DISCORD = "https://discord.com/invite/R9Fw4EZJQ2"
 
 async function createWorker() {
 
@@ -341,6 +342,7 @@ chrome.runtime.sendMessage({ type: "checkExpiration" }, (response) => {
   if (response?.expired) {
     expired = true;
     // console.log(expired);
+    alert(`If you have any problems Discord : ${DISCORD}`)
     return;
   }
 
