@@ -9,21 +9,25 @@
   </head>
   <body>
     <div class="tabs">
-      <div class="tab active" data-panel="chess">
-        Chess.com
-      </div>
-      <div class="tab" data-panel="lichess">
-        Lichess & fide Arena
-      </div>
-      <div class="tab" data-panel="stream">
-        Stream
-      </div>
+      <div class="tab active" data-panel="chess">Chess.com</div>
+      <div class="tab" data-panel="lichess">Lichess & fide Arena</div>
+      <div class="tab" data-panel="stream">Stream</div>
     </div>
 
-    <!-- Panel 1 Chess.com -->
     <div class="panel active" id="chess">
       <div class="container">
         <h1>ChessHv3 - Chess.com</h1>
+
+        <div class="setting">
+          <span id="serverLabel"
+            >Server Side Engine (Komodo 3.3) PC only (OFF)</span
+          >
+          <label class="switch">
+            <input type="checkbox" id="server" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
         <div class="setting">
           <label for="engineSelect">Engine:</label>
           <select id="engineSelect">
@@ -31,7 +35,10 @@
             <option value="wukong">Wukong - 1780 elo</option>
             <option value="lozza">Lozza - 2400 elo</option>
           </select>
-          <span id="engineInfo" style="margin-left:6px;font-size:13px;color:#666;"></span>
+          <span
+            id="engineInfo"
+            style="margin-left: 6px; font-size: 13px; color: #666"
+          ></span>
         </div>
 
         <div class="setting">
@@ -45,8 +52,17 @@
         </div>
 
         <div class="setting">
-          <label for="delay">Auto Move Delay Limit: <span id="delayValue">100</span> ms</label>
-          <input type="range" id="delay" min="100" max="20000" value="100" step="50" />
+          <label for="delay"
+            >Auto Move Delay Limit: <span id="delayValue">100</span> ms</label
+          >
+          <input
+            type="range"
+            id="delay"
+            min="100"
+            max="20000"
+            value="100"
+            step="50"
+          />
         </div>
 
         <div class="setting">
@@ -92,8 +108,17 @@
       </div>
     </div>
 
-    <!-- Panel 2 Lichess -->
     <div class="panel" id="lichess">
+      <div class="setting">
+        <span id="serverLabel2"
+          >Server Side Engine (Komodo 3.3) PC only (OFF)</span
+        >
+        <label class="switch">
+          <input type="checkbox" id="server2" />
+          <span class="slider"></span>
+        </label>
+      </div>
+
       <div class="container">
         <h1>ChessHv3 - Lichess & fide Arena</h1>
         <div class="setting">
@@ -103,7 +128,10 @@
             <option value="wukong">Wukong - 1780 elo</option>
             <option value="lozza">Lozza - 2400 elo</option>
           </select>
-          <span id="engineInfo2" style="margin-left:6px;font-size:13px;color:#666;"></span>
+          <span
+            id="engineInfo2"
+            style="margin-left: 6px; font-size: 13px; color: #666"
+          ></span>
         </div>
 
         <div class="setting">
@@ -113,7 +141,14 @@
 
         <div class="setting">
           <label for="depth2">Depth: <span id="depthValue2">10</span></label>
-          <input type="range" id="depth2" min="1" max="20" value="10" step="1" />
+          <input
+            type="range"
+            id="depth2"
+            min="1"
+            max="20"
+            value="10"
+            step="1"
+          />
         </div>
 
         <div class="setting">

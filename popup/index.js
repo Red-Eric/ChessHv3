@@ -27,8 +27,10 @@ if (panelIndex !== 2) document.querySelector("#stream").style.display = "none";
 let chessConfig = JSON.parse(localStorage.getItem("chessConfig")) || {
   skill: 20, lines: 5, depth: 10, delay: 100,
   autoMove: false, winningMove: false, showEval: false, onlyShowEval: false,
-  engine: "stockfish", style: 0
+  engine: "stockfish", style: 0,
+  server: false
 };
+
 
 
 const lines = document.getElementById("lines");
@@ -49,6 +51,10 @@ const autoMoveLabel = document.getElementById("autoMoveLabel");
 const winningMoveLabel = document.getElementById("winningMoveLabel");
 const showEvalLabel = document.getElementById("showEvalLabel");
 const onlyShowEvalLabel = document.getElementById("onlyShowEvalLabel");
+const server = document.getElementById("server");
+const serverLabel = document.getElementById("serverLabel");
+
+
 
 function updateChessUI() {
   lines.value = chessConfig.lines;
@@ -77,11 +83,25 @@ function updateChessUI() {
   styleSelect.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
   winningMove.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
   winningMoveLabel.style.display = hideIfNotStockfish ? "none" : "inline";
+
+  const hideAll = chessConfig.server === true;
+
+  document.querySelectorAll("#chess .setting").forEach(el => {
+    if (!el.querySelector("#server"))
+      el.style.display = hideAll ? "none" : "flex";
+  });
+
+  server.parentElement.style.display = "flex";
+  serverLabel.textContent = `Server Side Engine (Komodo 3.3) PC only (${server.checked ? "ON" : "OFF"})`;
+
+
 }
 updateChessUI();
 
 function saveChessConfig() {
   localStorage.setItem("chessConfig", JSON.stringify(chessConfig));
+  console.clear()
+  console.log(chessConfig)
   if (typeof chrome !== "undefined" && chrome.runtime)
     chrome.runtime.sendMessage({ type: "config", config: chessConfig });
 }
@@ -110,13 +130,21 @@ engineSelect.addEventListener("change", () => {
   updateChessUI();
   saveChessConfig();
 });
+server.addEventListener("change", () => {
+  chessConfig.server = server.checked;
+  updateChessUI();
+  saveChessConfig();
+});
+
 
 // ===== Lichess Config =====
 let lichessConfig = JSON.parse(localStorage.getItem("lichessConfig")) || {
   skill: 20, lines: 5, depth: 10,
   winningMove: false, showEval: false, onlyShowEval: false,
-  engine: "stockfish", style: 0
+  engine: "stockfish", style: 0,
+  server: false
 };
+
 
 // ===== DOM Elements Lichess =====
 // const elo2 = document.getElementById("elo2");
@@ -135,6 +163,8 @@ const depthValue2 = document.getElementById("depthValue2");
 const winningMoveLabel2 = document.getElementById("winningMoveLabel2");
 const showEvalLabel2 = document.getElementById("showEvalLabel2");
 const onlyShowEvalLabel2 = document.getElementById("onlyShowEvalLabel2");
+const server2 = document.getElementById("server2");
+const serverLabel2 = document.getElementById("serverLabel2");
 
 // ===== Update Lichess UI =====
 function updateLichessUI() {
@@ -157,24 +187,36 @@ function updateLichessUI() {
   styleSelect2.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
   winningMove2.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
   winningMoveLabel2.style.display = hideIfNotStockfish ? "none" : "inline";
+  const hideAll = lichessConfig.server === true;
+
+  document.querySelectorAll("#lichess .setting").forEach(el => {
+    if (!el.querySelector("#server2"))
+      el.style.display = hideAll ? "none" : "flex";
+  });
+
+  server2.parentElement.style.display = "flex";
+  serverLabel2.textContent = `Server Side Engine (Komodo 3.3) PC only (${server2.checked ? "ON" : "OFF"})`;
+
 }
 updateLichessUI();
 
 function saveLichessConfig() {
   localStorage.setItem("lichessConfig", JSON.stringify(lichessConfig));
+  console.clear()
+  console.log(lichessConfig)
   if (typeof chrome !== "undefined" && chrome.runtime)
     chrome.runtime.sendMessage({ type: "config2", config: lichessConfig });
 }
 
 [lines2, depth2].forEach(el => el.addEventListener("input", () => {
-  lichessConfig[el.id.replace('2','')] = parseInt(el.value);
+  lichessConfig[el.id.replace('2', '')] = parseInt(el.value);
   updateLichessUI();
   saveLichessConfig();
 }));
 
 [winningMove2, showEval2, onlyShowEval2].forEach(el =>
   el.addEventListener("change", () => {
-    lichessConfig[el.id.replace('2','')] = el.checked;
+    lichessConfig[el.id.replace('2', '')] = el.checked;
     updateLichessUI();
     saveLichessConfig();
   })
@@ -190,6 +232,12 @@ engineSelect2.addEventListener("change", () => {
   updateLichessUI();
   saveLichessConfig();
 });
+server2.addEventListener("change", () => {
+  lichessConfig.server = server2.checked;
+  updateLichessUI();
+  saveLichessConfig();
+});
+
 
 // ===== Chessboard Panel =====
 
