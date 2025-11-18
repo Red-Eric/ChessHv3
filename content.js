@@ -956,6 +956,7 @@ const startCheat = () => {
       if (message.type === "komodo") {
         if (config.server) {
           highlightMovesOnBoard(message.data, getSide()[0])
+          chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: message.data });
           if (message.data.length > 0 && evalObj) {
             evalObj.update(message.data[0].eval, getSide());
           }
@@ -1409,6 +1410,7 @@ const startCheat = () => {
       if (message.type === "komodo") {
         if (config.server) {
           highlightMovesOnBoard(message.data, getSide()[0])
+          chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: message.data });
           if (message.data.length > 0 && evalObj) {
             evalObj.update(message.data[0].eval, getSide());
           }
@@ -1871,6 +1873,7 @@ const startCheat = () => {
       if (message.type === "komodo") {
         if (config.server) {
           highlightMovesOnBoard(message.data, getSide()[0])
+          chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: message.data });
           if (message.data.length > 0 && evalObj) {
             evalObj.update(message.data[0].eval, getSide());
           }
