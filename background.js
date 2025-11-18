@@ -133,49 +133,37 @@ chrome.action.onClicked.addListener(() => {
 
 /// ServerSide engine
 
-let ws;
+function sendFENToServer(fen) {
+  fetch("http://localhost:8080/api/", {
+    method: "POST",
+    body: fen,
+    headers: {
+      "Content-Type": "text/plain"
+    }
+  })
+    .then(res => res.json())
+    .then(bestMoves => {
+      console.log("Best moves:", bestMoves);
 
-function connectWebSocket() {
-  ws = new WebSocket("ws://localhost:8080/ws/");
-
-  ws.onopen = () => console.log("WebSocket connected");
-
-  ws.onmessage = (event) => {
-    try {
-      const bestMoves = JSON.parse(event.data);
-      console.log(bestMoves);
-      
-      
+      // Envoie à content script
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         if (tabs[0]) {
           chrome.tabs.sendMessage(tabs[0].id, {
             type: "komodo",
             data: bestMoves
           });
-          console.log("send")
+          console.log("Data sent to content script");
         }
       });
-
-
-
-    } catch (e) {
-      console.error("Failed to parse C# response:", e);
-    }
-  };
-
-  ws.onclose = () => {
-    console.log("WebSocket closed, reconnect in 1s");
-    setTimeout(connectWebSocket, 1000);
-  };
+    })
+    .catch(err => {
+      console.error("Erreur HTTP:", err);
+    });
 }
-
-connectWebSocket();
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "chess.com_fen") {
-    console.log("Sending FEN to C#:", message.data);
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(message.data);
-    }
+    console.log("Sending FEN to server:", message.data);
+    sendFENToServer(message.data);
   }
 });
