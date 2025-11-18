@@ -952,11 +952,7 @@ const startCheat = () => {
       }
 
       if (message.type === "komodo") {
-        // console.log(message)
-        // highlightMovesOnBoard2(message.data, getSide()[0])
-        // console.log(config)
         if (config.server) {
-          // console.log(message.data)
           highlightMovesOnBoard(message.data, getSide()[0])
         }
       }
@@ -1307,26 +1303,28 @@ const startCheat = () => {
             fen_ = event.data.fen;
             // console.log(fen_);
             // console.log(config);
-            if (config.engine === "wukong") {
-              wukongEngine.getMove(fen_, config.depth).then((moves) => {
-                highlightMovesOnBoard(moves, getSide()[0]);
-              });
-            }
-            if (config.engine === "lozza") {
-              lozzaEngine.getMove(fen_, config.depth).then((moves) => {
-                highlightMovesOnBoard(moves, getSide()[0]);
-              });
-            }
+            if (!config.server) {
+              if (config.engine === "wukong") {
+                wukongEngine.getMove(fen_, config.depth).then((moves) => {
+                  highlightMovesOnBoard(moves, getSide()[0]);
+                });
+              }
+              if (config.engine === "lozza") {
+                lozzaEngine.getMove(fen_, config.depth).then((moves) => {
+                  highlightMovesOnBoard(moves, getSide()[0]);
+                });
+              }
 
-            engine.getMoves(fen_, getSide()).then((moves) => {
-              chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-              if (config.engine === "stockfish") {
-                highlightMovesOnBoard(moves, getSide()[0]);
-              }
-              if (moves.length > 0 && evalObj) {
-                evalObj.update(moves[0].eval, getSide());
-              }
-            });
+              engine.getMoves(fen_, getSide()).then((moves) => {
+                chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+                if (config.engine === "stockfish") {
+                  highlightMovesOnBoard(moves, getSide()[0]);
+                }
+                if (moves.length > 0 && evalObj) {
+                  evalObj.update(moves[0].eval, getSide());
+                }
+              });
+            }
           }
         }
       });
@@ -1376,26 +1374,34 @@ const startCheat = () => {
 
         // Stream
 
-        if (config.engine === "wukong") {
-          wukongEngine.getMove(fen_, config.depth).then((moves) => {
-            highlightMovesOnBoard(moves, getSide()[0]);
-          });
-        }
-        if (config.engine === "lozza") {
-          lozzaEngine.getMove(fen_, config.depth).then((moves) => {
-            highlightMovesOnBoard(moves, getSide()[0]);
-          });
-        }
+        if (!config.server) {
+          if (config.engine === "wukong") {
+            wukongEngine.getMove(fen_, config.depth).then((moves) => {
+              highlightMovesOnBoard(moves, getSide()[0]);
+            });
+          }
+          if (config.engine === "lozza") {
+            lozzaEngine.getMove(fen_, config.depth).then((moves) => {
+              highlightMovesOnBoard(moves, getSide()[0]);
+            });
+          }
 
-        engine.getMoves(fen_, getSide()).then((moves) => {
-          chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-          if (config.engine === "stockfish") {
-            highlightMovesOnBoard(moves, getSide()[0]);
-          }
-          if (moves.length > 0 && evalObj) {
-            evalObj.update(moves[0].eval, getSide());
-          }
-        });
+          engine.getMoves(fen_, getSide()).then((moves) => {
+            chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+            if (config.engine === "stockfish") {
+              highlightMovesOnBoard(moves, getSide()[0]);
+            }
+            if (moves.length > 0 && evalObj) {
+              evalObj.update(moves[0].eval, getSide());
+            }
+          });
+        }
+      }
+
+      if (message.type === "komodo") {
+        if (config.server) {
+          highlightMovesOnBoard(message.data, getSide()[0])
+        }
       }
     });
   }
@@ -1750,6 +1756,9 @@ const startCheat = () => {
     }
 
     setInterval(() => {
+
+      isExpired()
+
       // eval bar
       if (!customEval && config.showEval) {
         const boardContainer = document.querySelector("cg-board");
@@ -1766,26 +1775,28 @@ const startCheat = () => {
         currentFen = fen_
         clearHighlightSquares()
 
-        if (config.engine === "wukong") {
-          wukongEngine.getMove(fen_, config.depth).then((moves) => {
-            highlightMovesOnBoard(moves, getSide()[0]);
-          });
-        }
-        if (config.engine === "lozza") {
-          lozzaEngine.getMove(fen_, config.depth).then((moves) => {
-            highlightMovesOnBoard(moves, getSide()[0]);
-          });
-        }
+        if (!config.server) {
+          if (config.engine === "wukong") {
+            wukongEngine.getMove(fen_, config.depth).then((moves) => {
+              highlightMovesOnBoard(moves, getSide()[0]);
+            });
+          }
+          if (config.engine === "lozza") {
+            lozzaEngine.getMove(fen_, config.depth).then((moves) => {
+              highlightMovesOnBoard(moves, getSide()[0]);
+            });
+          }
 
-        engine.getMoves(fen_, getSide()).then((moves) => {
-          chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-          if (config.engine === "stockfish") {
-            highlightMovesOnBoard(moves, getSide()[0]);
-          }
-          if (moves.length > 0 && evalObj) {
-            evalObj.update(moves[0].eval, getSide());
-          }
-        });
+          engine.getMoves(fen_, getSide()).then((moves) => {
+            chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+            if (config.engine === "stockfish") {
+              highlightMovesOnBoard(moves, getSide()[0]);
+            }
+            if (moves.length > 0 && evalObj) {
+              evalObj.update(moves[0].eval, getSide());
+            }
+          });
+        }
 
       }
     }, interval);
@@ -1822,27 +1833,36 @@ const startCheat = () => {
 
         // Stream
 
-        if (config.engine === "wukong") {
-          wukongEngine.getMove(fen_, config.depth).then((moves) => {
-            highlightMovesOnBoard(moves, getSide()[0]);
-          });
-        }
-        if (config.engine === "lozza") {
-          lozzaEngine.getMove(fen_, config.depth).then((moves) => {
-            highlightMovesOnBoard(moves, getSide()[0]);
-          });
-        }
+        if (!config.server) {
+          if (config.engine === "wukong") {
+            wukongEngine.getMove(fen_, config.depth).then((moves) => {
+              highlightMovesOnBoard(moves, getSide()[0]);
+            });
+          }
+          if (config.engine === "lozza") {
+            lozzaEngine.getMove(fen_, config.depth).then((moves) => {
+              highlightMovesOnBoard(moves, getSide()[0]);
+            });
+          }
 
-        engine.getMoves(fen_, getSide()).then((moves) => {
-          chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-          if (config.engine === "stockfish") {
-            highlightMovesOnBoard(moves, getSide()[0]);
-          }
-          if (moves.length > 0 && evalObj) {
-            evalObj.update(moves[0].eval, getSide());
-          }
-        });
+          engine.getMoves(fen_, getSide()).then((moves) => {
+            chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+            if (config.engine === "stockfish") {
+              highlightMovesOnBoard(moves, getSide()[0]);
+            }
+            if (moves.length > 0 && evalObj) {
+              evalObj.update(moves[0].eval, getSide());
+            }
+          });
+        }
       }
+
+      if (message.type === "komodo") {
+        if (config.server) {
+          highlightMovesOnBoard(message.data, getSide()[0])
+        }
+      }
+
     });
 
   }
