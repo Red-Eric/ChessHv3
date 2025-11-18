@@ -251,8 +251,8 @@ function createEvalBar(initialScore = "0.0", initialColor = "white") {
   const evalContainer = document.createElement("div");
   evalContainer.id = "customEval";
   evalContainer.style.zIndex = "9999";
-  evalContainer.style.width = `20px`;
-  evalContainer.style.height = `400px`;
+  evalContainer.style.width = `40px`;
+  evalContainer.style.height = `600px`;
   evalContainer.style.marginRight = "10px";
   evalContainer.style.background = "#eee";
   evalContainer.style.marginLeft = "10px";
@@ -489,9 +489,16 @@ function highlightMovesOnBoard(moves, side, fen) {
   });
 }
 
-var board1 = Chessboard("board1", "start");
-board1.orientation("white");
-var evalBar = createEvalBar();
+// "customEval";
+// board1
+// document.querySelector(".tab.active").innerText === "Stream"
+
+// var board1 = Chessboard("board1", "start");
+// board1.orientation("white");
+// var evalBar = createEvalBar();
+
+var board1 = null
+var evalBar = null
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   try {
@@ -503,7 +510,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       const data = message.data[0];
       if (!data.fen || !data.side || !data.eval) return;
 
-      if (board1) {
+      const flag = (document.querySelector(".tab.active").innerText === "Stream")
+
+      if (flag && !board1 && !evalBar) {
+        board1 = Chessboard("board1", "start");
+        board1.orientation("white");
+        evalBar = createEvalBar();
+      }
+
+      if (board1 && flag) {
         board1.orientation(data.side);
         board1.position(data.fen);
       }
