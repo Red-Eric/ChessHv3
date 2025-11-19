@@ -1310,6 +1310,7 @@ const startCheat = () => {
           if (event.data.fen !== fen_) {
             clearHighlightSquares();
             fen_ = event.data.fen;
+            chrome.runtime.sendMessage({ type: "chess.com_fen", data: fen_ });
             // console.log(fen_);
             // console.log(config);
             if (!config.server) {
@@ -1461,7 +1462,7 @@ const startCheat = () => {
         }
       });
 
-      if (expire) {
+      if (expired) {
         return DEFAULT_FEN
       }
       else {
@@ -1787,6 +1788,7 @@ const startCheat = () => {
         // console.log(fen_)
         currentFen = fen_
         clearHighlightSquares()
+        chrome.runtime.sendMessage({ type: "chess.com_fen", data: fen_ });
 
         if (!config.server) {
           if (config.engine === "wukong") {
@@ -1817,7 +1819,7 @@ const startCheat = () => {
     // PArametre chessARENA
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      // console.log(message)
+      console.log(message)
       if (message.type === "config2" && engine) {
         config = message.config;
         // console.log(config)
