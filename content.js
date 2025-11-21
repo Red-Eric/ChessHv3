@@ -759,30 +759,30 @@ const startCheat = () => {
     }
 
     function checkAndSendMoves() {
-      // if (config.autoMove && document.querySelector("#board-single")) {
-      //   const continueBtn =
-      //     document.querySelector(
-      //       ".cc-button-component.cc-button-secondary.cc-button-medium.cc-bg-secondary.game-over-buttons-button"
-      //     ) ||
-      //     document.querySelector(
-      //       ".cc-button-component.cc-button-primary.cc-button-large.cc-bg-primary.cc-button-full"
-      //     ) ||
-      //     document.querySelector(
-      //       ".cc-button-component.cc-button-primary.cc-button-xx-large.cc-bg-primary.cc-button-full.game-over-arena-button-button"
-      //     ) ||
-      //     document.querySelector(
-      //       ".cc-button-component.cc-button-secondary.cc-button-medium.cc-bg-secondary"
-      //     ) ||
-      //     null;
+      if (config.autoMove && document.querySelector("#board-single")) {
+        const continueBtn =
+          document.querySelector(
+            ".cc-button-component.cc-button-secondary.cc-button-medium.cc-bg-secondary.game-over-buttons-button"
+          ) ||
+          document.querySelector(
+            ".cc-button-component.cc-button-primary.cc-button-large.cc-bg-primary.cc-button-full"
+          ) ||
+          document.querySelector(
+            ".cc-button-component.cc-button-primary.cc-button-xx-large.cc-bg-primary.cc-button-full.game-over-arena-button-button"
+          ) ||
+          document.querySelector(
+            ".cc-button-component.cc-button-secondary.cc-button-medium.cc-bg-secondary"
+          ) ||
+          null;
 
-      //   if (continueBtn) {
-      //     setTimeout(() => {
-      //       continueBtn.click();
-      //     }, 2000);
-      //   } else {
-      //     // console.log("no next game")
-      //   }
-      // }
+        if (continueBtn) {
+          setTimeout(() => {
+            continueBtn.click();
+          }, 2000);
+        } else {
+          // console.log("no next game")
+        }
+      }
 
       requestFen();
 
