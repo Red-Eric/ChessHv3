@@ -86,10 +86,7 @@ function updateChessUI() {
 
   const hideAll = chessConfig.server === true;
 
-  document.querySelectorAll("#chess .setting").forEach(el => {
-    if (!el.querySelector("#server"))
-      el.style.display = hideAll ? "none" : "flex";
-  });
+  hideAll ? document.querySelector("#test").style.display = "none" : document.querySelector("#test").style.display = "block"
 
   server.parentElement.style.display = "flex";
   serverLabel.textContent = `Server Side Engine (Komodo 3.3) PC only (${server.checked ? "ON" : "OFF"})`;
@@ -189,10 +186,8 @@ function updateLichessUI() {
   winningMoveLabel2.style.display = hideIfNotStockfish ? "none" : "inline";
   const hideAll = lichessConfig.server === true;
 
-  document.querySelectorAll("#lichess .setting").forEach(el => {
-    if (!el.querySelector("#server2"))
-      el.style.display = hideAll ? "none" : "flex";
-  });
+  hideAll ? document.querySelector("#test2").style.display = "none" : document.querySelector("#test2").style.display = "block"
+
 
   server2.parentElement.style.display = "flex";
   serverLabel2.textContent = `Server Side Engine (Komodo 3.3) PC only (${server2.checked ? "ON" : "OFF"})`;

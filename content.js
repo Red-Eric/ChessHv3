@@ -1,5 +1,7 @@
 const DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1"
 const DISCORD = "https://discord.com/invite/R9Fw4EZJQ2"
+let urlNow = ""
+
 
 async function createWorker() {
 
