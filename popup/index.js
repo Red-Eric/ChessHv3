@@ -31,7 +31,14 @@ let chessConfig = JSON.parse(localStorage.getItem("chessConfig")) || {
   server: false
 };
 
-
+const savedConfig = localStorage.getItem("chessConfig");
+if (savedConfig) {
+  try {
+    chessConfig = JSON.parse(savedConfig);
+  } catch (e) {
+    console.error("Erreur lors du parsing de chessConfig dans le localStorage:", e);
+  }
+}
 
 const lines = document.getElementById("lines");
 const depth = document.getElementById("depth");
@@ -69,6 +76,7 @@ function updateChessUI() {
   linesValue.textContent = chessConfig.lines;
   depthValue.textContent = chessConfig.depth;
   delayValue.textContent = chessConfig.delay;
+  server.checked = chessConfig.server;
   autoMoveLabel.textContent = `Auto Move (${autoMove.checked ? "ON" : "OFF"})`;
   winningMoveLabel.textContent = `Only Show Winning Move (${winningMove.checked ? "ON" : "OFF"})`;
   showEvalLabel.textContent = `Show Eval Bar (${showEval.checked ? "ON" : "OFF"})`;
@@ -143,6 +151,16 @@ let lichessConfig = JSON.parse(localStorage.getItem("lichessConfig")) || {
 };
 
 
+const savedLichessConfig = localStorage.getItem("lichessConfig");
+if (savedLichessConfig) {
+  try {
+    lichessConfig = JSON.parse(savedLichessConfig);
+  } catch (e) {
+    console.error("Erreur lors du parsing de lichessConfig dans le localStorage:", e);
+  }
+}
+
+
 // ===== DOM Elements Lichess =====
 // const elo2 = document.getElementById("elo2");
 const lines2 = document.getElementById("lines2");
@@ -175,6 +193,7 @@ function updateLichessUI() {
   engineSelect2.value = lichessConfig.engine;
   linesValue2.textContent = lichessConfig.lines;
   depthValue2.textContent = lichessConfig.depth;
+  server2.checked = lichessConfig.server
   winningMoveLabel2.textContent = `Only Show Winning Move (${winningMove2.checked ? "ON" : "OFF"})`;
   showEvalLabel2.textContent = `Show Eval Bar (${showEval2.checked ? "ON" : "OFF"})`;
   onlyShowEvalLabel2.textContent = `Hide Arrows (${onlyShowEval2.checked ? "ON" : "OFF"})`;
