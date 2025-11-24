@@ -115,6 +115,99 @@ function loadConfig2() {
   }
 }
 
+
+// lichess accuracy calculator
+
+function analyzeScores(moves) {
+  // ==== Fonctions ====
+  function winning_chances_percent(cp) {
+    const multiplier = -0.00368208;
+    const chances = 2 / (1 + Math.exp(multiplier * cp)) - 1;
+    return 50 + 50 * Math.max(Math.min(chances, 1), -1);
+  }
+
+  function move_accuracy_percent(before, after) {
+    if (after >= before) return 100;
+    const diff = before - after;
+    const raw = 103.1668100711649 * Math.exp(-0.04354415386753951 * diff) - 3.166924740191411;
+    return Math.max(Math.min(raw + 1, 100), 0);
+  }
+
+  function harmonic_mean(values) {
+    const n = values.length;
+    if (!n) return 0;
+    const s = values.reduce((a, x) => (x ? a + 1 / x : a), 0);
+    return s ? n / s : 0;
+  }
+
+  function std_dev(arr) {
+    if (!arr.length) return 0.5;
+    const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
+    const variance = arr.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / arr.length;
+    return Math.sqrt(variance);
+  }
+
+  function volatility_weighted_mean(acc, win, isWhite) {
+    let weights = [];
+    for (let i = 0; i < acc.length; i++) {
+      const base = isWhite ? i * 2 + 1 : i * 2 + 2;
+      const s = Math.max(base - 2, 0);
+      const e = Math.min(base + 2, win.length - 1);
+      const sub = win.slice(s, e + 1);
+      const w = Math.max(Math.min(std_dev(sub), 12), 0.5);
+      weights.push(w);
+    }
+    const ws = weights.reduce((sum, w, i) => sum + w * acc[i], 0);
+    const tw = weights.reduce((a, b) => a + b, 0);
+    return tw ? ws / tw : 0;
+  }
+
+  // ==== Calcul principal ====
+  let accuraciesW = [], accuraciesB = [];
+  let cpLossW = 0, cpLossB = 0;
+  let prev = 17;  // valeur initiale utilisée dans ton Python
+  let winChances = [winning_chances_percent(prev)];
+
+  for (let mv of moves) {
+    const score = mv.score;
+    const after = winning_chances_percent(score);
+    winChances.push(after);
+
+    // si c’est le tour blanc, les chances noires = 100-% blanc
+    let beforeEval = mv.side === "w" ? (100 - winning_chances_percent(prev)) : winning_chances_percent(prev);
+    let afterEval = mv.side === "w" ? (100 - after) : after;
+
+    let acc = move_accuracy_percent(beforeEval, afterEval);
+
+    if (mv.side === "b") {
+      cpLossW += score > prev ? score - prev : 0;
+      accuraciesW.push(acc);
+    } else {
+      cpLossB += score < prev ? prev - score : 0;
+      accuraciesB.push(acc);
+    }
+    prev = score;
+  }
+
+  if (!accuraciesW.length || !accuraciesB.length) {
+    console.log("No enough data");
+    return;
+  }
+
+  const hW = harmonic_mean(accuraciesW);
+  const hB = harmonic_mean(accuraciesB);
+  const wW = volatility_weighted_mean(accuraciesW, winChances, true);
+  const wB = volatility_weighted_mean(accuraciesB, winChances, false);
+
+  const accW = (hW + wW) / 2;
+  const accB = (hB + wB) / 2;
+
+  console.log("White % :", Math.round(accW));
+  console.log("Black % :", Math.round(accB));
+}
+
+
+
 // stockfish 11
 class Engine {
   constructor({ elo = 20, depth = 10, multipv = 5, threads = 2, hash = 128 }) {
@@ -338,6 +431,8 @@ class Lozza {
   }
 }
 
+let scoreArray = []
+let lastURL = "chesshv3"
 let expired = true;
 
 chrome.runtime.sendMessage({ type: "checkExpiration" }, (response) => {
@@ -384,7 +479,7 @@ const startCheat = () => {
   if (window.location.hostname.includes("chess.com") && !expired) {
     loadConfig();
     let lastFEN = "Bomboclat";
-    let fen_ = "aa";
+    let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     let side_index = 1;
 
     const engine = new Engine({
@@ -470,6 +565,34 @@ const startCheat = () => {
 
       function update(scoreStr, color = "white") {
         let { score, mate } = parseScore(scoreStr);
+        // fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+        // console.log(score)
+        // console.log(mate)
+        // console.log(fen_)
+
+        if (mate) {
+
+          if (score < 0) {
+            scoreArray.push({
+              score: -1000,
+              side: fen_.split(" ")[1]
+            })
+          } else {
+            scoreArray.push({
+              score: +1000,
+              side: fen_.split(" ")[1]
+            })
+          }
+
+        } else {
+          scoreArray.push({
+            score: score * 100,
+            side: fen_.split(" ")[1]
+          })
+        }
+        // console.clear()
+        // console.log(scoreArray)
+
         let percent = 50;
 
         if (mate) {
@@ -761,6 +884,11 @@ const startCheat = () => {
     }
 
     function checkAndSendMoves() {
+
+      if (fen_ === "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
+        scoreArray = []
+      }
+
       if (config.autoMove && document.querySelector("#board-single")) {
         const continueBtn =
           document.querySelector(
@@ -1068,6 +1196,29 @@ const startCheat = () => {
 
       function update(scoreStr, color = "white") {
         let { score, mate } = parseScore(scoreStr);
+
+        if (mate) {
+
+          if (score < 0) {
+            scoreArray.push({
+              score: -1000,
+              side: fen_.split(" ")[1]
+            })
+          } else {
+            scoreArray.push({
+              score: +1000,
+              side: fen_.split(" ")[1]
+            })
+          }
+
+        } else {
+          scoreArray.push({
+            score: score * 100,
+            side: fen_.split(" ")[1]
+          })
+        }
+
+
         let percent = 50;
 
         if (mate) {
@@ -1729,6 +1880,28 @@ const startCheat = () => {
 
 
         let { score, mate } = parseScore(scoreStr);
+
+        if (mate) {
+
+          if (score < 0) {
+            scoreArray.push({
+              score: -1000,
+              side: fen_.split(" ")[1]
+            })
+          } else {
+            scoreArray.push({
+              score: +1000,
+              side: fen_.split(" ")[1]
+            })
+          }
+
+        } else {
+          scoreArray.push({
+            score: score * 100,
+            side: fen_.split(" ")[1]
+          })
+        }
+
         let percent = 50;
 
         if (mate) {
