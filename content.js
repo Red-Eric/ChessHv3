@@ -1496,6 +1496,11 @@ const startCheat = () => {
     inject();
 
     setInterval(() => {
+
+      if (fen_ === "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
+        scoreArray = []
+      }
+
       if (!customEval && config.showEval) {
         const boardContainer = document.querySelector("cg-container");
         if (boardContainer) {
@@ -1945,7 +1950,9 @@ const startCheat = () => {
     }
 
     setInterval(() => {
-
+      if (fen_ === "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
+        scoreArray = []
+      }
       isExpired()
 
       // eval bar
