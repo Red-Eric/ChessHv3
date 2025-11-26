@@ -504,6 +504,45 @@ const startCheat = () => {
     let evalObj = null;
     let customEval = null;
 
+    function displayAccuracy(side = "white") {
+      users = document.querySelectorAll(".cc-text-medium-bold.cc-user-username-component.cc-user-username-white")
+      if (!users) return null;
+      if (users.length !== 2) return null;
+
+      if (side === "white") {
+        // magnus carlsen
+        if (users[0].innerText.split(" ").length === 1) {
+          // Hikaru [Accuracy : 80%]
+          users[0].innerText += " [Accuracy 100%]"
+        } else {
+          users[0].innerText = `${users[0].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray).black_accuracy}%]`
+        }
+        if (users[1].innerText.split(" ").length === 1) {
+          // Hikaru [Accuracy : 80%]
+          users[1].innerText += " [Accuracy 100%]"
+        } else {
+          users[1].innerText = `${users[1].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray).white_accuracy}%]`
+        }
+
+      }
+      else // black
+      {
+        if (users[0].innerText.split(" ").length === 1) {
+          // Hikaru [Accuracy : 80%]
+          users[0].innerText += " [Accuracy 100%]"
+        } else {
+          users[0].innerText = `${users[0].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray).white_accuracy}%]`
+        }
+        if (users[1].innerText.split(" ").length === 1) {
+          // Hikaru [Accuracy : 80%]
+          users[1].innerText += " [Accuracy 100%]"
+        } else {
+          users[1].innerText = `${users[1].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray).black_accuracy}%]`
+        }
+
+      }
+
+    }
 
     function createEvalBar(initialScore = "0.0", initialColor = "white") {
       const boardContainer = document.querySelector(".board");
@@ -511,7 +550,7 @@ const startCheat = () => {
 
       if (!boardContainer) return console.error("Plateau non trouvé !");
 
-      
+
 
       // Conteneur principal
       const evalContainer = document.createElement("div");
@@ -603,6 +642,8 @@ const startCheat = () => {
         }
         // console.clear()
         // console.log(scoreArray)
+
+        displayAccuracy(color)
 
 
         let percent = 50;
