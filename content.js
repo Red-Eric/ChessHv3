@@ -119,6 +119,9 @@ function loadConfig2() {
 // lichess accuracy calculator
 
 function analyzeScores(moves) {
+
+  // console.log(moves)
+
   // ==== Fonctions ====
   function winning_chances_percent(cp) {
     const multiplier = -0.00368208;
@@ -202,8 +205,13 @@ function analyzeScores(moves) {
   const accW = (hW + wW) / 2;
   const accB = (hB + wB) / 2;
 
-  console.log("White % :", Math.round(accW));
-  console.log("Black % :", Math.round(accB));
+  // console.log("White % :", Math.round(accW));
+  // console.log("Black % :", Math.round(accB));
+
+  return {
+    white_accuracy: Math.round(accW),
+    black_accuracy: Math.round(accB)
+  }
 }
 
 
@@ -496,6 +504,61 @@ const startCheat = () => {
     let evalObj = null;
     let customEval = null;
 
+
+    let accuIndicator = null;
+
+    function createAccuracyBar(initialOpp = 100, initialMy = 100) {
+      const oppParent = document.querySelectorAll(".cc-text-medium.cc-user-rating-white")[0];
+      if (!oppParent) return console.error("Adversaire non trouvé !");
+      oppParent.style.display = "flex"
+      const oppDiv = document.createElement("div");
+      oppDiv.id = "opp_acc";
+      oppDiv.style.color = "red";
+      oppDiv.style.fontWeight = "bold";
+      // oppDiv.style.marginTop = "5px";
+      oppDiv.innerText = `  Accuracy: ${initialOpp} %`;
+      oppParent.appendChild(oppDiv);
+
+      // const myParent = document.querySelector(".player-row-component:not(.player-row-top)");
+      const myParent = document.querySelectorAll(".cc-text-medium.cc-user-rating-white")[1];
+      if (!myParent) return console.error("Joueur non trouvé !");
+      myParent.style.display = "flex"
+      const myDiv = document.createElement("div");
+      myDiv.id = "my_acc";
+      myDiv.style.color = "red";
+      myDiv.style.fontWeight = "bold";
+      // myDiv.style.marginTop = "5px";
+      myDiv.innerText = ` Accuracy: ${initialMy} %`;
+      myParent.appendChild(myDiv);
+
+
+
+      function updateOpp(value) {
+        oppDiv.innerText = `  Accuracy: ${value} %`;
+      }
+
+      function updateMy(value) {
+        myDiv.innerText = `  Accuracy: ${value} %`;
+      }
+
+      return {
+        updateOpp,
+        updateMy
+      };
+    }
+
+    function removeAccuracyBar() {
+      const oldOpp = document.getElementById("opp_acc");
+      const oldMy = document.getElementById("my_acc");
+
+      if (oldOpp) oldOpp.remove();
+      if (oldMy) oldMy.remove();
+
+      console.log("remove AccurateBar")
+
+      accuIndicator = null; // reset
+    }
+
     function createEvalBar(initialScore = "0.0", initialColor = "white") {
       const boardContainer = document.querySelector(".board");
       let w_ = boardContainer.offsetWidth;
@@ -592,6 +655,22 @@ const startCheat = () => {
         }
         // console.clear()
         // console.log(scoreArray)
+
+        if (!accuIndicator) {
+          accuIndicator = createAccuracyBar(100, 100)
+          console.log("create accurate bar")
+        } else {
+          if (color === "white") { // black top
+
+            accuIndicator.updateMy(analyzeScores(scoreArray).white_accuracy)
+            accuIndicator.updateOpp(analyzeScores(scoreArray).black_accuracy)
+          } else {
+            // Balck bottom
+            accuIndicator.updateOpp(analyzeScores(scoreArray).white_accuracy)
+            accuIndicator.updateMy(analyzeScores(scoreArray).black_accuracy)
+          }
+        }
+
 
         let percent = 50;
 
