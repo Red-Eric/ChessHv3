@@ -2,8 +2,6 @@
 let lichessFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 let socketURL = null;
 
-
-
 function isValidFEN(fen) {
     if (!fen || typeof fen !== 'string') return false;
 
