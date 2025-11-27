@@ -246,7 +246,7 @@ if (window.location.hostname.includes("lichess.org")) {
       let tempFEN = extractFEN(document.querySelector("cg-board"))
       if (isStartPosition(tempFEN)) {
         lastFEN = tempFEN
-        console.log(lastFEN)
+        // console.log(lastFEN)
         return tempFEN
       }
     }

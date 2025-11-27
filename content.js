@@ -1168,6 +1168,49 @@ const startCheat = () => {
     let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     let evalObj = null;
     let customEval = null;
+
+
+    function displayAccuracy(side = "white") {
+      users = document.querySelectorAll("name")
+      if (!users) return null;
+      if (users.length !== 2) return null;
+
+      if (side === "white") {
+        // magnus carlsen
+        if (users[0].innerText.split(" ").length === 1) {
+          // Hikaru [Accuracy : 80%]
+          users[0].innerText += " [Accuracy 100%]"
+        } else {
+          users[0].innerText = `${users[0].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray).black_accuracy}%]`
+        }
+        if (users[1].innerText.split(" ").length === 1) {
+          // Hikaru [Accuracy : 80%]
+          users[1].innerText += " [Accuracy 100%]"
+        } else {
+          users[1].innerText = `${users[1].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray).white_accuracy}%]`
+        }
+
+      }
+      else // black
+      {
+        if (users[0].innerText.split(" ").length === 1) {
+          // Hikaru [Accuracy : 80%]
+          users[0].innerText += " [Accuracy 100%]"
+        } else {
+          users[0].innerText = `${users[0].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray).white_accuracy}%]`
+        }
+        if (users[1].innerText.split(" ").length === 1) {
+          // Hikaru [Accuracy : 80%]
+          users[1].innerText += " [Accuracy 100%]"
+        } else {
+          users[1].innerText = `${users[1].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray).black_accuracy}%]`
+        }
+
+      }
+
+    }
+
+
     const engine = new Engine({
       elo: config.skill,
       depth: 10,
@@ -1270,6 +1313,10 @@ const startCheat = () => {
             side: fen_.split(" ")[1]
           })
         }
+
+        // console.log(scoreArray)
+
+        displayAccuracy(color)
 
 
         let percent = 50;
