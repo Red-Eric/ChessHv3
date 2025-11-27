@@ -1,3 +1,9 @@
+
+let lichessFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+let socketURL = null;
+
+
+
 function isValidFEN(fen) {
     if (!fen || typeof fen !== 'string') return false;
 
@@ -31,19 +37,19 @@ function isValidFEN(fen) {
     return true;
 }
 
-let lichessFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 (function () {
     const OriginalWebSocket = window.WebSocket;
     window.WebSocket = function (url, protocols) {
-        console.log("WebSocket URL:", url);
+        // console.log("WebSocket URL:", url);
         const ws = new OriginalWebSocket(url, protocols);
 
+        socketURL = url;
 
         ws.addEventListener("message", function (event) {
             // console.log(event.data);
             let message = event.data
-            // console.log(message)
+            console.log(message)
             // rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 
             let fen;
@@ -53,28 +59,34 @@ let lichessFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
                 fen = data?.d?.fen;
 
                 fen = `${fen} ${(data?.d?.ply % 2 === 0) ? "w" : "b"} KQkq - 0 1`
-                
+
             } catch (e) {
                 fen = typeof message === "string" ? message : undefined;
             }
-            if(isValidFEN(fen)){
-                console.log(fen)
+            if (isValidFEN(fen)) {
+                // console.log(fen)
                 lichessFen = fen
             }
         });
-
 
         return ws;
     };
 })();
 
 
+
 (function () {
     window.addEventListener("message", (event) => {
-      if (event.source !== window) return;
+        if (event.source !== window) return;
 
-      if (event.data?.type === "FEN") {
-        window.postMessage({ type: "FEN_RESPONSE", fen: lichessFen }, "*");
-      }
+        if (event.data?.type === "FEN") {
+            window.postMessage({ type: "FEN_RESPONSE", fen: lichessFen }, "*");
+        }
+
+        if (event.data?.type === "MOVE") {
+            console.log("Move")
+        }
+
     });
-  })();
+})();
+

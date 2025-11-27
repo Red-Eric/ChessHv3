@@ -1,16 +1,25 @@
+function isInLichessGame() {
+  const path = window.location.pathname.split("/")[1];
+
+  return /^[a-zA-Z0-9]{8,12}$/.test(path);
+}
+
+
+if (window.location.hostname.includes("lichess.org") && isInLichessGame()) {
+  (function HookSocket() {
+    console.clear()
+    console.log("Injected")
+    const s = document.createElement('script');
+    s.src = chrome.runtime.getURL('b.js');
+    (document.head || document.documentElement).appendChild(s);
+    s.onload = () => s.remove();
+
+  }())
+}
+
 const DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1"
 const DISCORD = "https://discord.com/invite/R9Fw4EZJQ2"
 let urlNow = ""
-
-function HookSocket() {
-  const s = document.createElement('script');
-  s.src = chrome.runtime.getURL('b.js');
-  (document.head || document.documentElement).appendChild(s);
-  s.onload = () => s.remove();
-
-}
-
-HookSocket()
 
 
 async function createWorker() {
