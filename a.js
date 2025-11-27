@@ -56,6 +56,7 @@ if (window.location.hostname.includes("chess.com")) {
 }
 
 if (window.location.hostname.includes("lichess.org")) {
+
   function getFen() {
     let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     // el = document.querySelectorAll("kwdb") // document.querySelectorAll("move")
@@ -92,6 +93,7 @@ if (window.location.hostname.includes("lichess.org")) {
       }
     });
   })();
+
 }
 
 // ///

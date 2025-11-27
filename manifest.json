@@ -24,13 +24,14 @@
     {
       "matches": ["<all_urls>"],
       "js": ["content.js"],
-      "run_at": "document_idle"
+      "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [
     {
       "resources": [
         "a.js",
+        "b.js",
         "lib/stockfish.js",
         "lib/chess_min.js",
         "lib/wukong.js",
