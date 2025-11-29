@@ -193,7 +193,7 @@ function analyzeScores(moves) {
   }
 
   if (!accuraciesW.length || !accuraciesB.length) {
-    // console.log("No enough data");
+    console.log("No enough data");
     return;
   }
 

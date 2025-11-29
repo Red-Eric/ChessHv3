@@ -156,37 +156,52 @@ function extractFEN(boardElement) {
   return `${piecePlacement} w KQkq - 0 1`;
 }
 
+let hookedSite = false;
+
 if (window.location.hostname.includes("lichess.org")) {
   console.log("HEHEHE")
 
-  const _move = site.sound.move;
+  // let _move = site.sound.move;
+  // let _move;
   let castling = "KQkq"
 
-  site.sound.move = function (x) {
-    if (x && x.fen) {
-      // window.lastFen = x.fen;
-      sideToMove = (x.ply % 2 === 0) ? "w" : "b"
+  const intervalId = setInterval(() => {
+    if (site?.sound?.move) {
+      const _move = site.sound.move;
 
-      if (sideToMove === "b" && (x.san === "O-O" || x.san === "O-O-O" || x.san.includes("K"))) {
-        castling = castling.replaceAll("KQ","")
-      }
-      if (sideToMove === "w" && (x.san === "O-O" || x.san === "O-O-O" || x.san.includes("K"))) {
-        castling = castling.replaceAll("kq","")
-      }
-      
-      if(castling === ""){
-        castling = "-"
-      }
+      site.sound.move = function (x) {
+        if (x && x.fen) {
+          // window.lastFen = x.fen;
+          sideToMove = (x.ply % 2 === 0) ? "w" : "b"
 
-      window.lastFEN = `${x.fen} ${sideToMove} ${castling} - 0 1`
-      // console.log(window.lastFEN)
+          if (sideToMove === "b" && (x.san === "O-O" || x.san === "O-O-O" || x.san.includes("K"))) {
+            castling = castling.replaceAll("KQ", "")
+          }
+          if (sideToMove === "w" && (x.san === "O-O" || x.san === "O-O-O" || x.san.includes("K"))) {
+            castling = castling.replaceAll("kq", "")
+          }
+
+          if (castling === "") {
+            castling = "-"
+          }
+
+          window.lastFEN = `${x.fen} ${sideToMove} ${castling} - 0 1`
+          // console.log(window.lastFEN)
+        }
+        return _move.call(this, x);
+      };
+
+      clearInterval(intervalId);
     }
-    return _move.call(this, x);
-  };
+    // console.log("In tha boucle")
+  }, 200);
+
+
 
   function getFen() {
     let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    if(window.lastFEN){
+    if (window.lastFEN) {
+      // console.log(window.lastFEN)
       return window.lastFEN
     }
     return fen;
