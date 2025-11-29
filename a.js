@@ -232,41 +232,37 @@ function extractFEN(boardElement) {
 
 if (window.location.hostname.includes("lichess.org")) {
   console.log("HEHEHE")
+
+  const _move = site.sound.move;
+  let castling = "KQkq"
+
+  site.sound.move = function (x) {
+    if (x && x.fen) {
+      // window.lastFen = x.fen;
+      sideToMove = (x.ply % 2 === 0) ? "w" : "b"
+
+      if (sideToMove === "b" && (x.san === "O-O" || x.san === "O-O-O" || x.san.includes("K"))) {
+        castling = castling.replaceAll("KQ","")
+      }
+      if (sideToMove === "w" && (x.san === "O-O" || x.san === "O-O-O" || x.san.includes("K"))) {
+        castling = castling.replaceAll("kq","")
+      }
+      
+      if(castling === ""){
+        castling = "-"
+      }
+
+      window.lastFEN = `${x.fen} ${sideToMove} ${castling} - 0 1`
+      console.log(window.lastFEN)
+    }
+    return _move.call(this, x);
+  };
+
   function getFen() {
     let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    // el = document.querySelectorAll("kwdb") // document.querySelectorAll("move")
-
-    let el = document.querySelectorAll("kwdb");
-
-    // console.clear()
-
-
-    if (el.length === 0) {
-      el = document.querySelectorAll("move");
-      let tempFEN = extractFEN(document.querySelector("cg-board"))
-      if (isStartPosition(tempFEN)) {
-        lastFEN = tempFEN
-        // console.log(lastFEN)
-        return tempFEN
-      }
+    if(window.lastFEN){
+      return window.lastFEN
     }
-
-    let moves = []; // move list
-    el.forEach((element) => {
-      // console.log(element.innerText)
-      if (element.innerText) {
-        moves.push(element.innerText.split("\n")[0]);
-      }
-    });
-    // [e2 , e4]
-
-
-    const game = new Chess(lastFEN);
-    moves.forEach((e) => game.move(e));
-
-    fen = game.fen();
-    //   console.log(fen)
-    // console.log(fen)
     return fen;
   }
 

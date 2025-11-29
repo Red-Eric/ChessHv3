@@ -193,7 +193,7 @@ function analyzeScores(moves) {
   }
 
   if (!accuraciesW.length || !accuraciesB.length) {
-    console.log("No enough data");
+    // console.log("No enough data");
     return;
   }
 
@@ -1165,7 +1165,7 @@ const startCheat = () => {
 
   if (window.location.hostname.includes("lichess")) {
     loadConfig2();
-    let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    let fen_ = "";
     let evalObj = null;
     let customEval = null;
 
@@ -1181,13 +1181,13 @@ const startCheat = () => {
           // Hikaru [Accuracy : 80%]
           users[0].innerText += " [Accuracy 100%]"
         } else {
-          users[0].innerText = `${users[0].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray).black_accuracy}%]`
+          users[0].innerText = `${users[0].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray)?.black_accuracy}%]`
         }
         if (users[1].innerText.split(" ").length === 1) {
           // Hikaru [Accuracy : 80%]
           users[1].innerText += " [Accuracy 100%]"
         } else {
-          users[1].innerText = `${users[1].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray).white_accuracy}%]`
+          users[1].innerText = `${users[1].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray)?.white_accuracy}%]`
         }
 
       }
@@ -1197,13 +1197,13 @@ const startCheat = () => {
           // Hikaru [Accuracy : 80%]
           users[0].innerText += " [Accuracy 100%]"
         } else {
-          users[0].innerText = `${users[0].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray).white_accuracy}%]`
+          users[0].innerText = `${users[0].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray)?.white_accuracy}%]`
         }
         if (users[1].innerText.split(" ").length === 1) {
           // Hikaru [Accuracy : 80%]
           users[1].innerText += " [Accuracy 100%]"
         } else {
-          users[1].innerText = `${users[1].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray).black_accuracy}%]`
+          users[1].innerText = `${users[1].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray)?.black_accuracy}%]`
         }
 
       }
@@ -1316,7 +1316,7 @@ const startCheat = () => {
 
         // console.log(scoreArray)
 
-        displayAccuracy(color)
+        // displayAccuracy(color)
 
 
         let percent = 50;
@@ -1600,7 +1600,6 @@ const startCheat = () => {
       if (fen_ === "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
         scoreArray = []
       }
-
       if (!customEval && config.showEval) {
         const boardContainer = document.querySelector("cg-container");
         if (boardContainer) {
@@ -1608,6 +1607,8 @@ const startCheat = () => {
           customEval = document.querySelector("#customEval");
         }
       }
+
+      displayAccuracy(getSide())
 
       requestFen();
     }, interval);
