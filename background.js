@@ -167,3 +167,48 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendFENToServer(message.data);
   }
 });
+
+
+// function simulateClick(tabId, x, y) {
+//   chrome.debugger.sendCommand(
+//     {tabId},
+//     "Input.dispatchMouseEvent",
+//     {
+//       type: "mousePressed",
+//       x: x,
+//       y: y,
+//       button: "left",
+//       clickCount: 1
+//     },
+//     () => {
+//       chrome.debugger.sendCommand(
+//         {tabId},
+//         "Input.dispatchMouseEvent",
+//         {
+//           type: "mouseReleased",
+//           x: x,
+//           y: y,
+//           button: "left",
+//           clickCount: 1
+//         }
+//       );
+//     }
+//   );
+// }
+
+// chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+//   if (changeInfo.status !== "complete") return;
+
+//   if (tab.url && tab.url.startsWith("https://lichess.org")) {
+//     chrome.debugger.attach({ tabId }, "1.3", () => {
+//       if (chrome.runtime.lastError) {
+//         console.log("Attach error:", chrome.runtime.lastError.message);
+//         return;
+//       }
+
+//       console.log("Debugger attach -> lichess.org");
+//       console.log(tabId);
+//     });
+//   }
+// });
+

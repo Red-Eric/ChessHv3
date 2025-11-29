@@ -1165,7 +1165,7 @@ const startCheat = () => {
 
   if (window.location.hostname.includes("lichess")) {
     loadConfig2();
-    let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    let fen_ = "";
     let evalObj = null;
     let customEval = null;
 
@@ -1315,6 +1315,7 @@ const startCheat = () => {
           })
         }
 
+        // console.clear()
         // console.log(scoreArray)
 
         // displayAccuracy(color)
@@ -1403,6 +1404,7 @@ const startCheat = () => {
           file = "h".charCodeAt(0) - fileChar.charCodeAt(0);
           const y = rank * squareSize;
           const x = file * squareSize;
+          // console.log({x : x, y: y})
           return { x, y };
         }
       }
@@ -1410,6 +1412,11 @@ const startCheat = () => {
       function drawArrow(fromSquare, toSquare, color, score) {
         const from = squareToPosition(fromSquare);
         const to = squareToPosition(toSquare);
+        // console.log("from")
+        // console.log(from)
+        // console.log("to")
+        // console.log(to)
+
 
         const svg = document.createElementNS(
           "http://www.w3.org/2000/svg",
