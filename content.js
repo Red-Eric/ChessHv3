@@ -193,7 +193,7 @@ function analyzeScores(moves) {
   }
 
   if (!accuraciesW.length || !accuraciesB.length) {
-    console.log("No enough data");
+    // console.log("No enough data");
     return;
   }
 
@@ -1165,45 +1165,46 @@ const startCheat = () => {
 
   if (window.location.hostname.includes("lichess")) {
     loadConfig2();
-    let fen_ = "";
+    let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     let evalObj = null;
     let customEval = null;
 
 
     function displayAccuracy(side = "white") {
-      users = document.querySelectorAll("name")
+      // console.log("display")
+      users = document.querySelectorAll(".ruser")
       if (!users) return null;
       if (users.length !== 2) return null;
 
       if (side === "white") {
         // magnus carlsen
-        if (users[0].innerText.split(" ").length === 1) {
+        if (users[0].childNodes[1].innerText.split(" ").length === 1) {
           // Hikaru [Accuracy : 80%]
-          users[0].innerText += " [Accuracy 100%]"
+          users[0].childNodes[1].innerText += " [Accuracy 100%]"
         } else {
-          users[0].innerText = `${users[0].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray)?.black_accuracy}%]`
+          users[0].childNodes[1].innerText = `${users[0].childNodes[1].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray)?.black_accuracy}%]`
         }
-        if (users[1].innerText.split(" ").length === 1) {
+        if (users[1].childNodes[1].innerText.split(" ").length === 1) {
           // Hikaru [Accuracy : 80%]
-          users[1].innerText += " [Accuracy 100%]"
+          users[1].childNodes[1].innerText += " [Accuracy 100%]"
         } else {
-          users[1].innerText = `${users[1].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray)?.white_accuracy}%]`
+          users[1].childNodes[1].innerText = `${users[1].childNodes[1].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray)?.white_accuracy}%]`
         }
 
       }
       else // black
       {
-        if (users[0].innerText.split(" ").length === 1) {
+        if (users[0].childNodes[1].innerText.split(" ").length === 1) {
           // Hikaru [Accuracy : 80%]
-          users[0].innerText += " [Accuracy 100%]"
+          users[0].childNodes[1].innerText += " [Accuracy 100%]"
         } else {
-          users[0].innerText = `${users[0].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray)?.white_accuracy}%]`
+          users[0].childNodes[1].innerText = `${users[0].childNodes[1].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray)?.white_accuracy}%]`
         }
-        if (users[1].innerText.split(" ").length === 1) {
+        if (users[1].childNodes[1].innerText.split(" ").length === 1) {
           // Hikaru [Accuracy : 80%]
-          users[1].innerText += " [Accuracy 100%]"
+          users[1].childNodes[1].innerText += " [Accuracy 100%]"
         } else {
-          users[1].innerText = `${users[1].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray)?.black_accuracy}%]`
+          users[1].childNodes[1].innerText = `${users[1].childNodes[1].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray)?.black_accuracy}%]`
         }
 
       }

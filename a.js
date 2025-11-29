@@ -177,8 +177,27 @@ if (window.location.hostname.includes("lichess.org")) {
           if (sideToMove === "b" && (x.san === "O-O" || x.san === "O-O-O" || x.san.includes("K"))) {
             castling = castling.replaceAll("KQ", "")
           }
+          
+          if (sideToMove === "b" && x.uci.includes("a1")) {
+            castling = castling.replaceAll("Q", "")
+          }
+          if (sideToMove === "b" && x.uci.includes("h1")) {
+            castling = castling.replaceAll("K", "")
+          }
+
+
           if (sideToMove === "w" && (x.san === "O-O" || x.san === "O-O-O" || x.san.includes("K"))) {
             castling = castling.replaceAll("kq", "")
+          }
+
+
+
+
+          if (sideToMove === "w" && x.uci.includes("a8")) {
+            castling = castling.replaceAll("q", "")
+          }
+          if (sideToMove === "w" && x.uci.includes("h8")) {
+            castling = castling.replaceAll("k", "")
           }
 
           if (castling === "") {
