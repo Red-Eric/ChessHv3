@@ -55,80 +55,6 @@ if (window.location.hostname.includes("chess.com")) {
   })();
 }
 
-function isStartPosition(fen) {
-  if (typeof fen !== "string") return false;
-  const parts = fen.trim().split(/\s+/);
-  if (parts.length < 6) return false;
-
-  const board = parts[0];
-  const sideToMove = parts[1];
-  const castling = parts[2];
-  const enPassant = parts[3];
-  const halfmove = parts[4];
-  const fullmove = parts[5];
-
-  const rows = board.split("/");
-  if (rows.length !== 8) return false;
-
-  // rangées
-  const row8 = rows[0];  // pièces noires
-  const pawnBlack = rows[1]; // pions noirs
-  const pawnWhite = rows[6]; // pions blancs
-  const row1 = rows[7]; // pièces blanches
-
-  // 1) pions intacts
-  if (pawnBlack !== "pppppppp") return false;
-  if (pawnWhite !== "PPPPPPPP") return false;
-
-  // 2) pièces n'ont pas bougé (aucun pion dans rangée 1 et 8)
-  if (!isMajorsRow(row8, false)) return false;
-  if (!isMajorsRow(row1, true)) return false;
-
-  // 3) aucun pion avancé => rangées 3,4,5,6 doivent avoir 8 cases vides
-  if (![rows[2], rows[3], rows[4], rows[5]].every(r => r === "8")) return false;
-
-  // 4) joueur à jouer = blanc
-  if (sideToMove !== "w") return false;
-
-  // 5) aucun en passant valide au début
-  if (enPassant !== "-") return false;
-
-  // 6) compteur de demi-coups et numéro de coup
-  if (halfmove !== "0") return false;
-  if (fullmove !== "1") return false;
-
-  // 7) castling rights doivent exister si les pièces sont encore là
-  if (!/^-|[KQkq]+$/.test(castling)) return false;
-
-  // si Chess960, on doit vérifier cohérence roque (Roi entre les tours)
-  if (!isValidCastlingFor960(row1, row8, castling)) return false;
-
-  return true;
-}
-
-// vérifie la rangée de pièces majeures (pas de pions, 8 cases)
-function isMajorsRow(row, isWhite) {
-  let count = 0;
-  for (let c of row) count += /\d/.test(c) ? parseInt(c) : 1;
-  if (count !== 8) return false;
-  if (/[pP]/.test(row)) return false;
-  const allowed = isWhite ? /[KQRBN]/ : /[kqrbn]/;
-  for (let c of row) {
-    if (/[A-Za-z]/.test(c) && !allowed.test(c)) return false;
-  }
-  return true;
-}
-
-// vérifier cohérence roque en Chess960 (facultatif mais exact)
-function isValidCastlingFor960(row1, row8, castling) {
-  // pour simplifier, si castling = "-" on accepte (signifie pas de roque possible)
-  if (castling === "-") return true;
-  // si roi et tours existent, OK, les positions exactes seront vérifiées par ta logique ultérieure
-  return true;
-}
-
-
-
 let lastFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 
@@ -253,7 +179,7 @@ if (window.location.hostname.includes("lichess.org")) {
       }
 
       window.lastFEN = `${x.fen} ${sideToMove} ${castling} - 0 1`
-      console.log(window.lastFEN)
+      // console.log(window.lastFEN)
     }
     return _move.call(this, x);
   };
