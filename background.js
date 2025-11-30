@@ -178,7 +178,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 //       x: x,
 //       y: y,
 //       button: "left",
-//       clickCount: 1
+//       clickCount: 1   
 //     },
 //     () => {
 //       chrome.debugger.sendCommand(
