@@ -45,10 +45,9 @@
       "resources": [
         "a.js",
         "b.js",
-        "lib/stockfish.js",
         "lib/chess_min.js",
-        "lib/stockfish-17.1-lite-single-03e3232.js",
-        "lib/stockfish-17.1-lite-single-03e3232.wasm"
+        "lib/stockfish.js",
+        "lib/stockfish.wasm"
       ],
       "matches": [
         "<all_urls>"

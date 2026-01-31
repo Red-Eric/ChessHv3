@@ -1,16 +1,5 @@
 const default_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-// async function createWorker() {
-//   const url = chrome.runtime.getURL("lib/stockfish.js");
-
-//   const blob = new Blob([`importScripts("${url}");`], {
-//     type: "application/javascript",
-//   });
-//   const blobUrl = URL.createObjectURL(blob);
-
-//   return new Worker(blobUrl);
-// }
-
 let MoveKeyArray = [];
 
 function randomIntBetween(min, max) {
