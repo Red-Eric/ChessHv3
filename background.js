@@ -1,15 +1,15 @@
-// let currentConfig = null;
-// let currentConfig2 = null;
+let currentConfig = null;
+let currentConfig2 = null;
 
-// let popupTabs = [];
+let popupTabs = [];
 
-// function sendConfigToSite(type, config, urlPattern) {
-//   chrome.tabs.query({ url: urlPattern }, (tabs) => {
-//     for (let tab of tabs) {
-//       chrome.tabs.sendMessage(tab.id, { type, config });
-//     }
-//   });
-// }
+function sendConfigToSite(type, config, urlPattern) {
+  chrome.tabs.query({ url: urlPattern }, (tabs) => {
+    for (let tab of tabs) {
+      chrome.tabs.sendMessage(tab.id, { type, config });
+    }
+  });
+}
 
 (async () => {
   await chrome.offscreen.createDocument({
@@ -19,93 +19,93 @@
   });
 })();
 
-// chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-//   switch (message.type) {
-//     case "config":
-//       currentConfig = message.config;
-//       // console.log("Config Chess.com reçue :", currentConfig);
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  switch (message.type) {
+    case "config":
+      currentConfig = message.config;
+      // console.log("Config Chess.com reçue :", currentConfig);
 
-//       sendConfigToSite("config", currentConfig, "*://*.chess.com/*");
+      sendConfigToSite("config", currentConfig, "*://*.chess.com/*");
 
-//       for (let tabId of popupTabs) {
-//         chrome.tabs.sendMessage(tabId, { type: "config", config: currentConfig });
-//       }
-//       break;
+      for (let tabId of popupTabs) {
+        chrome.tabs.sendMessage(tabId, { type: "config", config: currentConfig });
+      }
+      break;
 
-//     case "config2":
-//       currentConfig2 = message.config;
-//       console.log("Config Lichess reçue :", currentConfig2);
+    case "config2":
+      currentConfig2 = message.config;
+      console.log("Config Lichess reçue :", currentConfig2);
 
-//       sendConfigToSite("config2", currentConfig2, "*://*.lichess.org/*");
-//       sendConfigToSite("config2", currentConfig2, "*://*.worldchess.com/*");
-//       sendConfigToSite("config2", currentConfig2, "*://worldchess.com/*");
-//       sendConfigToSite("config2", currentConfig2, "*://worldchess.com/game/*");
-//       sendConfigToSite("config2", currentConfig2, "*://*.worldchess.com/game/*");
+      sendConfigToSite("config2", currentConfig2, "*://*.lichess.org/*");
+      sendConfigToSite("config2", currentConfig2, "*://*.worldchess.com/*");
+      sendConfigToSite("config2", currentConfig2, "*://worldchess.com/*");
+      sendConfigToSite("config2", currentConfig2, "*://worldchess.com/game/*");
+      sendConfigToSite("config2", currentConfig2, "*://*.worldchess.com/game/*");
 
-//       for (let tabId of popupTabs) {
-//         chrome.tabs.sendMessage(tabId, { type: "config2", config: currentConfig2 });
-//       }
-//       break;
+      for (let tabId of popupTabs) {
+        chrome.tabs.sendMessage(tabId, { type: "config2", config: currentConfig2 });
+      }
+      break;
 
-//     case "FROM_CONTENT":
-//       for (let tabId of popupTabs) {
-//         chrome.tabs.sendMessage(tabId, { type: "TO_POPUP", data: message.data });
-//       }
-//       break;
+    case "FROM_CONTENT":
+      for (let tabId of popupTabs) {
+        chrome.tabs.sendMessage(tabId, { type: "TO_POPUP", data: message.data });
+      }
+      break;
 
-//     case "popupReady":
-//       if (sender.tab?.id) {
-//         if (!popupTabs.includes(sender.tab.id)) popupTabs.push(sender.tab.id);
+    case "popupReady":
+      if (sender.tab?.id) {
+        if (!popupTabs.includes(sender.tab.id)) popupTabs.push(sender.tab.id);
 
-//         if (currentConfig) {
-//           chrome.tabs.sendMessage(sender.tab.id, { type: "config", config: currentConfig });
-//         }
-//         if (currentConfig2) {
-//           chrome.tabs.sendMessage(sender.tab.id, { type: "config2", config: currentConfig2 });
-//         }
-//       }
-//       break;
-//   }
-// });
+        if (currentConfig) {
+          chrome.tabs.sendMessage(sender.tab.id, { type: "config", config: currentConfig });
+        }
+        if (currentConfig2) {
+          chrome.tabs.sendMessage(sender.tab.id, { type: "config2", config: currentConfig2 });
+        }
+      }
+      break;
+  }
+});
 
-// let popupWindowId = null;
+let popupWindowId = null;
 
-// chrome.action.onClicked.addListener(() => {
-//   if (popupWindowId) {
-//     chrome.windows.update(popupWindowId, { focused: true });
-//     return;
-//   }
+chrome.action.onClicked.addListener(() => {
+  if (popupWindowId) {
+    chrome.windows.update(popupWindowId, { focused: true });
+    return;
+  }
 
-//   chrome.windows.create(
-//     {
-//       url: "popup/index.html",
-//       type: "popup",
-//       state: "fullscreen",
-//     },
-//     (newWindow) => {
-//       popupWindowId = newWindow.id;
-//       console.log("Popup fullscreen créée", newWindow);
+  chrome.windows.create(
+    {
+      url: "popup/index.html",
+      type: "popup",
+      state: "fullscreen",
+    },
+    (newWindow) => {
+      popupWindowId = newWindow.id;
+      console.log("Popup fullscreen créée", newWindow);
 
-//       const tab = newWindow.tabs?.[0];
-//       if (tab?.id) {
-//         const tabId = tab.id;
-//         if (!popupTabs.includes(tabId)) popupTabs.push(tabId);
+      const tab = newWindow.tabs?.[0];
+      if (tab?.id) {
+        const tabId = tab.id;
+        if (!popupTabs.includes(tabId)) popupTabs.push(tabId);
 
-//         if (currentConfig)
-//           chrome.tabs.sendMessage(tabId, { type: "config", config: currentConfig });
-//         if (currentConfig2)
-//           chrome.tabs.sendMessage(tabId, { type: "config2", config: currentConfig2 });
-//       }
+        if (currentConfig)
+          chrome.tabs.sendMessage(tabId, { type: "config", config: currentConfig });
+        if (currentConfig2)
+          chrome.tabs.sendMessage(tabId, { type: "config2", config: currentConfig2 });
+      }
 
-//       chrome.windows.onRemoved.addListener((id) => {
-//         if (id === popupWindowId) {
-//           popupWindowId = null;
-//           popupTabs = [];
-//         }
-//       });
-//     }
-//   );
-// });
+      chrome.windows.onRemoved.addListener((id) => {
+        if (id === popupWindowId) {
+          popupWindowId = null;
+          popupTabs = [];
+        }
+      });
+    }
+  );
+});
 
 chrome.runtime.onMessage.addListener(async (msg, sender, sendResponse) => {
   if (msg.action) {

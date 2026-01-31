@@ -1,17 +1,15 @@
-const stockfish16 = "https://www.chess.com/r2/assets-chess-engine/Stockfish/stockfish-16.1-lite-single-e8222d1.js";
-const default_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+const default_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-async function createWorker() {
-  const url = chrome.runtime.getURL("lib/stockfish.js");
+// async function createWorker() {
+//   const url = chrome.runtime.getURL("lib/stockfish.js");
 
-  const blob = new Blob([`importScripts("${url}");`], {
-    type: "application/javascript",
-  });
-  const blobUrl = URL.createObjectURL(blob);
+//   const blob = new Blob([`importScripts("${url}");`], {
+//     type: "application/javascript",
+//   });
+//   const blobUrl = URL.createObjectURL(blob);
 
-  return new Worker(blobUrl);
-}
-
+//   return new Worker(blobUrl);
+// }
 
 let MoveKeyArray = [];
 
@@ -77,126 +75,12 @@ function loadConfig2() {
 }
 
 
-
-// stockfish 11
-class Engine {
-  constructor({ elo = 20, depth = 10, multipv = 5, threads = 2, hash = 128 }) {
-    this.elo = elo;
-    this.depth = depth;
-    this.multipv = multipv;
-    this.threads = threads;
-    this.hash = hash;
-    this.style = 0;
-    this.ready = this.init();
-  }
-
-  async init() {
-    this.worker = await createWorker();
-    this.worker.postMessage("uci");
-    this.setOptions();
-  }
-
-  setOptions() {
-    this.worker.postMessage(`setoption name Skill Level value ${this.elo}`);
-    this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
-    this.worker.postMessage("setoption name Ponder value false");
-  }
-
-  updateConfig({ elo, depth, multipv, threads, hash, style }) {
-    if (elo !== undefined) this.elo = elo;
-    if (depth !== undefined) this.depth = depth;
-    if (multipv !== undefined) this.multipv = multipv;
-    if (threads !== undefined) this.threads = threads;
-    if (hash !== undefined) this.hash = hash;
-    if (style !== undefined) this.style = style;
-    this.setOptions();
-  }
-
-  async getMoves(fen, side = "white") {
-    await this.ready;
-    const sideToMove = fen.split(" ")[1];
-
-    return new Promise((resolve) => {
-      const multipvResults = new Map();
-      this.worker.postMessage("uci");
-
-      const onMessage = (event) => {
-        const msg = event.data;
-        // console.log(msg);
-        if (typeof msg !== "string") return;
-
-        if (msg.includes(`info depth ${this.depth}`)) {
-          const multipvMatch = msg.match(/multipv (\d+)/);
-          const scoreMatch = msg.match(/score (cp|mate) (-?\d+)/);
-          const pvMatch = msg.match(/pv ([a-h][1-8][a-h][1-8][qrbn]?)/);
-
-          if (multipvMatch && scoreMatch && pvMatch) {
-            const multipv = parseInt(multipvMatch[1], 10);
-            const scoreType = scoreMatch[1];
-            let scoreValueRaw = parseInt(scoreMatch[2], 10);
-
-            if (sideToMove === "b") {
-              scoreValueRaw = -scoreValueRaw;
-            }
-
-            const bestMove = pvMatch[1]; // best Move
-            let score;
-            if (scoreType === "cp") {
-              const value = +(scoreValueRaw / 100).toFixed(2);
-              score = value > 0 ? `+${value}` : `${value}`;
-            } else if (scoreType === "mate") {
-              score =
-                scoreValueRaw > 0
-                  ? `#${scoreValueRaw}`
-                  : `#-${Math.abs(scoreValueRaw)}`;
-            }
-
-            const from = bestMove.slice(0, 2);
-            const to = bestMove.slice(2, 4);
-
-            multipvResults.set(multipv, {
-              from,
-              to,
-              eval: score,
-              fen: fen,
-              side: side,
-            });
-          }
-        }
-
-        if (msg.startsWith("bestmove")) {
-          this.worker.removeEventListener("message", onMessage);
-          resolve(
-            Array.from(multipvResults.entries())
-              .sort(([a], [b]) => a - b)
-              .map(([_, val]) => val),
-          );
-        }
-      };
-
-      this.worker.addEventListener("message", onMessage);
-      this.worker.postMessage(`position fen ${fen}`);
-      this.worker.postMessage("stop");
-      this.worker.postMessage(`go depth ${this.depth}`);
-    });
-  }
-}
-
 const startCheat = () => {
-  
   if (window.location.hostname.includes("chess.com")) {
     loadConfig();
     let lastFEN = "Bomboclat";
     let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     let side_index = 1;
-
-    const engine = new Engine({
-      elo: config.skill,
-      depth: 10,
-      multipv: config.lines,
-      threads: 2,
-      hash: 128,
-    });
 
     let evalObj = null;
     let customEval = null;
@@ -348,37 +232,6 @@ const startCheat = () => {
       );
     }
 
-    // Key Input
-
-    window.onkeyup = (e) => {
-      if (MoveKeyArray.length > 0) {
-        if (e.key === "Shift") {
-          // play best Move By stockfish not other engine
-          requestMove(MoveKeyArray[0].from, MoveKeyArray[0].to, "q", true);
-        }
-        if (e.key === "1") {
-          // auto move
-          config.autoMove = !config.autoMove;
-          saveConfig();
-        }
-        if (e.key === "2") {
-          // show eval
-          config.showEval = !config.showEval;
-          saveConfig();
-        }
-        if (e.key === "3") {
-          // Hide Arrow
-          config.onlyShowEval = !config.onlyShowEval;
-          saveConfig();
-        }
-        if (e.key === "4") {
-          // Only winning Move
-          config.winningMove = !config.winningMove;
-          saveConfig();
-        }
-      }
-    };
-
     function highlightMovesOnBoard(moves, side) {
       // console.log(side);
       if (!Array.isArray(moves)) return;
@@ -526,44 +379,13 @@ const startCheat = () => {
       });
     }
 
-    function getOppElo() {
-      // ( 1920 )
-      let elo = document.querySelector(".cc-text-medium")?.innerText;
-      if (elo) {
-        return parseInt(elo.slice(1, -1));
-      } else {
-        return 3500;
-      }
-    }
-
     function getSide() {
       return side_index === 1 ? "white" : "black";
     }
 
     function checkAndSendMoves() {
       if (config.autoMove && document.querySelector("#board-single")) {
-        const continueBtn =
-          document.querySelector(
-            ".cc-button-component.cc-button-secondary.cc-button-medium.cc-bg-secondary.game-over-buttons-button",
-          ) ||
-          document.querySelector(
-            ".cc-button-component.cc-button-primary.cc-button-large.cc-bg-primary.cc-button-full",
-          ) ||
-          document.querySelector(
-            ".cc-button-component.cc-button-primary.cc-button-xx-large.cc-bg-primary.cc-button-full.game-over-arena-button-button",
-          ) ||
-          document.querySelector(
-            ".cc-button-component.cc-button-secondary.cc-button-medium.cc-bg-secondary",
-          ) ||
-          null;
-
-        if (continueBtn) {
-          setTimeout(() => {
-            continueBtn.click();
-          }, 2000);
-        } else {
-          // console.log("no next game")
-        }
+        // auto start game
       }
 
       requestFen();
@@ -579,51 +401,43 @@ const startCheat = () => {
       if (lastFEN !== fen_) {
         clearHighlightSquares();
         lastFEN = fen_;
-        _elo_ = getOppElo();
-
-        if (engine) {
-          engine.getMoves(fen_, getSide()).then((moves) => {
-            MoveKeyArray = moves;
-            // console.log("")
-            chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-
-            highlightMovesOnBoard(moves, getSide()[0]);
-
-            if (moves.length > 0 && evalObj) {
-              evalObj.update(moves[0].eval, getSide());
-            }
-            // stockfish go depth 10
-
-            if (
-              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-            ) {
-              if (config.autoMove) {
-                randMove = getRandomElement(moves);
-                requestMove(randMove.from, randMove.to);
-              }
-            }
-          });
-        }
+        chrome.runtime.sendMessage({
+          action: "ping",
+          fen: fen_,
+          side: getSide(),
+        });
       }
     }
 
     setInterval(checkAndSendMoves, interval);
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.config && message.type === "config" && engine) {
+      if (message.type === "returnContent") {
+        let moves = message.moves;
+        chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+        highlightMovesOnBoard(moves, getSide()[0]);
+        if (moves.length > 0 && evalObj) {
+          evalObj.update(moves[0].eval, getSide());
+        }
+
+        if (
+          (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+          (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+        ) {
+          if (config.autoMove) {
+            randMove = getRandomElement(moves);
+            requestMove(randMove.from, randMove.to);
+          }
+        }
+      }
+
+      if (message.config && message.type === "config") {
         // config = message.config;
         config = { ...config, ...message.config };
 
         // console.log("message from backgound js ", message);
         saveConfig();
         clearHighlightSquares();
-        engine.updateConfig({
-          elo: config.skill,
-          depth: config.depth,
-          multipv: config.lines,
-          style: config.style,
-        });
 
         if (!config.showEval && customEval) {
           customEval.remove();
@@ -638,62 +452,15 @@ const startCheat = () => {
             customEval = document.querySelector("#customEval");
           }
         }
-
-        if (!config.server) {
-          engine.getMoves(fen_, getSide()).then((moves) => {
-            MoveKeyArray = moves;
-            chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-            highlightMovesOnBoard(moves, getSide()[0]);
-
-            if (moves.length > 0 && evalObj) {
-              evalObj.update(moves[0].eval, getSide());
-            }
-
-            if (
-              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-            ) {
-              if (config.autoMove) {
-                randMove = getRandomElement(moves);
-                requestMove(randMove.from, randMove.to);
-              }
-            }
-          });
-        }
-      }
-
-      if (message.type === "komodo") {
-        if (config.server) {
-          highlightMovesOnBoard(message.data, getSide()[0]);
-          chrome.runtime.sendMessage({
-            type: "FROM_CONTENT",
-            data: message.data,
-          });
-          if (message.data.length > 0 && evalObj) {
-            evalObj.update(message.data[0].eval, getSide());
-          }
-          if (config.autoMove) {
-            requestMove(essage.data[0].from, essage.data[0].to);
-          }
-        }
       }
     });
   }
-
 
   if (window.location.hostname.includes("lichess")) {
     loadConfig2();
     let fen_ = "";
     let evalObj = null;
     let customEval = null;
-
-    const engine = new Engine({
-      elo: config.skill,
-      depth: 10,
-      multipv: config.lines,
-      threads: 2,
-      hash: 128,
-    });
 
     function createEvalBar(initialScore = "0.0", initialColor = "white") {
       const boardContainer = document.querySelector("cg-board");
@@ -1011,21 +778,11 @@ const startCheat = () => {
           if (event.data.fen !== fen_) {
             clearHighlightSquares();
             fen_ = event.data.fen;
-            // console.log(fen_);
-            // console.log(config);
-            if (!config.server) {
-              engine.getMoves(fen_, getSide()).then((moves) => {
-                chrome.runtime.sendMessage({
-                  type: "FROM_CONTENT",
-                  data: moves,
-                });
-                highlightMovesOnBoard(moves, getSide()[0]);
-
-                if (moves.length > 0 && evalObj) {
-                  evalObj.update(moves[0].eval, getSide());
-                }
-              });
-            }
+            chrome.runtime.sendMessage({
+              action: "ping",
+              fen: fen_,
+              side: getSide(),
+            });
           }
         }
       });
@@ -1046,18 +803,21 @@ const startCheat = () => {
     }, interval);
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      // console.log(message)
-      if (message.type === "config2" && engine) {
+      if (message.type === "returnContent") {
+        const moves = message.moves;
+        chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+        highlightMovesOnBoard(moves, getSide()[0]);
+
+        if (moves.length > 0 && evalObj) {
+          evalObj.update(moves[0].eval, getSide());
+        }
+      }
+
+      if (message.type === "config2") {
         config = message.config;
         // console.log(config)
         saveConfig2();
         clearHighlightSquares();
-        engine.updateConfig({
-          elo: config.skill,
-          depth: config.depth,
-          multipv: config.lines,
-          style: config.style,
-        });
 
         if (!config.showEval && customEval) {
           customEval.remove();
@@ -1071,19 +831,6 @@ const startCheat = () => {
             evalObj = createEvalBar("0.0", getSide());
             customEval = document.querySelector("#customEval");
           }
-        }
-
-        // Stream
-
-        if (!config.server) {
-          engine.getMoves(fen_, getSide()).then((moves) => {
-            chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-            highlightMovesOnBoard(moves, getSide()[0]);
-
-            if (moves.length > 0 && evalObj) {
-              evalObj.update(moves[0].eval, getSide());
-            }
-          });
         }
       }
 
@@ -1108,14 +855,6 @@ const startCheat = () => {
     let evalObj = null;
     let customEval = null;
     loadConfig2();
-
-    const engine = new Engine({
-      elo: config.skill,
-      depth: 10,
-      multipv: config.lines,
-      threads: 2,
-      hash: 128,
-    });
 
     function getFEN() {
       const pTags = document.querySelectorAll("p");
@@ -1444,35 +1183,32 @@ const startCheat = () => {
         // console.log(fen_)
         currentFen = fen_;
         clearHighlightSquares();
+        chrome.runtime.sendMessage({
+          action: "ping",
+          fen: fen_,
+          side: getSide(),
+        });
 
-        if (!config.server) {
-          engine.getMoves(fen_, getSide()).then((moves) => {
-            chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-            highlightMovesOnBoard(moves, getSide()[0]);
-
-            if (moves.length > 0 && evalObj) {
-              evalObj.update(moves[0].eval, getSide());
-            }
-          });
-        }
       }
     }, interval);
 
     // PArametre chessARENA
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      console.log(message);
-      if (message.type === "config2" && engine) {
+      if (message.type === "returnContent") {
+        const moves = message.moves;
+        chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+        highlightMovesOnBoard(moves, getSide()[0]);
+
+        if (moves.length > 0 && evalObj) {
+          evalObj.update(moves[0].eval, getSide());
+        }
+      }
+      if (message.type === "config2") {
         config = message.config;
         // console.log(config)
         saveConfig2();
         clearHighlightSquares();
-        engine.updateConfig({
-          elo: config.skill,
-          depth: config.depth,
-          multipv: config.lines,
-          style: config.style,
-        });
 
         if (!config.showEval && customEval) {
           customEval.remove();
@@ -1487,40 +1223,12 @@ const startCheat = () => {
             customEval = document.querySelector("#customEval");
           }
         }
-
-        // Stream
-
-        if (!config.server) {
-          engine.getMoves(fen_, getSide()).then((moves) => {
-            chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-            highlightMovesOnBoard(moves, getSide()[0]);
-
-            if (moves.length > 0 && evalObj) {
-              evalObj.update(moves[0].eval, getSide());
-            }
-          });
-        }
-      }
-
-      if (message.type === "komodo") {
-        if (config.server) {
-          highlightMovesOnBoard(message.data, getSide()[0]);
-          chrome.runtime.sendMessage({
-            type: "FROM_CONTENT",
-            data: message.data,
-          });
-          if (message.data.length > 0 && evalObj) {
-            evalObj.update(message.data[0].eval, getSide());
-          }
-        }
       }
     });
   }
 };
 
 startCheat();
-
-
 
 /*
 
@@ -1531,7 +1239,6 @@ setInterval(() => {
     side : "white" 
 });
 
-}, 1000);
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse)=>{
   if(message.type === "returnContent"){
