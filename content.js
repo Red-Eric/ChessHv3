@@ -16,41 +16,6 @@ async function createWorker() {
 }
 
 
-let book = [];
-
-fetch(chrome.runtime.getURL("book.json"))
-  .then((response) => response.json())
-  .then((data) => {
-    book = data;
-    // console.log("Book loaded:", book.length);
-  })
-  .catch((err) => console.error("Erreur lors du chargement du book:", err));
-
-// Book move
-
-function getMoveFromBook(fen) {
-  let cleanFen = fen.replace(/\(.*?\)/g, "").trim();
-  const parts = cleanFen.split(" ");
-  const fenKey = parts.slice(0, 3).join(" ");
-
-  // Filtrer les coups correspondants
-  const moves = book.filter((entry) => {
-    const entryClean = entry.fen.replace(/\(.*?\)/g, "").trim();
-    const entryKey = entryClean.split(" ").slice(0, 3).join(" ");
-    return entryKey === fenKey;
-  });
-
-  if (moves.length === 0) return null;
-
-  // Prendre celui avec le plus grand sequence
-  const bestMove = moves.reduce(
-    (max, move) => (move.sequence > max.sequence ? move : max),
-    moves[0]
-  );
-
-  return { from: bestMove.from, to: bestMove.to };
-}
-
 let MoveKeyArray = [];
 
 function randomIntBetween(min, max) {
@@ -114,107 +79,6 @@ function loadConfig2() {
     config = { ...config, ...JSON.parse(saved) };
   }
 }
-
-
-// lichess accuracy calculator
-
-function analyzeScores(moves) {
-
-  // console.log(moves)
-
-  // ==== Fonctions ====
-  function winning_chances_percent(cp) {
-    const multiplier = -0.00368208;
-    const chances = 2 / (1 + Math.exp(multiplier * cp)) - 1;
-    return 50 + 50 * Math.max(Math.min(chances, 1), -1);
-  }
-
-  function move_accuracy_percent(before, after) {
-    if (after >= before) return 100;
-    const diff = before - after;
-    const raw = 103.1668100711649 * Math.exp(-0.04354415386753951 * diff) - 3.166924740191411;
-    return Math.max(Math.min(raw + 1, 100), 0);
-  }
-
-  function harmonic_mean(values) {
-    const n = values.length;
-    if (!n) return 0;
-    const s = values.reduce((a, x) => (x ? a + 1 / x : a), 0);
-    return s ? n / s : 0;
-  }
-
-  function std_dev(arr) {
-    if (!arr.length) return 0.5;
-    const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
-    const variance = arr.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / arr.length;
-    return Math.sqrt(variance);
-  }
-
-  function volatility_weighted_mean(acc, win, isWhite) {
-    let weights = [];
-    for (let i = 0; i < acc.length; i++) {
-      const base = isWhite ? i * 2 + 1 : i * 2 + 2;
-      const s = Math.max(base - 2, 0);
-      const e = Math.min(base + 2, win.length - 1);
-      const sub = win.slice(s, e + 1);
-      const w = Math.max(Math.min(std_dev(sub), 12), 0.5);
-      weights.push(w);
-    }
-    const ws = weights.reduce((sum, w, i) => sum + w * acc[i], 0);
-    const tw = weights.reduce((a, b) => a + b, 0);
-    return tw ? ws / tw : 0;
-  }
-
-  // ==== Calcul principal ====
-  let accuraciesW = [], accuraciesB = [];
-  let cpLossW = 0, cpLossB = 0;
-  let prev = 17;  // valeur initiale utilisée dans ton Python
-  let winChances = [winning_chances_percent(prev)];
-
-  for (let mv of moves) {
-    const score = mv.score;
-    const after = winning_chances_percent(score);
-    winChances.push(after);
-
-    // si c’est le tour blanc, les chances noires = 100-% blanc
-    let beforeEval = mv.side === "w" ? (100 - winning_chances_percent(prev)) : winning_chances_percent(prev);
-    let afterEval = mv.side === "w" ? (100 - after) : after;
-
-    let acc = move_accuracy_percent(beforeEval, afterEval);
-
-    if (mv.side === "b") {
-      cpLossW += score > prev ? score - prev : 0;
-      accuraciesW.push(acc);
-    } else {
-      cpLossB += score < prev ? prev - score : 0;
-      accuraciesB.push(acc);
-    }
-    prev = score;
-  }
-
-  if (!accuraciesW.length || !accuraciesB.length) {
-    // console.log("No enough data");
-    return;
-  }
-
-  const hW = harmonic_mean(accuraciesW);
-  const hB = harmonic_mean(accuraciesB);
-  const wW = volatility_weighted_mean(accuraciesW, winChances, true);
-  const wB = volatility_weighted_mean(accuraciesB, winChances, false);
-
-  const accW = (hW + wW) / 2;
-  const accB = (hB + wB) / 2;
-
-  // console.log("White % :", Math.round(accW));
-  // console.log("Black % :", Math.round(accB));
-
-  return {
-    white_accuracy: Math.round(accW),
-    black_accuracy: Math.round(accB)
-  }
-}
-
-
 
 // stockfish 11
 class Engine {
@@ -345,124 +209,8 @@ class Engine {
   }
 }
 
-// Wukong 1780
-class Wukong {
-  constructor() {
-    this.ready = this.init();
-  }
-
-  async init() {
-    await this.createWorker();
-  }
-
-  async createWorker() {
-    if (this.worker) this.worker.terminate();
-    const url = chrome.runtime.getURL("lib/wukong.js");
-    const blob = new Blob([`importScripts("${url}");`], {
-      type: "application/javascript",
-    });
-    const blobUrl = URL.createObjectURL(blob);
-    this.worker = new Worker(blobUrl);
-    URL.revokeObjectURL(blobUrl);
-  }
-
-  stop() {
-    if (this.worker) this.worker.terminate();
-  }
-
-  async getMove(fen, depth) {
-    await this.ready;
-    await this.createWorker();
-
-    return new Promise((resolve) => {
-      const onMessage = (e) => {
-        const { type, text } = e.data;
-        if (type === "log" && text.startsWith("Best move:")) {
-          this.worker.removeEventListener("message", onMessage);
-          resolve([{ from: text.slice(11, 13), to: text.slice(13, 15) }]);
-        }
-      };
-
-      this.worker.addEventListener("message", onMessage);
-      this.worker.postMessage({ command: `position fen ${fen}` });
-      this.worker.postMessage({ command: `go depth ${depth}` });
-    });
-  }
-}
-
-// Lozza 8
-class Lozza {
-  constructor() {
-    this.ready = this.init();
-  }
-
-  async init() {
-    await this.createWorker();
-  }
-
-  async createWorker() {
-    if (this.worker) this.worker.terminate();
-    const url = chrome.runtime.getURL("lib/lozza.js");
-    const blob = new Blob([`importScripts("${url}");`], {
-      type: "application/javascript",
-    });
-    const blobUrl = URL.createObjectURL(blob);
-    this.worker = new Worker(blobUrl);
-    URL.revokeObjectURL(blobUrl);
-  }
-
-  stop() {
-    if (this.worker) this.worker.terminate();
-  }
-
-  async getMove(fen, depth) {
-    await this.ready;
-    await this.createWorker();
-
-    return new Promise((resolve) => {
-      const onMessage = (e) => {
-        const msg = e.data;
-        if (
-          typeof msg === "string" &&
-          msg.toLowerCase().startsWith("bestmove")
-        ) {
-          this.worker.removeEventListener("message", onMessage);
-          const moveParts = msg.split(" ")[1];
-          resolve([{ from: moveParts.slice(0, 2), to: moveParts.slice(2, 4) }]);
-        }
-      };
-
-      this.worker.addEventListener("message", onMessage);
-      this.worker.postMessage(`position fen ${fen}`);
-      this.worker.postMessage(`go depth ${depth}`);
-    });
-  }
-}
-
-let scoreArray = []
-let lastURL = "chesshv3"
-
-
-
-
-let currentEngine = null;
-
-function createEngineByName(name) {
-  if (currentEngine?.stop) currentEngine.stop();  // si Wukong/Lozza
-  if (currentEngine?.worker) currentEngine.worker.terminate(); // si Stockfish
-
-  if (name === "stockfish") return new Engine({ ...config });
-  if (name === "wukong") return new Wukong();
-  if (name === "lozza") return new Lozza();
-
-  return null;
-}
-
-
 
 const startCheat = () => {
-  // console.log("start")
-
   /*
   
         _                                        
@@ -485,9 +233,6 @@ const startCheat = () => {
       threads: 2,
       hash: 128,
     });
-    const wukongEngine = new Wukong();
-    const lozzaEngine = new Lozza();
-
 
     let evalObj = null;
     let customEval = null;
@@ -563,34 +308,7 @@ const startCheat = () => {
 
       function update(scoreStr, color = "white") {
         let { score, mate } = parseScore(scoreStr);
-        // fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-        // console.log(score)
-        // console.log(mate)
-        // console.log(fen_)
-
-        if (mate) {
-
-          if (score < 0) {
-            scoreArray.push({
-              score: -1000,
-              side: fen_.split(" ")[1]
-            })
-          } else {
-            scoreArray.push({
-              score: +1000,
-              side: fen_.split(" ")[1]
-            })
-          }
-
-        } else {
-          scoreArray.push({
-            score: score * 100,
-            side: fen_.split(" ")[1]
-          })
-        }
-        // console.clear()
-        // console.log(scoreArray)
-
+        
         let percent = 50;
 
         if (mate) {
@@ -647,13 +365,7 @@ const startCheat = () => {
         }
       });
     }
-
-    // function clearHighlightSquares() {
-    //   document.querySelectorAll(".customH").forEach((el) => el.remove());
-    // }
-
     inject();
-    
 
     function requestFen() {
 
@@ -664,8 +376,6 @@ const startCheat = () => {
       key
         ? (moveDelay = randomIntBetween(100, 101))
         : (moveDelay = randomIntBetween(100, config.delay));
-      // console.log("request MOVE ");
-      // console.log(moveDelay);
       window.postMessage(
         {
           type: "MOVE",
@@ -856,11 +566,6 @@ const startCheat = () => {
         drawArrow(move.from, move.to, color, move.eval);
       });
 
-      const bookMove = getMoveFromBook(fen_);
-      if (bookMove) {
-        // {from : , to : }
-        drawArrow(bookMove.from, bookMove.to, "#000000", `book`);
-      }
     }
 
 
@@ -880,9 +585,7 @@ const startCheat = () => {
 
     function checkAndSendMoves() {
 
-      if (fen_ === "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
-        scoreArray = []
-      }
+      
 
       if (config.autoMove && document.querySelector("#board-single")) {
         const continueBtn =
@@ -927,30 +630,6 @@ const startCheat = () => {
 
 
         if (!config.server) {
-          if (config.engine === "wukong") {
-            wukongEngine.getMove(fen_, config.depth).then((moves) => {
-              highlightMovesOnBoard(moves, getSide()[0]);
-              if (config.autoMove) {
-                randMove = getRandomElement(moves);
-                requestMove(randMove.from, randMove.to);
-              }
-            });
-          }
-          if (config.engine === "lozza") {
-            lozzaEngine.getMove(fen_, config.depth).then((moves) => {
-              highlightMovesOnBoard(moves, getSide()[0]);
-              if (
-                (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-                (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-              ) {
-                if (config.autoMove) {
-                  randMove = getRandomElement(moves);
-                  requestMove(randMove.from, randMove.to);
-                }
-              }
-            });
-          }
-
           if (engine) {
             engine.getMoves(fen_, getSide()).then((moves) => {
               MoveKeyArray = moves;
@@ -1016,39 +695,7 @@ const startCheat = () => {
           }
         }
 
-        if (!config.server) {
-          if (config.engine === "wukong") {
-            wukongEngine.getMove(fen_, config.depth).then((moves) => {
-              highlightMovesOnBoard(moves, getSide()[0]);
-              if (
-                (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-                (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-              ) {
-                if (config.autoMove) {
-                  randMove = getRandomElement(moves);
-                  requestMove(randMove.from, randMove.to);
-                }
-              }
-            });
-          }
-          if (config.engine === "lozza") {
-            lozzaEngine.getMove(fen_, config.depth).then((moves) => {
-
-              highlightMovesOnBoard(moves, getSide()[0]);
-
-
-              if (
-                (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-                (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-              ) {
-                if (config.autoMove) {
-                  randMove = getRandomElement(moves);
-                  requestMove(randMove.from, randMove.to);
-                }
-              }
-            });
-          }
-
+        if (!config.server) { 
           engine.getMoves(fen_, getSide()).then((moves) => {
             MoveKeyArray = moves;
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
@@ -1118,8 +765,6 @@ const startCheat = () => {
       threads: 2,
       hash: 128,
     });
-    const wukongEngine = new Wukong();
-    const lozzaEngine = new Lozza();
 
     function createEvalBar(initialScore = "0.0", initialColor = "white") {
       const boardContainer = document.querySelector("cg-board");
@@ -1192,31 +837,6 @@ const startCheat = () => {
 
       function update(scoreStr, color = "white") {
         let { score, mate } = parseScore(scoreStr);
-
-        if (mate) {
-
-          if (score < 0) {
-            scoreArray.push({
-              score: -1000,
-              side: fen_.split(" ")[1]
-            })
-          } else {
-            scoreArray.push({
-              score: +1000,
-              side: fen_.split(" ")[1]
-            })
-          }
-
-        } else {
-          scoreArray.push({
-            score: score * 100,
-            side: fen_.split(" ")[1]
-          })
-        }
-
-  
-
-
         let percent = 50;
 
         if (mate) {
@@ -1274,7 +894,6 @@ const startCheat = () => {
 
       // Si onlyShowEval est activé, on n'affiche rien
       if (config.onlyShowEval) return;
-      const bookMove = getMoveFromBook(fen_);
 
       const parent = document.querySelector("cg-container");
       if (!parent) return;
@@ -1469,17 +1088,6 @@ const startCheat = () => {
             // console.log(fen_);
             // console.log(config);
             if (!config.server) {
-              if (config.engine === "wukong") {
-                wukongEngine.getMove(fen_, config.depth).then((moves) => {
-                  highlightMovesOnBoard(moves, getSide()[0]);
-                });
-              }
-              if (config.engine === "lozza") {
-                lozzaEngine.getMove(fen_, config.depth).then((moves) => {
-                  highlightMovesOnBoard(moves, getSide()[0]);
-                });
-              }
-
               engine.getMoves(fen_, getSide()).then((moves) => {
                 chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
                 if (config.engine === "stockfish") {
@@ -1498,10 +1106,6 @@ const startCheat = () => {
     inject();
 
     setInterval(() => {
-
-      if (fen_ === "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
-        scoreArray = []
-      }
       if (!customEval && config.showEval) {
         const boardContainer = document.querySelector("cg-container");
         if (boardContainer) {
@@ -1544,17 +1148,6 @@ const startCheat = () => {
         // Stream
 
         if (!config.server) {
-          if (config.engine === "wukong") {
-            wukongEngine.getMove(fen_, config.depth).then((moves) => {
-              highlightMovesOnBoard(moves, getSide()[0]);
-            });
-          }
-          if (config.engine === "lozza") {
-            lozzaEngine.getMove(fen_, config.depth).then((moves) => {
-              highlightMovesOnBoard(moves, getSide()[0]);
-            });
-          }
-
           engine.getMoves(fen_, getSide()).then((moves) => {
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
             if (config.engine === "stockfish") {
@@ -1603,10 +1196,6 @@ const startCheat = () => {
       threads: 2,
       hash: 128,
     });
-    const wukongEngine = new Wukong();
-    const lozzaEngine = new Lozza();
-
-
 
     function getFEN() {
       const pTags = document.querySelectorAll("p");
@@ -1882,28 +1471,6 @@ const startCheat = () => {
 
 
         let { score, mate } = parseScore(scoreStr);
-
-        if (mate) {
-
-          if (score < 0) {
-            scoreArray.push({
-              score: -1000,
-              side: fen_.split(" ")[1]
-            })
-          } else {
-            scoreArray.push({
-              score: +1000,
-              side: fen_.split(" ")[1]
-            })
-          }
-
-        } else {
-          scoreArray.push({
-            score: score * 100,
-            side: fen_.split(" ")[1]
-          })
-        }
-
         let percent = 50;
 
         if (mate) {
@@ -1947,10 +1514,6 @@ const startCheat = () => {
     }
 
     setInterval(() => {
-      if (fen_ === "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
-        scoreArray = []
-      }
-
       // eval bar
       if (!customEval && config.showEval) {
         const boardContainer = document.querySelector("cg-board");
@@ -1969,17 +1532,6 @@ const startCheat = () => {
         chrome.runtime.sendMessage({ type: "chess.com_fen", data: fen_ });
 
         if (!config.server) {
-          if (config.engine === "wukong") {
-            wukongEngine.getMove(fen_, config.depth).then((moves) => {
-              highlightMovesOnBoard(moves, getSide()[0]);
-            });
-          }
-          if (config.engine === "lozza") {
-            lozzaEngine.getMove(fen_, config.depth).then((moves) => {
-              highlightMovesOnBoard(moves, getSide()[0]);
-            });
-          }
-
           engine.getMoves(fen_, getSide()).then((moves) => {
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
             if (config.engine === "stockfish") {
@@ -2027,17 +1579,6 @@ const startCheat = () => {
         // Stream
 
         if (!config.server) {
-          if (config.engine === "wukong") {
-            wukongEngine.getMove(fen_, config.depth).then((moves) => {
-              highlightMovesOnBoard(moves, getSide()[0]);
-            });
-          }
-          if (config.engine === "lozza") {
-            lozzaEngine.getMove(fen_, config.depth).then((moves) => {
-              highlightMovesOnBoard(moves, getSide()[0]);
-            });
-          }
-
           engine.getMoves(fen_, getSide()).then((moves) => {
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
             if (config.engine === "stockfish") {
