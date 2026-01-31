@@ -11,6 +11,7 @@ async function createWorker() {
   return new Worker(blobUrl);
 }
 
+
 let MoveKeyArray = [];
 
 function randomIntBetween(min, max) {
@@ -204,15 +205,7 @@ class Engine {
 }
 
 const startCheat = () => {
-  /*
   
-        _                                        
-   ___| |__   ___  ___ ___   ___ ___  _ __ ___  
-  / __| '_ \ / _ \/ __/ __| / __/ _ \| '_ ` _ \ 
- | (__| | | |  __/\__ \__ \| (_| (_) | | | | | |
-  \___|_| |_|\___||___/___(_)___\___/|_| |_| |_|
-                                                 
-  */
   if (window.location.hostname.includes("chess.com")) {
     loadConfig();
     let lastFEN = "Bomboclat";
@@ -710,16 +703,6 @@ const startCheat = () => {
     });
   }
 
-  /*
-  
-  _     _      _                   
-  | |   (_) ___| |__   ___  ___ ___ 
-  | |   | |/ __| '_ \ / _ \/ __/ __|
-  | |___| | (__| | | |  __/\__ \__ \
-  |_____|_|\___|_| |_|\___||___/___/
-                                   
-  
-  */
 
   if (window.location.hostname.includes("lichess")) {
     loadConfig2();
@@ -1143,13 +1126,6 @@ const startCheat = () => {
     });
   }
 
-  /*
-              __ _ _ __ ___ _ __   __ _ 
-             / _` | '__/ _ \ '_ \ / _` |
-            | (_| | | |  __/ | | | (_| |
-            \__,_|_|  \___|_| |_|\__,_|
-  */
-
   if (window.location.hostname.includes("worldchess")) {
     let fen_ = "";
     let currentFen = "";
@@ -1568,3 +1544,4 @@ const startCheat = () => {
 };
 
 startCheat();
+

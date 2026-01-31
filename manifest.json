@@ -21,7 +21,8 @@
   "permissions": [
     "activeTab",
     "debugger",
-    "windows"
+    "windows",
+    "offscreen"
   ],
   "host_permissions": [
     "https://www.chess.com/*",
@@ -46,8 +47,8 @@
         "b.js",
         "lib/stockfish.js",
         "lib/chess_min.js",
-        "lib/sf171-7.js",
-        "lib/sf171-7.wasm"
+        "lib/stockfish-17.1-lite-single-03e3232.js",
+        "lib/stockfish-17.1-lite-single-03e3232.wasm"
       ],
       "matches": [
         "<all_urls>"

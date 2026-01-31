@@ -11,6 +11,15 @@ function sendConfigToSite(type, config, urlPattern) {
   });
 }
 
+
+(async () => {
+  await chrome.offscreen.createDocument({
+    url: "offscreen.html",
+    reasons: ["WORKERS"],
+    justification: "Test"
+  });
+})();
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   switch (message.type) {
     case "config":
@@ -139,4 +148,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendFENToServer(message.data);
   }
 });
+
+
 

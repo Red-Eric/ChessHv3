@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        let engine = new Worker("./stockfish-17.1-lite-51f59da.js")
+        engine.onmessage = (e)=>{
+            console.log(e.data)
+        }
+
+        engine.postMessage("uci")
+    </script>
+</body>
+</html>
