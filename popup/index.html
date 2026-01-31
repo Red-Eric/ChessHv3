@@ -18,30 +18,7 @@
       <div class="container">
         <h1>ChessHv3 - Chess.com</h1>
 
-        <div class="setting">
-          <span id="serverLabel"
-            >Server Side Engine (Komodo 3.3) PC 64bit only (OFF)</span
-          >
-          <span>Dont Work with Stream Mode</span>
-          <label class="switch">
-            <input type="checkbox" id="server" />
-            <span class="slider"></span>
-          </label>
-        </div>
         <div id="test">
-          <div class="setting">
-            <label for="engineSelect">Engine:</label>
-            <select id="engineSelect">
-              <option value="stockfish">Stockfish - 3000 elo</option>
-              <option value="wukong">Wukong - 1780 elo</option>
-              <option value="lozza">Lozza - 2400 elo</option>
-            </select>
-            <span
-              id="engineInfo"
-              style="margin-left: 6px; font-size: 13px; color: #666"
-            ></span>
-          </div>
-
           <div class="setting">
             <label for="lines">Arrows: <span id="linesValue">3</span></label>
             <input type="range" id="lines" min="1" max="5" value="3" step="1" />
@@ -61,7 +38,8 @@
 
           <div class="setting">
             <label for="delay"
-              >Auto Move Delay Limit: <span id="delayValue">100</span> ms</label
+              >Auto Move Delay Limit:
+              <span id="delayValue">100</span> ms</label
             >
             <input
               type="range"
@@ -71,15 +49,6 @@
               value="100"
               step="50"
             />
-          </div>
-
-          <div class="setting">
-            <label for="styleSelect">Style:</label>
-            <select id="styleSelect">
-              <option value="0">Normal</option>
-              <option value="1">Aggressive</option>
-              <option value="-1">Defensive</option>
-            </select>
           </div>
 
           <div class="setting">
@@ -105,6 +74,7 @@
               <span class="slider"></span>
             </label>
           </div>
+
           <div class="setting">
             <span id="onlyShowEvalLabel">Hide Arrows (OFF)</span>
             <label class="switch">
@@ -120,31 +90,7 @@
       <div class="container">
         <h1>ChessHv3 - Lichess & fide Arena</h1>
 
-        <div class="setting">
-          <span id="serverLabel2"
-            >Server Side Engine (Komodo 3.3) PC 64bit only (OFF)</span
-          >
-          <span>Dont Work with Stream Mode</span>
-          <label class="switch">
-            <input type="checkbox" id="server2" />
-            <span class="slider"></span>
-          </label>
-        </div>
-
         <div id="test2">
-          <div class="setting">
-            <label for="engineSelect2">Engine:</label>
-            <select id="engineSelect2">
-              <option value="stockfish">Stockfish - 3000 elo</option>
-              <option value="wukong">Wukong - 1780 elo</option>
-              <option value="lozza">Lozza - 2400 elo</option>
-            </select>
-            <span
-              id="engineInfo2"
-              style="margin-left: 6px; font-size: 13px; color: #666"
-            ></span>
-          </div>
-
           <div class="setting">
             <label for="lines2">Arrows: <span id="linesValue2">3</span></label>
             <input
@@ -167,15 +113,6 @@
               value="10"
               step="1"
             />
-          </div>
-
-          <div class="setting">
-            <label for="styleSelect2">Style:</label>
-            <select id="styleSelect2">
-              <option value="0">Normal</option>
-              <option value="1">Aggressive</option>
-              <option value="-1">Defensive</option>
-            </select>
           </div>
 
           <div class="setting">
@@ -205,7 +142,6 @@
       </div>
     </div>
 
-    <!-- Panel 3 -->
     <div class="panel" id="stream">
       <div id="board1" style="width: 600px"></div>
     </div>

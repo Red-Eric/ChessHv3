@@ -1,10 +1,9 @@
-const DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1"
-const DISCORD = "https://discord.com/invite/R9Fw4EZJQ2"
-let urlNow = ""
-
+const DEFAULT_FEN =
+  "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1";
+const DISCORD = "https://discord.com/invite/R9Fw4EZJQ2";
+let urlNow = "";
 
 async function createWorker() {
-
   const url = chrome.runtime.getURL("lib/stockfish.js");
 
   const blob = new Blob([`importScripts("${url}");`], {
@@ -14,7 +13,6 @@ async function createWorker() {
 
   return new Worker(blobUrl);
 }
-
 
 let MoveKeyArray = [];
 
@@ -67,7 +65,6 @@ function loadConfig() {
   if (saved) {
     // config = JSON.parse(saved);
     config = { ...config, ...JSON.parse(saved) };
-
   }
 }
 
@@ -118,13 +115,13 @@ class Engine {
       const maxError = Math.round((20 - this.skill) * 250);
       const probability = Math.min(
         Math.round((20 - this.skill) * 50 + 1),
-        1000
+        1000,
       );
       this.worker.postMessage(
-        `setoption name Skill Level Maximum Error value ${maxError}`
+        `setoption name Skill Level Maximum Error value ${maxError}`,
       );
       this.worker.postMessage(
-        `setoption name Skill Level Probability value ${probability}`
+        `setoption name Skill Level Probability value ${probability}`,
       );
     }
   }
@@ -196,7 +193,7 @@ class Engine {
           resolve(
             Array.from(multipvResults.entries())
               .sort(([a], [b]) => a - b)
-              .map(([_, val]) => val)
+              .map(([_, val]) => val),
           );
         }
       };
@@ -208,7 +205,6 @@ class Engine {
     });
   }
 }
-
 
 const startCheat = () => {
   /*
@@ -242,8 +238,6 @@ const startCheat = () => {
       let w_ = boardContainer.offsetWidth;
 
       if (!boardContainer) return console.error("Plateau non trouvé !");
-
-
 
       // Conteneur principal
       const evalContainer = document.createElement("div");
@@ -308,7 +302,7 @@ const startCheat = () => {
 
       function update(scoreStr, color = "white") {
         let { score, mate } = parseScore(scoreStr);
-        
+
         let percent = 50;
 
         if (mate) {
@@ -368,9 +362,7 @@ const startCheat = () => {
     inject();
 
     function requestFen() {
-
       window.postMessage({ type: "GET_FEN" }, "*");
-      
     }
     function requestMove(from, to, promotion = "q", key = false) {
       key
@@ -384,7 +376,7 @@ const startCheat = () => {
           promotion,
           moveDelay,
         },
-        "*"
+        "*",
       );
     }
 
@@ -399,23 +391,22 @@ const startCheat = () => {
         if (e.key === "1") {
           // auto move
           config.autoMove = !config.autoMove;
-          saveConfig()
+          saveConfig();
         }
         if (e.key === "2") {
           // show eval
           config.showEval = !config.showEval;
-          saveConfig()
-
+          saveConfig();
         }
         if (e.key === "3") {
           // Hide Arrow
           config.onlyShowEval = !config.onlyShowEval;
-          saveConfig()
+          saveConfig();
         }
         if (e.key === "4") {
           // Only winning Move
           config.winningMove = !config.winningMove;
-          saveConfig()
+          saveConfig();
         }
       }
     };
@@ -469,7 +460,7 @@ const startCheat = () => {
 
         const svg = document.createElementNS(
           "http://www.w3.org/2000/svg",
-          "svg"
+          "svg",
         );
         svg.setAttribute("class", "customH");
         svg.setAttribute("width", parent.offsetWidth);
@@ -483,11 +474,11 @@ const startCheat = () => {
 
         const defs = document.createElementNS(
           "http://www.w3.org/2000/svg",
-          "defs"
+          "defs",
         );
         const marker = document.createElementNS(
           "http://www.w3.org/2000/svg",
-          "marker"
+          "marker",
         );
         marker.setAttribute("id", `arrowhead-${color}`);
         marker.setAttribute("markerWidth", "3.5");
@@ -499,7 +490,7 @@ const startCheat = () => {
 
         const arrowPath = document.createElementNS(
           "http://www.w3.org/2000/svg",
-          "path"
+          "path",
         );
         arrowPath.setAttribute("d", "M0,0 L3.5,1.25 L0,2.5 Z");
         arrowPath.setAttribute("fill", color);
@@ -509,7 +500,7 @@ const startCheat = () => {
 
         const line = document.createElementNS(
           "http://www.w3.org/2000/svg",
-          "line"
+          "line",
         );
         line.setAttribute("x1", from.x + squareSize / 2);
         line.setAttribute("y1", from.y + squareSize / 2);
@@ -524,7 +515,7 @@ const startCheat = () => {
         if (score !== undefined) {
           const text = document.createElementNS(
             "http://www.w3.org/2000/svg",
-            "text"
+            "text",
           );
           text.setAttribute("x", to.x + squareSize - 4);
           text.setAttribute("y", to.y + 12);
@@ -565,9 +556,7 @@ const startCheat = () => {
         const color = colors[index] || "red";
         drawArrow(move.from, move.to, color, move.eval);
       });
-
     }
-
 
     function getOppElo() {
       // ( 1920 )
@@ -584,22 +573,19 @@ const startCheat = () => {
     }
 
     function checkAndSendMoves() {
-
-      
-
       if (config.autoMove && document.querySelector("#board-single")) {
         const continueBtn =
           document.querySelector(
-            ".cc-button-component.cc-button-secondary.cc-button-medium.cc-bg-secondary.game-over-buttons-button"
+            ".cc-button-component.cc-button-secondary.cc-button-medium.cc-bg-secondary.game-over-buttons-button",
           ) ||
           document.querySelector(
-            ".cc-button-component.cc-button-primary.cc-button-large.cc-bg-primary.cc-button-full"
+            ".cc-button-component.cc-button-primary.cc-button-large.cc-bg-primary.cc-button-full",
           ) ||
           document.querySelector(
-            ".cc-button-component.cc-button-primary.cc-button-xx-large.cc-bg-primary.cc-button-full.game-over-arena-button-button"
+            ".cc-button-component.cc-button-primary.cc-button-xx-large.cc-bg-primary.cc-button-full.game-over-arena-button-button",
           ) ||
           document.querySelector(
-            ".cc-button-component.cc-button-secondary.cc-button-medium.cc-bg-secondary"
+            ".cc-button-component.cc-button-secondary.cc-button-medium.cc-bg-secondary",
           ) ||
           null;
 
@@ -628,41 +614,32 @@ const startCheat = () => {
         chrome.runtime.sendMessage({ type: "chess.com_fen", data: fen_ });
         _elo_ = getOppElo();
 
+        if (engine) {
+          engine.getMoves(fen_, getSide()).then((moves) => {
+            MoveKeyArray = moves;
+            // console.log("")
+            chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
 
-        if (!config.server) {
-          if (engine) {
-            engine.getMoves(fen_, getSide()).then((moves) => {
-              MoveKeyArray = moves;
-              // console.log("")
-              chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-              if (config.engine === "stockfish") {
-                highlightMovesOnBoard(moves, getSide()[0]);
-              }
+            highlightMovesOnBoard(moves, getSide()[0]);
 
-              if (moves.length > 0 && evalObj) {
-                evalObj.update(moves[0].eval, getSide());
+            if (moves.length > 0 && evalObj) {
+              evalObj.update(moves[0].eval, getSide());
+            }
+            // stockfish go depth 10
+
+            if (
+              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+            ) {
+              if (config.autoMove) {
+                randMove = getRandomElement(moves);
+                requestMove(randMove.from, randMove.to);
               }
-              // stockfish go depth 10
-              if (config.engine === "stockfish") {
-                if (
-                  (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-                  (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-                ) {
-                  if (config.autoMove) {
-                    randMove = getRandomElement(moves);
-                    requestMove(randMove.from, randMove.to);
-                  }
-                }
-              }
-            });
-          }
+            }
+          });
         }
-
-
       }
-
     }
-
 
     setInterval(checkAndSendMoves, interval);
 
@@ -695,40 +672,36 @@ const startCheat = () => {
           }
         }
 
-        if (!config.server) { 
+        if (!config.server) {
           engine.getMoves(fen_, getSide()).then((moves) => {
             MoveKeyArray = moves;
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-            if (config.engine === "stockfish") {
+            highlightMovesOnBoard(moves, getSide()[0]);
 
-              highlightMovesOnBoard(moves, getSide()[0]);
-
-            }
             if (moves.length > 0 && evalObj) {
               evalObj.update(moves[0].eval, getSide());
             }
 
-            if (config.engine === "stockfish") {
-              if (
-                (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-                (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-              ) {
-                if (config.autoMove) {
-                  randMove = getRandomElement(moves);
-                  requestMove(randMove.from, randMove.to);
-                }
+            if (
+              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+            ) {
+              if (config.autoMove) {
+                randMove = getRandomElement(moves);
+                requestMove(randMove.from, randMove.to);
               }
             }
           });
         }
-
-
       }
 
       if (message.type === "komodo") {
         if (config.server) {
-          highlightMovesOnBoard(message.data, getSide()[0])
-          chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: message.data });
+          highlightMovesOnBoard(message.data, getSide()[0]);
+          chrome.runtime.sendMessage({
+            type: "FROM_CONTENT",
+            data: message.data,
+          });
           if (message.data.length > 0 && evalObj) {
             evalObj.update(message.data[0].eval, getSide());
           }
@@ -737,7 +710,6 @@ const startCheat = () => {
           }
         }
       }
-
     });
   }
 
@@ -932,10 +904,9 @@ const startCheat = () => {
         // console.log("to")
         // console.log(to)
 
-
         const svg = document.createElementNS(
           "http://www.w3.org/2000/svg",
-          "svg"
+          "svg",
         );
         svg.setAttribute("class", "customH");
         svg.setAttribute("width", parent.offsetWidth);
@@ -949,11 +920,11 @@ const startCheat = () => {
 
         const defs = document.createElementNS(
           "http://www.w3.org/2000/svg",
-          "defs"
+          "defs",
         );
         const marker = document.createElementNS(
           "http://www.w3.org/2000/svg",
-          "marker"
+          "marker",
         );
         marker.setAttribute("id", `arrowhead-${color}`);
         marker.setAttribute("markerWidth", "3.5");
@@ -965,7 +936,7 @@ const startCheat = () => {
 
         const arrowPath = document.createElementNS(
           "http://www.w3.org/2000/svg",
-          "path"
+          "path",
         );
         arrowPath.setAttribute("d", "M0,0 L3.5,1.25 L0,2.5 Z");
         arrowPath.setAttribute("fill", color);
@@ -975,7 +946,7 @@ const startCheat = () => {
 
         const line = document.createElementNS(
           "http://www.w3.org/2000/svg",
-          "line"
+          "line",
         );
         line.setAttribute("x1", from.x + squareSize / 2);
         line.setAttribute("y1", from.y + squareSize / 2);
@@ -990,7 +961,7 @@ const startCheat = () => {
         if (score !== undefined) {
           const text = document.createElementNS(
             "http://www.w3.org/2000/svg",
-            "text"
+            "text",
           );
           text.setAttribute("x", to.x + squareSize - 4);
           text.setAttribute("y", to.y + 12);
@@ -1059,8 +1030,7 @@ const startCheat = () => {
 
     function requestFen() {
       // console.log("request fen called");
-     window.postMessage({ type: "FEN" }, "*");
-      
+      window.postMessage({ type: "FEN" }, "*");
     }
 
     /////////////////////////////////////////////   calculation /////////////////////////////////////////////
@@ -1089,10 +1059,12 @@ const startCheat = () => {
             // console.log(config);
             if (!config.server) {
               engine.getMoves(fen_, getSide()).then((moves) => {
-                chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-                if (config.engine === "stockfish") {
-                  highlightMovesOnBoard(moves, getSide()[0]);
-                }
+                chrome.runtime.sendMessage({
+                  type: "FROM_CONTENT",
+                  data: moves,
+                });
+                highlightMovesOnBoard(moves, getSide()[0]);
+
                 if (moves.length > 0 && evalObj) {
                   evalObj.update(moves[0].eval, getSide());
                 }
@@ -1150,9 +1122,8 @@ const startCheat = () => {
         if (!config.server) {
           engine.getMoves(fen_, getSide()).then((moves) => {
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-            if (config.engine === "stockfish") {
-              highlightMovesOnBoard(moves, getSide()[0]);
-            }
+            highlightMovesOnBoard(moves, getSide()[0]);
+
             if (moves.length > 0 && evalObj) {
               evalObj.update(moves[0].eval, getSide());
             }
@@ -1162,8 +1133,11 @@ const startCheat = () => {
 
       if (message.type === "komodo") {
         if (config.server) {
-          highlightMovesOnBoard(message.data, getSide()[0])
-          chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: message.data });
+          highlightMovesOnBoard(message.data, getSide()[0]);
+          chrome.runtime.sendMessage({
+            type: "FROM_CONTENT",
+            data: message.data,
+          });
           if (message.data.length > 0 && evalObj) {
             evalObj.update(message.data[0].eval, getSide());
           }
@@ -1171,8 +1145,6 @@ const startCheat = () => {
       }
     });
   }
-
-
 
   /*
               __ _ _ __ ___ _ __   __ _ 
@@ -1182,12 +1154,11 @@ const startCheat = () => {
   */
 
   if (window.location.hostname.includes("worldchess")) {
-    let fen_ = ""
-    let currentFen = ""
+    let fen_ = "";
+    let currentFen = "";
     let evalObj = null;
     let customEval = null;
-    loadConfig2()
-
+    loadConfig2();
 
     const engine = new Engine({
       elo: config.skill,
@@ -1201,31 +1172,30 @@ const startCheat = () => {
       const pTags = document.querySelectorAll("p");
       const result = [];
 
-      const fenRegex = /^([rnbqkpRNBQKP1-8]+\/){7}[rnbqkpRNBQKP1-8]+\s[wb]\s(K?Q?k?q?-?)\s(-|[a-h][36])\s\d+\s\d+$/;
+      const fenRegex =
+        /^([rnbqkpRNBQKP1-8]+\/){7}[rnbqkpRNBQKP1-8]+\s[wb]\s(K?Q?k?q?-?)\s(-|[a-h][36])\s\d+\s\d+$/;
 
-      pTags.forEach(p => {
+      pTags.forEach((p) => {
         const text = p.textContent.trim();
         if (fenRegex.test(text)) {
           result.push(text);
         }
       });
-      
-      return result[0]
 
-      
-
+      return result[0];
     }
 
     function getSide() {
-      const cgBoard = document.querySelector("cg-board")
-      let side = "white"
+      const cgBoard = document.querySelector("cg-board");
+      let side = "white";
 
       if (cgBoard) {
-        const indicator = cgBoard.style.transform // "rotate(180)"
+        const indicator = cgBoard.style.transform; // "rotate(180)"
         if (indicator === "rotate(180deg)") {
-          side = "black"
-        } if (indicator === "rotate(0deg)") {
-          side = "white"
+          side = "black";
+        }
+        if (indicator === "rotate(0deg)") {
+          side = "white";
         }
       }
 
@@ -1234,7 +1204,7 @@ const startCheat = () => {
 
       // console.log(side)
 
-      return side
+      return side;
     }
 
     function highlightMovesOnBoard(moves, side) {
@@ -1282,15 +1252,13 @@ const startCheat = () => {
         }
       }
 
-
-
       function drawArrow(fromSquare, toSquare, color, score) {
         const from = squareToPosition(fromSquare);
         const to = squareToPosition(toSquare);
 
         const svg = document.createElementNS(
           "http://www.w3.org/2000/svg",
-          "svg"
+          "svg",
         );
         svg.setAttribute("class", "customH");
         svg.setAttribute("width", parent.offsetWidth);
@@ -1304,11 +1272,11 @@ const startCheat = () => {
 
         const defs = document.createElementNS(
           "http://www.w3.org/2000/svg",
-          "defs"
+          "defs",
         );
         const marker = document.createElementNS(
           "http://www.w3.org/2000/svg",
-          "marker"
+          "marker",
         );
         marker.setAttribute("id", `arrowhead-${color}`);
         marker.setAttribute("markerWidth", "3.5");
@@ -1320,7 +1288,7 @@ const startCheat = () => {
 
         const arrowPath = document.createElementNS(
           "http://www.w3.org/2000/svg",
-          "path"
+          "path",
         );
         arrowPath.setAttribute("d", "M0,0 L3.5,1.25 L0,2.5 Z");
         arrowPath.setAttribute("fill", color);
@@ -1330,7 +1298,7 @@ const startCheat = () => {
 
         const line = document.createElementNS(
           "http://www.w3.org/2000/svg",
-          "line"
+          "line",
         );
         line.setAttribute("x1", from.x + squareSize / 2);
         line.setAttribute("y1", from.y + squareSize / 2);
@@ -1345,7 +1313,7 @@ const startCheat = () => {
         if (score !== undefined) {
           const text = document.createElementNS(
             "http://www.w3.org/2000/svg",
-            "text"
+            "text",
           );
           text.setAttribute("x", to.x + squareSize - 4);
           text.setAttribute("y", to.y + 12);
@@ -1387,11 +1355,12 @@ const startCheat = () => {
         // drawArrow(move.from, move.to, color, move.eval);
         drawArrow(move.from, move.to, color, move.eval);
         if (side === "b") {
-          document.querySelectorAll(".customH").forEach((el) => el.style.transform = "rotate(180deg)");
+          document
+            .querySelectorAll(".customH")
+            .forEach((el) => (el.style.transform = "rotate(180deg)"));
         }
       });
     }
-
 
     // function clearHighlightSquares() {
     //   document.querySelectorAll(".customH").forEach((el) => el.remove());
@@ -1448,7 +1417,6 @@ const startCheat = () => {
       // boardContainer.parentNode.appendChild(evalContainer);
       boardContainer.parentNode.insertBefore(evalContainer, boardContainer);
 
-
       function parseScore(scoreStr) {
         if (!scoreStr) {
           return { score: 0, mate: false };
@@ -1468,8 +1436,6 @@ const startCheat = () => {
       }
 
       function update(scoreStr, color = "white") {
-
-
         let { score, mate } = parseScore(scoreStr);
         let percent = 50;
 
@@ -1524,32 +1490,30 @@ const startCheat = () => {
       }
 
       // Fen
-      fen_ = getFEN()
-      if (fen_ && (fen_ !== currentFen)) {
+      fen_ = getFEN();
+      if (fen_ && fen_ !== currentFen) {
         // console.log(fen_)
-        currentFen = fen_
-        clearHighlightSquares()
+        currentFen = fen_;
+        clearHighlightSquares();
         chrome.runtime.sendMessage({ type: "chess.com_fen", data: fen_ });
 
         if (!config.server) {
           engine.getMoves(fen_, getSide()).then((moves) => {
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-            if (config.engine === "stockfish") {
-              highlightMovesOnBoard(moves, getSide()[0]);
-            }
+            highlightMovesOnBoard(moves, getSide()[0]);
+
             if (moves.length > 0 && evalObj) {
               evalObj.update(moves[0].eval, getSide());
             }
           });
         }
-
       }
     }, interval);
 
     // PArametre chessARENA
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      console.log(message)
+      console.log(message);
       if (message.type === "config2" && engine) {
         config = message.config;
         // console.log(config)
@@ -1581,9 +1545,8 @@ const startCheat = () => {
         if (!config.server) {
           engine.getMoves(fen_, getSide()).then((moves) => {
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-            if (config.engine === "stockfish") {
-              highlightMovesOnBoard(moves, getSide()[0]);
-            }
+            highlightMovesOnBoard(moves, getSide()[0]);
+
             if (moves.length > 0 && evalObj) {
               evalObj.update(moves[0].eval, getSide());
             }
@@ -1593,16 +1556,17 @@ const startCheat = () => {
 
       if (message.type === "komodo") {
         if (config.server) {
-          highlightMovesOnBoard(message.data, getSide()[0])
-          chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: message.data });
+          highlightMovesOnBoard(message.data, getSide()[0]);
+          chrome.runtime.sendMessage({
+            type: "FROM_CONTENT",
+            data: message.data,
+          });
           if (message.data.length > 0 && evalObj) {
             evalObj.update(message.data[0].eval, getSide());
           }
         }
       }
-
     });
-
   }
 };
 

@@ -25,10 +25,14 @@ if (panelIndex !== 2) document.querySelector("#stream").style.display = "none";
 
 // ===== Chess.com Config =====
 let chessConfig = JSON.parse(localStorage.getItem("chessConfig")) || {
-  skill: 20, lines: 5, depth: 10, delay: 100,
-  autoMove: false, winningMove: false, showEval: false, onlyShowEval: false,
-  engine: "stockfish", style: 0,
-  server: false
+  skill: 20,
+  lines: 5,
+  depth: 10,
+  delay: 100,
+  autoMove: false,
+  winningMove: false,
+  showEval: false,
+  onlyShowEval: false
 };
 
 const savedConfig = localStorage.getItem("chessConfig");
@@ -36,10 +40,11 @@ if (savedConfig) {
   try {
     chessConfig = JSON.parse(savedConfig);
   } catch (e) {
-    console.error("Erreur lors du parsing de chessConfig dans le localStorage:", e);
+    console.error("Erreur parsing chessConfig:", e);
   }
 }
 
+// ===== DOM Elements Chess.com =====
 const lines = document.getElementById("lines");
 const depth = document.getElementById("depth");
 const delay = document.getElementById("delay");
@@ -47,75 +52,54 @@ const autoMove = document.getElementById("autoMove");
 const winningMove = document.getElementById("winningMove");
 const showEval = document.getElementById("showEval");
 const onlyShowEval = document.getElementById("onlyShowEval");
-const styleSelect = document.getElementById("styleSelect");
-const engineSelect = document.getElementById("engineSelect");
-const engineInfo = document.getElementById("engineInfo");
 
 const linesValue = document.getElementById("linesValue");
 const depthValue = document.getElementById("depthValue");
 const delayValue = document.getElementById("delayValue");
+
 const autoMoveLabel = document.getElementById("autoMoveLabel");
 const winningMoveLabel = document.getElementById("winningMoveLabel");
 const showEvalLabel = document.getElementById("showEvalLabel");
 const onlyShowEvalLabel = document.getElementById("onlyShowEvalLabel");
-const server = document.getElementById("server");
-const serverLabel = document.getElementById("serverLabel");
-
-
 
 function updateChessUI() {
   lines.value = chessConfig.lines;
   depth.value = chessConfig.depth;
   delay.value = chessConfig.delay;
+
   autoMove.checked = chessConfig.autoMove;
   winningMove.checked = chessConfig.winningMove;
   showEval.checked = chessConfig.showEval;
   onlyShowEval.checked = chessConfig.onlyShowEval;
-  styleSelect.value = chessConfig.style;
-  engineSelect.value = chessConfig.engine;
+
   linesValue.textContent = chessConfig.lines;
   depthValue.textContent = chessConfig.depth;
   delayValue.textContent = chessConfig.delay;
-  server.checked = chessConfig.server;
+
   autoMoveLabel.textContent = `Auto Move (${autoMove.checked ? "ON" : "OFF"})`;
   winningMoveLabel.textContent = `Only Show Winning Move (${winningMove.checked ? "ON" : "OFF"})`;
   showEvalLabel.textContent = `Show Eval Bar (${showEval.checked ? "ON" : "OFF"})`;
   onlyShowEvalLabel.textContent = `Hide Arrows (${onlyShowEval.checked ? "ON" : "OFF"})`;
-
-
-
-  // === MASQUER LES ELEMENTS SI PAS STOCKFISH ===
-  const hideIfNotStockfish = chessConfig.engine !== "stockfish";
-  // elo.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
-  lines.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
-  styleSelect.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
-  winningMove.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
-  winningMoveLabel.style.display = hideIfNotStockfish ? "none" : "inline";
-
-  const hideAll = chessConfig.server === true;
-
-  hideAll ? document.querySelector("#test").style.display = "none" : document.querySelector("#test").style.display = "block"
-
-  server.parentElement.style.display = "flex";
-  serverLabel.textContent = `Server Side Engine (Komodo 3.3) PC only (${server.checked ? "ON" : "OFF"})`;
-
-
 }
+
 updateChessUI();
 
 function saveChessConfig() {
   localStorage.setItem("chessConfig", JSON.stringify(chessConfig));
-  console.clear()
-  console.log(chessConfig)
+  console.clear();
+  console.log(chessConfig);
+
   if (typeof chrome !== "undefined" && chrome.runtime)
     chrome.runtime.sendMessage({ type: "config", config: chessConfig });
 }
 
-[lines, depth, delay].forEach(el => el.addEventListener("input", () => {
-  chessConfig[el.id] = parseInt(el.value);
-  updateChessUI();
-  saveChessConfig();
-}));
+[lines, depth, delay].forEach(el =>
+  el.addEventListener("input", () => {
+    chessConfig[el.id] = parseInt(el.value);
+    updateChessUI();
+    saveChessConfig();
+  })
+);
 
 [autoMove, winningMove, showEval, onlyShowEval].forEach(el =>
   el.addEventListener("change", () => {
@@ -125,132 +109,82 @@ function saveChessConfig() {
   })
 );
 
-styleSelect.addEventListener("change", () => {
-  chessConfig.style = parseInt(styleSelect.value);
-  saveChessConfig();
-});
-
-engineSelect.addEventListener("change", () => {
-  chessConfig.engine = engineSelect.value;
-  updateChessUI();
-  saveChessConfig();
-});
-server.addEventListener("change", () => {
-  chessConfig.server = server.checked;
-  updateChessUI();
-  saveChessConfig();
-});
-
-
 // ===== Lichess Config =====
 let lichessConfig = JSON.parse(localStorage.getItem("lichessConfig")) || {
-  skill: 20, lines: 5, depth: 10,
-  winningMove: false, showEval: false, onlyShowEval: false,
-  engine: "stockfish", style: 0,
-  server: false
+  skill: 20,
+  lines: 5,
+  depth: 10,
+  winningMove: false,
+  showEval: false,
+  onlyShowEval: false
 };
-
 
 const savedLichessConfig = localStorage.getItem("lichessConfig");
 if (savedLichessConfig) {
   try {
     lichessConfig = JSON.parse(savedLichessConfig);
   } catch (e) {
-    console.error("Erreur lors du parsing de lichessConfig dans le localStorage:", e);
+    console.error("Erreur parsing lichessConfig:", e);
   }
 }
 
-
 // ===== DOM Elements Lichess =====
-// const elo2 = document.getElementById("elo2");
 const lines2 = document.getElementById("lines2");
 const depth2 = document.getElementById("depth2");
 const winningMove2 = document.getElementById("winningMove2");
 const showEval2 = document.getElementById("showEval2");
 const onlyShowEval2 = document.getElementById("onlyShowEval2");
-const styleSelect2 = document.getElementById("styleSelect2");
-const engineSelect2 = document.getElementById("engineSelect2");
-const engineInfo2 = document.getElementById("engineInfo2");
 
-// const eloValue2 = document.getElementById("eloValue2");
 const linesValue2 = document.getElementById("linesValue2");
 const depthValue2 = document.getElementById("depthValue2");
+
 const winningMoveLabel2 = document.getElementById("winningMoveLabel2");
 const showEvalLabel2 = document.getElementById("showEvalLabel2");
 const onlyShowEvalLabel2 = document.getElementById("onlyShowEvalLabel2");
-const server2 = document.getElementById("server2");
-const serverLabel2 = document.getElementById("serverLabel2");
 
-// ===== Update Lichess UI =====
 function updateLichessUI() {
-  // elo2.value = lichessConfig.skill;
   lines2.value = lichessConfig.lines;
   depth2.value = lichessConfig.depth;
+
   winningMove2.checked = lichessConfig.winningMove;
   showEval2.checked = lichessConfig.showEval;
   onlyShowEval2.checked = lichessConfig.onlyShowEval;
-  styleSelect2.value = lichessConfig.style;
-  engineSelect2.value = lichessConfig.engine;
+
   linesValue2.textContent = lichessConfig.lines;
   depthValue2.textContent = lichessConfig.depth;
-  server2.checked = lichessConfig.server
+
   winningMoveLabel2.textContent = `Only Show Winning Move (${winningMove2.checked ? "ON" : "OFF"})`;
   showEvalLabel2.textContent = `Show Eval Bar (${showEval2.checked ? "ON" : "OFF"})`;
   onlyShowEvalLabel2.textContent = `Hide Arrows (${onlyShowEval2.checked ? "ON" : "OFF"})`;
-
-  const hideIfNotStockfish = lichessConfig.engine !== "stockfish";
-  lines2.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
-  styleSelect2.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
-  winningMove2.parentElement.style.display = hideIfNotStockfish ? "none" : "flex";
-  winningMoveLabel2.style.display = hideIfNotStockfish ? "none" : "inline";
-  const hideAll = lichessConfig.server === true;
-
-  hideAll ? document.querySelector("#test2").style.display = "none" : document.querySelector("#test2").style.display = "block"
-
-
-  server2.parentElement.style.display = "flex";
-  serverLabel2.textContent = `Server Side Engine (Komodo 3.3) PC only (${server2.checked ? "ON" : "OFF"})`;
-
 }
+
 updateLichessUI();
 
 function saveLichessConfig() {
   localStorage.setItem("lichessConfig", JSON.stringify(lichessConfig));
-  console.clear()
-  console.log(lichessConfig)
+  console.clear();
+  console.log(lichessConfig);
+
   if (typeof chrome !== "undefined" && chrome.runtime)
     chrome.runtime.sendMessage({ type: "config2", config: lichessConfig });
 }
 
-[lines2, depth2].forEach(el => el.addEventListener("input", () => {
-  lichessConfig[el.id.replace('2', '')] = parseInt(el.value);
-  updateLichessUI();
-  saveLichessConfig();
-}));
-
-[winningMove2, showEval2, onlyShowEval2].forEach(el =>
-  el.addEventListener("change", () => {
-    lichessConfig[el.id.replace('2', '')] = el.checked;
+[lines2, depth2].forEach(el =>
+  el.addEventListener("input", () => {
+    lichessConfig[el.id.replace("2", "")] = parseInt(el.value);
     updateLichessUI();
     saveLichessConfig();
   })
 );
 
-styleSelect2.addEventListener("change", () => {
-  lichessConfig.style = parseInt(styleSelect2.value);
-  saveLichessConfig();
-});
+[winningMove2, showEval2, onlyShowEval2].forEach(el =>
+  el.addEventListener("change", () => {
+    lichessConfig[el.id.replace("2", "")] = el.checked;
+    updateLichessUI();
+    saveLichessConfig();
+  })
+);
 
-engineSelect2.addEventListener("change", () => {
-  lichessConfig.engine = engineSelect2.value;
-  updateLichessUI();
-  saveLichessConfig();
-});
-server2.addEventListener("change", () => {
-  lichessConfig.server = server2.checked;
-  updateLichessUI();
-  saveLichessConfig();
-});
 
 
 // ===== Chessboard Panel =====
@@ -503,13 +437,6 @@ function highlightMovesOnBoard(moves, side, fen) {
   });
 }
 
-// "customEval";
-// board1
-// document.querySelector(".tab.active").innerText === "Stream"
-
-// var board1 = Chessboard("board1", "start");
-// board1.orientation("white");
-// var evalBar = createEvalBar();
 
 var board1 = null
 var evalBar = null
