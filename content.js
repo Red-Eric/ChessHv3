@@ -441,21 +441,9 @@ class Lozza {
 
 let scoreArray = []
 let lastURL = "chesshv3"
-let expired = true;
 
-chrome.runtime.sendMessage({ type: "checkExpiration" }, (response) => {
-  if (response?.expired) {
-    expired = true;
-    // console.log(expired);
-    alert(`If you have any problems Discord : ${DISCORD}`)
-    return;
-  }
 
-  expired = false;
-  startCheat();
-});
 
-//// CHEATTTTTTTTTTTTTTTTTTTTTTTT
 
 let currentEngine = null;
 
@@ -484,7 +472,7 @@ const startCheat = () => {
   \___|_| |_|\___||___/___(_)___\___/|_| |_| |_|
                                                  
   */
-  if (window.location.hostname.includes("chess.com") && !expired) {
+  if (window.location.hostname.includes("chess.com")) {
     loadConfig();
     let lastFEN = "Bomboclat";
     let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -503,46 +491,6 @@ const startCheat = () => {
 
     let evalObj = null;
     let customEval = null;
-
-    function displayAccuracy(side = "white") {
-      users = document.querySelectorAll(".cc-text-medium-bold.cc-user-username-component.cc-user-username-white")
-      if (!users) return null;
-      if (users.length !== 2) return null;
-
-      if (side === "white") {
-        // magnus carlsen
-        if (users[0].innerText.split(" ").length === 1) {
-          // Hikaru [Accuracy : 80%]
-          users[0].innerText += " [Accuracy 100%]"
-        } else {
-          users[0].innerText = `${users[0].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray).black_accuracy}%]`
-        }
-        if (users[1].innerText.split(" ").length === 1) {
-          // Hikaru [Accuracy : 80%]
-          users[1].innerText += " [Accuracy 100%]"
-        } else {
-          users[1].innerText = `${users[1].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray).white_accuracy}%]`
-        }
-
-      }
-      else // black
-      {
-        if (users[0].innerText.split(" ").length === 1) {
-          // Hikaru [Accuracy : 80%]
-          users[0].innerText += " [Accuracy 100%]"
-        } else {
-          users[0].innerText = `${users[0].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray).white_accuracy}%]`
-        }
-        if (users[1].innerText.split(" ").length === 1) {
-          // Hikaru [Accuracy : 80%]
-          users[1].innerText += " [Accuracy 100%]"
-        } else {
-          users[1].innerText = `${users[1].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray).black_accuracy}%]`
-        }
-
-      }
-
-    }
 
     function createEvalBar(initialScore = "0.0", initialColor = "white") {
       const boardContainer = document.querySelector(".board");
@@ -643,9 +591,6 @@ const startCheat = () => {
         // console.clear()
         // console.log(scoreArray)
 
-        displayAccuracy(color)
-
-
         let percent = 50;
 
         if (mate) {
@@ -707,16 +652,13 @@ const startCheat = () => {
     //   document.querySelectorAll(".customH").forEach((el) => el.remove());
     // }
 
-    if (!expired) {
-      inject();
-    }
+    inject();
+    
 
     function requestFen() {
-      // console.log("request fen called");
-      isExpired();
-      if (!expired) {
-        window.postMessage({ type: "GET_FEN" }, "*");
-      }
+
+      window.postMessage({ type: "GET_FEN" }, "*");
+      
     }
     function requestMove(from, to, promotion = "q", key = false) {
       key
@@ -1169,49 +1111,6 @@ const startCheat = () => {
     let evalObj = null;
     let customEval = null;
 
-
-    function displayAccuracy(side = "white") {
-      // console.log("display")
-      users = document.querySelectorAll(".ruser")
-      if (!users) return null;
-      if (users.length !== 2) return null;
-
-      if (side === "white") {
-        // magnus carlsen
-        if (users[0].childNodes[1].innerText.split(" ").length === 1) {
-          // Hikaru [Accuracy : 80%]
-          users[0].childNodes[1].innerText += " [Accuracy 100%]"
-        } else {
-          users[0].childNodes[1].innerText = `${users[0].childNodes[1].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray)?.black_accuracy}%]`
-        }
-        if (users[1].childNodes[1].innerText.split(" ").length === 1) {
-          // Hikaru [Accuracy : 80%]
-          users[1].childNodes[1].innerText += " [Accuracy 100%]"
-        } else {
-          users[1].childNodes[1].innerText = `${users[1].childNodes[1].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray)?.white_accuracy}%]`
-        }
-
-      }
-      else // black
-      {
-        if (users[0].childNodes[1].innerText.split(" ").length === 1) {
-          // Hikaru [Accuracy : 80%]
-          users[0].childNodes[1].innerText += " [Accuracy 100%]"
-        } else {
-          users[0].childNodes[1].innerText = `${users[0].childNodes[1].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray)?.white_accuracy}%]`
-        }
-        if (users[1].childNodes[1].innerText.split(" ").length === 1) {
-          // Hikaru [Accuracy : 80%]
-          users[1].childNodes[1].innerText += " [Accuracy 100%]"
-        } else {
-          users[1].childNodes[1].innerText = `${users[1].childNodes[1].innerText.split(" ")[0]} [Accuracy : ${analyzeScores(scoreArray)?.black_accuracy}%]`
-        }
-
-      }
-
-    }
-
-
     const engine = new Engine({
       elo: config.skill,
       depth: 10,
@@ -1315,10 +1214,7 @@ const startCheat = () => {
           })
         }
 
-        // console.clear()
-        // console.log(scoreArray)
-
-        // displayAccuracy(color)
+  
 
 
         let percent = 50;
@@ -1544,10 +1440,8 @@ const startCheat = () => {
 
     function requestFen() {
       // console.log("request fen called");
-      isExpired();
-      if (!expired) {
-        window.postMessage({ type: "FEN" }, "*");
-      }
+     window.postMessage({ type: "FEN" }, "*");
+      
     }
 
     /////////////////////////////////////////////   calculation /////////////////////////////////////////////
@@ -1615,8 +1509,6 @@ const startCheat = () => {
           customEval = document.querySelector("#customEval");
         }
       }
-
-      displayAccuracy(getSide())
 
       requestFen();
     }, interval);
@@ -1696,7 +1588,7 @@ const startCheat = () => {
             \__,_|_|  \___|_| |_|\__,_|
   */
 
-  if (window.location.hostname.includes("worldchess") && !expired) {
+  if (window.location.hostname.includes("worldchess")) {
     let fen_ = ""
     let currentFen = ""
     let evalObj = null;
@@ -1728,14 +1620,10 @@ const startCheat = () => {
           result.push(text);
         }
       });
+      
+      return result[0]
 
-      if (expired) {
-        return DEFAULT_FEN
-      }
-      else {
-        return result[0]
-
-      }
+      
 
     }
 
@@ -2062,7 +1950,6 @@ const startCheat = () => {
       if (fen_ === "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
         scoreArray = []
       }
-      isExpired()
 
       // eval bar
       if (!customEval && config.showEval) {
@@ -2178,9 +2065,4 @@ const startCheat = () => {
   }
 };
 
-function isExpired() {
-  const expirationDate = "2026-01-01";
-  const now = new Date();
-  const expire = new Date(expirationDate);
-  expired = now > expire;
-}
+startCheat();

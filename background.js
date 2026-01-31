@@ -1,16 +1,5 @@
 let currentConfig = null;
 let currentConfig2 = null;
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-// YYYY - MM -DD
-const expirationDate = "2026-01-01";
-const timeAPI =
-  "https://api.timezonedb.com/v2.1/list-time-zone?key=WPOK8LWQNYUI&format=json&country=FR";
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 
 let popupTabs = [];
 
@@ -51,24 +40,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
       break;
 
-    case "checkExpiration":
-      fetch(timeAPI)
-        .then((res) => {
-          if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
-          return res.json();
-        })
-        .then((data) => {
-          const timestamp = data?.zones?.[0]?.timestamp;
-          const serverDate = timestamp ? new Date(timestamp * 1000) : new Date();
-          const expiryDate = new Date(expirationDate);
-          sendResponse({ expired: serverDate >= expiryDate });
-        })
-        .catch((err) => {
-          console.error("Erreur API expiration :", err);
-          sendResponse({ expired: true });
-        });
-      return true;
-
+      
     case "FROM_CONTENT":
       for (let tabId of popupTabs) {
         chrome.tabs.sendMessage(tabId, { type: "TO_POPUP", data: message.data });
