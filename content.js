@@ -1,4 +1,5 @@
 const stockfish16 = "https://www.chess.com/r2/assets-chess-engine/Stockfish/stockfish-16.1-lite-single-e8222d1.js";
+const default_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 async function createWorker() {
   const url = chrome.runtime.getURL("lib/stockfish.js");
@@ -1519,3 +1520,21 @@ const startCheat = () => {
 
 startCheat();
 
+
+
+/*
+
+setInterval(() => {
+  chrome.runtime.sendMessage({ 
+    action: "ping", 
+    fen: default_fen,
+    side : "white" 
+});
+
+}, 1000);
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse)=>{
+  if(message.type === "returnContent"){
+    console.log(message.moves)
+  }
+})*/
