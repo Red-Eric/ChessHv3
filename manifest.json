@@ -18,12 +18,24 @@
       "128": "icons/128.png"
     }
   },
-  "permissions": ["activeTab", "debugger", "windows"],
-  "host_permissions": ["http://127.0.0.1:5000/*"],
+  "permissions": [
+    "activeTab",
+    "debugger",
+    "windows"
+  ],
+  "host_permissions": [
+    "https://www.chess.com/*",
+    "https://chess.com/*",
+    "https://*.chess.com/*"
+  ],
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"],
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_start"
     }
   ],
@@ -34,11 +46,12 @@
         "b.js",
         "lib/stockfish.js",
         "lib/chess_min.js",
-        "lib/wukong.js",
-        "lib/lozza.js",
-        "book.json"
+        "lib/sf171-7.js",
+        "lib/sf171-7.wasm"
       ],
-      "matches": ["<all_urls>"]
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ],
   "content_security_policy": {

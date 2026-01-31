@@ -1,7 +1,4 @@
-const DEFAULT_FEN =
-  "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1";
-const DISCORD = "https://discord.com/invite/R9Fw4EZJQ2";
-let urlNow = "";
+const stockfish16 = "https://www.chess.com/r2/assets-chess-engine/Stockfish/stockfish-16.1-lite-single-e8222d1.js";
 
 async function createWorker() {
   const url = chrome.runtime.getURL("lib/stockfish.js");
