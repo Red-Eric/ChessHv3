@@ -75,6 +75,8 @@ function loadConfig2() {
   }
 }
 
+
+
 // stockfish 11
 class Engine {
   constructor({ elo = 20, depth = 10, multipv = 5, threads = 2, hash = 128 }) {
@@ -97,31 +99,6 @@ class Engine {
     this.worker.postMessage(`setoption name Skill Level value ${this.elo}`);
     this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
     this.worker.postMessage("setoption name Ponder value false");
-
-    if (this.style === 0) {
-      // neutre
-      this.worker.postMessage("setoption name Contempt value 20");
-    } else if (this.style === 1) {
-      // agressif
-      this.worker.postMessage("setoption name Contempt value -100");
-    } else if (this.style === -1) {
-      // defensif
-      this.worker.postMessage("setoption name Contempt value 100");
-    }
-
-    if (this.skill >= 0 && this.skill <= 20) {
-      const maxError = Math.round((20 - this.skill) * 250);
-      const probability = Math.min(
-        Math.round((20 - this.skill) * 50 + 1),
-        1000,
-      );
-      this.worker.postMessage(
-        `setoption name Skill Level Maximum Error value ${maxError}`,
-      );
-      this.worker.postMessage(
-        `setoption name Skill Level Probability value ${probability}`,
-      );
-    }
   }
 
   updateConfig({ elo, depth, multipv, threads, hash, style }) {
@@ -601,7 +578,6 @@ const startCheat = () => {
       if (lastFEN !== fen_) {
         clearHighlightSquares();
         lastFEN = fen_;
-        chrome.runtime.sendMessage({ type: "chess.com_fen", data: fen_ });
         _elo_ = getOppElo();
 
         if (engine) {
@@ -1034,7 +1010,6 @@ const startCheat = () => {
           if (event.data.fen !== fen_) {
             clearHighlightSquares();
             fen_ = event.data.fen;
-            chrome.runtime.sendMessage({ type: "chess.com_fen", data: fen_ });
             // console.log(fen_);
             // console.log(config);
             if (!config.server) {
@@ -1468,7 +1443,6 @@ const startCheat = () => {
         // console.log(fen_)
         currentFen = fen_;
         clearHighlightSquares();
-        chrome.runtime.sendMessage({ type: "chess.com_fen", data: fen_ });
 
         if (!config.server) {
           engine.getMoves(fen_, getSide()).then((moves) => {
