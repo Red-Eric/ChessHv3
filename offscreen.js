@@ -16,10 +16,10 @@ class Engine {
   }
 
   setOptions() {
+    this.worker.postMessage("setoption name UCI_LimitStrength value true");
     this.worker.postMessage(`setoption name UCI_Elo value ${this.elo}`);
     this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
     this.worker.postMessage("setoption name Ponder value false");
-    this.worker.postMessage("setoption name UCI_LimitStrength value true");
   }
 
   updateConfig({ elo, depth, multipv, threads, hash, style }) {
@@ -38,7 +38,6 @@ class Engine {
 
     return new Promise((resolve) => {
       const multipvResults = new Map();
-      this.worker.postMessage("uci");
 
       const onMessage = (event) => {
         const msg = event.data;
@@ -95,8 +94,8 @@ class Engine {
       };
 
       this.worker.addEventListener("message", onMessage);
-      this.worker.postMessage(`position fen ${fen}`);
       this.worker.postMessage("stop");
+      this.worker.postMessage(`position fen ${fen}`);
       this.worker.postMessage(`go depth ${this.depth}`);
     });
   }
@@ -133,26 +132,3 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     }
   }
 });
-
-/*
-
-Stockfish 17.1 Lite WASM by the Stockfish developers (see AUTHORS file)
-(index):14 id name Stockfish 17.1 Lite WASM
-(index):14 id author the Stockfish developers (see AUTHORS file)
-(index):14 
-(index):14 option name Threads type spin default 1 min 1 max 1
-(index):14 option name Hash type spin default 16 min 1 max 33554432
-(index):14 option name Clear Hash type button
-(index):14 option name Ponder type check default false
-(index):14 option name MultiPV type spin default 1 min 1 max 256
-(index):14 option name Skill Level type spin default 20 min 0 max 20
-(index):14 option name Move Overhead type spin default 10 min 0 max 5000
-(index):14 option name nodestime type spin default 0 min 0 max 10000
-(index):14 option name UCI_Chess960 type check default false
-(index):14 option name UCI_LimitStrength type check default false
-(index):14 option name UCI_Elo type spin default 1320 min 1320 max 3190
-(index):14 option name UCI_ShowWDL type check default false
-(index):14 option name EvalFile type string default nn-9067e33176e8.nnue
-(index):14 option name EvalFileSmall type string default <empty>
-
-*/

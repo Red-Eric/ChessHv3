@@ -409,8 +409,7 @@ const startCheat = () => {
           (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
         ) {
           if (config.autoMove) {
-            randMove = getRandomElement(moves);
-            requestMove(randMove.from, randMove.to);
+            requestMove(moves[0].from, moves[0].to);
           }
         }
       }
@@ -1229,19 +1228,3 @@ const startCheat = () => {
 };
 
 startCheat();
-
-/*
-
-setInterval(() => {
-  chrome.runtime.sendMessage({ 
-    action: "ping", 
-    fen: default_fen,
-    side : "white" 
-});
-
-
-chrome.runtime.onMessage.addListener((message, sender, sendResponse)=>{
-  if(message.type === "returnContent"){
-    console.log(message.moves)
-  }
-})*/
