@@ -1225,7 +1225,7 @@ const startCheat = () => {
   }
 };
 
-const LOCAL_VERSION = "1.1";
+const LOCAL_VERSION = "1.0";
 
 let downloadlink = "https://www.youtube.com/@Redson_Eric";
 
