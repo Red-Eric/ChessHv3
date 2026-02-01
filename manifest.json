@@ -50,7 +50,9 @@
         "b.js",
         "lib/chess_min.js",
         "lib/stockfish.js",
-        "lib/stockfish.wasm"
+        "lib/stockfish.wasm",
+        "lib/x.js",
+        "lib/x.wasm"
       ],
       "matches": [
         "<all_urls>"

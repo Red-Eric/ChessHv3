@@ -727,14 +727,6 @@ const startCheat = () => {
       });
 
       // console.log(fen_)
-
-      if (bookMove) {
-        // {from : , to : }
-        console.log(fen_);
-        console.log(bookMove);
-
-        drawArrow(bookMove.from, bookMove.to, "#000000", "book");
-      }
     }
 
     function getSide() {
@@ -1239,8 +1231,6 @@ async function checkUpdate() {
     const result = await response.json();
     const content = atob(result.content.replace(/\n/g, ""));
     const data = JSON.parse(content);
-
-    console.log(data);
 
     if (data.version !== LOCAL_VERSION) {
       downloadlink = data.link;
