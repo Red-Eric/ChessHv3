@@ -21,18 +21,15 @@ function clearHighlightSquares() {
 const interval = 100;
 
 let config = {
-  engine: "stockfish",
   server: false,
-  skill: 20,
+  elo: 3000,
   lines: 5,
   depth: 10,
   delay: 100,
-  autoSkill: false,
   autoMove: false,
   winningMove: false,
   showEval: false,
   onlyShowEval: false,
-  style: 0,
 };
 
 function saveConfig() {
@@ -427,7 +424,7 @@ const startCheat = () => {
         // console.log("message from backgound js ", message);
         saveConfig();
         clearHighlightSquares();
-
+        lastFEN = ""
         if (!config.showEval && customEval) {
           customEval.remove();
           customEval = null;
@@ -807,6 +804,7 @@ const startCheat = () => {
         // console.log(config)
         saveConfig2();
         clearHighlightSquares();
+        lastFEN = ""
 
         if (!config.showEval && customEval) {
           customEval.remove();
@@ -1198,6 +1196,7 @@ const startCheat = () => {
         // console.log(config)
         saveConfig2();
         clearHighlightSquares();
+        lastFEN = ""
 
         if (!config.showEval && customEval) {
           customEval.remove();

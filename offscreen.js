@@ -11,7 +11,7 @@ class Engine {
 
   async init() {
     this.worker = new Worker(
-  chrome.runtime.getURL("lib/stockfish-17.1-lite-single-03e3232.js")
+  chrome.runtime.getURL("lib/stockfish.js")
 );
     this.worker.postMessage("uci");
     this.setOptions();
