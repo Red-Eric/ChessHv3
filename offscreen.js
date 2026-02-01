@@ -10,9 +10,7 @@ class Engine {
   }
 
   async init() {
-    this.worker = new Worker(
-  chrome.runtime.getURL("lib/stockfish.js")
-);
+    this.worker = new Worker(chrome.runtime.getURL("lib/stockfish.js"));
     this.worker.postMessage("uci");
     this.setOptions();
   }
@@ -105,32 +103,36 @@ class Engine {
 }
 
 const engine = new Engine({
-      elo: 2000,
-      depth: 10,
-      multipv: 5,
-      threads: 2,
-      hash: 128,
-    });
-
-
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-    if (msg.target === "offscreen") {
-
-      if(engine){
-        
-        engine.getMoves(msg.fen, msg.side).then((moves) => {
-          console.log(moves)
-
-          chrome.runtime.sendMessage({
-            type : "returnContent",
-            moves : moves
-          })
-        })
-      }
-        
-    }
+  elo: 2000,
+  depth: 10,
+  multipv: 5,
+  threads: 2,
+  hash: 128,
 });
 
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg.target === "offscreen") {
+    if (engine) {
+      if (msg.config) {
+        let config = msg.config;
+        engine.updateConfig({
+          elo: config.elo,
+          multipv: config.lines,
+          depth : config.depth
+        });
+      }
+
+      engine.getMoves(msg.fen, msg.side).then((moves) => {
+        console.log(moves);
+
+        chrome.runtime.sendMessage({
+          type: "returnContent",
+          moves: moves,
+        });
+      });
+    }
+  }
+});
 
 /*
 

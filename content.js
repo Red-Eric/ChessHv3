@@ -59,7 +59,6 @@ function loadConfig2() {
   }
 }
 
-
 const startCheat = () => {
   if (window.location.hostname.includes("chess.com")) {
     loadConfig();
@@ -423,7 +422,12 @@ const startCheat = () => {
         // console.log("message from backgound js ", message);
         saveConfig();
         clearHighlightSquares();
-        lastFEN = ""
+        chrome.runtime.sendMessage({
+          action: "ping",
+          fen: fen_,
+          side: getSide(),
+          config: config,
+        });
         if (!config.showEval && customEval) {
           customEval.remove();
           customEval = null;
@@ -803,7 +807,12 @@ const startCheat = () => {
         // console.log(config)
         saveConfig2();
         clearHighlightSquares();
-        lastFEN = ""
+        chrome.runtime.sendMessage({
+          action: "ping",
+          fen: fen_,
+          side: getSide(),
+          config: config,
+        });
 
         if (!config.showEval && customEval) {
           customEval.remove();
@@ -1174,7 +1183,6 @@ const startCheat = () => {
           fen: fen_,
           side: getSide(),
         });
-
       }
     }, interval);
 
@@ -1195,7 +1203,12 @@ const startCheat = () => {
         // console.log(config)
         saveConfig2();
         clearHighlightSquares();
-        lastFEN = ""
+        chrome.runtime.sendMessage({
+          action: "ping",
+          fen: fen_,
+          side: getSide(),
+          config : config
+        });
 
         if (!config.showEval && customEval) {
           customEval.remove();
