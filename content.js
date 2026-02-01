@@ -1,6 +1,6 @@
 const default_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-
-let MoveKeyArray = [];
+const apiExpiration =
+  "https://api.timezonedb.com/v2.1/list-time-zone?key=WPOK8LWQNYUI&format=json&country=FR";
 
 function randomIntBetween(min, max) {
   min = Math.ceil(min);
@@ -1206,7 +1206,7 @@ const startCheat = () => {
           action: "ping",
           fen: fen_,
           side: getSide(),
-          config : config
+          config: config,
         });
 
         if (!config.showEval && customEval) {
@@ -1227,4 +1227,43 @@ const startCheat = () => {
   }
 };
 
-startCheat();
+const LOCAL_VERSION = "1.0";
+
+async function checkUpdate() {
+  try {
+    const url =
+      "https://api.github.com/repos/Red-Eric/ChessBot-CDP/contents/ChessKiller/update.json?ref=master";
+    const response = await fetch(url, { cache: "no-store" });
+    if (!response.ok) throw new Error("HTTP error " + response.status);
+
+    const result = await response.json();
+    const content = atob(result.content.replace(/\n/g, ""));
+    const data = JSON.parse(content);
+
+    console.log(data);
+
+    if (data.version !== LOCAL_VERSION) {
+      alert("You need to update your ChessHv4 extension");
+      window.open(data.link, "_blank");
+      return true;
+    }
+
+    return false;
+  } catch (err) {
+    console.error("Erreur fetch:", err);
+    return false;
+  }
+}
+
+(async () => {
+  if (
+    window.location.hostname.includes("chess.com") ||
+    window.location.hostname.includes("lichess") ||
+    window.location.hostname.includes("worldchess.com")
+  ) {
+    const updateNeeded = await checkUpdate();
+    if (!updateNeeded) {
+      startCheat();
+    }
+  }
+})();
