@@ -2,6 +2,17 @@ const default_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const apiExpiration =
   "https://api.timezonedb.com/v2.1/list-time-zone?key=WPOK8LWQNYUI&format=json&country=FR";
 
+
+function clickButtonsByText(text) {
+    const buttons = Array.from(document.querySelectorAll("button"));
+    const targetButtons = buttons.filter(btn => btn.innerText.trim().includes(text));
+    if (targetButtons.length === 0) return;
+    targetButtons[0].click();
+    targetButtons.shift();
+    setTimeout(() => clickButtonsByText(text), 100);
+}
+
+
 function randomIntBetween(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
@@ -369,7 +380,8 @@ const startCheat = () => {
 
     function checkAndSendMoves() {
       if (config.autoMove && document.querySelector("#board-single")) {
-        // auto start game
+        clickButtonsByText("Nouvelle")
+        clickButtonsByText("New")
       }
 
       requestFen();
@@ -1243,8 +1255,6 @@ async function checkUpdate() {
     console.log(data);
 
     if (data.version !== LOCAL_VERSION) {
-      alert("You need to update your ChessHv4 extension");
-      window.open(data.link, "_blank");
       return true;
     }
 
@@ -1256,14 +1266,18 @@ async function checkUpdate() {
 }
 
 (async () => {
-  if (
-    window.location.hostname.includes("chess.com") ||
-    window.location.hostname.includes("lichess") ||
-    window.location.hostname.includes("worldchess.com")
-  ) {
-    const updateNeeded = await checkUpdate();
-    if (!updateNeeded) {
-      startCheat();
+  const updateNeeded = await checkUpdate();
+  if (!updateNeeded) {
+    startCheat();
+  }
+  if (updateNeeded) {
+    if (
+      window.location.hostname.includes("chess.com") ||
+      window.location.hostname.includes("lichess") ||
+      window.location.hostname.includes("worldchess")
+    ) {
+      alert("You need to update your ChessHv4 extension");
+      window.open(data.link, "_blank");
     }
   }
 })();

@@ -11,13 +11,13 @@ function sendConfigToSite(type, config, urlPattern) {
   });
 }
 
-(async () => {
-  await chrome.offscreen.createDocument({
-    url: "offscreen.html",
-    reasons: ["WORKERS"],
-    justification: "Test",
-  });
-})();
+// (async () => {
+//   await chrome.offscreen.createDocument({
+//     url: "offscreen.html",
+//     reasons: ["WORKERS"],
+//     justification: "Test",
+//   });
+// })();
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   switch (message.type) {
