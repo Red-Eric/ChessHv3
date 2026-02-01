@@ -4,144 +4,126 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ChessHv3 ModMenu</title>
+
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="chessboard/chessboard-1.0.0.css" />
   </head>
+
   <body>
     <div class="tabs">
       <div class="tab active" data-panel="chess">Chess.com</div>
-      <div class="tab" data-panel="lichess">Lichess & fide Arena</div>
+      <div class="tab" data-panel="lichess">Lichess & FIDE Arena</div>
       <div class="tab" data-panel="stream">Stream</div>
     </div>
 
+    <!-- ================= CHESS.COM ================= -->
     <div class="panel active" id="chess">
       <div class="container">
         <h1>ChessHv3 - Chess.com</h1>
 
-        <div id="test">
-          <div class="setting">
-            <label for="lines">Arrows: <span id="linesValue">3</span></label>
-            <input type="range" id="lines" min="1" max="5" value="3" step="1" />
-          </div>
+        <div class="setting">
+          <label>ELO: <span id="eloValue">2000</span></label>
+          <input type="range" id="elo" min="1320" max="3190" step="10" value="3190" />
+        </div>
 
-          <div class="setting">
-            <label for="depth">Depth: <span id="depthValue">10</span></label>
-            <input
-              type="range"
-              id="depth"
-              min="1"
-              max="20"
-              value="10"
-              step="1"
-            />
-          </div>
+        <div class="setting">
+          <label>Arrows: <span id="linesValue">3</span></label>
+          <input type="range" id="lines" min="1" max="5" value="3" />
+        </div>
 
-          <div class="setting">
-            <label for="delay"
-              >Auto Move Delay Limit:
-              <span id="delayValue">100</span> ms</label
-            >
-            <input
-              type="range"
-              id="delay"
-              min="100"
-              max="20000"
-              value="100"
-              step="50"
-            />
-          </div>
+        <div class="setting">
+          <label>Depth: <span id="depthValue">10</span></label>
+          <input type="range" id="depth" min="1" max="20" value="10" />
+        </div>
 
-          <div class="setting">
-            <span id="autoMoveLabel">Auto Move (OFF)</span>
-            <label class="switch">
-              <input type="checkbox" id="autoMove" />
-              <span class="slider"></span>
-            </label>
-          </div>
+        <div class="setting">
+          <label>Auto Move Delay:
+            <span id="delayValue">100</span> ms
+          </label>
+          <input type="range" id="delay" min="100" max="20000" step="50" value="100" />
+        </div>
 
-          <div class="setting">
-            <span id="winningMoveLabel">Only Show Winning Move (OFF)</span>
-            <label class="switch">
-              <input type="checkbox" id="winningMove" />
-              <span class="slider"></span>
-            </label>
-          </div>
+        <div class="setting">
+          <span id="autoMoveLabel">Auto Move (OFF)</span>
+          <label class="switch">
+            <input type="checkbox" id="autoMove" />
+            <span class="slider"></span>
+          </label>
+        </div>
 
-          <div class="setting">
-            <span id="showEvalLabel">Show Eval Bar (OFF)</span>
-            <label class="switch">
-              <input type="checkbox" id="showEval" />
-              <span class="slider"></span>
-            </label>
-          </div>
+        <div class="setting">
+          <span id="winningMoveLabel">Only Winning Move (OFF)</span>
+          <label class="switch">
+            <input type="checkbox" id="winningMove" />
+            <span class="slider"></span>
+          </label>
+        </div>
 
-          <div class="setting">
-            <span id="onlyShowEvalLabel">Hide Arrows (OFF)</span>
-            <label class="switch">
-              <input type="checkbox" id="onlyShowEval" />
-              <span class="slider"></span>
-            </label>
-          </div>
+        <div class="setting">
+          <span id="showEvalLabel">Show Eval Bar (OFF)</span>
+          <label class="switch">
+            <input type="checkbox" id="showEval" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="setting">
+          <span id="onlyShowEvalLabel">Hide Arrows (OFF)</span>
+          <label class="switch">
+            <input type="checkbox" id="onlyShowEval" />
+            <span class="slider"></span>
+          </label>
         </div>
       </div>
     </div>
 
+    <!-- ================= LICHESS ================= -->
     <div class="panel" id="lichess">
       <div class="container">
-        <h1>ChessHv3 - Lichess & fide Arena</h1>
+        <h1>ChessHv3 - Lichess & FIDE Arena</h1>
 
-        <div id="test2">
-          <div class="setting">
-            <label for="lines2">Arrows: <span id="linesValue2">3</span></label>
-            <input
-              type="range"
-              id="lines2"
-              min="1"
-              max="5"
-              value="3"
-              step="1"
-            />
-          </div>
+        <div class="setting">
+          <label>ELO: <span id="eloValue2">2000</span></label>
+          <input type="range" id="elo2" min="1320" max="3190" step="10" value="3190" />
+        </div>
 
-          <div class="setting">
-            <label for="depth2">Depth: <span id="depthValue2">10</span></label>
-            <input
-              type="range"
-              id="depth2"
-              min="1"
-              max="20"
-              value="10"
-              step="1"
-            />
-          </div>
+        <div class="setting">
+          <label>Arrows: <span id="linesValue2">3</span></label>
+          <input type="range" id="lines2" min="1" max="5" value="3" />
+        </div>
 
-          <div class="setting">
-            <span id="winningMoveLabel2">Only Show Winning Move (OFF)</span>
-            <label class="switch">
-              <input type="checkbox" id="winningMove2" />
-              <span class="slider"></span>
-            </label>
-          </div>
+        <div class="setting">
+          <label>Depth: <span id="depthValue2">10</span></label>
+          <input type="range" id="depth2" min="1" max="20" value="10" />
+        </div>
 
-          <div class="setting">
-            <span id="showEvalLabel2">Show Eval Bar (OFF)</span>
-            <label class="switch">
-              <input type="checkbox" id="showEval2" />
-              <span class="slider"></span>
-            </label>
-          </div>
+        <div class="setting">
+          <span id="winningMoveLabel2">Only Winning Move (OFF)</span>
+          <label class="switch">
+            <input type="checkbox" id="winningMove2" />
+            <span class="slider"></span>
+          </label>
+        </div>
 
-          <div class="setting">
-            <span id="onlyShowEvalLabel2">Hide Arrows (OFF)</span>
-            <label class="switch">
-              <input type="checkbox" id="onlyShowEval2" />
-              <span class="slider"></span>
-            </label>
-          </div>
+        <div class="setting">
+          <span id="showEvalLabel2">Show Eval Bar (OFF)</span>
+          <label class="switch">
+            <input type="checkbox" id="showEval2" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="setting">
+          <span id="onlyShowEvalLabel2">Hide Arrows (OFF)</span>
+          <label class="switch">
+            <input type="checkbox" id="onlyShowEval2" />
+            <span class="slider"></span>
+          </label>
         </div>
       </div>
     </div>
 
+    <!-- ================= STREAM ================= -->
     <div class="panel" id="stream">
       <div id="board1" style="width: 600px"></div>
     </div>

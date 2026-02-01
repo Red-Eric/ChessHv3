@@ -21,8 +21,7 @@ function clearHighlightSquares() {
 const interval = 100;
 
 let config = {
-  server: false,
-  elo: 3000,
+  elo: 3190,
   lines: 5,
   depth: 10,
   delay: 100,
