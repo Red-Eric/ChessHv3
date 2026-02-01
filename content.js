@@ -2,16 +2,16 @@ const default_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const apiExpiration =
   "https://api.timezonedb.com/v2.1/list-time-zone?key=WPOK8LWQNYUI&format=json&country=FR";
 
-
 function clickButtonsByText(text) {
-    const buttons = Array.from(document.querySelectorAll("button"));
-    const targetButtons = buttons.filter(btn => btn.innerText.trim().includes(text));
-    if (targetButtons.length === 0) return;
-    targetButtons[0].click();
-    targetButtons.shift();
-    setTimeout(() => clickButtonsByText(text), 100);
+  const buttons = Array.from(document.querySelectorAll("button"));
+  const targetButtons = buttons.filter((btn) =>
+    btn.innerText.trim().includes(text),
+  );
+  if (targetButtons.length === 0) return;
+  targetButtons[0].click();
+  targetButtons.shift();
+  setTimeout(() => clickButtonsByText(text), 100);
 }
-
 
 function randomIntBetween(min, max) {
   min = Math.ceil(min);
@@ -76,7 +76,7 @@ const startCheat = () => {
     let lastFEN = "Bomboclat";
     let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     let side_index = 1;
-
+    let lastAutoPlay = config.autoMove;
     let evalObj = null;
     let customEval = null;
 
@@ -380,8 +380,8 @@ const startCheat = () => {
 
     function checkAndSendMoves() {
       if (config.autoMove && document.querySelector("#board-single")) {
-        clickButtonsByText("Nouvelle")
-        clickButtonsByText("New")
+        clickButtonsByText("Nouvelle");
+        clickButtonsByText("New");
       }
 
       requestFen();
@@ -433,12 +433,10 @@ const startCheat = () => {
         // console.log("message from backgound js ", message);
         saveConfig();
         clearHighlightSquares();
-        chrome.runtime.sendMessage({
-          action: "ping",
-          fen: fen_,
-          side: getSide(),
-          config: config,
-        });
+        if (lastAutoPlay != config.autoMove) {
+          lastAutoPlay = config.autoMove;
+          lastFEN = "";
+        }
         if (!config.showEval && customEval) {
           customEval.remove();
           customEval = null;
@@ -818,12 +816,6 @@ const startCheat = () => {
         // console.log(config)
         saveConfig2();
         clearHighlightSquares();
-        chrome.runtime.sendMessage({
-          action: "ping",
-          fen: fen_,
-          side: getSide(),
-          config: config,
-        });
 
         if (!config.showEval && customEval) {
           customEval.remove();
@@ -1214,12 +1206,6 @@ const startCheat = () => {
         // console.log(config)
         saveConfig2();
         clearHighlightSquares();
-        chrome.runtime.sendMessage({
-          action: "ping",
-          fen: fen_,
-          side: getSide(),
-          config: config,
-        });
 
         if (!config.showEval && customEval) {
           customEval.remove();
@@ -1239,7 +1225,9 @@ const startCheat = () => {
   }
 };
 
-const LOCAL_VERSION = "1.0";
+const LOCAL_VERSION = "1.1";
+
+let downloadlink = "https://www.youtube.com/@Redson_Eric";
 
 async function checkUpdate() {
   try {
@@ -1255,6 +1243,7 @@ async function checkUpdate() {
     console.log(data);
 
     if (data.version !== LOCAL_VERSION) {
+      downloadlink = data.link;
       return true;
     }
 
@@ -1277,7 +1266,7 @@ async function checkUpdate() {
       window.location.hostname.includes("worldchess")
     ) {
       alert("You need to update your ChessHv4 extension");
-      window.open(data.link, "_blank");
+      window.open(downloadlink, "_blank");
     }
   }
 })();

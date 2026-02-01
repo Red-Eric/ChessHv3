@@ -29,7 +29,8 @@
     "https://chess.com/*",
     "https://*.chess.com/*",
     "https://api.timezonedb.com/*",
-    "https://raw.githubusercontent.com/*"
+    "https://raw.githubusercontent.com/*",
+    "https://api.github.com/*"
   ],
   "content_scripts": [
     {
