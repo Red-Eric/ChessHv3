@@ -23,7 +23,7 @@
 
         <div class="setting">
           <label>ELO: <span id="eloValue">3190</span></label>
-          <input type="range" id="elo" min="1320" max="3190" step="10" value="3190" />
+          <input type="range" id="elo" min="100" max="3500" step="100" value="3190" />
         </div>
 
         <div class="setting">
@@ -37,57 +37,42 @@
         </div>
 
         <div class="setting">
-          <label>Auto Move Delay:
-            <span id="delayValue">100</span> ms
-          </label>
+          <label>Auto Move Delay: <span id="delayValue">100</span> ms</label>
           <input type="range" id="delay" min="100" max="20000" step="50" value="100" />
         </div>
 
-        <!-- STYLE SELECT -->
         <div class="setting">
           <label>Style</label>
           <select id="style">
-            <option value="Default" selected>Default</option>
-            <option value="Aggressive">Aggressive</option>
-            <option value="Defensive">Defensive</option>
-            <option value="Active">Active</option>
-            <option value="Positional">Positional</option>
-            <option value="Endgame">Endgame</option>
-            <option value="Beginner">Beginner</option>
-            <option value="Human">Human</option>
+            <option selected>Default</option>
+            <option>Aggressive</option>
+            <option>Defensive</option>
+            <option>Active</option>
+            <option>Positional</option>
+            <option>Endgame</option>
+            <option>Beginner</option>
+            <option>Human</option>
           </select>
         </div>
 
         <div class="setting">
           <span id="autoMoveLabel">Auto Move (OFF)</span>
-          <label class="switch">
-            <input type="checkbox" id="autoMove" />
-            <span class="slider"></span>
-          </label>
+          <input type="checkbox" id="autoMove" />
         </div>
 
         <div class="setting">
           <span id="winningMoveLabel">Only Winning Move (OFF)</span>
-          <label class="switch">
-            <input type="checkbox" id="winningMove" />
-            <span class="slider"></span>
-          </label>
+          <input type="checkbox" id="winningMove" />
         </div>
 
         <div class="setting">
           <span id="showEvalLabel">Show Eval Bar (OFF)</span>
-          <label class="switch">
-            <input type="checkbox" id="showEval" />
-            <span class="slider"></span>
-          </label>
+          <input type="checkbox" id="showEval" />
         </div>
 
         <div class="setting">
           <span id="onlyShowEvalLabel">Hide Arrows (OFF)</span>
-          <label class="switch">
-            <input type="checkbox" id="onlyShowEval" />
-            <span class="slider"></span>
-          </label>
+          <input type="checkbox" id="onlyShowEval" />
         </div>
       </div>
     </div>
@@ -99,7 +84,7 @@
 
         <div class="setting">
           <label>ELO: <span id="eloValue2">3190</span></label>
-          <input type="range" id="elo2" min="1320" max="3190" step="10" value="3190" />
+          <input type="range" id="elo2" min="100" max="3500" step="100" value="3190" />
         </div>
 
         <div class="setting">
@@ -112,43 +97,33 @@
           <input type="range" id="depth2" min="1" max="20" value="10" />
         </div>
 
-        <!-- STYLE SELECT -->
         <div class="setting">
           <label>Style</label>
           <select id="style2">
-            <option value="Default" selected>Default</option>
-            <option value="Aggressive">Aggressive</option>
-            <option value="Defensive">Defensive</option>
-            <option value="Active">Active</option>
-            <option value="Positional">Positional</option>
-            <option value="Endgame">Endgame</option>
-            <option value="Beginner">Beginner</option>
-            <option value="Human">Human</option>
+            <option selected>Default</option>
+            <option>Aggressive</option>
+            <option>Defensive</option>
+            <option>Active</option>
+            <option>Positional</option>
+            <option>Endgame</option>
+            <option>Beginner</option>
+            <option>Human</option>
           </select>
         </div>
 
         <div class="setting">
           <span id="winningMoveLabel2">Only Winning Move (OFF)</span>
-          <label class="switch">
-            <input type="checkbox" id="winningMove2" />
-            <span class="slider"></span>
-          </label>
+          <input type="checkbox" id="winningMove2" />
         </div>
 
         <div class="setting">
           <span id="showEvalLabel2">Show Eval Bar (OFF)</span>
-          <label class="switch">
-            <input type="checkbox" id="showEval2" />
-            <span class="slider"></span>
-          </label>
+          <input type="checkbox" id="showEval2" />
         </div>
 
         <div class="setting">
           <span id="onlyShowEvalLabel2">Hide Arrows (OFF)</span>
-          <label class="switch">
-            <input type="checkbox" id="onlyShowEval2" />
-            <span class="slider"></span>
-          </label>
+          <input type="checkbox" id="onlyShowEval2" />
         </div>
       </div>
     </div>

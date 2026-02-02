@@ -235,6 +235,7 @@ class komodo {
 
       this.worker.addEventListener("message", onMessage);
 
+      this.worker.postMessage("stop");
       this.worker.postMessage(`position fen ${fen}`);
       this.worker.postMessage(`go depth ${this.depth}`);
     });

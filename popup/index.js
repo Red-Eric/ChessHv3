@@ -1,18 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
-  if (chrome?.runtime) chrome.runtime.sendMessage({ type: "popupReady" });
+  chrome?.runtime?.sendMessage({ type: "popupReady" });
 });
 
 /* ================= TABS ================= */
-let panelIndex = 0;
-const tabs = document.querySelectorAll(".tab");
-const panels = document.querySelectorAll(".panel");
-
-tabs.forEach((tab, index) => {
+document.querySelectorAll(".tab").forEach(tab => {
   tab.onclick = () => {
-    panelIndex = index;
-    tabs.forEach(t => t.classList.remove("active"));
-    panels.forEach(p => p.classList.remove("active"));
-
+    document.querySelectorAll(".tab, .panel").forEach(e => e.classList.remove("active"));
     tab.classList.add("active");
     document.getElementById(tab.dataset.panel).classList.add("active");
   };
@@ -20,7 +13,7 @@ tabs.forEach((tab, index) => {
 
 const el = id => document.getElementById(id);
 
-/* ================= CHESS.COM CONFIG ================= */
+/* ================= CHESS.COM ================= */
 let chessConfig = JSON.parse(localStorage.getItem("chessConfig")) || {
   elo: 3190,
   lines: 3,
@@ -34,29 +27,23 @@ let chessConfig = JSON.parse(localStorage.getItem("chessConfig")) || {
 };
 
 function updateChessUI() {
-  el("elo").value = chessConfig.elo;
-  el("lines").value = chessConfig.lines;
-  el("depth").value = chessConfig.depth;
-  el("delay").value = chessConfig.delay;
+  ["elo","lines","depth","delay"].forEach(k => el(k).value = chessConfig[k]);
   el("style").value = chessConfig.style;
 
-  el("autoMove").checked = chessConfig.autoMove;
-  el("winningMove").checked = chessConfig.winningMove;
-  el("showEval").checked = chessConfig.showEval;
-  el("onlyShowEval").checked = chessConfig.onlyShowEval;
+  ["autoMove","winningMove","showEval","onlyShowEval"].forEach(k => el(k).checked = chessConfig[k]);
 
   el("eloValue").textContent = chessConfig.elo;
   el("linesValue").textContent = chessConfig.lines;
   el("depthValue").textContent = chessConfig.depth;
   el("delayValue").textContent = chessConfig.delay;
 
-  el("autoMoveLabel").textContent = `Auto Move (${chessConfig.autoMove ? "ON" : "OFF"})`;
-  el("winningMoveLabel").textContent = `Only Winning Move (${chessConfig.winningMove ? "ON" : "OFF"})`;
-  el("showEvalLabel").textContent = `Show Eval Bar (${chessConfig.showEval ? "ON" : "OFF"})`;
-  el("onlyShowEvalLabel").textContent = `Hide Arrows (${chessConfig.onlyShowEval ? "ON" : "OFF"})`;
+  el("autoMoveLabel").textContent = `Auto Move (${chessConfig.autoMove ? "ON":"OFF"})`;
+  el("winningMoveLabel").textContent = `Only Winning Move (${chessConfig.winningMove ? "ON":"OFF"})`;
+  el("showEvalLabel").textContent = `Show Eval Bar (${chessConfig.showEval ? "ON":"OFF"})`;
+  el("onlyShowEvalLabel").textContent = `Hide Arrows (${chessConfig.onlyShowEval ? "ON":"OFF"})`;
 
-  console.clear();
-  console.log(chessConfig);
+  console.clear(chessConfig)
+
 }
 
 function saveChess() {
@@ -64,31 +51,28 @@ function saveChess() {
   chrome?.runtime?.sendMessage({ type: "config", config: chessConfig });
 }
 
-["elo", "lines", "depth", "delay"].forEach(id => {
-  el(id).oninput = e => {
-    chessConfig[id] = Number(e.target.value);
-    updateChessUI();
-    saveChess();
+["elo","lines","depth","delay"].forEach(k => {
+  el(k).oninput = e => {
+    chessConfig[k] = +e.target.value;
+    updateChessUI(); saveChess();
+  };
+});
+
+["autoMove","winningMove","showEval","onlyShowEval"].forEach(k => {
+  el(k).onchange = e => {
+    chessConfig[k] = e.target.checked;
+    updateChessUI(); saveChess();
   };
 });
 
 el("style").onchange = e => {
   chessConfig.style = e.target.value;
-  updateChessUI();
-  saveChess();
+  updateChessUI(); saveChess();
 };
-
-["autoMove", "winningMove", "showEval", "onlyShowEval"].forEach(id => {
-  el(id).onchange = e => {
-    chessConfig[id] = e.target.checked;
-    updateChessUI();
-    saveChess();
-  };
-});
 
 updateChessUI();
 
-/* ================= LICHESS CONFIG ================= */
+/* ================= LICHESS ================= */
 let lichessConfig = JSON.parse(localStorage.getItem("lichessConfig")) || {
   elo: 3190,
   lines: 3,
@@ -100,25 +84,20 @@ let lichessConfig = JSON.parse(localStorage.getItem("lichessConfig")) || {
 };
 
 function updateLichessUI() {
-  el("elo2").value = lichessConfig.elo;
-  el("lines2").value = lichessConfig.lines;
-  el("depth2").value = lichessConfig.depth;
+  ["elo","lines","depth"].forEach(k => el(k+"2").value = lichessConfig[k]);
   el("style2").value = lichessConfig.style;
 
-  el("winningMove2").checked = lichessConfig.winningMove;
-  el("showEval2").checked = lichessConfig.showEval;
-  el("onlyShowEval2").checked = lichessConfig.onlyShowEval;
+  ["winningMove","showEval","onlyShowEval"].forEach(k => el(k+"2").checked = lichessConfig[k]);
 
   el("eloValue2").textContent = lichessConfig.elo;
   el("linesValue2").textContent = lichessConfig.lines;
   el("depthValue2").textContent = lichessConfig.depth;
 
-  el("winningMoveLabel2").textContent = `Only Winning Move (${lichessConfig.winningMove ? "ON" : "OFF"})`;
-  el("showEvalLabel2").textContent = `Show Eval Bar (${lichessConfig.showEval ? "ON" : "OFF"})`;
-  el("onlyShowEvalLabel2").textContent = `Hide Arrows (${lichessConfig.onlyShowEval ? "ON" : "OFF"})`;
-
-  console.clear();
-  console.log(lichessConfig);
+  el("winningMoveLabel2").textContent = `Only Winning Move (${lichessConfig.winningMove ? "ON":"OFF"})`;
+  el("showEvalLabel2").textContent = `Show Eval Bar (${lichessConfig.showEval ? "ON":"OFF"})`;
+  el("onlyShowEvalLabel2").textContent = `Hide Arrows (${lichessConfig.onlyShowEval ? "ON":"OFF"})`;
+  console.clear()
+  console.log(lichessConfig)
 }
 
 function saveLichess() {
@@ -126,27 +105,24 @@ function saveLichess() {
   chrome?.runtime?.sendMessage({ type: "config2", config: lichessConfig });
 }
 
-["elo2", "lines2", "depth2"].forEach(id => {
-  el(id).oninput = e => {
-    lichessConfig[id.replace("2", "")] = Number(e.target.value);
-    updateLichessUI();
-    saveLichess();
+["elo","lines","depth"].forEach(k => {
+  el(k+"2").oninput = e => {
+    lichessConfig[k] = +e.target.value;
+    updateLichessUI(); saveLichess();
+  };
+});
+
+["winningMove","showEval","onlyShowEval"].forEach(k => {
+  el(k+"2").onchange = e => {
+    lichessConfig[k] = e.target.checked;
+    updateLichessUI(); saveLichess();
   };
 });
 
 el("style2").onchange = e => {
   lichessConfig.style = e.target.value;
-  updateLichessUI();
-  saveLichess();
+  updateLichessUI(); saveLichess();
 };
-
-["winningMove2", "showEval2", "onlyShowEval2"].forEach(id => {
-  el(id).onchange = e => {
-    lichessConfig[id.replace("2", "")] = e.target.checked;
-    updateLichessUI();
-    saveLichess();
-  };
-});
 
 updateLichessUI();
 
