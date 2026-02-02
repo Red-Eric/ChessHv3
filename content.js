@@ -36,6 +36,7 @@ let config = {
   lines: 5,
   depth: 10,
   delay: 100,
+  style: "Default",
   autoMove: false,
   winningMove: false,
   showEval: false,
@@ -401,6 +402,7 @@ const startCheat = () => {
           action: "ping",
           fen: fen_,
           side: getSide(),
+          config : config
         });
       }
     }
@@ -427,16 +429,12 @@ const startCheat = () => {
       }
 
       if (message.config && message.type === "config") {
-        // config = message.config;
         config = { ...config, ...message.config };
 
         // console.log("message from backgound js ", message);
         saveConfig();
         clearHighlightSquares();
-        if (lastAutoPlay != config.autoMove) {
-          lastAutoPlay = config.autoMove;
-          lastFEN = "";
-        }
+        lastFEN = ""
         if (!config.showEval && customEval) {
           customEval.remove();
           customEval = null;
@@ -772,6 +770,7 @@ const startCheat = () => {
               action: "ping",
               fen: fen_,
               side: getSide(),
+              config : config
             });
           }
         }
@@ -808,6 +807,7 @@ const startCheat = () => {
         // console.log(config)
         saveConfig2();
         clearHighlightSquares();
+        lastFEN = ""
 
         if (!config.showEval && customEval) {
           customEval.remove();
@@ -1177,6 +1177,7 @@ const startCheat = () => {
           action: "ping",
           fen: fen_,
           side: getSide(),
+          config : config
         });
       }
     }, interval);
@@ -1195,6 +1196,7 @@ const startCheat = () => {
       }
       if (message.type === "config2") {
         config = message.config;
+
         // console.log(config)
         saveConfig2();
         clearHighlightSquares();
@@ -1204,7 +1206,7 @@ const startCheat = () => {
           customEval = null;
           evalObj = null;
         }
-
+        lastFEN = ""
         if (config.showEval && !customEval) {
           const boardContainer = document.querySelector("cg-container");
           if (boardContainer) {

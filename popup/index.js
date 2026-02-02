@@ -15,7 +15,7 @@ const el = id => document.getElementById(id);
 
 /* ================= CHESS.COM ================= */
 let chessConfig = JSON.parse(localStorage.getItem("chessConfig")) || {
-  elo: 3190,
+  elo: 3500,
   lines: 3,
   depth: 10,
   delay: 100,
@@ -75,7 +75,7 @@ updateChessUI();
 
 /* ================= LICHESS ================= */
 let lichessConfig = JSON.parse(localStorage.getItem("lichessConfig")) || {
-  elo: 3190,
+  elo: 3500,
   lines: 3,
   depth: 10,
   style: "Default",
