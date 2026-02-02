@@ -1,193 +1,190 @@
-body {
+/* ========== GLOBAL ========== */
+* {
+  box-sizing: border-box;
   margin: 0;
-  font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
-  background: radial-gradient(circle at top, #0f172a, #020617);
-  color: #e2e8f0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background-color: #121212;
+  color: #fff;
   min-height: 100vh;
 }
 
-/* Tabs */
+/* ========== TABS ========== */
 .tabs {
   display: flex;
-  background: #020617;
-  border-bottom: 1px solid #334155;
+  justify-content: center;
+  margin: 20px 0;
+  border-bottom: 2px solid #333;
 }
 
 .tab {
-  flex: 1;
-  padding: 1rem;
-  text-align: center;
+  padding: 12px 25px;
   cursor: pointer;
-  font-weight: 600;
-  background: transparent;
-  color: #94a3b8;
-  transition: all 0.25s ease;
-}
-
-.tab:hover {
-  color: #e2e8f0;
-  background: rgba(99, 102, 241, 0.08);
+  font-weight: bold;
+  transition: all 0.3s ease;
+  color: #aaa;
+  border-bottom: 3px solid transparent;
 }
 
 .tab.active {
-  color: #ffffff;
-  background: linear-gradient(90deg, #6366f1, #8b5cf6);
-  box-shadow: inset 0 -3px 0 #a78bfa;
+  color: #ff4c4c;
+  border-bottom: 3px solid #ff4c4c;
 }
 
-/* Panels */
+.tab:hover {
+  color: #ff6b6b;
+}
+
+/* ========== PANELS ========== */
 .panel {
   display: none;
+  padding: 20px;
+  max-width: 700px;
+  margin: 0 auto 40px auto;
+  background: #1e1e1e;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
 }
 
 .panel.active {
-  display: flex;
-  justify-content: center;
-  padding: 2rem;
+  display: block;
 }
 
-/* Container */
-.container {
-  background: linear-gradient(180deg, #020617, #020617);
-  border-radius: 18px;
-  padding: 2.5rem;
-  max-width: 430px;
-  width: 100%;
-  border: 1px solid #1e293b;
-  box-shadow: 0 0 40px rgba(99, 102, 241, 0.15);
-}
-
-/* Title */
+/* ========== HEADINGS ========== */
 h1 {
   text-align: center;
-  margin-bottom: 2rem;
-  font-size: 2.1rem;
-  font-weight: 800;
-  background: linear-gradient(90deg, #60a5fa, #a78bfa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #ff4c4c;
+  margin-bottom: 25px;
 }
 
-/* Settings */
+/* ========== SETTINGS ========== */
 .setting {
-  margin-bottom: 1.6rem;
   display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-label {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.setting label,
+.setting span {
   font-weight: 500;
+  color: #ccc;
 }
 
-.value-span {
-  font-weight: 700;
-  color: #a78bfa;
-}
-
-/* Range */
-input[type="range"] {
-  width: 100%;
-  height: 6px;
+/* ========== SLIDERS ========== */
+.setting input[type="range"] {
   -webkit-appearance: none;
-  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-  border-radius: 4px;
+  width: 60%;
+  height: 8px;
+  border-radius: 5px;
+  background: #333;
+  outline: none;
+  transition: background 0.3s;
 }
 
-input[type="range"]::-webkit-slider-thumb {
+.setting input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 18px;
-  height: 18px;
+  appearance: none;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: #020617;
-  border: 2px solid #8b5cf6;
+  background: #ff4c4c;
   cursor: pointer;
-  box-shadow: 0 0 12px rgba(139, 92, 246, 0.8);
+  border: 2px solid #fff;
+  transition: transform 0.2s;
 }
 
-/* Toggle */
-.switch {
+.setting input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* ========== SELECT BOXES ========== */
+.setting select {
+  padding: 8px 12px;
+  background: #2a2a2a;
+  border: 1px solid #333;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.setting select:hover,
+.setting select:focus {
+  border-color: #ff4c4c;
+  outline: none;
+  box-shadow: 0 0 8px rgba(255, 76, 76, 0.5);
+}
+
+/* ========== CHESSBOARD ========== */
+#board1 {
+  margin: 20px auto;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+}
+
+/* ========== TOGGLE SWITCHES ========== */
+.toggle {
   position: relative;
-  width: 52px;
-  height: 28px;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
 }
 
-.switch input {
-  display: none;
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
 }
 
 .slider {
   position: absolute;
-  inset: 0;
-  background: #1e293b;
-  border-radius: 30px;
-  transition: 0.3s;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #333;
+  border-radius: 34px;
+  transition: 0.4s;
+  border: 2px solid #555;
 }
 
-.slider::before {
-  content: "";
+.slider:before {
   position: absolute;
+  content: "";
   height: 22px;
   width: 22px;
-  left: 3px;
-  bottom: 3px;
-  background: #64748b;
+  left: 2px;
+  bottom: 1px;
+  background-color: #ff4c4c;
+  transition: 0.4s;
   border-radius: 50%;
-  transition: 0.3s;
 }
 
-input:checked + .slider {
-  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+.toggle input:checked + .slider {
+  background-color: #555;
 }
 
-input:checked + .slider::before {
+.toggle input:checked + .slider:before {
   transform: translateX(24px);
-  background: #020617;
 }
 
-/* Button */
-button {
-  width: 100%;
-  padding: 0.95rem;
-  border: none;
-  border-radius: 14px;
-  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-  color: #fff;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 0 30px rgba(139, 92, 246, 0.4);
+.slider:hover {
+  box-shadow: 0 0 8px rgba(255, 76, 76, 0.6);
 }
 
-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 45px rgba(139, 92, 246, 0.7);
-}
-
-/* Text */
-.description {
-  font-size: 0.85rem;
-  color: #94a3b8;
-}
-
-/* Select */
-select {
-  width: 100%;
-  padding: 0.6rem 0.9rem;
-  border-radius: 12px;
-  border: 1px solid #1e293b;
-  background: #020617;
-  color: #e2e8f0;
-  font-size: 0.95rem;
-  box-shadow: inset 0 0 8px rgba(0,0,0,0.6);
-}
-
+/* ========== GENERAL EFFECTS ========== */
+input:focus,
 select:focus {
   outline: none;
-  border-color: #8b5cf6;
-  box-shadow: 0 0 12px rgba(139, 92, 246, 0.7);
+  border-color: #ff4c4c;
+  box-shadow: 0 0 10px rgba(255, 76, 76, 0.5);
+}
+
+.setting span.active {
+  color: #ff4c4c;
 }

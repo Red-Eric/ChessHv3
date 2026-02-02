@@ -23,7 +23,7 @@
 
         <div class="setting">
           <label>ELO: <span id="eloValue">3190</span></label>
-          <input type="range" id="elo" min="100" max="3500" step="100" value="3190" />
+          <input type="range" id="elo" min="100" max="3500" step="100" value="3500" />
         </div>
 
         <div class="setting">
@@ -55,24 +55,37 @@
           </select>
         </div>
 
+        <!-- Toggle switches -->
         <div class="setting">
           <span id="autoMoveLabel">Auto Move (OFF)</span>
-          <input type="checkbox" id="autoMove" />
+          <label class="toggle">
+            <input type="checkbox" id="autoMove">
+            <span class="slider"></span>
+          </label>
         </div>
 
         <div class="setting">
           <span id="winningMoveLabel">Only Winning Move (OFF)</span>
-          <input type="checkbox" id="winningMove" />
+          <label class="toggle">
+            <input type="checkbox" id="winningMove">
+            <span class="slider"></span>
+          </label>
         </div>
 
         <div class="setting">
           <span id="showEvalLabel">Show Eval Bar (OFF)</span>
-          <input type="checkbox" id="showEval" />
+          <label class="toggle">
+            <input type="checkbox" id="showEval">
+            <span class="slider"></span>
+          </label>
         </div>
 
         <div class="setting">
           <span id="onlyShowEvalLabel">Hide Arrows (OFF)</span>
-          <input type="checkbox" id="onlyShowEval" />
+          <label class="toggle">
+            <input type="checkbox" id="onlyShowEval">
+            <span class="slider"></span>
+          </label>
         </div>
       </div>
     </div>
@@ -84,7 +97,7 @@
 
         <div class="setting">
           <label>ELO: <span id="eloValue2">3190</span></label>
-          <input type="range" id="elo2" min="100" max="3500" step="100" value="3190" />
+          <input type="range" id="elo2" min="100" max="3500" step="100" value="3500" />
         </div>
 
         <div class="setting">
@@ -111,19 +124,29 @@
           </select>
         </div>
 
+        <!-- Toggle switches -->
         <div class="setting">
           <span id="winningMoveLabel2">Only Winning Move (OFF)</span>
-          <input type="checkbox" id="winningMove2" />
+          <label class="toggle">
+            <input type="checkbox" id="winningMove2">
+            <span class="slider"></span>
+          </label>
         </div>
 
         <div class="setting">
           <span id="showEvalLabel2">Show Eval Bar (OFF)</span>
-          <input type="checkbox" id="showEval2" />
+          <label class="toggle">
+            <input type="checkbox" id="showEval2">
+            <span class="slider"></span>
+          </label>
         </div>
 
         <div class="setting">
           <span id="onlyShowEvalLabel2">Hide Arrows (OFF)</span>
-          <input type="checkbox" id="onlyShowEval2" />
+          <label class="toggle">
+            <input type="checkbox" id="onlyShowEval2">
+            <span class="slider"></span>
+          </label>
         </div>
       </div>
     </div>

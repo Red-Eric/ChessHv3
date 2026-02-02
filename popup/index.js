@@ -42,7 +42,8 @@ function updateChessUI() {
   el("showEvalLabel").textContent = `Show Eval Bar (${chessConfig.showEval ? "ON":"OFF"})`;
   el("onlyShowEvalLabel").textContent = `Hide Arrows (${chessConfig.onlyShowEval ? "ON":"OFF"})`;
 
-  console.clear(chessConfig)
+  console.clear()
+  console.log(chessConfig)
 
 }
 
