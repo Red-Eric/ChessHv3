@@ -39,9 +39,7 @@ class komodo {
 
   updateConfig(lines, depth, style, elo) {
     this.depth = depth;
-    this.worker.postMessage(
-      `setoption name Personality value ${style}`,
-    );
+    this.worker.postMessage(`setoption name Personality value ${style}`);
     this.worker.postMessage(`setoption name UCI Elo value ${elo}`);
     this.worker.postMessage(`setoption name MultiPV value ${lines}`);
   }
@@ -58,6 +56,7 @@ class komodo {
     return new Promise((resolve) => {
       const onMessage = (event) => {
         const line = event.data;
+        // console.log(line)
         if (typeof line !== "string") return;
 
         /* ---------- BOOK MOVES ---------- */
@@ -167,7 +166,12 @@ chrome.runtime.onMessage.addListener(async (msg, sender, sendResponse) => {
     if (engine) {
       if (msg.config) {
         let config = msg.config;
-        engine.updateConfig(config.lines, config.depth, config.style, config.elo)
+        engine.updateConfig(
+          config.lines,
+          config.depth,
+          config.style,
+          config.elo,
+        );
       }
 
       engine.getMoves(msg.fen).then((moves) => {

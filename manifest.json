@@ -50,7 +50,8 @@
         "b.js",
         "lib/chess_min.js",
         "lib/engine.js",
-        "lib/engine.wasm"
+        "lib/engine.wasm",
+        "book/komodo.bin"
       ],
       "matches": [
         "<all_urls>"
