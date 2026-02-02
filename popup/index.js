@@ -18,25 +18,27 @@ tabs.forEach((tab, index) => {
   };
 });
 
+const el = id => document.getElementById(id);
+
 /* ================= CHESS.COM CONFIG ================= */
 let chessConfig = JSON.parse(localStorage.getItem("chessConfig")) || {
   elo: 3190,
   lines: 3,
   depth: 10,
   delay: 100,
+  style: "Default",
   autoMove: false,
   winningMove: false,
   showEval: false,
   onlyShowEval: false
 };
 
-const el = id => document.getElementById(id);
-
 function updateChessUI() {
   el("elo").value = chessConfig.elo;
   el("lines").value = chessConfig.lines;
   el("depth").value = chessConfig.depth;
   el("delay").value = chessConfig.delay;
+  el("style").value = chessConfig.style;
 
   el("autoMove").checked = chessConfig.autoMove;
   el("winningMove").checked = chessConfig.winningMove;
@@ -52,9 +54,9 @@ function updateChessUI() {
   el("winningMoveLabel").textContent = `Only Winning Move (${chessConfig.winningMove ? "ON" : "OFF"})`;
   el("showEvalLabel").textContent = `Show Eval Bar (${chessConfig.showEval ? "ON" : "OFF"})`;
   el("onlyShowEvalLabel").textContent = `Hide Arrows (${chessConfig.onlyShowEval ? "ON" : "OFF"})`;
-  console.clear()
-  console.log(chessConfig)
 
+  console.clear();
+  console.log(chessConfig);
 }
 
 function saveChess() {
@@ -69,6 +71,12 @@ function saveChess() {
     saveChess();
   };
 });
+
+el("style").onchange = e => {
+  chessConfig.style = e.target.value;
+  updateChessUI();
+  saveChess();
+};
 
 ["autoMove", "winningMove", "showEval", "onlyShowEval"].forEach(id => {
   el(id).onchange = e => {
@@ -85,6 +93,7 @@ let lichessConfig = JSON.parse(localStorage.getItem("lichessConfig")) || {
   elo: 3190,
   lines: 3,
   depth: 10,
+  style: "Default",
   winningMove: false,
   showEval: false,
   onlyShowEval: false
@@ -94,6 +103,7 @@ function updateLichessUI() {
   el("elo2").value = lichessConfig.elo;
   el("lines2").value = lichessConfig.lines;
   el("depth2").value = lichessConfig.depth;
+  el("style2").value = lichessConfig.style;
 
   el("winningMove2").checked = lichessConfig.winningMove;
   el("showEval2").checked = lichessConfig.showEval;
@@ -106,8 +116,9 @@ function updateLichessUI() {
   el("winningMoveLabel2").textContent = `Only Winning Move (${lichessConfig.winningMove ? "ON" : "OFF"})`;
   el("showEvalLabel2").textContent = `Show Eval Bar (${lichessConfig.showEval ? "ON" : "OFF"})`;
   el("onlyShowEvalLabel2").textContent = `Hide Arrows (${lichessConfig.onlyShowEval ? "ON" : "OFF"})`;
-  console.clear()
-  console.log(lichessConfig)
+
+  console.clear();
+  console.log(lichessConfig);
 }
 
 function saveLichess() {
@@ -123,6 +134,12 @@ function saveLichess() {
   };
 });
 
+el("style2").onchange = e => {
+  lichessConfig.style = e.target.value;
+  updateLichessUI();
+  saveLichess();
+};
+
 ["winningMove2", "showEval2", "onlyShowEval2"].forEach(id => {
   el(id).onchange = e => {
     lichessConfig[id.replace("2", "")] = e.target.checked;
@@ -132,8 +149,6 @@ function saveLichess() {
 });
 
 updateLichessUI();
-
-
 
 
 // ===== Chessboard Panel =====

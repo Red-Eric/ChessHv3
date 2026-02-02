@@ -120,7 +120,7 @@ class komodo {
   }
 
   async init() {
-    this.worker = new Worker(chrome.runtime.getURL("lib/komodo.js"));
+    this.worker = new Worker(`${chrome.runtime.getURL("lib/engine.js")}#${chrome.runtime.getURL("lib/engine.wasm")}`);
     this.worker.postMessage("uci");
     this.setOptions();
   }
@@ -146,6 +146,7 @@ class komodo {
     return new Promise((resolve) => {
       const onMessage = (event) => {
         const line = event.data;
+        console.log(line)
         if (typeof line !== "string") return;
 
         /* ---------- BOOK MOVES ---------- */
@@ -240,7 +241,7 @@ class komodo {
   }
 }
 
-const engine = new Engine({
+const engine = new komodo({
   elo: 3500,
   depth: 10,
   multipv: 5,
