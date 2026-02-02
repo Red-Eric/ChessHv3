@@ -44,7 +44,7 @@ class komodo {
     this.worker.postMessage(`setoption name MultiPV value ${lines}`);
   }
 
-  async getMoves(fen) {
+  async getMoves(fen, side) {
     await this.ready;
 
     const results = [];
@@ -69,6 +69,8 @@ class komodo {
                 from: move.slice(0, 2),
                 to: move.slice(2, 4),
                 eval: "book",
+                fen: fen,
+                side: side,
               });
               seenMoves.add(move);
             }
@@ -132,6 +134,8 @@ class komodo {
                   from: move.slice(0, 2),
                   to: move.slice(2, 4),
                   eval: evalScore,
+                  fen: fen,
+                  side: side,
                 });
                 seenMoves.add(move);
               }
@@ -174,8 +178,7 @@ chrome.runtime.onMessage.addListener(async (msg, sender, sendResponse) => {
         );
       }
 
-      engine.getMoves(msg.fen).then((moves) => {
-        // console.log(moves);
+      engine.getMoves(msg.fen, msg.side).then((moves) => {
         chrome.runtime.sendMessage({
           type: "returnContent",
           moves: moves,

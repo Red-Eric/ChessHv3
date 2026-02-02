@@ -412,6 +412,7 @@ const startCheat = () => {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.type === "returnContent") {
         let moves = message.moves;
+        // console.log(moves)
         chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
         highlightMovesOnBoard(moves, getSide()[0]);
         if (moves.length > 0 && evalObj) {
