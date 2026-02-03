@@ -462,6 +462,7 @@ const startCheat = () => {
     let uciPos = "position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 moves e2e4 e7e5 d1h5 d7d5 b1c3"
     let evalObj = null;
     let customEval = null;
+    let lastUCIPos;
 
     function createEvalBar(initialScore = "0.0", initialColor = "white") {
       const boardContainer = document.querySelector("cg-board");
@@ -580,7 +581,7 @@ const startCheat = () => {
       // console.log(side);
       if (!Array.isArray(moves)) return;
 
-      let sideIndicator = (uciPos.trim().split(/\s+/).length % 2 === 0)?"w":"b"
+      let sideIndicator = (uciPos.trim().split(/\s+/).length % 2 != 0)?"w":"b"
 
       if (
         !(
@@ -768,14 +769,9 @@ const startCheat = () => {
       window.addEventListener("message", (event) => {
         if (event.source !== window) return;
         if (event.data && event.data.type === "FEN_RESPONSE") {
-
-
-
           // console.log(event.data.fen)
           if (event.data.fen !== fen_) {
             clearHighlightSquares();
-            console.clear()
-            console.log(event.data.uci)
             uciPos = event.data.uci
             fen_ = event.data.fen;
             chrome.runtime.sendMessage({
@@ -807,7 +803,7 @@ const startCheat = () => {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.type === "returnContent") {
         const moves = message.moves;
-        console.log(moves)
+        // console.log(moves)
         chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
         highlightMovesOnBoard(moves, getSide()[0]);
 
@@ -838,18 +834,18 @@ const startCheat = () => {
         }
       }
 
-      if (message.type === "komodo") {
-        if (config.server) {
-          highlightMovesOnBoard(message.data, getSide()[0]);
-          chrome.runtime.sendMessage({
-            type: "FROM_CONTENT",
-            data: message.data,
-          });
-          if (message.data.length > 0 && evalObj) {
-            evalObj.update(message.data[0].eval, getSide());
-          }
-        }
-      }
+      // if (message.type === "komodo") {
+      //   if (config.server) {
+      //     highlightMovesOnBoard(message.data, getSide()[0]);
+      //     chrome.runtime.sendMessage({
+      //       type: "FROM_CONTENT",
+      //       data: message.data,
+      //     });
+      //     if (message.data.length > 0 && evalObj) {
+      //       evalObj.update(message.data[0].eval, getSide());
+      //     }
+      //   }
+      // }
     });
   }
 

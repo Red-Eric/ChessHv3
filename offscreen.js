@@ -301,7 +301,7 @@ chrome.runtime.onMessage.addListener(async (msg, sender, sendResponse) => {
       }
 
       if (msg.uci && msg.fen) {
-        engine.getMovesByUCI(msg.uci, msg.side).then((moves) => {
+        engine.getMovesByUCI(msg.uci, msg.side, msg.fen).then((moves) => {
           chrome.runtime.sendMessage({
             type: "returnContent",
             moves: moves,

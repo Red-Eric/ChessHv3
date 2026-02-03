@@ -130,6 +130,7 @@ if (window.location.hostname.includes("lichess.org")) {
     return fenRows.join("/") + " w KQkq - 0 1";
   }
 
+  let lastMove = "";
   let fenUCI = "";
   let castling = "KQkq";
 
@@ -142,23 +143,10 @@ if (window.location.hostname.includes("lichess.org")) {
     }
 
     if (document.querySelectorAll(".last-move").length > 1) {
-      let move = ""
-      document
-        .querySelectorAll(".last-move")
-        .forEach((el) => {
-          if(el.className === "last-move"){
-            move += el.cgKey
-          }
-        });
-
-        //e4e2 - 
-        move = move[2]+move[3]+move[0]+move[1]
-
-      if (fenUCI.slice(-5).trim() !== move) {
-        fenUCI += move + " ";
-        // console.clear();
-        // console.log(fenUCI);
-      }
+      let move = "";
+      document.querySelectorAll(".last-move").forEach((el) => {
+        
+      });
     }
 
     if (site?.sound?.move) {
@@ -167,6 +155,12 @@ if (window.location.hostname.includes("lichess.org")) {
       site.sound.move = function (x) {
         if (x && x.fen) {
           sideToMove = x.ply % 2 === 0 ? "w" : "b";
+          
+          if(fenUCI.slice(-5).trim() !== x.uci){
+            fenUCI += x.uci + " "
+            // console.clear()
+            // console.log(fenUCI)
+          }
 
           if (
             sideToMove === "b" &&
