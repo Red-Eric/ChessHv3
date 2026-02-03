@@ -13,6 +13,14 @@ function clickButtonsByText(text) {
   setTimeout(() => clickButtonsByText(text), 100);
 }
 
+function countMoves(fenString) {
+    const parts = fenString.split("moves");
+    if (parts.length < 2) return 0;
+    const movesPart = parts[1].trim();
+    const movesArray = movesPart.split(/\s+/);
+    return movesArray.length;
+  }
+
 function randomIntBetween(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
@@ -45,31 +53,26 @@ let config = {
 
 function saveConfig() {
   localStorage.setItem("chessConfig", JSON.stringify(config));
-  // console.log("saved chess.com");
 }
 
 function saveConfig2() {
-  // lichess
   localStorage.setItem("chessConfig2", JSON.stringify(config));
-  // console.log("saved lichess");
 }
 
 function loadConfig() {
   const saved = localStorage.getItem("chessConfig");
   if (saved) {
-    // config = JSON.parse(saved);
     config = { ...config, ...JSON.parse(saved) };
   }
 }
 
 function loadConfig2() {
-  // lichess
   const saved = localStorage.getItem("chessConfig2");
   if (saved) {
-    // config = JSON.parse(saved);
     config = { ...config, ...JSON.parse(saved) };
   }
 }
+
 
 const startCheat = () => {
   if (window.location.hostname.includes("chess.com")) {
@@ -456,6 +459,7 @@ const startCheat = () => {
   if (window.location.hostname.includes("lichess")) {
     loadConfig2();
     let fen_ = "";
+    let uciPos = "position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 moves e2e4 e7e5 d1h5 d7d5 b1c3"
     let evalObj = null;
     let customEval = null;
 
@@ -576,10 +580,12 @@ const startCheat = () => {
       // console.log(side);
       if (!Array.isArray(moves)) return;
 
+      let sideIndicator = (uciPos.trim().split(/\s+/).length % 2 === 0)?"w":"b"
+
       if (
         !(
-          (side === "w" && fen_.split(" ")[1] === "w") ||
-          (side === "b" && fen_.split(" ")[1] === "b")
+          (side === "w" && sideIndicator === "w") ||
+          (side === "b" && sideIndicator === "b")
         )
       ) {
         return;
@@ -744,6 +750,7 @@ const startCheat = () => {
     function requestFen() {
       // console.log("request fen called");
       window.postMessage({ type: "FEN" }, "*");
+
     }
 
     /////////////////////////////////////////////   calculation /////////////////////////////////////////////
@@ -761,15 +768,20 @@ const startCheat = () => {
       window.addEventListener("message", (event) => {
         if (event.source !== window) return;
         if (event.data && event.data.type === "FEN_RESPONSE") {
-          // code here
+
+
 
           // console.log(event.data.fen)
           if (event.data.fen !== fen_) {
             clearHighlightSquares();
+            console.clear()
+            console.log(event.data.uci)
+            uciPos = event.data.uci
             fen_ = event.data.fen;
             chrome.runtime.sendMessage({
               action: "ping",
               fen: fen_,
+              uci : event.data.uci,
               side: getSide(),
               config : config
             });
@@ -795,6 +807,7 @@ const startCheat = () => {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.type === "returnContent") {
         const moves = message.moves;
+        console.log(moves)
         chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
         highlightMovesOnBoard(moves, getSide()[0]);
 

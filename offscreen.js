@@ -44,7 +44,7 @@ class komodo {
     this.worker.postMessage(`setoption name MultiPV value ${lines}`);
   }
 
-  async getMoves(fen, side) {
+  async getMovesByFen(fen, side) {
     await this.ready;
 
     const results = [];
@@ -154,6 +154,119 @@ class komodo {
       this.worker.postMessage(`go depth ${this.depth}`);
     });
   }
+
+  async getMovesByUCI(uciString, side, fen) {
+    await this.ready;
+
+    const results = [];
+    const seenMoves = new Set();
+    const infoLines = [];
+    let lastDepth = 0;
+    const sideToMove = ((uciString.split(" moves ")[1].trim().split(/\s+/).length % 2) === 0) ?"w": "b";
+
+    return new Promise((resolve) => {
+      const onMessage = (event) => {
+        const line = event.data;
+        // console.log(line)
+        if (typeof line !== "string") return;
+
+        /* ---------- BOOK MOVES ---------- */
+        if (line.startsWith("info book move")) {
+          const p = line.split(" ");
+          if (p.length > 4) {
+            const move = p[4];
+            if (move.length >= 4 && !seenMoves.has(move)) {
+              results.push({
+                from: move.slice(0, 2),
+                to: move.slice(2, 4),
+                eval: "book",
+                side: side,
+                fen : fen
+              });
+              seenMoves.add(move);
+            }
+          }
+          return;
+        }
+
+        /* ---------- INFO LINES ---------- */
+        if (line.startsWith("info")) {
+          infoLines.push(line);
+
+          const parts = line.split(" ");
+          const depthIndex = parts.indexOf("depth");
+          if (depthIndex !== -1 && depthIndex + 1 < parts.length) {
+            const d = parseInt(parts[depthIndex + 1], 10);
+            if (!isNaN(d)) lastDepth = d;
+          }
+          return;
+        }
+
+        /* ---------- END ---------- */
+        if (line.startsWith("bestmove")) {
+          this.worker.removeEventListener("message", onMessage);
+
+          for (const infoLine of infoLines) {
+            if (!infoLine.includes("multipv") || !infoLine.includes(" pv "))
+              continue;
+            if (!infoLine.includes(`depth ${lastDepth} `)) continue;
+
+            const parts = infoLine.split(" ");
+
+            const mpvIndex = parts.indexOf("multipv");
+            const mpv = mpvIndex !== -1 ? parseInt(parts[mpvIndex + 1], 10) : 1;
+            if (mpv > this.multipv) continue;
+
+            /* ---------- SCORE ---------- */
+            let evalScore = null;
+            const scoreIndex = parts.indexOf("score");
+            if (scoreIndex !== -1 && scoreIndex + 2 < parts.length) {
+              const type = parts[scoreIndex + 1];
+              let value = parseInt(parts[scoreIndex + 2], 10);
+
+              if (!isNaN(value)) {
+                if (sideToMove === "b") value = -value;
+
+                if (type === "cp") {
+                  const v = (value / 100).toFixed(2);
+                  evalScore = value >= 0 ? `+${v}` : `${v}`;
+                } else if (type === "mate") {
+                  evalScore = `#${value}`;
+                }
+              }
+            }
+
+            /* ---------- MOVE ---------- */
+            const pvIndex = parts.indexOf("pv");
+            if (pvIndex !== -1 && pvIndex + 1 < parts.length) {
+              const move = parts[pvIndex + 1];
+              if (move.length >= 4 && !seenMoves.has(move)) {
+                results.push({
+                  from: move.slice(0, 2),
+                  to: move.slice(2, 4),
+                  eval: evalScore,
+                  side: side,
+                  fen : fen
+                });
+                seenMoves.add(move);
+              }
+            }
+          }
+
+          this.worker.postMessage("stop");
+          resolve(results);
+        }
+      };
+
+      this.worker.addEventListener("message", onMessage);
+
+      this.worker.postMessage("stop");
+      // position fen rnbqkb1r/pppppppp/5n2/8/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 1 moves e2e4
+
+      this.worker.postMessage(`${uciString}`);
+      this.worker.postMessage(`go depth ${this.depth}`);
+    });
+  }
 }
 
 const engine = new komodo({
@@ -178,12 +291,23 @@ chrome.runtime.onMessage.addListener(async (msg, sender, sendResponse) => {
         );
       }
 
-      engine.getMoves(msg.fen, msg.side).then((moves) => {
-        chrome.runtime.sendMessage({
-          type: "returnContent",
-          moves: moves,
+      if (msg.fen && msg.uci === undefined) {
+        engine.getMovesByFen(msg.fen, msg.side).then((moves) => {
+          chrome.runtime.sendMessage({
+            type: "returnContent",
+            moves: moves,
+          });
         });
-      });
+      }
+
+      if (msg.uci && msg.fen) {
+        engine.getMovesByUCI(msg.uci, msg.side).then((moves) => {
+          chrome.runtime.sendMessage({
+            type: "returnContent",
+            moves: moves,
+          });
+        });
+      }
     }
   }
 });
