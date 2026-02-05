@@ -13,13 +13,15 @@ function clickButtonsByText(text) {
   setTimeout(() => clickButtonsByText(text), 100);
 }
 
+let debugEngine = false;
+
 function countMoves(fenString) {
-    const parts = fenString.split("moves");
-    if (parts.length < 2) return 0;
-    const movesPart = parts[1].trim();
-    const movesArray = movesPart.split(/\s+/);
-    return movesArray.length;
-  }
+  const parts = fenString.split("moves");
+  if (parts.length < 2) return 0;
+  const movesPart = parts[1].trim();
+  const movesArray = movesPart.split(/\s+/);
+  return movesArray.length;
+}
 
 function randomIntBetween(min, max) {
   min = Math.ceil(min);
@@ -73,6 +75,301 @@ function loadConfig2() {
   }
 }
 
+async function createWorker() {
+  const url = `${chrome.runtime.getURL("lib/engine.js")}`;
+  const blob = new Blob([`importScripts("${url}");`], {
+    type: "application/javascript",
+  });
+  const blobUrl = URL.createObjectURL(blob);
+
+  return new Worker(blobUrl);
+}
+
+class komodo {
+  constructor({
+    elo = 20,
+    depth = 10,
+    multipv = 5,
+    threads = 2,
+    hash = 128,
+    personality = "Default",
+  }) {
+    this.elo = elo;
+    this.depth = depth;
+    this.multipv = multipv;
+    this.threads = threads;
+    this.hash = hash;
+    this.personality = personality;
+    this.ready = this.init();
+  }
+
+  async init() {
+    this.worker = await createWorker();
+    this.worker.postMessage("uci");
+    this.setOptions();
+  }
+
+  setOptions() {
+    this.worker.postMessage(
+      `setoption name Personality value ${this.personality}`,
+    );
+    this.worker.postMessage("setoption name UCI LimitStrength value true");
+    this.worker.postMessage(`setoption name UCI Elo value ${this.elo}`);
+    this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
+  }
+
+  // lines: 3,
+  //   depth: 10,
+  //   style: "Default",
+
+  updateConfig(lines, depth, style, elo) {
+    this.depth = depth;
+    this.worker.postMessage(`setoption name Personality value ${style}`);
+    this.worker.postMessage(`setoption name UCI Elo value ${elo}`);
+    this.worker.postMessage(`setoption name MultiPV value ${lines}`);
+  }
+
+  async getMovesByFen(fen, side) {
+    await this.ready;
+
+    const results = [];
+    const seenMoves = new Set();
+    const infoLines = [];
+    let lastDepth = 0;
+    const sideToMove = fen.split(" ")[1];
+
+    return new Promise((resolve) => {
+      const onMessage = (event) => {
+        const line = event.data;
+        if (debugEngine) {
+          console.log(line);
+        }
+        //console.log(line);
+        if (typeof line !== "string") return;
+
+        /* ---------- BOOK MOVES ---------- */
+        if (line.startsWith("info book move")) {
+          const p = line.split(" ");
+          if (p.length > 4) {
+            const move = p[4];
+            if (move.length >= 4 && !seenMoves.has(move)) {
+              results.push({
+                from: move.slice(0, 2),
+                to: move.slice(2, 4),
+                eval: "book",
+                fen: fen,
+                side: side,
+              });
+              seenMoves.add(move);
+            }
+          }
+          return;
+        }
+
+        /* ---------- INFO LINES ---------- */
+        if (line.startsWith("info")) {
+          infoLines.push(line);
+
+          const parts = line.split(" ");
+          const depthIndex = parts.indexOf("depth");
+          if (depthIndex !== -1 && depthIndex + 1 < parts.length) {
+            const d = parseInt(parts[depthIndex + 1], 10);
+            if (!isNaN(d)) lastDepth = d;
+          }
+          return;
+        }
+
+        /* ---------- END ---------- */
+        if (line.startsWith("bestmove")) {
+          this.worker.removeEventListener("message", onMessage);
+
+          for (const infoLine of infoLines) {
+            if (!infoLine.includes("multipv") || !infoLine.includes(" pv "))
+              continue;
+            if (!infoLine.includes(`depth ${lastDepth} `)) continue;
+
+            const parts = infoLine.split(" ");
+
+            const mpvIndex = parts.indexOf("multipv");
+            const mpv = mpvIndex !== -1 ? parseInt(parts[mpvIndex + 1], 10) : 1;
+            if (mpv > this.multipv) continue;
+
+            /* ---------- SCORE ---------- */
+            let evalScore = null;
+            const scoreIndex = parts.indexOf("score");
+            if (scoreIndex !== -1 && scoreIndex + 2 < parts.length) {
+              const type = parts[scoreIndex + 1];
+              let value = parseInt(parts[scoreIndex + 2], 10);
+
+              if (!isNaN(value)) {
+                if (sideToMove === "b") value = -value;
+
+                if (type === "cp") {
+                  const v = (value / 100).toFixed(2);
+                  evalScore = value >= 0 ? `+${v}` : `${v}`;
+                } else if (type === "mate") {
+                  evalScore = `#${value}`;
+                }
+              }
+            }
+
+            /* ---------- MOVE ---------- */
+            const pvIndex = parts.indexOf("pv");
+            if (pvIndex !== -1 && pvIndex + 1 < parts.length) {
+              const move = parts[pvIndex + 1];
+              if (move.length >= 4 && !seenMoves.has(move)) {
+                results.push({
+                  from: move.slice(0, 2),
+                  to: move.slice(2, 4),
+                  eval: evalScore,
+                  fen: fen,
+                  side: side,
+                });
+                seenMoves.add(move);
+              }
+            }
+          }
+
+          this.worker.postMessage("stop");
+          resolve(results);
+        }
+      };
+
+      this.worker.addEventListener("message", onMessage);
+
+      this.worker.postMessage("stop");
+      this.worker.postMessage(`position fen ${fen}`);
+      this.worker.postMessage(`go depth ${this.depth}`);
+    });
+  }
+
+  async getMovesByUCI(uciString, side, fen) {
+    await this.ready;
+
+    const results = [];
+    const seenMoves = new Set();
+    const infoLines = [];
+    let lastDepth = 0;
+    const sideToMove =
+      uciString.split(" moves ")[1].trim().split(/\s+/).length % 2 === 0
+        ? "w"
+        : "b";
+
+    return new Promise((resolve) => {
+      const onMessage = (event) => {
+        const line = event.data;
+        if (debugEngine) {
+          console.log(line);
+        }
+        if (typeof line !== "string") return;
+
+        /* ---------- BOOK MOVES ---------- */
+        if (line.startsWith("info book move")) {
+          const p = line.split(" ");
+          if (p.length > 4) {
+            const move = p[4];
+            if (move.length >= 4 && !seenMoves.has(move)) {
+              results.push({
+                from: move.slice(0, 2),
+                to: move.slice(2, 4),
+                eval: "book",
+                side: side,
+                fen: fen,
+              });
+              seenMoves.add(move);
+            }
+          }
+          return;
+        }
+
+        /* ---------- INFO LINES ---------- */
+        if (line.startsWith("info")) {
+          infoLines.push(line);
+
+          const parts = line.split(" ");
+          const depthIndex = parts.indexOf("depth");
+          if (depthIndex !== -1 && depthIndex + 1 < parts.length) {
+            const d = parseInt(parts[depthIndex + 1], 10);
+            if (!isNaN(d)) lastDepth = d;
+          }
+          return;
+        }
+
+        /* ---------- END ---------- */
+        if (line.startsWith("bestmove")) {
+          this.worker.removeEventListener("message", onMessage);
+
+          for (const infoLine of infoLines) {
+            if (!infoLine.includes("multipv") || !infoLine.includes(" pv "))
+              continue;
+            if (!infoLine.includes(`depth ${lastDepth} `)) continue;
+
+            const parts = infoLine.split(" ");
+
+            const mpvIndex = parts.indexOf("multipv");
+            const mpv = mpvIndex !== -1 ? parseInt(parts[mpvIndex + 1], 10) : 1;
+            if (mpv > this.multipv) continue;
+
+            /* ---------- SCORE ---------- */
+            let evalScore = null;
+            const scoreIndex = parts.indexOf("score");
+            if (scoreIndex !== -1 && scoreIndex + 2 < parts.length) {
+              const type = parts[scoreIndex + 1];
+              let value = parseInt(parts[scoreIndex + 2], 10);
+
+              if (!isNaN(value)) {
+                if (sideToMove === "b") value = -value;
+
+                if (type === "cp") {
+                  const v = (value / 100).toFixed(2);
+                  evalScore = value >= 0 ? `+${v}` : `${v}`;
+                } else if (type === "mate") {
+                  evalScore = `#${value}`;
+                }
+              }
+            }
+
+            /* ---------- MOVE ---------- */
+            const pvIndex = parts.indexOf("pv");
+            if (pvIndex !== -1 && pvIndex + 1 < parts.length) {
+              const move = parts[pvIndex + 1];
+              if (move.length >= 4 && !seenMoves.has(move)) {
+                results.push({
+                  from: move.slice(0, 2),
+                  to: move.slice(2, 4),
+                  eval: evalScore,
+                  side: side,
+                  fen: fen,
+                });
+                seenMoves.add(move);
+              }
+            }
+          }
+
+          this.worker.postMessage("stop");
+          resolve(results);
+        }
+      };
+
+      this.worker.addEventListener("message", onMessage);
+
+      this.worker.postMessage("stop");
+      // position fen rnbqkb1r/pppppppp/5n2/8/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 1 moves e2e4
+
+      this.worker.postMessage(`${uciString}`);
+      this.worker.postMessage(`go depth ${this.depth}`);
+    });
+  }
+}
+
+const engine = new komodo({
+  elo: config.elo,
+  depth: config.depth,
+  multipv: config.lines,
+  threads: 2,
+  hash: 128,
+  personality: config.style,
+});
 
 const startCheat = () => {
   if (window.location.hostname.includes("chess.com")) {
@@ -405,8 +702,25 @@ const startCheat = () => {
           action: "ping",
           fen: fen_,
           side: getSide(),
-          config : config,
-          type : "fen"
+          config: config,
+          type: "fen",
+        });
+
+        engine.getMovesByFen(fen_, getSide()).then((moves) => {
+          chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+          highlightMovesOnBoard(moves, getSide()[0]);
+          if (
+            (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+            (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+          ) {
+            if (config.autoMove) {
+              requestMove(moves[0].from, moves[0].to);
+            }
+          }
+
+          if (moves.length > 0 && evalObj) {
+            evalObj.update(moves[0].eval, getSide());
+          }
         });
       }
     }
@@ -414,32 +728,14 @@ const startCheat = () => {
     setInterval(checkAndSendMoves, interval);
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.type === "returnContent") {
-        let moves = message.moves;
-        // console.log(moves)
-        chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-        highlightMovesOnBoard(moves, getSide()[0]);
-        if (moves.length > 0 && evalObj) {
-          evalObj.update(moves[0].eval, getSide());
-        }
-
-        if (
-          (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-          (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-        ) {
-          if (config.autoMove) {
-            requestMove(moves[0].from, moves[0].to);
-          }
-        }
-      }
-
       if (message.config && message.type === "config") {
         config = { ...config, ...message.config };
 
         // console.log("message from backgound js ", message);
         saveConfig();
+        engine.updateConfig(config.lines, config.depth, config.style, config.elo)
         clearHighlightSquares();
-        lastFEN = ""
+        lastFEN = "";
         if (!config.showEval && customEval) {
           customEval.remove();
           customEval = null;
@@ -460,7 +756,8 @@ const startCheat = () => {
   if (window.location.hostname.includes("lichess")) {
     loadConfig2();
     let fen_ = "";
-    let uciPos = "position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 moves e2e4 e7e5 d1h5 d7d5 b1c3"
+    let uciPos =
+      "position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 moves e2e4 e7e5 d1h5 d7d5 b1c3";
     let evalObj = null;
     let customEval = null;
     let lastUCIPos;
@@ -582,7 +879,8 @@ const startCheat = () => {
       // console.log(side);
       if (!Array.isArray(moves)) return;
 
-      let sideIndicator = (uciPos.trim().split(/\s+/).length % 2 != 0)?"w":"b"
+      let sideIndicator =
+        uciPos.trim().split(/\s+/).length % 2 != 0 ? "w" : "b";
 
       if (
         !(
@@ -752,7 +1050,6 @@ const startCheat = () => {
     function requestFen() {
       // console.log("request fen called");
       window.postMessage({ type: "FEN" }, "*");
-
     }
 
     /////////////////////////////////////////////   calculation /////////////////////////////////////////////
@@ -773,16 +1070,21 @@ const startCheat = () => {
           // console.log(event.data.fen)
           if (event.data.fen !== fen_) {
             clearHighlightSquares();
-            uciPos = event.data.uci
+            uciPos = event.data.uci;
             fen_ = event.data.fen;
-            chrome.runtime.sendMessage({
-              action: "ping",
-              fen: fen_,
-              uci : event.data.uci,
-              side: getSide(),
-              config : config,
-              type : "uci"
-            });
+            engine
+              .getMovesByUCI(event.data.uci, getSide(), fen_)
+              .then((moves) => {
+                highlightMovesOnBoard(moves, getSide()[0]);
+                if (moves.length > 0 && evalObj) {
+                  evalObj.update(moves[0].eval, getSide());
+                }
+
+                chrome.runtime.sendMessage({
+                  type: "FROM_CONTENT",
+                  data: moves,
+                });
+              });
           }
         }
       });
@@ -803,23 +1105,15 @@ const startCheat = () => {
     }, interval);
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.type === "returnContent") {
-        const moves = message.moves;
-        // console.log(moves)
-        chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-        highlightMovesOnBoard(moves, getSide()[0]);
-
-        if (moves.length > 0 && evalObj) {
-          evalObj.update(moves[0].eval, getSide());
-        }
-      }
+      
 
       if (message.type === "config2") {
         config = message.config;
         // console.log(config)
         saveConfig2();
+        engine.updateConfig(config.lines, config.depth, config.style, config.elo)
         clearHighlightSquares();
-        lastFEN = ""
+        lastFEN = "";
 
         if (!config.showEval && customEval) {
           customEval.remove();
@@ -1052,10 +1346,6 @@ const startCheat = () => {
       });
     }
 
-    // function clearHighlightSquares() {
-    //   document.querySelectorAll(".customH").forEach((el) => el.remove());
-    // }
-
     function createEvalBar(initialScore = "0.0", initialColor = "white") {
       const boardContainer = document.querySelector("cg-board");
       let w_ = boardContainer.offsetWidth;
@@ -1185,12 +1475,14 @@ const startCheat = () => {
         // console.log(fen_)
         currentFen = fen_;
         clearHighlightSquares();
-        chrome.runtime.sendMessage({
-          action: "ping",
-          fen: fen_,
-          side: getSide(),
-          config : config,
-          type : "fen"
+
+        engine.getMovesByFen(fen_, getSide()).then((moves) => {
+          chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+          highlightMovesOnBoard(moves, getSide()[0]);
+
+          if (moves.length > 0 && evalObj) {
+            evalObj.update(moves[0].eval, getSide());
+          }
         });
       }
     }, interval);
@@ -1198,19 +1490,11 @@ const startCheat = () => {
     // PArametre chessARENA
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.type === "returnContent") {
-        const moves = message.moves;
-        chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-        highlightMovesOnBoard(moves, getSide()[0]);
-
-        if (moves.length > 0 && evalObj) {
-          evalObj.update(moves[0].eval, getSide());
-        }
-      }
       if (message.type === "config2") {
         config = message.config;
 
         // console.log(config)
+        engine.updateConfig(config.lines, config.depth, config.style, config.elo)
         saveConfig2();
         clearHighlightSquares();
 
@@ -1219,7 +1503,7 @@ const startCheat = () => {
           customEval = null;
           evalObj = null;
         }
-        lastFEN = ""
+        lastFEN = "";
         if (config.showEval && !customEval) {
           const boardContainer = document.querySelector("cg-container");
           if (boardContainer) {

@@ -140,17 +140,3 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 });
 
-
-// chrome.tabs.onActivated.addListener(({ tabId }) => {
-//   chrome.debugger.attach({ tabId }, "1.3", () => {
-//     chrome.debugger.sendCommand({ tabId }, "Network.enable");
-//   });
-// });
-
-// chrome.debugger.onEvent.addListener((source, method, params) => {
-//   if (method === "Network.webSocketCreated") {
-//     console.log("WS URL:", params.url);
-//   }
-// });
-
-
