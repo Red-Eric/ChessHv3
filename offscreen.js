@@ -56,7 +56,7 @@ class komodo {
     return new Promise((resolve) => {
       const onMessage = (event) => {
         const line = event.data;
-        // console.log(line)
+        console.log(line)
         if (typeof line !== "string") return;
 
         /* ---------- BOOK MOVES ---------- */
@@ -162,12 +162,15 @@ class komodo {
     const seenMoves = new Set();
     const infoLines = [];
     let lastDepth = 0;
-    const sideToMove = ((uciString.split(" moves ")[1].trim().split(/\s+/).length % 2) === 0) ?"w": "b";
+    const sideToMove =
+      uciString.split(" moves ")[1].trim().split(/\s+/).length % 2 === 0
+        ? "w"
+        : "b";
 
     return new Promise((resolve) => {
       const onMessage = (event) => {
         const line = event.data;
-        // console.log(line)
+        console.log(line)
         if (typeof line !== "string") return;
 
         /* ---------- BOOK MOVES ---------- */
@@ -181,7 +184,7 @@ class komodo {
                 to: move.slice(2, 4),
                 eval: "book",
                 side: side,
-                fen : fen
+                fen: fen,
               });
               seenMoves.add(move);
             }
@@ -246,7 +249,7 @@ class komodo {
                   to: move.slice(2, 4),
                   eval: evalScore,
                   side: side,
-                  fen : fen
+                  fen: fen,
                 });
                 seenMoves.add(move);
               }
@@ -291,7 +294,7 @@ chrome.runtime.onMessage.addListener(async (msg, sender, sendResponse) => {
         );
       }
 
-      if (msg.fen && msg.uci === undefined) {
+      if (msg.type === "fen") {
         engine.getMovesByFen(msg.fen, msg.side).then((moves) => {
           chrome.runtime.sendMessage({
             type: "returnContent",
@@ -300,7 +303,7 @@ chrome.runtime.onMessage.addListener(async (msg, sender, sendResponse) => {
         });
       }
 
-      if (msg.uci && msg.fen) {
+      if (msg.type === "uci") {
         engine.getMovesByUCI(msg.uci, msg.side, msg.fen).then((moves) => {
           chrome.runtime.sendMessage({
             type: "returnContent",

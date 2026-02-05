@@ -34,7 +34,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     case "config2":
       currentConfig2 = message.config;
-      console.log("Config Lichess reçue :", currentConfig2);
 
       sendConfigToSite("config2", currentConfig2, "*://*.lichess.org/*");
       sendConfigToSite("config2", currentConfig2, "*://*.worldchess.com/*");
@@ -84,7 +83,6 @@ chrome.action.onClicked.addListener(() => {
     },
     (newWindow) => {
       popupWindowId = newWindow.id;
-      console.log("Popup fullscreen créée", newWindow);
 
       const tab = newWindow.tabs?.[0];
       if (tab?.id) {
@@ -141,3 +139,18 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     sendMovesToSite("returnContent", msg.moves, "*://*.chess.com/*");
   }
 });
+
+
+// chrome.tabs.onActivated.addListener(({ tabId }) => {
+//   chrome.debugger.attach({ tabId }, "1.3", () => {
+//     chrome.debugger.sendCommand({ tabId }, "Network.enable");
+//   });
+// });
+
+// chrome.debugger.onEvent.addListener((source, method, params) => {
+//   if (method === "Network.webSocketCreated") {
+//     console.log("WS URL:", params.url);
+//   }
+// });
+
+

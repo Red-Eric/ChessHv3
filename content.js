@@ -405,7 +405,8 @@ const startCheat = () => {
           action: "ping",
           fen: fen_,
           side: getSide(),
-          config : config
+          config : config,
+          type : "fen"
         });
       }
     }
@@ -779,7 +780,8 @@ const startCheat = () => {
               fen: fen_,
               uci : event.data.uci,
               side: getSide(),
-              config : config
+              config : config,
+              type : "uci"
             });
           }
         }
@@ -1187,7 +1189,8 @@ const startCheat = () => {
           action: "ping",
           fen: fen_,
           side: getSide(),
-          config : config
+          config : config,
+          type : "fen"
         });
       }
     }, interval);
