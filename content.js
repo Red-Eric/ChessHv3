@@ -13,7 +13,7 @@ function clickButtonsByText(text) {
   setTimeout(() => clickButtonsByText(text), 100);
 }
 
-let debugEngine = false;
+let debugEngine = true;
 
 function countMoves(fenString) {
   const parts = fenString.split("moves");
@@ -109,6 +109,20 @@ class komodo {
     this.setOptions();
   }
 
+  hardStop() {
+    if (this.worker) {
+      this.worker.terminate();
+      this.worker = null;
+    }
+  }
+
+  async restartWorker() {
+    this.hardStop();
+    this.worker = await createWorker();
+    this.worker.postMessage("uci");
+    this.setOptions();
+  }
+
   setOptions() {
     this.worker.postMessage(
       `setoption name Personality value ${this.personality}`,
@@ -130,7 +144,7 @@ class komodo {
   }
 
   async getMovesByFen(fen, side) {
-    await this.ready;
+    await this.restartWorker();
 
     const results = [];
     const seenMoves = new Set();
@@ -230,21 +244,19 @@ class komodo {
             }
           }
 
-          this.worker.postMessage("stop");
           resolve(results);
         }
       };
 
       this.worker.addEventListener("message", onMessage);
 
-      this.worker.postMessage("stop");
       this.worker.postMessage(`position fen ${fen}`);
       this.worker.postMessage(`go depth ${this.depth}`);
     });
   }
 
   async getMovesByUCI(uciString, side, fen) {
-    await this.ready;
+    await this.restartWorker();
 
     const results = [];
     const seenMoves = new Set();
@@ -346,16 +358,11 @@ class komodo {
             }
           }
 
-          this.worker.postMessage("stop");
           resolve(results);
         }
       };
 
       this.worker.addEventListener("message", onMessage);
-
-      this.worker.postMessage("stop");
-      // position fen rnbqkb1r/pppppppp/5n2/8/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 1 moves e2e4
-
       this.worker.postMessage(`${uciString}`);
       this.worker.postMessage(`go depth ${this.depth}`);
     });
@@ -696,18 +703,13 @@ const startCheat = () => {
       }
 
       if (lastFEN !== fen_) {
+        engine.worker.postMessage("stop");
         clearHighlightSquares();
         lastFEN = fen_;
-        chrome.runtime.sendMessage({
-          action: "ping",
-          fen: fen_,
-          side: getSide(),
-          config: config,
-          type: "fen",
-        });
-
+        // console.log(fen_)
         engine.getMovesByFen(fen_, getSide()).then((moves) => {
           chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+          // console.log(moves)
           highlightMovesOnBoard(moves, getSide()[0]);
           if (
             (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
@@ -733,7 +735,12 @@ const startCheat = () => {
 
         // console.log("message from backgound js ", message);
         saveConfig();
-        engine.updateConfig(config.lines, config.depth, config.style, config.elo)
+        engine.updateConfig(
+          config.lines,
+          config.depth,
+          config.style,
+          config.elo,
+        );
         clearHighlightSquares();
         lastFEN = "";
         if (!config.showEval && customEval) {
@@ -1105,13 +1112,16 @@ const startCheat = () => {
     }, interval);
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      
-
       if (message.type === "config2") {
         config = message.config;
         // console.log(config)
         saveConfig2();
-        engine.updateConfig(config.lines, config.depth, config.style, config.elo)
+        engine.updateConfig(
+          config.lines,
+          config.depth,
+          config.style,
+          config.elo,
+        );
         clearHighlightSquares();
         lastFEN = "";
 
@@ -1494,7 +1504,12 @@ const startCheat = () => {
         config = message.config;
 
         // console.log(config)
-        engine.updateConfig(config.lines, config.depth, config.style, config.elo)
+        engine.updateConfig(
+          config.lines,
+          config.depth,
+          config.style,
+          config.elo,
+        );
         saveConfig2();
         clearHighlightSquares();
 
