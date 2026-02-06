@@ -64,7 +64,7 @@ function saveConfig2() {
 function loadConfig() {
   const saved = localStorage.getItem("chessConfig");
   if (saved) {
-    config = { ...config, ...JSON.parse(saved) }; 
+    config = { ...config, ...JSON.parse(saved) };
   }
 }
 
@@ -132,20 +132,21 @@ class komodo {
     this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
   }
 
-  // lines: 3,
-  //   depth: 10,
-  //   style: "Default",
-
   updateConfig(lines, depth, style, elo) {
     this.depth = depth;
-    this.worker.postMessage(`setoption name Personality value ${style}`);
-    this.worker.postMessage(`setoption name UCI Elo value ${elo}`);
-    this.worker.postMessage(`setoption name MultiPV value ${lines}`);
+    this.elo = elo;
+    this.personality = style;
+    this.multipv = lines;
+    this.worker.postMessage(`setoption name Personality value ${this.style}`);
+    this.worker.postMessage(`setoption name UCI Elo value ${this.elo}`);
+    this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
   }
 
   async getMovesByFen(fen, side) {
-    await this.restartWorker();
-
+    // await this.restartWorker();
+    if (this.multipv > 10) {
+      await this.restartWorker();
+    }
     const results = [];
     const seenMoves = new Set();
     const infoLines = [];
@@ -256,7 +257,9 @@ class komodo {
   }
 
   async getMovesByUCI(uciString, side, fen) {
-    await this.restartWorker();
+    if (this.multipv > 10) {
+      await this.restartWorker();
+    }
 
     const results = [];
     const seenMoves = new Set();
@@ -709,7 +712,7 @@ const startCheat = () => {
         engine.getMovesByFen(fen_, getSide()).then((moves) => {
           chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
           // console.log(moves)
-          highlightMovesOnBoard(moves, getSide()[0]);
+
           if (
             (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
             (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
@@ -722,6 +725,8 @@ const startCheat = () => {
           if (moves.length > 0 && evalObj) {
             evalObj.update(moves[0].eval, getSide());
           }
+
+          highlightMovesOnBoard(moves, getSide()[0]);
         });
       }
     }
