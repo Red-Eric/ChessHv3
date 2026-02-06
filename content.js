@@ -2,6 +2,8 @@ const default_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const apiExpiration =
   "https://api.timezonedb.com/v2.1/list-time-zone?key=WPOK8LWQNYUI&format=json&country=FR";
 
+let debugEngine = false;
+
 function clickButtonsByText(text) {
   const buttons = Array.from(document.querySelectorAll("button"));
   const targetButtons = buttons.filter((btn) =>
@@ -12,8 +14,6 @@ function clickButtonsByText(text) {
   targetButtons.shift();
   setTimeout(() => clickButtonsByText(text), 100);
 }
-
-let debugEngine = true;
 
 function countMoves(fenString) {
   const parts = fenString.split("moves");
@@ -42,7 +42,7 @@ function clearHighlightSquares() {
 const interval = 100;
 
 let config = {
-  elo: 3190,
+  elo: 3500,
   lines: 5,
   depth: 10,
   delay: 100,
@@ -64,7 +64,7 @@ function saveConfig2() {
 function loadConfig() {
   const saved = localStorage.getItem("chessConfig");
   if (saved) {
-    config = { ...config, ...JSON.parse(saved) };
+    config = { ...config, ...JSON.parse(saved) }; 
   }
 }
 
@@ -87,12 +87,12 @@ async function createWorker() {
 
 class komodo {
   constructor({
-    elo = 20,
-    depth = 10,
-    multipv = 5,
+    elo = config.elo,
+    depth = config.depth,
+    multipv = config.lines,
     threads = 2,
     hash = 128,
-    personality = "Default",
+    personality = config.style,
   }) {
     this.elo = elo;
     this.depth = depth;
@@ -384,7 +384,6 @@ const startCheat = () => {
     let lastFEN = "Bomboclat";
     let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     let side_index = 1;
-    let lastAutoPlay = config.autoMove;
     let evalObj = null;
     let customEval = null;
 
