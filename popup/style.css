@@ -7,8 +7,8 @@
 }
 
 body {
-  background-color: #050507;
-  color: #e5e5e5;
+  background-color: #0e1117; /* dark modern */
+  color: #e6e8eb;
   min-height: 100vh;
 }
 
@@ -17,7 +17,7 @@ body {
   display: flex;
   justify-content: center;
   margin: 20px 0;
-  border-bottom: 2px solid #1a1a1a;
+  border-bottom: 2px solid #1f2933;
   border-radius: 8px;
   overflow: hidden;
 }
@@ -27,22 +27,22 @@ body {
   cursor: pointer;
   font-weight: 600;
   transition: all 0.3s ease;
-  color: #8b8b8b;
-  background: #0c0c10;
+  color: #9aa4af;
+  background: #141922;
 }
 
 .tab.active {
   color: #ffffff;
-  background: #140707;
+  background: #1b2430;
   box-shadow:
-    inset 0 -3px 0 #ff2a2a,
-    0 0 12px rgba(255, 42, 42, 0.6);
+    inset 0 -3px 0 #4f8cff,
+    0 0 12px rgba(79, 140, 255, 0.5);
 }
 
 .tab:hover {
-  background: #12090c;
-  color: #ff4a4a;
-  text-shadow: 0 0 8px rgba(255, 70, 70, 0.8);
+  background: #1f2a38;
+  color: #7fb0ff;
+  text-shadow: 0 0 8px rgba(127, 176, 255, 0.8);
   transform: translateY(-2px);
 }
 
@@ -52,12 +52,12 @@ body {
   padding: 25px 30px;
   max-width: 720px;
   margin: 0 auto 40px auto;
-  background: #0b0b0f;
+  background: #121720;
   border-radius: 16px;
-  border: 1px solid #1f0f12;
+  border: 1px solid #1f2933;
   box-shadow:
     0 0 25px rgba(0, 0, 0, 0.9),
-    0 0 20px rgba(255, 40, 40, 0.15);
+    0 0 20px rgba(79, 140, 255, 0.15);
   transition: all 0.4s ease;
 }
 
@@ -68,18 +68,18 @@ body {
 /* ========== HEADINGS ========== */
 h1 {
   text-align: center;
-  color: #ff3b3b;
+  color: #7fb0ff;
   margin-bottom: 30px;
   text-shadow:
-    0 0 8px rgba(255, 60, 60, 0.9),
-    0 0 18px rgba(255, 60, 60, 0.4);
+    0 0 8px rgba(127, 176, 255, 0.9),
+    0 0 18px rgba(127, 176, 255, 0.4);
 }
 
 p {
   text-align: center;
-  color: #ff6a6a;
+  color: #a8c7ff;
   margin-bottom: 30px;
-  text-shadow: 0 0 10px rgba(255, 80, 80, 0.6);
+  text-shadow: 0 0 10px rgba(168, 199, 255, 0.6);
 }
 
 /* ========== SETTINGS ========== */
@@ -90,16 +90,16 @@ p {
   margin-bottom: 22px;
   padding: 10px 15px;
   border-radius: 12px;
-  background: #0f0f14;
+  background: #151b26;
   box-shadow:
-    inset 0 0 8px rgba(255, 40, 40, 0.12),
+    inset 0 0 8px rgba(79, 140, 255, 0.12),
     0 0 10px rgba(0, 0, 0, 0.8);
 }
 
 .setting label,
 .setting span {
   font-weight: 500;
-  color: #ffd0d0;
+  color: #d6e3ff;
 }
 
 /* ========== SLIDERS ========== */
@@ -108,7 +108,7 @@ p {
   width: 60%;
   height: 10px;
   border-radius: 5px;
-  background: #1a1a1f;
+  background: #1f2933;
   outline: none;
 }
 
@@ -118,27 +118,27 @@ p {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: #ff2e2e;
+  background: #4f8cff;
   cursor: pointer;
   border: 2px solid #000;
   box-shadow:
-    0 0 10px rgba(255, 46, 46, 0.9),
-    0 0 20px rgba(255, 46, 46, 0.6);
+    0 0 10px rgba(79, 140, 255, 0.9),
+    0 0 20px rgba(79, 140, 255, 0.6);
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .setting input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.3);
   box-shadow:
-    0 0 14px rgba(255, 70, 70, 1),
-    0 0 28px rgba(255, 70, 70, 0.8);
+    0 0 14px rgba(127, 176, 255, 1),
+    0 0 28px rgba(127, 176, 255, 0.8);
 }
 
 /* ========== SELECT BOXES ========== */
 .setting select {
   padding: 8px 14px;
-  background: #0f0f14;
-  border: 1px solid #2a0f12;
+  background: #151b26;
+  border: 1px solid #2b3645;
   border-radius: 10px;
   color: #ffffff;
   cursor: pointer;
@@ -148,8 +148,8 @@ p {
 .setting select:hover,
 .setting select:focus {
   box-shadow:
-    0 0 10px rgba(255, 40, 40, 0.8),
-    0 0 20px rgba(255, 40, 40, 0.4);
+    0 0 10px rgba(79, 140, 255, 0.8),
+    0 0 20px rgba(79, 140, 255, 0.4);
   outline: none;
 }
 
@@ -157,10 +157,10 @@ p {
 #board1 {
   margin: 25px auto;
   border-radius: 16px;
-  border: 2px solid #ff2e2e;
+  border: 2px solid #4f8cff;
   box-shadow:
-    0 0 20px rgba(255, 46, 46, 0.8),
-    0 0 40px rgba(255, 46, 46, 0.4);
+    0 0 20px rgba(79, 140, 255, 0.8),
+    0 0 40px rgba(79, 140, 255, 0.4);
 }
 
 /* ========== TOGGLE SWITCHES ========== */
@@ -181,9 +181,9 @@ p {
   position: absolute;
   inset: 0;
   cursor: pointer;
-  background-color: #1a1a1f;
+  background-color: #1f2933;
   border-radius: 34px;
-  border: 2px solid #2a0f12;
+  border: 2px solid #2b3645;
   transition: 0.4s;
 }
 
@@ -194,17 +194,17 @@ p {
   width: 22px;
   left: 2px;
   bottom: 1px;
-  background-color: #ff2e2e;
+  background-color: #4f8cff;
   border-radius: 50%;
   box-shadow:
-    0 0 10px rgba(255, 46, 46, 0.9),
-    0 0 18px rgba(255, 46, 46, 0.6);
+    0 0 10px rgba(79, 140, 255, 0.9),
+    0 0 18px rgba(79, 140, 255, 0.6);
   transition: 0.4s;
 }
 
 .toggle input:checked + .slider {
-  background-color: #120606;
-  box-shadow: 0 0 12px rgba(255, 40, 40, 0.6);
+  background-color: #182233;
+  box-shadow: 0 0 12px rgba(79, 140, 255, 0.6);
 }
 
 .toggle input:checked + .slider:before {
@@ -216,11 +216,11 @@ input:focus,
 select:focus {
   outline: none;
   box-shadow:
-    0 0 12px rgba(255, 40, 40, 0.9),
-    0 0 24px rgba(255, 40, 40, 0.5);
+    0 0 12px rgba(79, 140, 255, 0.9),
+    0 0 24px rgba(79, 140, 255, 0.5);
 }
 
 .setting span.active {
-  color: #ff3b3b;
-  text-shadow: 0 0 8px rgba(255, 60, 60, 0.9);
+  color: #7fb0ff;
+  text-shadow: 0 0 8px rgba(127, 176, 255, 0.9);
 }
