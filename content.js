@@ -4,6 +4,8 @@ const apiExpiration =
 
 let debugEngine = false;
 
+
+
 function clickButtonsByText(text) {
   const buttons = Array.from(document.querySelectorAll("button"));
   const targetButtons = buttons.filter((btn) =>
@@ -566,13 +568,12 @@ const engine = new komodo({
   personality: config.style,
 });
 
-const engine_analyse = new Stockfish({
-  elo : 3190,
-  depth : 7,
-  multipv :1
-})
+// const engine_analyse = new Stockfish({
+//   elo: 3190,
+//   depth: 7,
+//   multipv: 1,
+// });
 
-let history = []
 
 const startCheat = () => {
   if (window.location.hostname.includes("chess.com")) {
@@ -901,22 +902,6 @@ const startCheat = () => {
         engine.worker.postMessage("stop");
         clearHighlightSquares();
         lastFEN = fen_;
-        
-        if(fen_.includes("/pppppppp/8/8/8/8/PPPPPPPP/")){
-          history = [];
-        }
-        else{
-          engine_analyse.getMovesByFen(fen_, getSide()).then((moves)=>{
-            if(moves.length > 0){
-              history.push({
-                eval : moves[0].eval,
-                side : moves[0].fen.split(" ")[1] === "w" ? "white" : "black"
-              })
-              console.clear()
-              console.log(history)
-            }
-          })
-        }
 
         // console.log(fen_)
         engine.getMovesByFen(fen_, getSide()).then((moves) => {
@@ -938,7 +923,6 @@ const startCheat = () => {
 
           highlightMovesOnBoard(moves, getSide()[0]);
         });
-
       }
     }
 
