@@ -4,7 +4,6 @@ const apiExpiration =
 
 let debugEngine = false;
 
-
 function clickButtonsByText(text) {
   const buttons = Array.from(document.querySelectorAll("button"));
   const targetButtons = buttons.filter((btn) =>
@@ -86,7 +85,6 @@ async function createWorker() {
   return new Worker(blobUrl);
 }
 
-
 async function createWorkerStockfish() {
   const url = `${chrome.runtime.getURL("lib/stockfish18.js")}`;
   const blob = new Blob([`importScripts("${url}");`], {
@@ -118,7 +116,6 @@ class Stockfish {
     // this.worker.postMessage(`setoption name Skill Level value ${this.elo}`);
     this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
     this.worker.postMessage("setoption name Ponder value false");
-
   }
 
   updateConfig({ elo, depth, multipv, threads, hash, style }) {
@@ -131,7 +128,7 @@ class Stockfish {
     this.setOptions();
   }
 
-  async getMoves(fen, side = "white") {
+  async getMovesByFen(fen, side = "white") {
     await this.ready;
     const sideToMove = fen.split(" ")[1];
 
@@ -188,7 +185,7 @@ class Stockfish {
           resolve(
             Array.from(multipvResults.entries())
               .sort(([a], [b]) => a - b)
-              .map(([_, val]) => val)
+              .map(([_, val]) => val),
           );
         }
       };
@@ -199,8 +196,79 @@ class Stockfish {
       this.worker.postMessage(`go depth ${this.depth}`);
     });
   }
-}
 
+  async getMovesByUCI(uciString, side, fen) {
+    await this.ready;
+    const sideToMove =
+      uciString.split(" moves ")[1].trim().split(/\s+/).length % 2 === 0
+        ? "w"
+        : "b";
+
+    return new Promise((resolve) => {
+      const multipvResults = new Map();
+      this.worker.postMessage("uci");
+
+      const onMessage = (event) => {
+        const msg = event.data;
+        // console.log(msg);
+        if (typeof msg !== "string") return;
+
+        if (msg.includes(`info depth ${this.depth}`)) {
+          const multipvMatch = msg.match(/multipv (\d+)/);
+          const scoreMatch = msg.match(/score (cp|mate) (-?\d+)/);
+          const pvMatch = msg.match(/pv ([a-h][1-8][a-h][1-8][qrbn]?)/);
+
+          if (multipvMatch && scoreMatch && pvMatch) {
+            const multipv = parseInt(multipvMatch[1], 10);
+            const scoreType = scoreMatch[1];
+            let scoreValueRaw = parseInt(scoreMatch[2], 10);
+
+            if (sideToMove === "b") {
+              scoreValueRaw = -scoreValueRaw;
+            }
+
+            const bestMove = pvMatch[1]; // best Move
+            let score;
+            if (scoreType === "cp") {
+              const value = +(scoreValueRaw / 100).toFixed(2);
+              score = value > 0 ? `+${value}` : `${value}`;
+            } else if (scoreType === "mate") {
+              score =
+                scoreValueRaw > 0
+                  ? `#${scoreValueRaw}`
+                  : `#-${Math.abs(scoreValueRaw)}`;
+            }
+
+            const from = bestMove.slice(0, 2);
+            const to = bestMove.slice(2, 4);
+
+            multipvResults.set(multipv, {
+              from,
+              to,
+              eval: score,
+              fen: fen,
+              side: side,
+            });
+          }
+        }
+
+        if (msg.startsWith("bestmove")) {
+          this.worker.removeEventListener("message", onMessage);
+          resolve(
+            Array.from(multipvResults.entries())
+              .sort(([a], [b]) => a - b)
+              .map(([_, val]) => val),
+          );
+        }
+      };
+
+      this.worker.addEventListener("message", onMessage);
+      this.worker.postMessage(`${uciString}`);
+      this.worker.postMessage("stop");
+      this.worker.postMessage(`go depth ${this.depth}`);
+    });
+  }
+}
 
 class komodo {
   constructor({
@@ -489,22 +557,22 @@ class komodo {
   }
 }
 
-const engine = new komodo({
+// const engine = new komodo({
+//   elo: config.elo,
+//   depth: config.depth,
+//   multipv: config.lines,
+//   threads: 2,
+//   hash: 128,
+//   personality: config.style,
+// });
+
+const engine = new Stockfish({
   elo: config.elo,
   depth: config.depth,
   multipv: config.lines,
   threads: 2,
   hash: 128,
-  personality: config.style,
 });
-
-// const engine = new Stockfish({
-//   elo: config.elo,
-//   depth: config.depth,
-//   multipv: config.lines,
-//   threads: 2,
-//   hash: 128
-// })
 
 const startCheat = () => {
   if (window.location.hostname.includes("chess.com")) {
