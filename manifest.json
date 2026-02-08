@@ -52,7 +52,8 @@
         "lib/chess_min.js",
         "lib/engine.js",
         "lib/engine.wasm",
-        "lib/explanation-engine.wasm"
+        "lib/stockfish18.js",
+        "lib/stockfish18.wasm"
       ],
       "matches": [
         "<all_urls>"
