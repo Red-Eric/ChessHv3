@@ -192,7 +192,7 @@ class Stockfish {
 
       this.worker.addEventListener("message", onMessage);
       this.worker.postMessage(`position fen ${fen}`);
-      this.worker.postMessage("stop");
+      // this.worker.postMessage("stop");
       this.worker.postMessage(`go depth ${this.depth}`);
     });
   }
@@ -264,7 +264,7 @@ class Stockfish {
 
       this.worker.addEventListener("message", onMessage);
       this.worker.postMessage(`${uciString}`);
-      this.worker.postMessage("stop");
+      // this.worker.postMessage("stop");
       this.worker.postMessage(`go depth ${this.depth}`);
     });
   }
@@ -557,22 +557,22 @@ class komodo {
   }
 }
 
-// const engine = new komodo({
-//   elo: config.elo,
-//   depth: config.depth,
-//   multipv: config.lines,
-//   threads: 2,
-//   hash: 128,
-//   personality: config.style,
-// });
-
-const engine = new Stockfish({
+const engine = new komodo({
   elo: config.elo,
   depth: config.depth,
   multipv: config.lines,
   threads: 2,
   hash: 128,
+  personality: config.style,
 });
+
+const engine_analyse = new Stockfish({
+  elo : 3190,
+  depth : 7,
+  multipv :1
+})
+
+let history = []
 
 const startCheat = () => {
   if (window.location.hostname.includes("chess.com")) {
@@ -901,6 +901,23 @@ const startCheat = () => {
         engine.worker.postMessage("stop");
         clearHighlightSquares();
         lastFEN = fen_;
+        
+        if(fen_.includes("/pppppppp/8/8/8/8/PPPPPPPP/")){
+          history = [];
+        }
+        else{
+          engine_analyse.getMovesByFen(fen_, getSide()).then((moves)=>{
+            if(moves.length > 0){
+              history.push({
+                eval : moves[0].eval,
+                side : moves[0].fen.split(" ")[1] === "w" ? "white" : "black"
+              })
+              console.clear()
+              console.log(history)
+            }
+          })
+        }
+
         // console.log(fen_)
         engine.getMovesByFen(fen_, getSide()).then((moves) => {
           chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
@@ -921,6 +938,7 @@ const startCheat = () => {
 
           highlightMovesOnBoard(moves, getSide()[0]);
         });
+
       }
     }
 
