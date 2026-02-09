@@ -46,9 +46,10 @@ if (window.location.hostname.includes("chess.com")) {
           game?.getFEN() ||
           "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         const side_ = game?.getPlayingAs?.() || 1;
+        const isGameOver = game?.isGameOver?.() || false;
         // console.log(fen)
         // rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1
-        window.postMessage({ type: "FEN_RESPONSE", fen, side_ }, "*");
+        window.postMessage({ type: "FEN_RESPONSE", fen, side_, isGameOver}, "*");
       }
       if (event.data?.type === "MOVE") {
         const { from, to, promotion, moveDelay } = event.data;

@@ -15,6 +15,12 @@ function clickButtonsByText(text) {
   setTimeout(() => clickButtonsByText(text), 100);
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// chrome-extension://mhpmdjmaabinekdjggmdhjgjjnjelnmj/lib/stockfish18.wasm
+
 function countMoves(fenString) {
   const parts = fenString.split("moves");
   if (parts.length < 2) return 0;
@@ -97,7 +103,13 @@ async function createWorkerStockfish() {
 }
 
 class Stockfish {
-  constructor({ elo = 3190, depth = 10, multipv = 5, threads = 2, hash = 128 }) {
+  constructor({
+    elo = 3190,
+    depth = 10,
+    multipv = 5,
+    threads = 2,
+    hash = 128,
+  }) {
     this.elo = elo;
     this.depth = depth;
     this.multipv = multipv;
@@ -576,6 +588,7 @@ const startCheat = () => {
   if (window.location.hostname.includes("chess.com")) {
     loadConfig();
     let lastFEN = "Bomboclat";
+    let isGameOver = false
     let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     let side_index = 1;
     let evalObj = null;
@@ -704,6 +717,21 @@ const startCheat = () => {
         if (event.data && event.data.type === "FEN_RESPONSE") {
           fen_ = event.data.fen;
           side_index = event.data.side_;
+          isGameOver = event.data.isGameOver;
+
+          if (isGameOver && config.autoMove) {
+            fetch("https://www.chess.com/service/matcher/seeks/chess", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                capabilities: ["rated"],
+                rated: true,
+                gameType: "chess",
+                timeControl: { base: "PT180S", increment: "PT0S" },
+                ratingRange: { upper: null, lower: null },
+              }),
+            });
+          }
         }
       });
     }
@@ -898,7 +926,7 @@ const startCheat = () => {
         // console.log(fen_)
 
         if (config.engine === "stockfish") {
-          console.log("stockfish")
+          // sleep(100).then(x)
           stockfish.getMovesByFen(fen_, getSide()).then((moves) => {
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
 
@@ -950,18 +978,20 @@ const startCheat = () => {
 
         // console.log("message from backgound js ", message);
         saveConfig();
-        if(engine.config === "komodo"){
+        if (config.engine === "komodo") {
           engine.updateConfig(
-          config.lines,
-          config.depth,
-          config.style,
-          config.elo,
-        );
+            config.lines,
+            config.depth,
+            config.style,
+            config.elo,
+          );
         }
-        if(config.engine === "stockfish"){
+        if (config.engine === "stockfish") {
           stockfish.updateConfig({
-            elo : config.elo, depth : config.depth, multipv : config.lines
-          })
+            elo: config.elo,
+            depth: config.depth,
+            multipv: config.lines,
+          });
         }
 
         clearHighlightSquares();
