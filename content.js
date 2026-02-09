@@ -42,6 +42,7 @@ function clearHighlightSquares() {
 const interval = 100;
 
 let config = {
+  engine: "komodo",
   elo: 3500,
   lines: 5,
   depth: 10,
@@ -96,13 +97,12 @@ async function createWorkerStockfish() {
 }
 
 class Stockfish {
-  constructor({ elo = 20, depth = 10, multipv = 5, threads = 2, hash = 128 }) {
+  constructor({ elo = 3190, depth = 10, multipv = 5, threads = 2, hash = 128 }) {
     this.elo = elo;
     this.depth = depth;
     this.multipv = multipv;
     this.threads = threads;
     this.hash = hash;
-    this.style = 0;
     this.ready = this.init();
   }
 
@@ -113,18 +113,18 @@ class Stockfish {
   }
 
   setOptions() {
-    // this.worker.postMessage(`setoption name Skill Level value ${this.elo}`);
+    this.worker.postMessage(`setoption name UCI_Elo value ${this.elo}`);
     this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
+    this.worker.postMessage(`setoption name UCI_LimitStrength value true`);
     this.worker.postMessage("setoption name Ponder value false");
   }
 
-  updateConfig({ elo, depth, multipv, threads, hash, style }) {
+  updateConfig({ elo, depth, multipv, threads, hash }) {
     if (elo !== undefined) this.elo = elo;
     if (depth !== undefined) this.depth = depth;
     if (multipv !== undefined) this.multipv = multipv;
     if (threads !== undefined) this.threads = threads;
     if (hash !== undefined) this.hash = hash;
-    if (style !== undefined) this.style = style;
     this.setOptions();
   }
 
@@ -566,8 +566,8 @@ const engine = new komodo({
   personality: config.style,
 });
 
-const engine_analyse = new Stockfish({
-  elo: config.elo,
+const stockfish = new Stockfish({
+  elo: 3190,
   depth: config.depth,
   multipv: config.lines,
 });
@@ -880,11 +880,6 @@ const startCheat = () => {
     }
 
     function checkAndSendMoves() {
-      if (config.autoMove && document.querySelector("#board-single")) {
-        clickButtonsByText("Nouvelle");
-        clickButtonsByText("New");
-      }
-
       requestFen();
 
       if (!customEval && config.showEval) {
@@ -902,45 +897,48 @@ const startCheat = () => {
 
         // console.log(fen_)
 
-        // engine_analyse.getMovesByFen(fen_, getSide()).then((moves) => {
-        //   chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-        //   // console.log(moves)
+        if (config.engine === "stockfish") {
+          console.log("stockfish")
+          stockfish.getMovesByFen(fen_, getSide()).then((moves) => {
+            chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
 
-        //   if (
-        //     (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-        //     (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-        //   ) {
-        //     if (config.autoMove) {
-        //       requestMove(moves[0].from, moves[0].to);
-        //     }
-        //   }
-
-        //   if (moves.length > 0 && evalObj) {
-        //     evalObj.update(moves[0].eval, getSide());
-        //   }
-
-        //   highlightMovesOnBoard(moves, getSide()[0]);
-        // });
-
-        engine.getMovesByFen(fen_, getSide()).then((moves) => {
-          chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-          // console.log(moves)
-
-          if (
-            (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-            (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-          ) {
-            if (config.autoMove) {
-              requestMove(moves[0].from, moves[0].to);
+            if (
+              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+            ) {
+              if (config.autoMove) {
+                requestMove(moves[0].from, moves[0].to);
+              }
             }
-          }
 
-          if (moves.length > 0 && evalObj) {
-            evalObj.update(moves[0].eval, getSide());
-          }
+            if (moves.length > 0 && evalObj) {
+              evalObj.update(moves[0].eval, getSide());
+            }
 
-          highlightMovesOnBoard(moves, getSide()[0]);
-        });
+            highlightMovesOnBoard(moves, getSide()[0]);
+          });
+        }
+        if (config.engine === "komodo") {
+          engine.getMovesByFen(fen_, getSide()).then((moves) => {
+            chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+            // console.log(moves)
+
+            if (
+              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+            ) {
+              if (config.autoMove) {
+                requestMove(moves[0].from, moves[0].to);
+              }
+            }
+
+            if (moves.length > 0 && evalObj) {
+              evalObj.update(moves[0].eval, getSide());
+            }
+
+            highlightMovesOnBoard(moves, getSide()[0]);
+          });
+        }
       }
     }
 
@@ -952,12 +950,20 @@ const startCheat = () => {
 
         // console.log("message from backgound js ", message);
         saveConfig();
-        engine.updateConfig(
+        if(engine.config === "komodo"){
+          engine.updateConfig(
           config.lines,
           config.depth,
           config.style,
           config.elo,
         );
+        }
+        if(config.engine === "stockfish"){
+          stockfish.updateConfig({
+            elo : config.elo, depth : config.depth, multipv : config.lines
+          })
+        }
+
         clearHighlightSquares();
         lastFEN = "";
         if (!config.showEval && customEval) {

@@ -21,6 +21,15 @@
       <div class="container">
         <h1>ChessHv3 - Chess.com</h1>
 
+
+        <div class="setting">
+          <label>Engine</label>
+          <select id="engine">
+            <option selected value="komodo">Komodo 3.3</option>
+            <option value="stockfish">Stockfish 18</option>
+          </select>
+        </div>
+
         <div class="setting">
           <label>ELO : <span id="eloValue">3500</span></label>
           <input
@@ -28,7 +37,7 @@
             id="elo"
             min="100"
             max="3500"
-            step="100"
+            step="10"
             value="3500"
           />
         </div>
@@ -110,6 +119,15 @@
       <div class="container">
         <h1>ChessHv3 - Lichess & FIDE Arena</h1>
 
+
+        <div class="setting">
+          <label>Engine</label>
+          <select id="engine2">
+            <option selected value="komodo">Komodo 3.3</option>
+            <option value="stockfish">Stockfish 18</option>
+          </select>
+        </div>
+
         <div class="setting">
           <label>ELO : <span id="eloValue2">3500</span></label>
           <input
@@ -117,7 +135,7 @@
             id="elo2"
             min="100"
             max="3500"
-            step="100"
+            step="10"
             value="3500"
           />
         </div>
