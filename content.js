@@ -4,8 +4,6 @@ const apiExpiration =
 
 let debugEngine = false;
 
-
-
 function clickButtonsByText(text) {
   const buttons = Array.from(document.querySelectorAll("button"));
   const targetButtons = buttons.filter((btn) =>
@@ -194,7 +192,7 @@ class Stockfish {
 
       this.worker.addEventListener("message", onMessage);
       this.worker.postMessage(`position fen ${fen}`);
-      // this.worker.postMessage("stop");
+      this.worker.postMessage("stop");
       this.worker.postMessage(`go depth ${this.depth}`);
     });
   }
@@ -266,7 +264,7 @@ class Stockfish {
 
       this.worker.addEventListener("message", onMessage);
       this.worker.postMessage(`${uciString}`);
-      // this.worker.postMessage("stop");
+      this.worker.postMessage("stop");
       this.worker.postMessage(`go depth ${this.depth}`);
     });
   }
@@ -568,12 +566,11 @@ const engine = new komodo({
   personality: config.style,
 });
 
-// const engine_analyse = new Stockfish({
-//   elo: 3190,
-//   depth: 7,
-//   multipv: 1,
-// });
-
+const engine_analyse = new Stockfish({
+  elo: config.elo,
+  depth: config.depth,
+  multipv: config.lines,
+});
 
 const startCheat = () => {
   if (window.location.hostname.includes("chess.com")) {
@@ -904,6 +901,27 @@ const startCheat = () => {
         lastFEN = fen_;
 
         // console.log(fen_)
+
+        // engine_analyse.getMovesByFen(fen_, getSide()).then((moves) => {
+        //   chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+        //   // console.log(moves)
+
+        //   if (
+        //     (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+        //     (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+        //   ) {
+        //     if (config.autoMove) {
+        //       requestMove(moves[0].from, moves[0].to);
+        //     }
+        //   }
+
+        //   if (moves.length > 0 && evalObj) {
+        //     evalObj.update(moves[0].eval, getSide());
+        //   }
+
+        //   highlightMovesOnBoard(moves, getSide()[0]);
+        // });
+
         engine.getMovesByFen(fen_, getSide()).then((moves) => {
           chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
           // console.log(moves)
