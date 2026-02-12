@@ -15,7 +15,6 @@ const el = id => document.getElementById(id);
 
 /* ================= CHESS.COM ================= */
 let chessConfig = JSON.parse(localStorage.getItem("chessConfig")) || {
-  engine: "komodo",
   elo: 3500,
   lines: 5,
   depth: 10,
@@ -27,34 +26,8 @@ let chessConfig = JSON.parse(localStorage.getItem("chessConfig")) || {
   onlyShowEval: false
 };
 
-function applyChessEngineRules() {
-  const elo = el("elo");
-  const lines = el("lines");
-  const styleBox = el("style").parentElement;
-
-  if (chessConfig.engine === "stockfish") {
-    elo.min = 1400;
-    elo.max = 3190;
-    document.querySelector("#eloValue").innerText = elo.value
-    lines.min = 1;
-    lines.max = 5;
-    styleBox.style.display = "none";
-
-    if (chessConfig.elo < 1400) chessConfig.elo = 1400;
-    if (chessConfig.elo > 3190) chessConfig.elo = 3190;
-  } else {
-    elo.min = 100;
-    elo.max = 3500;
-    document.querySelector("#eloValue").innerText = elo.value
-    lines.min = 2;
-    lines.max = 5;
-    styleBox.style.display = "";
-  }
-}
-
 function updateChessUI() {
   ["elo","lines","depth","delay"].forEach(k => el(k).value = chessConfig[k]);
-  el("engine").value = chessConfig.engine;
   el("style").value = chessConfig.style;
 
   ["autoMove","winningMove","showEval","onlyShowEval"].forEach(k => el(k).checked = chessConfig[k]);
@@ -69,8 +42,6 @@ function updateChessUI() {
   el("showEvalLabel").textContent = `Show Eval Bar (${chessConfig.showEval ? "ON":"OFF"})`;
   el("onlyShowEvalLabel").textContent = `Hide Arrows (${chessConfig.onlyShowEval ? "ON":"OFF"})`;
 
-  applyChessEngineRules();
-
   console.clear();
   console.log(chessConfig);
 }
@@ -80,10 +51,6 @@ function saveChess() {
   chrome?.runtime?.sendMessage({ type: "config", config: chessConfig });
 }
 
-el("engine").onchange = e => {
-  chessConfig.engine = e.target.value;
-  updateChessUI(); saveChess();
-};
 
 ["elo","lines","depth","delay"].forEach(k => {
   el(k).oninput = e => {
@@ -118,34 +85,9 @@ let lichessConfig = JSON.parse(localStorage.getItem("lichessConfig")) || {
   onlyShowEval: false
 };
 
-function applyLichessEngineRules() {
-  const elo = el("elo2");
-  const lines = el("lines2");
-  const styleBox = el("style2").parentElement;
-
-  if (lichessConfig.engine === "stockfish") {
-    elo.min = 1400;
-    elo.max = 3190;
-    document.querySelector("#eloValue2").innerText = elo.value
-    lines.min = 1;
-    lines.max = 5;
-    styleBox.style.display = "none";
-
-    if (lichessConfig.elo < 1400) lichessConfig.elo = 1400;
-    if (lichessConfig.elo > 3190) lichessConfig.elo = 3190;
-  } else {
-    elo.min = 100;
-    elo.max = 3500;
-    document.querySelector("#eloValue2").innerText = elo.value
-    lines.min = 2;
-    lines.max = 5;
-    styleBox.style.display = "";
-  }
-}
 
 function updateLichessUI() {
   ["elo","lines","depth"].forEach(k => el(k+"2").value = lichessConfig[k]);
-  el("engine2").value = lichessConfig.engine;
   el("style2").value = lichessConfig.style;
 
   ["winningMove","showEval","onlyShowEval"].forEach(k => el(k+"2").checked = lichessConfig[k]);
@@ -158,7 +100,6 @@ function updateLichessUI() {
   el("showEvalLabel2").textContent = `Show Eval Bar (${lichessConfig.showEval ? "ON":"OFF"})`;
   el("onlyShowEvalLabel2").textContent = `Hide Arrows (${lichessConfig.onlyShowEval ? "ON":"OFF"})`;
 
-  applyLichessEngineRules();
 
   console.clear();
   console.log(lichessConfig);
@@ -169,10 +110,6 @@ function saveLichess() {
   chrome?.runtime?.sendMessage({ type: "config2", config: lichessConfig });
 }
 
-el("engine2").onchange = e => {
-  lichessConfig.engine = e.target.value;
-  updateLichessUI(); saveLichess();
-};
 
 ["elo","lines","depth"].forEach(k => {
   el(k+"2").oninput = e => {

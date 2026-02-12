@@ -19,7 +19,6 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// chrome-extension://mhpmdjmaabinekdjggmdhjgjjnjelnmj/lib/stockfish18.wasm
 
 function countMoves(fenString) {
   const parts = fenString.split("moves");
@@ -48,7 +47,6 @@ function clearHighlightSquares() {
 const interval = 100;
 
 let config = {
-  engine: "komodo",
   elo: 3500,
   lines: 5,
   depth: 10,
@@ -93,7 +91,7 @@ async function createWorker() {
 }
 
 async function createWorkerStockfish() {
-  const url = `${chrome.runtime.getURL("lib/stockfish18.js")}`;
+  const url = `${chrome.runtime.getURL("lib/stockfish.js")}`;
   const blob = new Blob([`importScripts("${url}");`], {
     type: "application/javascript",
   });
@@ -140,8 +138,25 @@ class Stockfish {
     this.setOptions();
   }
 
+  hardStop() {
+    if (this.worker) {
+      this.worker.terminate();
+      this.worker = null;
+    }
+  }
+
+  async restartWorker() {
+    this.hardStop();
+    this.worker = await createWorker();
+    this.worker.postMessage("uci");
+    this.setOptions();
+  }
+
   async getMovesByFen(fen, side = "white") {
-    await this.ready;
+    // await this.ready;
+    if (this.multipv > 10) {
+      await this.restartWorker();
+    }
     const sideToMove = fen.split(" ")[1];
 
     return new Promise((resolve) => {
@@ -204,13 +219,16 @@ class Stockfish {
 
       this.worker.addEventListener("message", onMessage);
       this.worker.postMessage(`position fen ${fen}`);
-      this.worker.postMessage("stop");
+      // this.worker.postMessage("stop");
       this.worker.postMessage(`go depth ${this.depth}`);
     });
   }
 
   async getMovesByUCI(uciString, side, fen) {
-    await this.ready;
+    // await this.ready;
+    if (this.multipv > 10) {
+      await this.restartWorker();
+    }
     const sideToMove =
       uciString.split(" moves ")[1].trim().split(/\s+/).length % 2 === 0
         ? "w"
@@ -276,7 +294,7 @@ class Stockfish {
 
       this.worker.addEventListener("message", onMessage);
       this.worker.postMessage(`${uciString}`);
-      this.worker.postMessage("stop");
+      // this.worker.postMessage("stop");
       this.worker.postMessage(`go depth ${this.depth}`);
     });
   }
@@ -578,17 +596,17 @@ const engine = new komodo({
   personality: config.style,
 });
 
-const stockfish = new Stockfish({
-  elo: 3190,
-  depth: config.depth,
-  multipv: config.lines,
-});
+// const stockfish = new Stockfish({
+//   elo: 3190,
+//   depth: config.depth,
+//   multipv: config.lines,
+// });
 
 const startCheat = () => {
   if (window.location.hostname.includes("chess.com")) {
     loadConfig();
     let lastFEN = "Bomboclat";
-    let isGameOver = false
+    let isGameOver = false;
     let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     let side_index = 1;
     let evalObj = null;
@@ -922,31 +940,6 @@ const startCheat = () => {
         engine.worker.postMessage("stop");
         clearHighlightSquares();
         lastFEN = fen_;
-
-        // console.log(fen_)
-
-        if (config.engine === "stockfish") {
-          // sleep(100).then(x)
-          stockfish.getMovesByFen(fen_, getSide()).then((moves) => {
-            chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-
-            if (
-              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-            ) {
-              if (config.autoMove) {
-                requestMove(moves[0].from, moves[0].to);
-              }
-            }
-
-            if (moves.length > 0 && evalObj) {
-              evalObj.update(moves[0].eval, getSide());
-            }
-
-            highlightMovesOnBoard(moves, getSide()[0]);
-          });
-        }
-        if (config.engine === "komodo") {
           engine.getMovesByFen(fen_, getSide()).then((moves) => {
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
             // console.log(moves)
@@ -966,7 +959,6 @@ const startCheat = () => {
 
             highlightMovesOnBoard(moves, getSide()[0]);
           });
-        }
       }
     }
 
@@ -978,21 +970,14 @@ const startCheat = () => {
 
         // console.log("message from backgound js ", message);
         saveConfig();
-        if (config.engine === "komodo") {
+        
           engine.updateConfig(
             config.lines,
             config.depth,
             config.style,
             config.elo,
           );
-        }
-        if (config.engine === "stockfish") {
-          stockfish.updateConfig({
-            elo: config.elo,
-            depth: config.depth,
-            multipv: config.lines,
-          });
-        }
+  
 
         clearHighlightSquares();
         lastFEN = "";

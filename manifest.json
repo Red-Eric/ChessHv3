@@ -52,8 +52,7 @@
         "lib/chess_min.js",
         "lib/engine.js",
         "lib/engine.wasm",
-        "lib/stockfish18.js",
-        "lib/stockfish18.wasm"
+        "lib/stockfish.js"
       ],
       "matches": [
         "<all_urls>"
