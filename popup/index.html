@@ -23,37 +23,34 @@
 
         <div class="setting">
           <label>ELO : <span id="eloValue">3500</span></label>
-          <input
-            type="range"
-            id="elo"
-            min="100"
-            max="3500"
-            step="10"
-            value="3500"
-          />
+          <input type="range" id="elo" min="100" max="3500" step="10" value="3500" />
+        </div>
+        <div class="setting-help">
+          ELO defines the engine strength. Higher values make the engine play stronger.
         </div>
 
         <div class="setting">
           <label>Arrows : <span id="linesValue">5</span></label>
           <input type="range" id="lines" min="2" max="5" value="5" />
         </div>
+        <div class="setting-help">
+          Number of best move arrows displayed on the board.
+        </div>
 
         <div class="setting">
           <label>Depth : <span id="depthValue">10</span></label>
           <input type="range" id="depth" min="1" max="20" value="10" />
         </div>
-        
+        <div class="setting-help">
+          Search depth of the engine: the higher the depth, the longer the computation time.
+        </div>
 
         <div class="setting">
           <label>Auto Move Delay : <span id="delayValue">100</span> ms</label>
-          <input
-            type="range"
-            id="delay"
-            min="100"
-            max="20000"
-            step="50"
-            value="100"
-          />
+          <input type="range" id="delay" min="100" max="20000" step="50" value="100" />
+        </div>
+        <div class="setting-help">
+          Delay before the engine automatically plays a move. The actual delay is randomly selected between 0 ms and the chosen value.
         </div>
 
         <div class="setting">
@@ -69,14 +66,19 @@
             <option>Human</option>
           </select>
         </div>
+        <div class="setting-help">
+          Defines the preferred playstyle of the engine.
+        </div>
 
-        <!-- Toggle switches -->
         <div class="setting">
           <span id="autoMoveLabel">Auto Move (OFF)</span>
           <label class="toggle">
             <input type="checkbox" id="autoMove" />
             <span class="slider"></span>
           </label>
+        </div>
+        <div class="setting-help">
+          Automatically plays the best move for you.
         </div>
 
         <div class="setting">
@@ -86,6 +88,9 @@
             <span class="slider"></span>
           </label>
         </div>
+        <div class="setting-help">
+          Shows only moves that keep a winning advantage (moves that gain +2 material points or more).
+        </div>
 
         <div class="setting">
           <span id="showEvalLabel">Show Eval Bar (OFF)</span>
@@ -93,6 +98,9 @@
             <input type="checkbox" id="showEval" />
             <span class="slider"></span>
           </label>
+        </div>
+        <div class="setting-help">
+          Displays the engine evaluation bar.
         </div>
 
         <div class="setting">
@@ -102,6 +110,9 @@
             <span class="slider"></span>
           </label>
         </div>
+        <div class="setting-help">
+          Hides move suggestions.
+        </div>
       </div>
     </div>
 
@@ -109,26 +120,29 @@
     <div class="panel" id="lichess">
       <div class="container">
         <h1>ChessHv3 - Lichess & FIDE Arena</h1>
+
         <div class="setting">
           <label>ELO : <span id="eloValue2">3500</span></label>
-          <input
-            type="range"
-            id="elo2"
-            min="100"
-            max="3500"
-            step="10"
-            value="3500"
-          />
+          <input type="range" id="elo2" min="100" max="3500" step="10" value="3500" />
+        </div>
+        <div class="setting-help">
+          ELO defines the engine strength. Higher values make the engine play stronger.
         </div>
 
         <div class="setting">
           <label>Arrows : <span id="linesValue2">5</span></label>
           <input type="range" id="lines2" min="2" max="5" value="5" />
         </div>
+        <div class="setting-help">
+          Number of best move arrows displayed on the board.
+        </div>
 
         <div class="setting">
           <label>Depth : <span id="depthValue2">10</span></label>
           <input type="range" id="depth2" min="1" max="20" value="10" />
+        </div>
+        <div class="setting-help">
+          Engine calculation depth.
         </div>
 
         <div class="setting">
@@ -144,14 +158,19 @@
             <option>Human</option>
           </select>
         </div>
+        <div class="setting-help">
+          Preferred engine playstyle.
+        </div>
 
-        <!-- Toggle switches -->
         <div class="setting">
           <span id="winningMoveLabel2">Only Winning Move (OFF)</span>
           <label class="toggle">
             <input type="checkbox" id="winningMove2" />
             <span class="slider"></span>
           </label>
+        </div>
+        <div class="setting-help">
+          Filters moves to keep only winning positions.
         </div>
 
         <div class="setting">
@@ -161,6 +180,9 @@
             <span class="slider"></span>
           </label>
         </div>
+        <div class="setting-help">
+          Shows the evaluation bar on the board.
+        </div>
 
         <div class="setting">
           <span id="onlyShowEvalLabel2">Hide Arrows (OFF)</span>
@@ -169,6 +191,9 @@
             <span class="slider"></span>
           </label>
         </div>
+        <div class="setting-help">
+          Hides arrows and keeps evaluation only.
+        </div>
       </div>
     </div>
 
@@ -176,8 +201,8 @@
     <div class="panel" id="stream">
       <div id="board1" style="width: 600px"></div>
       <p>
-        Just launch your game, it will appear here automatically. Make sure to
-        disable Show Eval Bar and enable Hide Arrow.
+        Launch your game and it will appear here automatically.
+        Disable Show Eval Bar and enable Hide Arrows for best results.
       </p>
     </div>
 

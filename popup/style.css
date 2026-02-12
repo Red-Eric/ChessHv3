@@ -153,6 +153,16 @@ p {
   outline: none;
 }
 
+.setting-help {
+  margin: -12px 0 18px 0;
+  padding-left: 8px;
+  font-size: 13px;
+  color: #9aa4af;
+  line-height: 1.4;
+  opacity: 0.85;
+}
+
+
 /* ========== CHESSBOARD ========== */
 #board1 {
   margin: 25px auto;
