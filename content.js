@@ -19,7 +19,6 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-
 function countMoves(fenString) {
   const parts = fenString.split("moves");
   if (parts.length < 2) return 0;
@@ -68,7 +67,6 @@ function loadConfig() {
     config = { ...config, ...JSON.parse(saved) };
   }
 }
-
 
 async function createWorker() {
   const url = `${chrome.runtime.getURL("lib/engine.js")}`;
@@ -930,25 +928,25 @@ const startCheat = () => {
         engine.worker.postMessage("stop");
         clearHighlightSquares();
         lastFEN = fen_;
-          engine.getMovesByFen(fen_, getSide()).then((moves) => {
-            chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-            // console.log(moves)
+        engine.getMovesByFen(fen_, getSide()).then((moves) => {
+          chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+          // console.log(moves)
 
-            if (
-              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-            ) {
-              if (config.autoMove) {
-                requestMove(moves[0].from, moves[0].to);
-              }
+          if (
+            (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+            (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+          ) {
+            if (config.autoMove) {
+              requestMove(moves[0].from, moves[0].to);
             }
+          }
 
-            if (moves.length > 0 && evalObj) {
-              evalObj.update(moves[0].eval, getSide());
-            }
+          if (moves.length > 0 && evalObj) {
+            evalObj.update(moves[0].eval, getSide());
+          }
 
-            highlightMovesOnBoard(moves, getSide()[0]);
-          });
+          highlightMovesOnBoard(moves, getSide()[0]);
+        });
       }
     }
 
@@ -960,14 +958,13 @@ const startCheat = () => {
 
         // console.log("message from backgound js ", message);
         saveConfig();
-        
-          engine.updateConfig(
-            config.lines,
-            config.depth,
-            config.style,
-            config.elo,
-          );
-  
+
+        engine.updateConfig(
+          config.lines,
+          config.depth,
+          config.style,
+          config.elo,
+        );
 
         clearHighlightSquares();
         lastFEN = "";
@@ -1119,8 +1116,8 @@ const startCheat = () => {
 
       if (
         !(
-          (side === "w" && sideIndicator === "w") ||
-          (side === "b" && sideIndicator === "b")
+          (side === "w" && fen_.split(" ")[1] === "w") ||
+          (side === "b" && fen_.split(" ")[1] === "b")
         )
       ) {
         return;
@@ -1306,19 +1303,19 @@ const startCheat = () => {
           if (event.data.fen !== fen_) {
             clearHighlightSquares();
             fen_ = event.data.fen;
-            engine
-              .getMovesByFen(fen_, getSide())
-              .then((moves) => {
-                highlightMovesOnBoard(moves, getSide()[0]);
-                if (moves.length > 0 && evalObj) {
-                  evalObj.update(moves[0].eval, getSide());
-                }
+            console.clear();
+            console.log(fen_);
+            engine.getMovesByFen(fen_, getSide()).then((moves) => {
+              highlightMovesOnBoard(moves, getSide()[0]);
+              if (moves.length > 0 && evalObj) {
+                evalObj.update(moves[0].eval, getSide());
+              }
 
-                chrome.runtime.sendMessage({
-                  type: "FROM_CONTENT",
-                  data: moves,
-                });
+              chrome.runtime.sendMessage({
+                type: "FROM_CONTENT",
+                data: moves,
               });
+            });
           }
         }
       });
