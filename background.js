@@ -26,29 +26,26 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       // console.log("Config Chess.com reçue :", currentConfig);
 
       sendConfigToSite("config", currentConfig, "*://*.chess.com/*");
+      sendConfigToSite("config", currentConfig2, "*://*.lichess.org/*");
+      sendConfigToSite("config", currentConfig2, "*://*.worldchess.com/*");
+      sendConfigToSite("config", currentConfig2, "*://worldchess.com/*");
+      sendConfigToSite("config", currentConfig2, "*://worldchess.com/game/*");
+      sendConfigToSite("config", currentConfig2, "*://*.worldchess.com/game/*");
 
       for (let tabId of popupTabs) {
-        chrome.tabs.sendMessage(tabId, { type: "config", config: currentConfig });
-      }
-      break;
-
-    case "config2":
-      currentConfig2 = message.config;
-
-      sendConfigToSite("config2", currentConfig2, "*://*.lichess.org/*");
-      sendConfigToSite("config2", currentConfig2, "*://*.worldchess.com/*");
-      sendConfigToSite("config2", currentConfig2, "*://worldchess.com/*");
-      sendConfigToSite("config2", currentConfig2, "*://worldchess.com/game/*");
-      sendConfigToSite("config2", currentConfig2, "*://*.worldchess.com/game/*");
-
-      for (let tabId of popupTabs) {
-        chrome.tabs.sendMessage(tabId, { type: "config2", config: currentConfig2 });
+        chrome.tabs.sendMessage(tabId, {
+          type: "config",
+          config: currentConfig,
+        });
       }
       break;
 
     case "FROM_CONTENT":
       for (let tabId of popupTabs) {
-        chrome.tabs.sendMessage(tabId, { type: "TO_POPUP", data: message.data });
+        chrome.tabs.sendMessage(tabId, {
+          type: "TO_POPUP",
+          data: message.data,
+        });
       }
       break;
 
@@ -57,10 +54,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (!popupTabs.includes(sender.tab.id)) popupTabs.push(sender.tab.id);
 
         if (currentConfig) {
-          chrome.tabs.sendMessage(sender.tab.id, { type: "config", config: currentConfig });
+          chrome.tabs.sendMessage(sender.tab.id, {
+            type: "config",
+            config: currentConfig,
+          });
         }
         if (currentConfig2) {
-          chrome.tabs.sendMessage(sender.tab.id, { type: "config2", config: currentConfig2 });
+          chrome.tabs.sendMessage(sender.tab.id, {
+            type: "config2",
+            config: currentConfig2,
+          });
         }
       }
       break;
@@ -90,9 +93,15 @@ chrome.action.onClicked.addListener(() => {
         if (!popupTabs.includes(tabId)) popupTabs.push(tabId);
 
         if (currentConfig)
-          chrome.tabs.sendMessage(tabId, { type: "config", config: currentConfig });
+          chrome.tabs.sendMessage(tabId, {
+            type: "config",
+            config: currentConfig,
+          });
         if (currentConfig2)
-          chrome.tabs.sendMessage(tabId, { type: "config2", config: currentConfig2 });
+          chrome.tabs.sendMessage(tabId, {
+            type: "config2",
+            config: currentConfig2,
+          });
       }
 
       chrome.windows.onRemoved.addListener((id) => {
@@ -101,7 +110,7 @@ chrome.action.onClicked.addListener(() => {
           popupTabs = [];
         }
       });
-    }
+    },
   );
 });
 
@@ -139,4 +148,3 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     sendMovesToSite("returnContent", msg.moves, "*://*.chess.com/*");
   }
 });
-

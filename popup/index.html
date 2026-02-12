@@ -11,12 +11,10 @@
 
   <body>
     <div class="tabs">
-      <div class="tab active" data-panel="chess">Chess.com</div>
-      <div class="tab" data-panel="lichess">Lichess & FIDE Arena</div>
+      <div class="tab active" data-panel="chess">Settings</div>
       <div class="tab" data-panel="stream">Stream</div>
     </div>
-
-    <!-- ================= CHESS.COM ================= -->
+    <!-- ================= SEttings ================= -->
     <div class="panel active" id="chess">
       <div class="container">
         <h1>ChessHv3 - Chess.com</h1>
@@ -112,87 +110,6 @@
         </div>
         <div class="setting-help">
           Hides move suggestions.
-        </div>
-      </div>
-    </div>
-
-    <!-- ================= LICHESS ================= -->
-    <div class="panel" id="lichess">
-      <div class="container">
-        <h1>ChessHv3 - Lichess & FIDE Arena</h1>
-
-        <div class="setting">
-          <label>ELO : <span id="eloValue2">3500</span></label>
-          <input type="range" id="elo2" min="100" max="3500" step="10" value="3500" />
-        </div>
-        <div class="setting-help">
-          ELO defines the engine strength. Higher values make the engine play stronger.
-        </div>
-
-        <div class="setting">
-          <label>Arrows : <span id="linesValue2">5</span></label>
-          <input type="range" id="lines2" min="2" max="5" value="5" />
-        </div>
-        <div class="setting-help">
-          Number of best move arrows displayed on the board.
-        </div>
-
-        <div class="setting">
-          <label>Depth : <span id="depthValue2">10</span></label>
-          <input type="range" id="depth2" min="1" max="20" value="10" />
-        </div>
-        <div class="setting-help">
-          Engine calculation depth.
-        </div>
-
-        <div class="setting">
-          <label>Style</label>
-          <select id="style2">
-            <option selected>Default</option>
-            <option>Aggressive</option>
-            <option>Defensive</option>
-            <option>Active</option>
-            <option>Positional</option>
-            <option>Endgame</option>
-            <option>Beginner</option>
-            <option>Human</option>
-          </select>
-        </div>
-        <div class="setting-help">
-          Preferred engine playstyle.
-        </div>
-
-        <div class="setting">
-          <span id="winningMoveLabel2">Only Winning Move (OFF)</span>
-          <label class="toggle">
-            <input type="checkbox" id="winningMove2" />
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="setting-help">
-          Filters moves to keep only winning positions.
-        </div>
-
-        <div class="setting">
-          <span id="showEvalLabel2">Show Eval Bar (OFF)</span>
-          <label class="toggle">
-            <input type="checkbox" id="showEval2" />
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="setting-help">
-          Shows the evaluation bar on the board.
-        </div>
-
-        <div class="setting">
-          <span id="onlyShowEvalLabel2">Hide Arrows (OFF)</span>
-          <label class="toggle">
-            <input type="checkbox" id="onlyShowEval2" />
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="setting-help">
-          Hides arrows and keeps evaluation only.
         </div>
       </div>
     </div>

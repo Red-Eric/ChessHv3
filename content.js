@@ -62,10 +62,6 @@ function saveConfig() {
   localStorage.setItem("chessConfig", JSON.stringify(config));
 }
 
-function saveConfig2() {
-  localStorage.setItem("chessConfig2", JSON.stringify(config));
-}
-
 function loadConfig() {
   const saved = localStorage.getItem("chessConfig");
   if (saved) {
@@ -73,12 +69,6 @@ function loadConfig() {
   }
 }
 
-function loadConfig2() {
-  const saved = localStorage.getItem("chessConfig2");
-  if (saved) {
-    config = { ...config, ...JSON.parse(saved) };
-  }
-}
 
 async function createWorker() {
   const url = `${chrome.runtime.getURL("lib/engine.js")}`;
@@ -999,7 +989,7 @@ const startCheat = () => {
   }
 
   if (window.location.hostname.includes("lichess")) {
-    loadConfig2();
+    loadConfig();
     let fen_ = "";
     let uciPos =
       "position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 moves e2e4 e7e5 d1h5 d7d5 b1c3";
@@ -1315,10 +1305,9 @@ const startCheat = () => {
           // console.log(event.data.fen)
           if (event.data.fen !== fen_) {
             clearHighlightSquares();
-            uciPos = event.data.uci;
             fen_ = event.data.fen;
             engine
-              .getMovesByUCI(event.data.uci, getSide(), fen_)
+              .getMovesByFen(fen_, getSide())
               .then((moves) => {
                 highlightMovesOnBoard(moves, getSide()[0]);
                 if (moves.length > 0 && evalObj) {
@@ -1350,10 +1339,10 @@ const startCheat = () => {
     }, interval);
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.type === "config2") {
+      if (message.type === "config") {
         config = message.config;
         // console.log(config)
-        saveConfig2();
+        saveConfig();
         engine.updateConfig(
           config.lines,
           config.depth,
@@ -1398,7 +1387,7 @@ const startCheat = () => {
     let currentFen = "";
     let evalObj = null;
     let customEval = null;
-    loadConfig2();
+    loadConfig();
 
     function getFEN() {
       const pTags = document.querySelectorAll("p");
@@ -1738,7 +1727,7 @@ const startCheat = () => {
     // PArametre chessARENA
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.type === "config2") {
+      if (message.type === "config") {
         config = message.config;
 
         // console.log(config)
@@ -1748,7 +1737,7 @@ const startCheat = () => {
           config.style,
           config.elo,
         );
-        saveConfig2();
+        saveConfig();
         clearHighlightSquares();
 
         if (!config.showEval && customEval) {

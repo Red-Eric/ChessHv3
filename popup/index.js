@@ -73,67 +73,6 @@ el("style").onchange = e => {
 
 updateChessUI();
 
-/* ================= LICHESS ================= */
-let lichessConfig = JSON.parse(localStorage.getItem("lichessConfig")) || {
-  engine: "komodo",
-  elo: 3500,
-  lines: 5,
-  depth: 10,
-  style: "Default",
-  winningMove: false,
-  showEval: false,
-  onlyShowEval: false
-};
-
-
-function updateLichessUI() {
-  ["elo","lines","depth"].forEach(k => el(k+"2").value = lichessConfig[k]);
-  el("style2").value = lichessConfig.style;
-
-  ["winningMove","showEval","onlyShowEval"].forEach(k => el(k+"2").checked = lichessConfig[k]);
-
-  el("eloValue2").textContent = lichessConfig.elo;
-  el("linesValue2").textContent = lichessConfig.lines;
-  el("depthValue2").textContent = lichessConfig.depth;
-
-  el("winningMoveLabel2").textContent = `Only Winning Move (${lichessConfig.winningMove ? "ON":"OFF"})`;
-  el("showEvalLabel2").textContent = `Show Eval Bar (${lichessConfig.showEval ? "ON":"OFF"})`;
-  el("onlyShowEvalLabel2").textContent = `Hide Arrows (${lichessConfig.onlyShowEval ? "ON":"OFF"})`;
-
-
-  console.clear();
-  console.log(lichessConfig);
-}
-
-function saveLichess() {
-  localStorage.setItem("lichessConfig", JSON.stringify(lichessConfig));
-  chrome?.runtime?.sendMessage({ type: "config2", config: lichessConfig });
-}
-
-
-["elo","lines","depth"].forEach(k => {
-  el(k+"2").oninput = e => {
-    lichessConfig[k] = +e.target.value;
-    updateLichessUI(); saveLichess();
-  };
-});
-
-["winningMove","showEval","onlyShowEval"].forEach(k => {
-  el(k+"2").onchange = e => {
-    lichessConfig[k] = e.target.checked;
-    updateLichessUI(); saveLichess();
-  };
-});
-
-el("style2").onchange = e => {
-  lichessConfig.style = e.target.value;
-  updateLichessUI(); saveLichess();
-};
-
-updateLichessUI();
-
-
-
 // ===== Chessboard Panel =====
 
 function createEvalBar(initialScore = "0.0", initialColor = "white") {
