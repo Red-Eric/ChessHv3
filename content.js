@@ -1338,6 +1338,7 @@ const startCheat = () => {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.type === "config") {
         config = message.config;
+        console.log(config)
         // console.log(config)
         saveConfig();
         engine.updateConfig(

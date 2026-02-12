@@ -11,13 +11,6 @@ function sendConfigToSite(type, config, urlPattern) {
   });
 }
 
-// (async () => {
-//   await chrome.offscreen.createDocument({
-//     url: "offscreen.html",
-//     reasons: ["WORKERS"],
-//     justification: "Test",
-//   });
-// })();
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   switch (message.type) {
@@ -26,11 +19,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       // console.log("Config Chess.com reçue :", currentConfig);
 
       sendConfigToSite("config", currentConfig, "*://*.chess.com/*");
-      sendConfigToSite("config", currentConfig2, "*://*.lichess.org/*");
-      sendConfigToSite("config", currentConfig2, "*://*.worldchess.com/*");
-      sendConfigToSite("config", currentConfig2, "*://worldchess.com/*");
-      sendConfigToSite("config", currentConfig2, "*://worldchess.com/game/*");
-      sendConfigToSite("config", currentConfig2, "*://*.worldchess.com/game/*");
+      sendConfigToSite("config", currentConfig, "*://*.lichess.org/*");
+      sendConfigToSite("config", currentConfig, "*://*.worldchess.com/*");
+      sendConfigToSite("config", currentConfig, "*://worldchess.com/*");
+      sendConfigToSite("config", currentConfig, "*://worldchess.com/game/*");
+      sendConfigToSite("config", currentConfig, "*://*.worldchess.com/game/*");
 
       for (let tabId of popupTabs) {
         chrome.tabs.sendMessage(tabId, {
