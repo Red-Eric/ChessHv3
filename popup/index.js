@@ -3,49 +3,84 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ================= TABS ================= */
-document.querySelectorAll(".tab").forEach(tab => {
+document.querySelectorAll(".tab").forEach((tab) => {
   tab.onclick = () => {
-    document.querySelectorAll(".tab, .panel").forEach(e => e.classList.remove("active"));
+    document
+      .querySelectorAll(".tab, .panel")
+      .forEach((e) => e.classList.remove("active"));
     tab.classList.add("active");
     document.getElementById(tab.dataset.panel).classList.add("active");
   };
 });
 
-const el = id => document.getElementById(id);
+const el = (id) => document.getElementById(id);
 
 /* ================= CHESS.COM ================= */
-let chessConfig = JSON.parse(localStorage.getItem("chessConfig")) || {
+
+const defaultChessConfig = {
   elo: 3500,
   lines: 5,
-  colors : ["#3b82f6", "#22c55e", "#eab308", "#f97316", "#ef4444"],
+  colors: ["#3b82f6", "#22c55e", "#eab308", "#f97316", "#ef4444"],
   depth: 10,
   delay: 100,
   style: "Default",
   autoMove: false,
   winningMove: false,
   showEval: false,
-  onlyShowEval: false
+  onlyShowEval: false,
+};
+
+let savedConfig;
+try {
+  savedConfig = JSON.parse(localStorage.getItem("chessConfig")) || {};
+} catch {
+  savedConfig = {};
+}
+
+let chessConfig = {
+  ...defaultChessConfig,
+  ...savedConfig,
 };
 
 
 
+function hideExtraColorInputs(lines) {
+  const allInputs = document.querySelectorAll('input[type="color"]');
+  allInputs.forEach((input, index) => {
+    if (index >= lines) {
+      input.parentElement.style.display = "none";
+    } else {
+      input.parentElement.style.display = "";
+    }
+  });
+}
+
 function updateChessUI() {
-  ["elo","lines","depth","delay"].forEach(k => el(k).value = chessConfig[k]);
+  ["elo", "lines", "depth", "delay"].forEach(
+    (k) => (el(k).value = chessConfig[k]),
+  );
   el("style").value = chessConfig.style;
 
-  ["autoMove","winningMove","showEval","onlyShowEval"].forEach(k => el(k).checked = chessConfig[k]);
+  ["autoMove", "winningMove", "showEval", "onlyShowEval"].forEach(
+    (k) => (el(k).checked = chessConfig[k]),
+  );
 
   el("eloValue").textContent = chessConfig.elo;
   el("linesValue").textContent = chessConfig.lines;
   el("depthValue").textContent = chessConfig.depth;
   el("delayValue").textContent = chessConfig.delay;
 
-  el("autoMoveLabel").textContent = `Auto Move (${chessConfig.autoMove ? "ON":"OFF"})`;
-  el("winningMoveLabel").textContent = `Only Winning Move (${chessConfig.winningMove ? "ON":"OFF"})`;
-  el("showEvalLabel").textContent = `Show Eval Bar (${chessConfig.showEval ? "ON":"OFF"})`;
-  el("onlyShowEvalLabel").textContent = `Hide Arrows (${chessConfig.onlyShowEval ? "ON":"OFF"})`;
+  el("autoMoveLabel").textContent =
+    `Auto Move (${chessConfig.autoMove ? "ON" : "OFF"})`;
+  el("winningMoveLabel").textContent =
+    `Only Winning Move (${chessConfig.winningMove ? "ON" : "OFF"})`;
+  el("showEvalLabel").textContent =
+    `Show Eval Bar (${chessConfig.showEval ? "ON" : "OFF"})`;
+  el("onlyShowEvalLabel").textContent =
+    `Hide Arrows (${chessConfig.onlyShowEval ? "ON" : "OFF"})`;
   console.clear();
   console.log(chessConfig);
+  hideExtraColorInputs(chessConfig.lines);
 }
 
 function saveChess() {
@@ -53,24 +88,26 @@ function saveChess() {
   chrome?.runtime?.sendMessage({ type: "config", config: chessConfig });
 }
 
-
-["elo","lines","depth","delay"].forEach(k => {
-  el(k).oninput = e => {
+["elo", "lines", "depth", "delay"].forEach((k) => {
+  el(k).oninput = (e) => {
     chessConfig[k] = +e.target.value;
-    updateChessUI(); saveChess();
+    updateChessUI();
+    saveChess();
   };
 });
 
-["autoMove","winningMove","showEval","onlyShowEval"].forEach(k => {
-  el(k).onchange = e => {
+["autoMove", "winningMove", "showEval", "onlyShowEval"].forEach((k) => {
+  el(k).onchange = (e) => {
     chessConfig[k] = e.target.checked;
-    updateChessUI(); saveChess();
+    updateChessUI();
+    saveChess();
   };
 });
 
-el("style").onchange = e => {
+el("style").onchange = (e) => {
   chessConfig.style = e.target.value;
-  updateChessUI(); saveChess();
+  updateChessUI();
+  saveChess();
 };
 
 updateChessUI();
@@ -263,7 +300,7 @@ function highlightMovesOnBoard(moves, side, fen) {
     const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
     const marker = document.createElementNS(
       "http://www.w3.org/2000/svg",
-      "marker"
+      "marker",
     );
     marker.setAttribute("id", `arrowhead-${color}`);
     marker.setAttribute("markerWidth", "3.5");
@@ -275,7 +312,7 @@ function highlightMovesOnBoard(moves, side, fen) {
 
     const arrowPath = document.createElementNS(
       "http://www.w3.org/2000/svg",
-      "path"
+      "path",
     );
     arrowPath.setAttribute("d", "M0,0 L3.5,1.25 L0,2.5 Z");
     arrowPath.setAttribute("fill", color);
@@ -297,7 +334,7 @@ function highlightMovesOnBoard(moves, side, fen) {
     if (score !== undefined) {
       const text = document.createElementNS(
         "http://www.w3.org/2000/svg",
-        "text"
+        "text",
       );
       text.setAttribute("x", to.x + squareSize - 4);
       text.setAttribute("y", to.y + 12);
@@ -325,9 +362,8 @@ function highlightMovesOnBoard(moves, side, fen) {
   });
 }
 
-
-var board1 = null
-var evalBar = null
+var board1 = null;
+var evalBar = null;
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   try {
@@ -339,7 +375,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       const data = message.data[0];
       if (!data.fen || !data.side || !data.eval) return;
 
-      const flag = (document.querySelector(".tab.active").innerText === "Stream")
+      const flag = document.querySelector(".tab.active").innerText === "Stream";
 
       if (flag && !board1 && !evalBar) {
         board1 = Chessboard("board1", "start");
