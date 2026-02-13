@@ -17,6 +17,7 @@ const el = id => document.getElementById(id);
 let chessConfig = JSON.parse(localStorage.getItem("chessConfig")) || {
   elo: 3500,
   lines: 5,
+  colors : ["#3b82f6", "#22c55e", "#eab308", "#f97316", "#ef4444"],
   depth: 10,
   delay: 100,
   style: "Default",
@@ -25,6 +26,8 @@ let chessConfig = JSON.parse(localStorage.getItem("chessConfig")) || {
   showEval: false,
   onlyShowEval: false
 };
+
+
 
 function updateChessUI() {
   ["elo","lines","depth","delay"].forEach(k => el(k).value = chessConfig[k]);
@@ -41,7 +44,6 @@ function updateChessUI() {
   el("winningMoveLabel").textContent = `Only Winning Move (${chessConfig.winningMove ? "ON":"OFF"})`;
   el("showEvalLabel").textContent = `Show Eval Bar (${chessConfig.showEval ? "ON":"OFF"})`;
   el("onlyShowEvalLabel").textContent = `Hide Arrows (${chessConfig.onlyShowEval ? "ON":"OFF"})`;
-
   console.clear();
   console.log(chessConfig);
 }

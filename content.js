@@ -47,6 +47,7 @@ const interval = 100;
 
 let config = {
   elo: 3500,
+  colors : ["blue", "green", "yellow", "orange", "red"],
   lines: 5,
   depth: 10,
   delay: 100,
@@ -782,7 +783,7 @@ const startCheat = () => {
 
       const squareSize = parent.offsetWidth / 8;
       const maxMoves = 5;
-      let colors = ["blue", "green", "yellow", "orange", "red"];
+      let colors = config.colors;
 
       parent.querySelectorAll(".customH").forEach((el) => el.remove());
 
@@ -1131,7 +1132,7 @@ const startCheat = () => {
 
       const squareSize = parent.offsetWidth / 8;
       const maxMoves = 5;
-      let colors = ["blue", "green", "yellow", "orange", "red"];
+      let colors = config.colors;
 
       parent.querySelectorAll(".customH").forEach((el) => el.remove());
 
@@ -1379,18 +1380,6 @@ const startCheat = () => {
         }
       }
 
-      // if (message.type === "komodo") {
-      //   if (config.server) {
-      //     highlightMovesOnBoard(message.data, getSide()[0]);
-      //     chrome.runtime.sendMessage({
-      //       type: "FROM_CONTENT",
-      //       data: message.data,
-      //     });
-      //     if (message.data.length > 0 && evalObj) {
-      //       evalObj.update(message.data[0].eval, getSide());
-      //     }
-      //   }
-      // }
     });
   }
 
@@ -1462,7 +1451,7 @@ const startCheat = () => {
 
       const squareSize = parent.offsetWidth / 8;
       const maxMoves = 5;
-      let colors = ["blue", "green", "yellow", "orange", "red"];
+      let colors = config.colors
 
       // parent.querySelectorAll(".customH").forEach((el) => el.remove());
 

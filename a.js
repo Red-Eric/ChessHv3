@@ -145,8 +145,6 @@ if (window.location.hostname.includes("lichess.org")) {
         }
         return _move.call(this, x);
       };
-
-      // clearInterval(intervalId);
     }
   }, 100);
 
@@ -169,7 +167,13 @@ if (window.location.hostname.includes("lichess.org")) {
       }
       if (event.data?.type === "MOVE") {
         const { uci, moveDelay } = event.data;
-        window.playMove(uci)
+        if (window.lastFEN) {
+          if (window.lastFEN.includes("pppppppp/8/8/8/8/PPPPPPPP")) {
+            window.playMove("e2e4");
+          } else {
+            window.playMove(uci);
+          }
+        }
       }
     });
   })();
