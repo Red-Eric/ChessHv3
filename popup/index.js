@@ -33,6 +33,17 @@ const defaultChessConfig = {
 let savedConfig;
 try {
   savedConfig = JSON.parse(localStorage.getItem("chessConfig")) || {};
+  if (savedConfig) {
+    allColors = document.querySelectorAll('input[type="color"]');
+    allColors.forEach((e, index) => {
+      e.value = savedConfig.colors[index];
+    });
+  } else {
+    allColors = document.querySelectorAll('input[type="color"]');
+    allColors.forEach((e, index) => {
+      e.value = defaultChessConfig.colors[index];
+    });
+  }
 } catch {
   savedConfig = {};
 }
@@ -41,8 +52,6 @@ let chessConfig = {
   ...defaultChessConfig,
   ...savedConfig,
 };
-
-
 
 function hideExtraColorInputs(lines) {
   const allInputs = document.querySelectorAll('input[type="color"]');
@@ -109,6 +118,15 @@ el("style").onchange = (e) => {
   updateChessUI();
   saveChess();
 };
+
+const allColorInputs = document.querySelectorAll('input[type="color"]');
+allColorInputs.forEach((input, index) => {
+  input.addEventListener('input', (e) => {
+    chessConfig.colors[index] = e.target.value;
+    saveChess();
+    updateChessUI()
+  });
+});
 
 updateChessUI();
 
