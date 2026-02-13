@@ -1,156 +1,114 @@
-/* ========== GLOBAL ========== */
+/* ================= RESET / BASE ================= */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
+:root {
+  --bg-main: #0e1117;
+  --bg-panel: #121720;
+  --bg-card: #151b26;
+  --bg-hover: #1f2a38;
 
+  --border-soft: #1f2933;
+  --border-strong: #2b3645;
+
+  --blue-main: #4f8cff;
+  --blue-soft: #7fb0ff;
+
+  --text-main: #e6e8eb;
+  --text-soft: #9aa4af;
+}
+
+/* ================= BODY ================= */
 body {
-  background-color: #0e1117; /* dark modern */
-  color: #e6e8eb;
+  background: radial-gradient(circle at top, #111827, var(--bg-main));
+  color: var(--text-main);
   min-height: 100vh;
 }
 
-/* ========== COLOR PICKERS ========== */
-.setting-colors {
-  margin-top: 35px;
-  padding: 18px;
-  border-radius: 14px;
-  background: #151b26;
-  box-shadow:
-    inset 0 0 10px rgba(79, 140, 255, 0.15),
-    0 0 12px rgba(0, 0, 0, 0.8);
-}
-
-.setting-colors h2 {
-  text-align: center;
-  margin-bottom: 18px;
-  color: #7fb0ff;
-  text-shadow: 0 0 10px rgba(127, 176, 255, 0.8);
-}
-
-.color-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 14px;
-}
-
-.color-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-.color-item input[type="color"] {
-  width: 56px;
-  height: 56px;
-  border: none;
-  border-radius: 14px;
-  background: none;
-  cursor: pointer;
-  box-shadow:
-    0 0 10px rgba(79, 140, 255, 0.6),
-    0 0 18px rgba(79, 140, 255, 0.4);
-}
-
-.color-item input[type="color"]::-webkit-color-swatch {
-  border-radius: 12px;
-  border: none;
-}
-
-.color-item span {
-  font-size: 13px;
-  color: #d6e3ff;
-  opacity: 0.85;
-}
-
-
-/* ========== TABS ========== */
+/* ================= TABS ================= */
 .tabs {
   display: flex;
   justify-content: center;
-  margin: 20px 0;
-  border-bottom: 2px solid #1f2933;
-  border-radius: 8px;
-  overflow: hidden;
+  margin: 24px 0;
+  border-bottom: 1px solid var(--border-soft);
 }
 
 .tab {
-  padding: 12px 30px;
+  padding: 14px 34px;
   cursor: pointer;
   font-weight: 600;
-  transition: all 0.3s ease;
-  color: #9aa4af;
+  letter-spacing: 0.3px;
+  color: var(--text-soft);
   background: #141922;
-}
-
-.tab.active {
-  color: #ffffff;
-  background: #1b2430;
-  box-shadow:
-    inset 0 -3px 0 #4f8cff,
-    0 0 12px rgba(79, 140, 255, 0.5);
+  transition: 0.25s ease;
 }
 
 .tab:hover {
-  background: #1f2a38;
-  color: #7fb0ff;
-  text-shadow: 0 0 8px rgba(127, 176, 255, 0.8);
-  transform: translateY(-2px);
+  background: var(--bg-hover);
+  color: var(--blue-soft);
 }
 
-/* ========== PANELS ========== */
+.tab.active {
+  color: #fff;
+  background: #1b2430;
+  box-shadow:
+    inset 0 -3px 0 var(--blue-main),
+    0 0 16px rgba(79, 140, 255, 0.45);
+}
+
+/* ================= PANELS ================= */
 .panel {
   display: none;
-  padding: 25px 30px;
-  max-width: 720px;
-  margin: 0 auto 40px auto;
-  background: #121720;
-  border-radius: 16px;
-  border: 1px solid #1f2933;
+  max-width: 760px;
+  margin: 0 auto 50px;
+  padding: 30px 34px;
+  background: var(--bg-panel);
+  border-radius: 18px;
+  border: 1px solid var(--border-soft);
   box-shadow:
-    0 0 25px rgba(0, 0, 0, 0.9),
-    0 0 20px rgba(79, 140, 255, 0.15);
-  transition: all 0.4s ease;
+    0 0 30px rgba(0, 0, 0, 0.85),
+    0 0 24px rgba(79, 140, 255, 0.12);
 }
 
 .panel.active {
   display: block;
 }
 
-/* ========== HEADINGS ========== */
+/* ================= HEADINGS ================= */
 h1 {
   text-align: center;
-  color: #7fb0ff;
-  margin-bottom: 30px;
+  margin-bottom: 32px;
+  color: var(--blue-soft);
+  font-weight: 700;
+  letter-spacing: 0.6px;
   text-shadow:
-    0 0 8px rgba(127, 176, 255, 0.9),
-    0 0 18px rgba(127, 176, 255, 0.4);
+    0 0 10px rgba(127, 176, 255, 0.9),
+    0 0 22px rgba(127, 176, 255, 0.4);
 }
 
 p {
   text-align: center;
   color: #a8c7ff;
-  margin-bottom: 30px;
-  text-shadow: 0 0 10px rgba(168, 199, 255, 0.6);
+  margin-top: 16px;
 }
 
-/* ========== SETTINGS ========== */
+/* ================= SETTINGS BLOCK ================= */
 .setting {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 22px;
-  padding: 10px 15px;
-  border-radius: 12px;
-  background: #151b26;
+  gap: 18px;
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  background: var(--bg-card);
+  border-radius: 14px;
   box-shadow:
-    inset 0 0 8px rgba(79, 140, 255, 0.12),
-    0 0 10px rgba(0, 0, 0, 0.8);
+    inset 0 0 10px rgba(79, 140, 255, 0.12),
+    0 0 14px rgba(0, 0, 0, 0.75);
 }
 
 .setting label,
@@ -159,135 +117,174 @@ p {
   color: #d6e3ff;
 }
 
-/* ========== SLIDERS ========== */
+/* ================= HELP TEXT ================= */
+.setting-help {
+  margin: -10px 0 18px 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-soft);
+  opacity: 0.85;
+}
+
+/* ================= RANGE SLIDERS ================= */
 .setting input[type="range"] {
-  -webkit-appearance: none;
   width: 60%;
-  height: 10px;
-  border-radius: 5px;
-  background: #1f2933;
-  outline: none;
+  height: 8px;
+  border-radius: 8px;
+  background: var(--border-soft);
+  appearance: none;
 }
 
 .setting input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
   appearance: none;
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: #4f8cff;
-  cursor: pointer;
+  background: var(--blue-main);
   border: 2px solid #000;
+  cursor: pointer;
   box-shadow:
-    0 0 10px rgba(79, 140, 255, 0.9),
-    0 0 20px rgba(79, 140, 255, 0.6);
-  transition: transform 0.2s, box-shadow 0.2s;
+    0 0 12px rgba(79, 140, 255, 0.9),
+    0 0 26px rgba(79, 140, 255, 0.6);
+  transition: transform 0.2s;
 }
 
 .setting input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.3);
-  box-shadow:
-    0 0 14px rgba(127, 176, 255, 1),
-    0 0 28px rgba(127, 176, 255, 0.8);
+  transform: scale(1.25);
 }
 
-/* ========== SELECT BOXES ========== */
+/* ================= SELECT ================= */
 .setting select {
-  padding: 8px 14px;
-  background: #151b26;
-  border: 1px solid #2b3645;
-  border-radius: 10px;
-  color: #ffffff;
+  padding: 9px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  color: #fff;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: 0.25s ease;
 }
 
 .setting select:hover,
 .setting select:focus {
   box-shadow:
-    0 0 10px rgba(79, 140, 255, 0.8),
-    0 0 20px rgba(79, 140, 255, 0.4);
+    0 0 14px rgba(79, 140, 255, 0.8),
+    0 0 28px rgba(79, 140, 255, 0.4);
   outline: none;
 }
 
-.setting-help {
-  margin: -12px 0 18px 0;
-  padding-left: 8px;
+/* ================= COLOR PICKERS ================= */
+.setting-colors {
+  margin-top: 36px;
+  padding: 22px;
+  border-radius: 16px;
+  background: var(--bg-card);
+  box-shadow:
+    inset 0 0 14px rgba(79, 140, 255, 0.15),
+    0 0 16px rgba(0, 0, 0, 0.8);
+}
+
+.setting-colors h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: var(--blue-soft);
+}
+
+.color-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.color-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.color-item input[type="color"] {
+  width: 58px;
+  height: 58px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  background: none;
+  box-shadow:
+    0 0 12px rgba(79, 140, 255, 0.6),
+    0 0 22px rgba(79, 140, 255, 0.35);
+}
+
+.color-item span {
   font-size: 13px;
-  color: #9aa4af;
-  line-height: 1.4;
+  color: #d6e3ff;
   opacity: 0.85;
 }
 
-
-/* ========== CHESSBOARD ========== */
-#board1 {
-  margin: 25px auto;
-  border-radius: 16px;
-  border: 2px solid #4f8cff;
-  box-shadow:
-    0 0 20px rgba(79, 140, 255, 0.8),
-    0 0 40px rgba(79, 140, 255, 0.4);
-}
-
-/* ========== TOGGLE SWITCHES ========== */
+/* ================= TOGGLE ================= */
 .toggle {
   position: relative;
-  display: inline-block;
   width: 50px;
   height: 26px;
 }
 
 .toggle input {
-  opacity: 0;
-  width: 0;
-  height: 0;
+  display: none;
 }
 
 .slider {
   position: absolute;
   inset: 0;
-  cursor: pointer;
-  background-color: #1f2933;
+  background: var(--border-soft);
   border-radius: 34px;
-  border: 2px solid #2b3645;
-  transition: 0.4s;
+  border: 2px solid var(--border-strong);
+  cursor: pointer;
+  transition: 0.3s;
 }
 
-.slider:before {
-  position: absolute;
+.slider::before {
   content: "";
-  height: 22px;
+  position: absolute;
   width: 22px;
+  height: 22px;
   left: 2px;
-  bottom: 1px;
-  background-color: #4f8cff;
+  top: 1px;
+  background: var(--blue-main);
   border-radius: 50%;
   box-shadow:
-    0 0 10px rgba(79, 140, 255, 0.9),
-    0 0 18px rgba(79, 140, 255, 0.6);
-  transition: 0.4s;
+    0 0 12px rgba(79, 140, 255, 0.9),
+    0 0 20px rgba(79, 140, 255, 0.6);
+  transition: 0.3s;
 }
 
 .toggle input:checked + .slider {
-  background-color: #182233;
-  box-shadow: 0 0 12px rgba(79, 140, 255, 0.6);
+  background: #182233;
 }
 
-.toggle input:checked + .slider:before {
+.toggle input:checked + .slider::before {
   transform: translateX(24px);
 }
 
-/* ========== GENERAL EFFECTS ========== */
+/* ================= CHESSBOARD ================= */
+#board1 {
+  margin: 28px auto;
+  border-radius: 18px;
+  border: 2px solid var(--blue-main);
+  box-shadow:
+    0 0 24px rgba(79, 140, 255, 0.8),
+    0 0 46px rgba(79, 140, 255, 0.4);
+}
+
+/* ================= FOCUS ================= */
 input:focus,
 select:focus {
   outline: none;
   box-shadow:
-    0 0 12px rgba(79, 140, 255, 0.9),
-    0 0 24px rgba(79, 140, 255, 0.5);
+    0 0 14px rgba(79, 140, 255, 0.9),
+    0 0 28px rgba(79, 140, 255, 0.5);
 }
 
 .setting span.active {
-  color: #7fb0ff;
-  text-shadow: 0 0 8px rgba(127, 176, 255, 0.9);
+  color: var(--blue-soft);
+  text-shadow: 0 0 10px rgba(127, 176, 255, 0.9);
 }

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ChessHv3 Settings</title>
+    <title>ChessHv3 Setting</title>
 
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="chessboard/chessboard-1.0.0.css" />
@@ -14,59 +14,92 @@
       <div class="tab active" data-panel="chess">Settings</div>
       <div class="tab" data-panel="stream">Stream</div>
     </div>
-
-    <!-- SETTINGS -->
+    <!-- ================= SEttings ================= -->
     <div class="panel active" id="chess">
       <div class="container">
-        <h1>ChessHv3</h1>
+        <h1>ChessHv3 - Chess.com</h1>
 
         <div class="setting">
-          <label>ELO <span id="eloValue">3500</span></label>
-          <input type="range" id="elo" min="100" max="3500" step="10" value="3500" />
+          <label>ELO : <span id="eloValue">3500</span></label>
+          <input
+            type="range"
+            id="elo"
+            min="100"
+            max="3500"
+            step="10"
+            value="3500"
+          />
         </div>
-        <div class="setting-help">Engine strength control.</div>
+        <div class="setting-help">
+          ELO defines the engine strength. Higher values make the engine play
+          stronger.
+        </div>
 
         <div class="setting">
-          <label>Arrows <span id="linesValue">5</span></label>
+          <label>Arrows : <span id="linesValue">5</span></label>
           <input type="range" id="lines" min="2" max="5" value="5" />
         </div>
-        <div class="setting-help">Number of suggested moves.</div>
+        <div class="setting-help">
+          Number of best move arrows displayed on the board.
+        </div>
 
         <div class="setting-colors">
-          <h2>Move Colors</h2>
+          <h2>Arrow Colors</h2>
 
           <div class="color-row">
             <div class="color-item">
               <input type="color" id="colorBest" value="#4f8cff" />
-              <span>Best</span>
+              <span>bestMove</span>
             </div>
+
             <div class="color-item">
               <input type="color" id="color2" value="#2ecc71" />
               <span>2nd</span>
             </div>
+
             <div class="color-item">
               <input type="color" id="color3" value="#f1c40f" />
               <span>3rd</span>
             </div>
+
             <div class="color-item">
               <input type="color" id="color4" value="#e67e22" />
               <span>4th</span>
             </div>
+
             <div class="color-item">
               <input type="color" id="color5" value="#e74c3c" />
               <span>5th</span>
             </div>
           </div>
         </div>
-
-        <div class="setting">
-          <label>Depth <span id="depthValue">10</span></label>
-          <input type="range" id="depth" min="1" max="20" value="10" />
+        <div class="setting-help">
+          Customize the arrow colors for the top 5 engine moves.
         </div>
 
         <div class="setting">
-          <label>Auto Move Delay <span id="delayValue">100</span> ms</label>
-          <input type="range" id="delay" min="100" max="20000" step="50" value="100" />
+          <label>Depth : <span id="depthValue">10</span></label>
+          <input type="range" id="depth" min="1" max="20" value="10" />
+        </div>
+        <div class="setting-help">
+          Search depth of the engine: the higher the depth, the longer the
+          computation time.
+        </div>
+
+        <div class="setting">
+          <label>Auto Move Delay : <span id="delayValue">100</span> ms</label>
+          <input
+            type="range"
+            id="delay"
+            min="100"
+            max="20000"
+            step="50"
+            value="100"
+          />
+        </div>
+        <div class="setting-help">
+          Delay before the engine automatically plays a move. The actual delay
+          is randomly selected between 0 ms and the chosen value.
         </div>
 
         <div class="setting">
@@ -82,45 +115,60 @@
             <option>Human</option>
           </select>
         </div>
+        <div class="setting-help">
+          Defines the preferred playstyle of the engine.
+        </div>
 
         <div class="setting">
-          <span id="autoMoveLabel">Auto Move</span>
+          <span id="autoMoveLabel">Auto Move (OFF)</span>
           <label class="toggle">
             <input type="checkbox" id="autoMove" />
             <span class="slider"></span>
           </label>
         </div>
+        <div class="setting-help">
+          Automatically plays the best move for you.
+        </div>
 
         <div class="setting">
-          <span id="winningMoveLabel">Only Winning</span>
+          <span id="winningMoveLabel">Only Winning Move (OFF)</span>
           <label class="toggle">
             <input type="checkbox" id="winningMove" />
             <span class="slider"></span>
           </label>
         </div>
+        <div class="setting-help">
+          Shows only moves that keep a winning advantage (moves that gain +2
+          material points or more).
+        </div>
 
         <div class="setting">
-          <span id="showEvalLabel">Eval Bar</span>
+          <span id="showEvalLabel">Show Eval Bar (OFF)</span>
           <label class="toggle">
             <input type="checkbox" id="showEval" />
             <span class="slider"></span>
           </label>
         </div>
+        <div class="setting-help">Displays the engine evaluation bar.</div>
 
         <div class="setting">
-          <span id="onlyShowEvalLabel">Hide Arrows</span>
+          <span id="onlyShowEvalLabel">Hide Arrows (OFF)</span>
           <label class="toggle">
             <input type="checkbox" id="onlyShowEval" />
             <span class="slider"></span>
           </label>
         </div>
+        <div class="setting-help">Hides move suggestions.</div>
       </div>
     </div>
 
-    <!-- STREAM -->
+    <!-- ================= STREAM ================= -->
     <div class="panel" id="stream">
       <div id="board1" style="width: 600px"></div>
-      <p>Live board preview</p>
+      <p>
+        Launch your game and it will appear here automatically. Disable Show
+        Eval Bar and enable Hide Arrows for best results.
+      </p>
     </div>
 
     <script src="chessboard/jquery-3.4.1.min.js"></script>
