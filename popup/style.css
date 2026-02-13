@@ -206,14 +206,25 @@ p {
 .color-item input[type="color"] {
   width: 58px;
   height: 58px;
+  border-radius: 50%;
   border: none;
-  border-radius: 14px;
+  padding: 0;
   cursor: pointer;
   background: none;
   box-shadow:
     0 0 12px rgba(79, 140, 255, 0.6),
     0 0 22px rgba(79, 140, 255, 0.35);
 }
+
+.color-item input[type="color"]::-webkit-color-swatch {
+  border-radius: 50%;
+  border: none;
+}
+
+.color-item input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
 
 .color-item span {
   font-size: 13px;
