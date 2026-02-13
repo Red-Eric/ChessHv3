@@ -69,7 +69,7 @@ if (window.location.hostname.includes("lichess.org")) {
 
     window.WebSocket = function (...args) {
       const ws = new OrigWS(...args);
-      console.log("[WS]", ws.url);
+      // console.log("[WS]", ws.url);
       window._lichessSockets.push(ws);
       return ws;
     };
@@ -95,7 +95,7 @@ if (window.location.hostname.includes("lichess.org")) {
           }),
         );
       } catch (e) {
-        console.log("error");
+        // console.log("error");
       }
     });
   };
@@ -151,7 +151,6 @@ if (window.location.hostname.includes("lichess.org")) {
   function getFen() {
     let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     if (window.lastFEN) {
-      // console.log(window.lastFEN)
       return window.lastFEN;
     }
     return fen;
@@ -162,7 +161,6 @@ if (window.location.hostname.includes("lichess.org")) {
       if (event.source !== window) return;
 
       if (event.data?.type === "FEN") {
-        // console.log(getFen())
         window.postMessage({ type: "FEN_RESPONSE", fen: getFen() }, "*");
       }
       if (event.data?.type === "MOVE") {

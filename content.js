@@ -1767,8 +1767,18 @@ async function checkUpdate() {
   try {
     const url =
       "https://api.github.com/repos/Red-Eric/ChessBot-CDP/contents/ChessKiller/update.json?ref=master";
-    const response = await fetch(url, { cache: "no-store" });
-    if (!response.ok) throw new Error("HTTP error " + response.status);
+
+    const response = await fetch(url, {
+      cache: "no-store",
+      headers: {
+        "Authorization": "Bearer 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",
+        "Accept": "application/vnd.github+json"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error("HTTP error " + response.status);
+    }
 
     const result = await response.json();
     const content = atob(result.content.replace(/\n/g, ""));
@@ -1786,6 +1796,7 @@ async function checkUpdate() {
   }
 }
 
+
 (async () => {
   const updateNeeded = await checkUpdate();
   if (!updateNeeded) {
@@ -1802,3 +1813,6 @@ async function checkUpdate() {
     }
   }
 })();
+
+
+// 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
