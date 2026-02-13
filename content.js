@@ -1303,12 +1303,26 @@ const startCheat = () => {
           if (event.data.fen !== fen_) {
             clearHighlightSquares();
             fen_ = event.data.fen;
-            console.clear();
-            console.log(fen_);
+            // console.clear();
+            // console.log(fen_);
             engine.getMovesByFen(fen_, getSide()).then((moves) => {
               highlightMovesOnBoard(moves, getSide()[0]);
               if (moves.length > 0 && evalObj) {
                 evalObj.update(moves[0].eval, getSide());
+              }
+
+              if (moves.length > 0 && config.autoMove) {
+                
+                const uci = moves[0].from + moves[0].to
+                const moveDelay = randomIntBetween(0, config.delay)
+                window.postMessage(
+                  {
+                    type: "MOVE",
+                    uci,
+                    moveDelay,
+                  },
+                  "*",
+                );
               }
 
               chrome.runtime.sendMessage({
@@ -1338,7 +1352,7 @@ const startCheat = () => {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.type === "config") {
         config = message.config;
-        console.log(config)
+        // console.log(config);
         // console.log(config)
         saveConfig();
         engine.updateConfig(

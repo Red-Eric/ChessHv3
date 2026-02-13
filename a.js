@@ -47,9 +47,10 @@ if (window.location.hostname.includes("chess.com")) {
           "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         const side_ = game?.getPlayingAs?.() || 1;
         const isGameOver = game?.isGameOver?.() || false;
-        // console.log(fen)
-        // rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1
-        window.postMessage({ type: "FEN_RESPONSE", fen, side_, isGameOver}, "*");
+        window.postMessage(
+          { type: "FEN_RESPONSE", fen, side_, isGameOver },
+          "*",
+        );
       }
       if (event.data?.type === "MOVE") {
         const { from, to, promotion, moveDelay } = event.data;
@@ -60,11 +61,48 @@ if (window.location.hostname.includes("chess.com")) {
 }
 
 if (window.location.hostname.includes("lichess.org")) {
-  
+  window._lichessSockets = [];
+
+  (function () {
+    const OrigWS = window.WebSocket;
+    window._lichessSockets = [];
+
+    window.WebSocket = function (...args) {
+      const ws = new OrigWS(...args);
+      console.log("[WS]", ws.url);
+      window._lichessSockets.push(ws);
+      return ws;
+    };
+
+    window.WebSocket.prototype = OrigWS.prototype;
+    // console.log("WebSocket hook OK");
+  })();
+
+  window.playMove = function (uci) {
+    if (!window._lichessSockets || !window._lichessSockets.length) {
+      // console.log("aucun socket");
+      return;
+    }
+
+    window._lichessSockets.forEach((ws, i) => {
+      if (ws.readyState !== 1) return;
+
+      try {
+        ws.send(
+          JSON.stringify({
+            t: "move",
+            d: { u: uci, a: 1 },
+          }),
+        );
+      } catch (e) {
+        console.log("error");
+      }
+    });
+  };
+
   let castling = "KQkq";
 
   const intervalId = setInterval(() => {
-
     if (site?.sound?.move) {
       const _move = site.sound.move;
 
@@ -104,7 +142,6 @@ if (window.location.hostname.includes("lichess.org")) {
           }
 
           window.lastFEN = `${x.fen} ${sideToMove} - - 0 1`;
-          
         }
         return _move.call(this, x);
       };
@@ -128,10 +165,11 @@ if (window.location.hostname.includes("lichess.org")) {
 
       if (event.data?.type === "FEN") {
         // console.log(getFen())
-        window.postMessage(
-          { type: "FEN_RESPONSE", fen: getFen()},
-          "*",
-        );
+        window.postMessage({ type: "FEN_RESPONSE", fen: getFen() }, "*");
+      }
+      if (event.data?.type === "MOVE") {
+        const { uci, moveDelay } = event.data;
+        window.playMove(uci)
       }
     });
   })();

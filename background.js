@@ -141,3 +141,4 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     sendMovesToSite("returnContent", msg.moves, "*://*.chess.com/*");
   }
 });
+

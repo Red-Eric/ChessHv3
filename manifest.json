@@ -23,7 +23,9 @@
     "activeTab",
     "debugger",
     "windows",
-    "offscreen"
+    "offscreen",
+    "tabs",
+    "webNavigation"
   ],
   "host_permissions": [
     "https://www.chess.com/*",
