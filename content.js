@@ -15,6 +15,15 @@ function clickButtonsByText(text) {
   setTimeout(() => clickButtonsByText(text), 100);
 }
 
+function preInjection() {
+  const s = document.createElement("script");
+  s.src = chrome.runtime.getURL("a.js");
+  (document.head || document.documentElement).appendChild(s);
+  s.onload = () => s.remove();
+}
+
+preInjection()
+
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -47,7 +56,7 @@ const interval = 100;
 
 let config = {
   elo: 3500,
-  colors : ["blue", "green", "yellow", "orange", "red"],
+  colors: ["blue", "green", "yellow", "orange", "red"],
   lines: 5,
   depth: 10,
   delay: 100,
@@ -714,10 +723,10 @@ const startCheat = () => {
     }
 
     function inject() {
-      const s = document.createElement("script");
-      s.src = chrome.runtime.getURL("a.js");
-      (document.head || document.documentElement).appendChild(s);
-      s.onload = () => s.remove();
+      // const s = document.createElement("script");
+      // s.src = chrome.runtime.getURL("a.js");
+      // (document.head || document.documentElement).appendChild(s);
+      // s.onload = () => s.remove();
 
       window.addEventListener("message", (event) => {
         if (event.source !== window) return;
@@ -989,8 +998,6 @@ const startCheat = () => {
   if (window.location.hostname.includes("lichess")) {
     loadConfig();
     let fen_ = "";
-    let uciPos =
-      "position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 moves e2e4 e7e5 d1h5 d7d5 b1c3";
     let evalObj = null;
     let customEval = null;
     let lastUCIPos;
@@ -1111,9 +1118,6 @@ const startCheat = () => {
     function highlightMovesOnBoard(moves, side) {
       // console.log(side);
       if (!Array.isArray(moves)) return;
-
-      let sideIndicator =
-        uciPos.trim().split(/\s+/).length % 2 != 0 ? "w" : "b";
 
       if (
         !(
@@ -1287,15 +1291,15 @@ const startCheat = () => {
 
     /////////////////////////////////////////////   calculation /////////////////////////////////////////////
     function inject() {
-      const s = document.createElement("script");
-      s.src = chrome.runtime.getURL("lib/chess_min.js");
-      (document.head || document.documentElement).appendChild(s);
-      s.onload = () => s.remove();
+      // const s = document.createElement("script");
+      // s.src = chrome.runtime.getURL("lib/chess_min.js");
+      // (document.head || document.documentElement).appendChild(s);
+      // s.onload = () => s.remove();
 
-      const s2 = document.createElement("script");
-      s2.src = chrome.runtime.getURL("a.js");
-      (document.head || document.documentElement).appendChild(s2);
-      s2.onload = () => s2.remove();
+      // const s2 = document.createElement("script");
+      // s2.src = chrome.runtime.getURL("a.js");
+      // (document.head || document.documentElement).appendChild(s2);
+      // s2.onload = () => s2.remove();
 
       window.addEventListener("message", (event) => {
         if (event.source !== window) return;
@@ -1313,9 +1317,8 @@ const startCheat = () => {
               }
 
               if (moves.length > 0 && config.autoMove) {
-                
-                const uci = moves[0].from + moves[0].to
-                const moveDelay = randomIntBetween(0, config.delay)
+                const uci = moves[0].from + moves[0].to;
+                const moveDelay = randomIntBetween(0, config.delay);
                 window.postMessage(
                   {
                     type: "MOVE",
@@ -1379,7 +1382,6 @@ const startCheat = () => {
           }
         }
       }
-
     });
   }
 
@@ -1451,7 +1453,7 @@ const startCheat = () => {
 
       const squareSize = parent.offsetWidth / 8;
       const maxMoves = 5;
-      let colors = config.colors
+      let colors = config.colors;
 
       // parent.querySelectorAll(".customH").forEach((el) => el.remove());
 
@@ -1771,9 +1773,10 @@ async function checkUpdate() {
     const response = await fetch(url, {
       cache: "no-store",
       headers: {
-        "Authorization": "Bearer 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",
-        "Accept": "application/vnd.github+json"
-      }
+        Authorization:
+          "Bearer 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",
+        Accept: "application/vnd.github+json",
+      },
     });
 
     if (!response.ok) {
@@ -1796,7 +1799,6 @@ async function checkUpdate() {
   }
 }
 
-
 (async () => {
   const updateNeeded = await checkUpdate();
   if (!updateNeeded) {
@@ -1813,6 +1815,5 @@ async function checkUpdate() {
     }
   }
 })();
-
 
 // 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

@@ -166,11 +166,7 @@ if (window.location.hostname.includes("lichess.org")) {
       if (event.data?.type === "MOVE") {
         const { uci, moveDelay } = event.data;
         if (window.lastFEN) {
-          if (window.lastFEN.includes("pppppppp/8/8/8/8/PPPPPPPP")) {
-            window.playMove("e2e4");
-          } else {
-            window.playMove(uci);
-          }
+          window.playMove(uci);
         }
       }
     });
