@@ -22,10 +22,30 @@ function preInjection() {
   s.onload = () => s.remove();
 }
 
-preInjection()
+preInjection();
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function squareToPixels(square, boardInfo, orientation = "white") {
+  const files = "abcdefgh";
+  const file = files.indexOf(square[0]); // e = 4
+  const rank = parseInt(square[1], 10) - 1; // 2 -> index 1
+
+  const squareSize = boardInfo.width / 8;
+
+  let x, y;
+
+  if (orientation === "white") {
+    x = boardInfo.left + file * squareSize + squareSize / 2;
+    y = boardInfo.top + (7 - rank) * squareSize + squareSize / 2;
+  } else {
+    x = boardInfo.left + (7 - file) * squareSize + squareSize / 2;
+    y = boardInfo.top + rank * squareSize + squareSize / 2;
+  }
+
+  return { x, y };
 }
 
 function countMoves(fenString) {
@@ -996,6 +1016,11 @@ const startCheat = () => {
   }
 
   if (window.location.hostname.includes("lichess")) {
+    chrome.runtime.sendMessage({ type: "ATTACH_DEBUGGER" }, (res) => {
+      if (res?.success) {
+        console.log("Debugger ready");
+      }
+    });
     loadConfig();
     let fen_ = "";
     let evalObj = null;
@@ -1291,25 +1316,12 @@ const startCheat = () => {
 
     /////////////////////////////////////////////   calculation /////////////////////////////////////////////
     function inject() {
-      // const s = document.createElement("script");
-      // s.src = chrome.runtime.getURL("lib/chess_min.js");
-      // (document.head || document.documentElement).appendChild(s);
-      // s.onload = () => s.remove();
-
-      // const s2 = document.createElement("script");
-      // s2.src = chrome.runtime.getURL("a.js");
-      // (document.head || document.documentElement).appendChild(s2);
-      // s2.onload = () => s2.remove();
-
       window.addEventListener("message", (event) => {
         if (event.source !== window) return;
         if (event.data && event.data.type === "FEN_RESPONSE") {
-          // console.log(event.data.fen)
           if (event.data.fen !== fen_) {
             clearHighlightSquares();
             fen_ = event.data.fen;
-            // console.clear();
-            // console.log(fen_);
             engine.getMovesByFen(fen_, getSide()).then((moves) => {
               highlightMovesOnBoard(moves, getSide()[0]);
               if (moves.length > 0 && evalObj) {
@@ -1317,16 +1329,35 @@ const startCheat = () => {
               }
 
               if (moves.length > 0 && config.autoMove) {
-                const uci = moves[0].from + moves[0].to;
+                const fromSquare = moves[0].from;
+                const toSquare = moves[0].to;
                 const moveDelay = randomIntBetween(0, config.delay);
-                window.postMessage(
-                  {
-                    type: "MOVE",
-                    uci,
-                    moveDelay,
-                  },
-                  "*",
-                );
+
+                const board = document.querySelector("cg-board");
+                const rect = board.getBoundingClientRect();
+
+                const boardInfo = {
+                  left: rect.left,
+                  top: rect.top,
+                  width: rect.width,
+                  height: rect.height,
+                };
+
+                chrome.runtime.sendMessage({ type: "BOARD_INFO", boardInfo });
+                const coordFrom = squareToPixels(fromSquare, boardInfo);
+                const coordTo = squareToPixels(toSquare, boardInfo);
+
+                chrome.runtime.sendMessage({
+                  type: "CLICK_AT",
+                  x: coordFrom.x,
+                  y: coordFrom.y,
+                });
+
+                chrome.runtime.sendMessage({
+                  type: "CLICK_AT",
+                  x: coordTo.x,
+                  y: coordTo.y,
+                });
               }
 
               chrome.runtime.sendMessage({
@@ -1386,6 +1417,11 @@ const startCheat = () => {
   }
 
   if (window.location.hostname.includes("worldchess")) {
+    chrome.runtime.sendMessage({ type: "ATTACH_DEBUGGER" }, (res) => {
+      if (res?.success) {
+        console.log("Debugger ready");
+      }
+    });
     let fen_ = "";
     let currentFen = "";
     let evalObj = null;
@@ -1722,6 +1758,34 @@ const startCheat = () => {
 
           if (moves.length > 0 && evalObj) {
             evalObj.update(moves[0].eval, getSide());
+          }
+
+          if (moves.length > 0 && config.autoMove) {
+            const fromSquare = moves[0].from;
+            const toSquare = moves[0].to;
+            const moveDelay = randomIntBetween(0, config.delay);
+
+            const board = document.querySelector("cg-board");
+            const rect = board.getBoundingClientRect();
+
+            const boardInfo = {
+              left: rect.left,
+              top: rect.top,
+              width: rect.width,
+              height: rect.height,
+            };
+
+            chrome.runtime.sendMessage({ type: "BOARD_INFO", boardInfo });
+            const coordFrom = squareToPixels(fromSquare, boardInfo);
+            const coordTo = squareToPixels(toSquare, boardInfo);
+
+            chrome.runtime.sendMessage({
+              type: "DRAG_MOVE",
+              fromX: coordFrom.x,
+              fromY: coordFrom.y,
+              toX: coordTo.x,
+              toY: coordTo.y,
+            });
           }
         });
       }

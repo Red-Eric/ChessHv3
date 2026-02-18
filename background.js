@@ -142,3 +142,113 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 });
 
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+
+  if (!sender.tab || !sender.tab.id) return;
+  const tabId = sender.tab.id;
+
+  // ===== ATTACH DEBUGGER =====
+  if (message.type === "ATTACH_DEBUGGER") {
+
+    chrome.debugger.attach({ tabId }, "1.3", () => {
+
+      if (chrome.runtime.lastError) {
+        console.error("Attach failed:", chrome.runtime.lastError.message);
+        sendResponse({ success: false, error: chrome.runtime.lastError.message });
+        return;
+      }
+
+      console.log("Debugger attached to tab", tabId);
+      sendResponse({ success: true });
+    });
+
+    return true; // obligatoire pour async sendResponse
+  }
+
+  // ===== CLICK EVENT =====
+  if (message.type === "CLICK_AT") {
+
+    chrome.debugger.sendCommand(
+      { tabId },
+      "Input.dispatchMouseEvent",
+      {
+        type: "mousePressed",
+        x: message.x,
+        y: message.y,
+        button: "left",
+        clickCount: 1
+      }
+    );
+
+    chrome.debugger.sendCommand(
+      { tabId },
+      "Input.dispatchMouseEvent",
+      {
+        type: "mouseReleased",
+        x: message.x,
+        y: message.y,
+        button: "left",
+        clickCount: 1
+      }
+    );
+  }
+
+});
+
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+
+  if (!sender.tab || !sender.tab.id) return;
+  const tabId = sender.tab.id;
+
+  if (message.type === "DRAG_MOVE") {
+
+    const { fromX, fromY, toX, toY } = message;
+
+    // 1️⃣ Press
+    chrome.debugger.sendCommand(
+      { tabId },
+      "Input.dispatchMouseEvent",
+      {
+        type: "mousePressed",
+        x: fromX,
+        y: fromY,
+        button: "left",
+        clickCount: 1
+      }
+    );
+
+    // 2️⃣ Move (interpolation simple)
+    const steps = 10;
+    for (let i = 1; i <= steps; i++) {
+      const x = fromX + (toX - fromX) * (i / steps);
+      const y = fromY + (toY - fromY) * (i / steps);
+
+      chrome.debugger.sendCommand(
+        { tabId },
+        "Input.dispatchMouseEvent",
+        {
+          type: "mouseMoved",
+          x,
+          y,
+          button: "left"
+        }
+      );
+    }
+
+    // 3️⃣ Release
+    chrome.debugger.sendCommand(
+      { tabId },
+      "Input.dispatchMouseEvent",
+      {
+        type: "mouseReleased",
+        x: toX,
+        y: toY,
+        button: "left",
+        clickCount: 1
+      }
+    );
+  }
+
+});
