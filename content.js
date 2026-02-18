@@ -1322,7 +1322,7 @@ const startCheat = () => {
           if (event.data.fen !== fen_) {
             clearHighlightSquares();
             fen_ = event.data.fen;
-            engine.getMovesByFen(fen_, getSide()).then((moves) => {
+            engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
               highlightMovesOnBoard(moves, getSide()[0]);
               if (moves.length > 0 && evalObj) {
                 evalObj.update(moves[0].eval, getSide());
@@ -1347,16 +1347,14 @@ const startCheat = () => {
                 const coordFrom = squareToPixels(fromSquare, boardInfo);
                 const coordTo = squareToPixels(toSquare, boardInfo);
 
-                chrome.runtime.sendMessage({
-                  type: "CLICK_AT",
-                  x: coordFrom.x,
-                  y: coordFrom.y,
-                });
+                await sleep(moveDelay);
 
                 chrome.runtime.sendMessage({
-                  type: "CLICK_AT",
-                  x: coordTo.x,
-                  y: coordTo.y,
+                  type: "DRAG_MOVE",
+                  fromX: coordFrom.x,
+                  fromY: coordFrom.y,
+                  toX: coordTo.x,
+                  toY: coordTo.y,
                 });
               }
 
@@ -1752,7 +1750,7 @@ const startCheat = () => {
         currentFen = fen_;
         clearHighlightSquares();
 
-        engine.getMovesByFen(fen_, getSide()).then((moves) => {
+        engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
           chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
           highlightMovesOnBoard(moves, getSide()[0]);
 
@@ -1778,6 +1776,8 @@ const startCheat = () => {
             chrome.runtime.sendMessage({ type: "BOARD_INFO", boardInfo });
             const coordFrom = squareToPixels(fromSquare, boardInfo);
             const coordTo = squareToPixels(toSquare, boardInfo);
+
+            await sleep(moveDelay);
 
             chrome.runtime.sendMessage({
               type: "DRAG_MOVE",
