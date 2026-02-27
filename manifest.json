@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "ChessHv3",
   "version": "9.9",
-  "key" : "chesshv3",
+  "key": "chesshv3",
   "description": "Chess Helper Version 3",
   "icons": {
     "16": "icons/16.png",
@@ -25,7 +25,8 @@
     "windows",
     "offscreen",
     "tabs",
-    "webNavigation"
+    "webNavigation",
+    "storage"
   ],
   "host_permissions": [
     "https://www.chess.com/*",

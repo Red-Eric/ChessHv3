@@ -78,8 +78,8 @@ const interval = 100;
 
 let config = {
   elo: 3500,
-  colors: ["blue", "green", "yellow", "orange", "red"],
   lines: 5,
+  colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
   depth: 10,
   delay: 100,
   style: "Default",
@@ -90,16 +90,48 @@ let config = {
   key: " ",
 };
 
-function saveConfig() {
-  localStorage.setItem("chessConfig", JSON.stringify(config));
-}
+// function getChessConfig() {
+//   return new Promise((resolve) => {
+//     chrome.storage.local.get(["chessConfig"], function (result) {
+//       const config = result.chessConfig || {
+//         elo: 3500,
+//         lines: 5,
+//         colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
+//         depth: 10,
+//         delay: 100,
+//         style: "Default",
+//         autoMove: false,
+//         winningMove: false,
+//         showEval: false,
+//         onlyShowEval: false,
+//         key: " ",
+//       };
+//       resolve(config);
+//     });
+//   });
+// }
 
-function loadConfig() {
-  const saved = localStorage.getItem("chessConfig");
-  if (saved) {
-    config = { ...config, ...JSON.parse(saved) };
-  }
-}
+// getChessConfig().then((config_) => {
+//   config = config_;
+// });
+
+chrome.storage.local.get(["chessConfig"], (result) => {
+  config = result.chessConfig || {
+    elo: 3500,
+    lines: 5,
+    colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
+    depth: 10,
+    delay: 100,
+    style: "Default",
+    autoMove: false,
+    winningMove: false,
+    showEval: false,
+    onlyShowEval: false,
+    key: " ",
+  };
+
+  engine.updateConfig(config.lines, config.depth, config.style, config.elo);
+});
 
 async function createWorker() {
   const url = `${chrome.runtime.getURL("lib/engine.js")}`;
@@ -631,7 +663,6 @@ let keyMove = {
 
 const startCheat = () => {
   if (window.location.hostname.includes("chess.com")) {
-    loadConfig();
     let lastFEN = "";
     let isGameOver = false;
     let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -946,6 +977,12 @@ const startCheat = () => {
     function checkAndSendMoves() {
       requestFen();
 
+      if (!config.showEval && customEval) {
+        customEval.remove();
+        customEval = null;
+        evalObj = null;
+      }
+
       if (!customEval && config.showEval) {
         const boardContainer = document.querySelector(".board");
         if (boardContainer) {
@@ -979,35 +1016,16 @@ const startCheat = () => {
 
     setInterval(checkAndSendMoves, interval);
 
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.config && message.type === "config") {
-        config = { ...config, ...message.config };
-
-        // console.log("message from backgound js ", message);
-        saveConfig();
-
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === "local" && changes.chessConfig) {
+        const newConfig = changes.chessConfig.newValue;
+        config = newConfig;
         engine.updateConfig(
           config.lines,
           config.depth,
           config.style,
           config.elo,
         );
-
-        clearHighlightSquares();
-        lastFEN = "";
-        if (!config.showEval && customEval) {
-          customEval.remove();
-          customEval = null;
-          evalObj = null;
-        }
-
-        if (config.showEval && !customEval) {
-          const boardContainer = document.querySelector(".board");
-          if (boardContainer) {
-            evalObj = createEvalBar("0.0", getSide());
-            customEval = document.querySelector("#customEval");
-          }
-        }
       }
     });
   }
@@ -1018,7 +1036,6 @@ const startCheat = () => {
         console.log("Debugger ready");
       }
     });
-    loadConfig();
     let fen_ = "";
     let evalObj = null;
     let customEval = null;
@@ -1389,6 +1406,12 @@ const startCheat = () => {
     inject();
 
     setInterval(() => {
+      if (!config.showEval && customEval) {
+        customEval.remove();
+        customEval = null;
+        evalObj = null;
+      }
+
       if (!customEval && config.showEval) {
         const boardContainer = document.querySelector("cg-container");
         if (boardContainer) {
@@ -1400,34 +1423,16 @@ const startCheat = () => {
       requestFen();
     }, interval);
 
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.type === "config") {
-        config = message.config;
-        // console.log(config);
-        // console.log(config)
-        saveConfig();
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === "local" && changes.chessConfig) {
+        const newConfig = changes.chessConfig.newValue;
+        config = newConfig;
         engine.updateConfig(
           config.lines,
           config.depth,
           config.style,
           config.elo,
         );
-        clearHighlightSquares();
-        fen_ = "";
-
-        if (!config.showEval && customEval) {
-          customEval.remove();
-          customEval = null;
-          evalObj = null;
-        }
-
-        if (config.showEval && !customEval) {
-          const boardContainer = document.querySelector("cg-container");
-          if (boardContainer) {
-            evalObj = createEvalBar("0.0", getSide());
-            customEval = document.querySelector("#customEval");
-          }
-        }
       }
     });
   }
@@ -1442,7 +1447,6 @@ const startCheat = () => {
     let currentFen = "";
     let evalObj = null;
     let customEval = null;
-    loadConfig();
 
     function getFEN() {
       const pTags = document.querySelectorAll("p");
@@ -1789,6 +1793,13 @@ const startCheat = () => {
 
     setInterval(() => {
       // eval bar
+
+      if (!config.showEval && customEval) {
+        customEval.remove();
+        customEval = null;
+        evalObj = null;
+      }
+
       if (!customEval && config.showEval) {
         const boardContainer = document.querySelector("cg-board");
         if (boardContainer) {
@@ -1830,35 +1841,16 @@ const startCheat = () => {
       }
     }, interval);
 
-    // PArametre chessARENA
-
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.type === "config") {
-        config = message.config;
-
-        // console.log(config)
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === "local" && changes.chessConfig) {
+        const newConfig = changes.chessConfig.newValue;
+        config = newConfig;
         engine.updateConfig(
           config.lines,
           config.depth,
           config.style,
           config.elo,
         );
-        saveConfig();
-        clearHighlightSquares();
-
-        if (!config.showEval && customEval) {
-          customEval.remove();
-          customEval = null;
-          evalObj = null;
-        }
-        currentFen = "";
-        if (config.showEval && !customEval) {
-          const boardContainer = document.querySelector("cg-container");
-          if (boardContainer) {
-            evalObj = createEvalBar("0.0", getSide());
-            customEval = document.querySelector("#customEval");
-          }
-        }
       }
     });
   }

@@ -20,7 +20,7 @@ const el = (id) => document.getElementById(id);
 const defaultChessConfig = {
   elo: 3500,
   lines: 5,
-  colors: ["#3b82f6", "#22c55e", "#eab308", "#f97316", "#ef4444"],
+  colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
   depth: 10,
   delay: 100,
   style: "Default",
@@ -28,40 +28,35 @@ const defaultChessConfig = {
   winningMove: false,
   showEval: false,
   onlyShowEval: false,
-  key : " "
+  key: " ",
 };
 
-let savedConfig;
-try {
-  savedConfig = JSON.parse(localStorage.getItem("chessConfig")) || {};
-  if (savedConfig) {
-    allColors = document.querySelectorAll('input[type="color"]');
+let chessConfig = { ...defaultChessConfig };
+
+function loadChessConfig(callback) {
+  chrome.storage.local.get(["chessConfig"], function (result) {
+    const savedConfig = result.chessConfig || {};
+    chessConfig = { ...defaultChessConfig, ...savedConfig };
+
+    const allColors = document.querySelectorAll('input[type="color"]');
     allColors.forEach((e, index) => {
-      e.value = savedConfig.colors[index];
+      e.value = chessConfig.colors[index];
     });
-  } else {
-    allColors = document.querySelectorAll('input[type="color"]');
-    allColors.forEach((e, index) => {
-      e.value = defaultChessConfig.colors[index];
-    });
-  }
-} catch {
-  savedConfig = {};
+
+    if (callback) callback();
+  });
 }
 
-let chessConfig = {
-  ...defaultChessConfig,
-  ...savedConfig,
-};
+function saveChessConfig() {
+  chrome.storage.local.set({ chessConfig }, function () {
+    console.log("Config sauvegardée !");
+  });
+}
 
 function hideExtraColorInputs(lines) {
   const allInputs = document.querySelectorAll('input[type="color"]');
   allInputs.forEach((input, index) => {
-    if (index >= lines) {
-      input.parentElement.style.display = "none";
-    } else {
-      input.parentElement.style.display = "";
-    }
+    input.parentElement.style.display = index >= lines ? "none" : "";
   });
 }
 
@@ -89,16 +84,21 @@ function updateChessUI() {
     `Show Eval Bar (${chessConfig.showEval ? "ON" : "OFF"})`;
   el("onlyShowEvalLabel").textContent =
     `Hide Arrows (${chessConfig.onlyShowEval ? "ON" : "OFF"})`;
+
   console.clear();
   console.log(chessConfig);
   hideExtraColorInputs(chessConfig.lines);
 }
 
+// Sauvegarder la config
 function saveChess() {
-  localStorage.setItem("chessConfig", JSON.stringify(chessConfig));
-  chrome?.runtime?.sendMessage({ type: "config", config: chessConfig });
+  saveChessConfig();
 }
 
+// Charger la config et mettre à jour l’UI
+loadChessConfig(updateChessUI);
+
+/* ================= INPUT HANDLERS ================= */
 ["elo", "lines", "depth", "delay"].forEach((k) => {
   el(k).oninput = (e) => {
     chessConfig[k] = +e.target.value;
@@ -129,14 +129,12 @@ el("key").onchange = (e) => {
 
 const allColorInputs = document.querySelectorAll('input[type="color"]');
 allColorInputs.forEach((input, index) => {
-  input.addEventListener('input', (e) => {
+  input.addEventListener("input", (e) => {
     chessConfig.colors[index] = e.target.value;
+    updateChessUI();
     saveChess();
-    updateChessUI()
   });
 });
-
-updateChessUI();
 
 // ===== Chessboard Panel =====
 
