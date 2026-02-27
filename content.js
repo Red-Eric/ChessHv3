@@ -4,8 +4,7 @@ const apiExpiration =
 
 let debugEngine = false;
 
-let url = window.location.href
-
+let url = window.location.href;
 
 function clickButtonsByText(text) {
   const buttons = Array.from(document.querySelectorAll("button"));
@@ -956,13 +955,12 @@ const startCheat = () => {
       }
 
       if (lastFEN !== fen_) {
-
         clearHighlightSquares();
         if (
           (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
           (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
         ) {
-          lastFEN = fen_;          
+          lastFEN = fen_;
           engine.getMovesByFen(fen_, getSide()).then((moves) => {
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
             keyMove.from = moves[0].from;
@@ -1811,8 +1809,8 @@ const startCheat = () => {
           (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
         ) {
           engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
-            keyMove.from = moves[0].from
-            keyMove.to = moves[0].to
+            keyMove.from = moves[0].from;
+            keyMove.to = moves[0].to;
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
             highlightMovesOnBoard(moves, getSide()[0]);
 

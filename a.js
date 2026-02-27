@@ -135,39 +135,6 @@ if (window.location.hostname.includes("lichess.org")) {
     return fenRows.join("/");
   }
 
-  (function () {
-    const OrigWS = window.WebSocket;
-    window._lichessSockets = [];
-    window.WebSocket = function (...args) {
-      const ws = new OrigWS(...args);
-      window._lichessSockets.push(ws);
-      return ws;
-    };
-    window.WebSocket.prototype = OrigWS.prototype;
-
-  })();
-
-  window.playMove = function (uci) {
-    if (!window._lichessSockets || !window._lichessSockets.length) {
-      return;
-    }
-
-    window._lichessSockets.forEach((ws, i) => {
-      if (ws.readyState !== 1) return;
-
-      try {
-        ws.send(
-          JSON.stringify({
-            t: "move",
-            d: { u: uci, a: 1 },
-          }),
-        );
-      } catch (e) {
-        // console.log("error");
-      }
-    });
-  };
-
   let castling = "KQkq";
 
   const intervalId = setInterval(() => {
