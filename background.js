@@ -15,7 +15,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   switch (message.type) {
     case "config":
       currentConfig = message.config;
-      // console.log("Config Chess.com reçue :", currentConfig);
 
       sendConfigToSite("config", currentConfig, "*://*.chess.com/*");
       sendConfigToSite("config", currentConfig, "*://*.lichess.org/*");
