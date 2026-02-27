@@ -28,6 +28,7 @@ const defaultChessConfig = {
   winningMove: false,
   showEval: false,
   onlyShowEval: false,
+  key : " "
 };
 
 let savedConfig;
@@ -69,6 +70,7 @@ function updateChessUI() {
     (k) => (el(k).value = chessConfig[k]),
   );
   el("style").value = chessConfig.style;
+  el("key").value = chessConfig.key;
 
   ["autoMove", "winningMove", "showEval", "onlyShowEval"].forEach(
     (k) => (el(k).checked = chessConfig[k]),
@@ -115,6 +117,12 @@ function saveChess() {
 
 el("style").onchange = (e) => {
   chessConfig.style = e.target.value;
+  updateChessUI();
+  saveChess();
+};
+
+el("key").onchange = (e) => {
+  chessConfig.key = e.target.value;
   updateChessUI();
   saveChess();
 };

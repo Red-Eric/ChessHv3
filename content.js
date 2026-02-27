@@ -85,6 +85,7 @@ let config = {
   winningMove: false,
   showEval: false,
   onlyShowEval: false,
+  key: " ",
 };
 
 function saveConfig() {
@@ -621,6 +622,10 @@ const engine = new komodo({
 //   depth: config.depth,
 //   multipv: config.lines,
 // });
+let keyMove = {
+  from: "e2",
+  to: "e4",
+};
 
 const startCheat = () => {
   if (window.location.hostname.includes("chess.com")) {
@@ -756,20 +761,6 @@ const startCheat = () => {
           fen_ = event.data.fen;
           side_index = event.data.side_;
           isGameOver = event.data.isGameOver;
-
-          if (isGameOver && config.autoMove) {
-            fetch("https://www.chess.com/service/matcher/seeks/chess", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                capabilities: ["rated"],
-                rated: true,
-                gameType: "chess",
-                timeControl: { base: "PT180S", increment: "PT0S" },
-                ratingRange: { upper: null, lower: null },
-              }),
-            });
-          }
         }
       });
     }
@@ -779,9 +770,7 @@ const startCheat = () => {
       window.postMessage({ type: "GET_FEN" }, "*");
     }
     function requestMove(from, to, promotion = "q", key = false) {
-      key
-        ? (moveDelay = randomIntBetween(100, 101))
-        : (moveDelay = randomIntBetween(100, config.delay));
+      key ? (moveDelay = 0) : (moveDelay = randomIntBetween(100, config.delay));
       window.postMessage(
         {
           type: "MOVE",
@@ -945,6 +934,13 @@ const startCheat = () => {
       return side_index === 1 ? "white" : "black";
     }
 
+    // key press
+    window.onkeyup = (e) => {
+      if (e.key === config.key) {
+        requestMove(keyMove.from, keyMove.to, "q", true);
+      }
+    };
+
     function checkAndSendMoves() {
       requestFen();
 
@@ -965,6 +961,8 @@ const startCheat = () => {
           lastFEN = fen_;
           engine.getMovesByFen(fen_, getSide()).then((moves) => {
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+            keyMove.from = moves[0].from;
+            keyMove.to = moves[0].to;
             if (config.autoMove) {
               requestMove(moves[0].from, moves[0].to);
             }
@@ -1311,6 +1309,12 @@ const startCheat = () => {
       window.postMessage({ type: "FEN" }, "*");
     }
 
+    window.onkeyup = (e) => {
+      if (e.key === config.key) {
+        
+      }
+    };
+
     /////////////////////////////////////////////   calculation /////////////////////////////////////////////
     function inject() {
       window.addEventListener("message", (event) => {
@@ -1325,6 +1329,8 @@ const startCheat = () => {
               fen_ = event.data.fen;
               engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
                 highlightMovesOnBoard(moves, getSide()[0]);
+                keyMove.from = moves[0].from;
+                keyMove.to = moves[0].to;
                 if (moves.length > 0 && evalObj) {
                   evalObj.update(moves[0].eval, getSide());
                 }
