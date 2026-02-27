@@ -4,6 +4,9 @@ const apiExpiration =
 
 let debugEngine = false;
 
+let url = window.location.href
+
+
 function clickButtonsByText(text) {
   const buttons = Array.from(document.querySelectorAll("button"));
   const targetButtons = buttons.filter((btn) =>
@@ -630,7 +633,7 @@ let keyMove = {
 const startCheat = () => {
   if (window.location.hostname.includes("chess.com")) {
     loadConfig();
-    let lastFEN = "Bomboclat";
+    let lastFEN = "";
     let isGameOver = false;
     let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     let side_index = 1;
@@ -953,12 +956,13 @@ const startCheat = () => {
       }
 
       if (lastFEN !== fen_) {
+
         clearHighlightSquares();
         if (
           (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
           (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
         ) {
-          lastFEN = fen_;
+          lastFEN = fen_;          
           engine.getMovesByFen(fen_, getSide()).then((moves) => {
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
             keyMove.from = moves[0].from;
@@ -1325,8 +1329,8 @@ const startCheat = () => {
       };
 
       chrome.runtime.sendMessage({ type: "BOARD_INFO", boardInfo });
-      const coordFrom = squareToPixels(fromSquare, boardInfo);
-      const coordTo = squareToPixels(toSquare, boardInfo);
+      const coordFrom = squareToPixels(fromSquare, boardInfo, getSide());
+      const coordTo = squareToPixels(toSquare, boardInfo, getSide());
 
       await sleep(moveDelay);
 
@@ -1411,7 +1415,7 @@ const startCheat = () => {
           config.elo,
         );
         clearHighlightSquares();
-        lastFEN = "";
+        fen_ = "";
 
         if (!config.showEval && customEval) {
           customEval.remove();
@@ -1765,8 +1769,8 @@ const startCheat = () => {
       };
 
       chrome.runtime.sendMessage({ type: "BOARD_INFO", boardInfo });
-      const coordFrom = squareToPixels(fromSquare, boardInfo);
-      const coordTo = squareToPixels(toSquare, boardInfo);
+      const coordFrom = squareToPixels(fromSquare, boardInfo, getSide());
+      const coordTo = squareToPixels(toSquare, boardInfo, getSide());
 
       await sleep(moveDelay);
 
@@ -1849,7 +1853,7 @@ const startCheat = () => {
           customEval = null;
           evalObj = null;
         }
-        lastFEN = "";
+        currentFen = "";
         if (config.showEval && !customEval) {
           const boardContainer = document.querySelector("cg-container");
           if (boardContainer) {

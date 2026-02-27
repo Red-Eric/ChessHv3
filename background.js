@@ -159,18 +159,34 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return;
       }
 
-      // ===== ATTACH DEBUGGER =====
-      chrome.debugger.attach({ tabId }, "1.3", () => {
-        if (chrome.runtime.lastError) {
-          sendResponse({
-            success: false,
-            error: chrome.runtime.lastError.message,
-          });
-          return;
-        }
-        console.log("Debugger attached to", tab.url);
-        sendResponse({ success: true });
+      chrome.debugger.detach({ tabId }, () => {
+        chrome.debugger.attach({ tabId }, "1.3", () => {
+          if (chrome.runtime.lastError) {
+            sendResponse({
+              success: false,
+              error: chrome.runtime.lastError.message,
+            });
+            return;
+          }
+          console.log("Debugger attached to", tab.url);
+          sendResponse({ success: true });
+        });
       });
+    });
+
+    return true;
+  } 
+  else if (message.type === "DETACH_DEBUGGER") {
+    chrome.debugger.detach({ tabId }, () => {
+      if (chrome.runtime.lastError) {
+        sendResponse({
+          success: false,
+          error: chrome.runtime.lastError.message,
+        });
+        return;
+      }
+      console.log("Debugger detached from tab", tabId);
+      sendResponse({ success: true });
     });
 
     return true;
