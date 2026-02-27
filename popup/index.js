@@ -35,13 +35,15 @@ let chessConfig = { ...defaultChessConfig };
 
 function loadChessConfig(callback) {
   chrome.storage.local.get(["chessConfig"], function (result) {
-    const savedConfig = result.chessConfig || {};
-    chessConfig = { ...defaultChessConfig, ...savedConfig };
+    const savedConfig = result.chessConfig;
 
-    const allColors = document.querySelectorAll('input[type="color"]');
-    allColors.forEach((e, index) => {
-      e.value = chessConfig.colors[index];
-    });
+    if (savedConfig) {
+      chessConfig = { ...defaultChessConfig, ...savedConfig };
+    } else {
+      chessConfig = { ...defaultChessConfig };
+    }
+
+    updateChessUI();
 
     if (callback) callback();
   });

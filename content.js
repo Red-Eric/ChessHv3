@@ -1768,12 +1768,6 @@ const startCheat = () => {
     setInterval(() => {
       // eval bar
 
-      if (!config.showEval && customEval) {
-        customEval.remove();
-        customEval = null;
-        evalObj = null;
-      }
-
       if (!customEval && config.showEval) {
         const boardContainer = document.querySelector("cg-board");
         if (boardContainer) {
@@ -1788,6 +1782,14 @@ const startCheat = () => {
         // console.log(fen_)
         currentFen = fen_;
         clearHighlightSquares();
+
+        const boardContainer = document.querySelector("cg-board");
+        
+        if (!config.showEval && customEval) {
+          customEval.remove();
+          customEval = null;
+          evalObj = null;
+        }
 
         if (
           (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
