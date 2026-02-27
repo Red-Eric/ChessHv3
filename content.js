@@ -959,10 +959,8 @@ const startCheat = () => {
       if (lastFEN !== fen_) {
         clearHighlightSquares();
         if (
-          (
-            (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-            (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-          )
+          (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+          (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
         ) {
           lastFEN = fen_;
           engine.getMovesByFen(fen_, getSide()).then((moves) => {
@@ -1143,14 +1141,14 @@ const startCheat = () => {
       // console.log(side);
       if (!Array.isArray(moves)) return;
 
-      if (
-        !(
-          (side === "w" && fen_.split(" ")[1] === "w") ||
-          (side === "b" && fen_.split(" ")[1] === "b")
-        )
-      ) {
-        return;
-      }
+      // if (
+      //   !(
+      //     (side === "w" && fen_.split(" ")[1] === "w") ||
+      //     (side === "b" && fen_.split(" ")[1] === "b")
+      //   )
+      // ) {
+      //   return;
+      // }
 
       // Si onlyShowEval est activé, on n'affiche rien
       if (config.onlyShowEval) return;
@@ -1320,48 +1318,53 @@ const startCheat = () => {
         if (event.data && event.data.type === "FEN_RESPONSE") {
           if (event.data.fen !== fen_) {
             clearHighlightSquares();
-            fen_ = event.data.fen;
-            engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
-              highlightMovesOnBoard(moves, getSide()[0]);
-              if (moves.length > 0 && evalObj) {
-                evalObj.update(moves[0].eval, getSide());
-              }
+            if (
+              (getSide()[0] === "w" && event.data.fen.split(" ")[1] === "w") ||
+              (getSide()[0] === "b" && event.data.fen.split(" ")[1] === "b")
+            ) {
+              fen_ = event.data.fen;
+              engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
+                highlightMovesOnBoard(moves, getSide()[0]);
+                if (moves.length > 0 && evalObj) {
+                  evalObj.update(moves[0].eval, getSide());
+                }
 
-              if (moves.length > 0 && config.autoMove) {
-                const fromSquare = moves[0].from;
-                const toSquare = moves[0].to;
-                const moveDelay = randomIntBetween(0, config.delay);
+                if (moves.length > 0 && config.autoMove) {
+                  const fromSquare = moves[0].from;
+                  const toSquare = moves[0].to;
+                  const moveDelay = randomIntBetween(0, config.delay);
 
-                const board = document.querySelector("cg-board");
-                const rect = board.getBoundingClientRect();
+                  const board = document.querySelector("cg-board");
+                  const rect = board.getBoundingClientRect();
 
-                const boardInfo = {
-                  left: rect.left,
-                  top: rect.top,
-                  width: rect.width,
-                  height: rect.height,
-                };
+                  const boardInfo = {
+                    left: rect.left,
+                    top: rect.top,
+                    width: rect.width,
+                    height: rect.height,
+                  };
 
-                chrome.runtime.sendMessage({ type: "BOARD_INFO", boardInfo });
-                const coordFrom = squareToPixels(fromSquare, boardInfo);
-                const coordTo = squareToPixels(toSquare, boardInfo);
+                  chrome.runtime.sendMessage({ type: "BOARD_INFO", boardInfo });
+                  const coordFrom = squareToPixels(fromSquare, boardInfo);
+                  const coordTo = squareToPixels(toSquare, boardInfo);
 
-                await sleep(moveDelay);
+                  await sleep(moveDelay);
+
+                  chrome.runtime.sendMessage({
+                    type: "DRAG_MOVE",
+                    fromX: coordFrom.x,
+                    fromY: coordFrom.y,
+                    toX: coordTo.x,
+                    toY: coordTo.y,
+                  });
+                }
 
                 chrome.runtime.sendMessage({
-                  type: "DRAG_MOVE",
-                  fromX: coordFrom.x,
-                  fromY: coordFrom.y,
-                  toX: coordTo.x,
-                  toY: coordTo.y,
+                  type: "FROM_CONTENT",
+                  data: moves,
                 });
-              }
-
-              chrome.runtime.sendMessage({
-                type: "FROM_CONTENT",
-                data: moves,
               });
-            });
+            }
           }
         }
       });
@@ -1749,44 +1752,49 @@ const startCheat = () => {
         currentFen = fen_;
         clearHighlightSquares();
 
-        engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
-          chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-          highlightMovesOnBoard(moves, getSide()[0]);
+        if (
+          (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+          (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+        ) {
+          engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
+            chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
+            highlightMovesOnBoard(moves, getSide()[0]);
 
-          if (moves.length > 0 && evalObj) {
-            evalObj.update(moves[0].eval, getSide());
-          }
+            if (moves.length > 0 && evalObj) {
+              evalObj.update(moves[0].eval, getSide());
+            }
 
-          if (moves.length > 0 && config.autoMove) {
-            const fromSquare = moves[0].from;
-            const toSquare = moves[0].to;
-            const moveDelay = randomIntBetween(0, config.delay);
+            if (moves.length > 0 && config.autoMove) {
+              const fromSquare = moves[0].from;
+              const toSquare = moves[0].to;
+              const moveDelay = randomIntBetween(0, config.delay);
 
-            const board = document.querySelector("cg-board");
-            const rect = board.getBoundingClientRect();
+              const board = document.querySelector("cg-board");
+              const rect = board.getBoundingClientRect();
 
-            const boardInfo = {
-              left: rect.left,
-              top: rect.top,
-              width: rect.width,
-              height: rect.height,
-            };
+              const boardInfo = {
+                left: rect.left,
+                top: rect.top,
+                width: rect.width,
+                height: rect.height,
+              };
 
-            chrome.runtime.sendMessage({ type: "BOARD_INFO", boardInfo });
-            const coordFrom = squareToPixels(fromSquare, boardInfo);
-            const coordTo = squareToPixels(toSquare, boardInfo);
+              chrome.runtime.sendMessage({ type: "BOARD_INFO", boardInfo });
+              const coordFrom = squareToPixels(fromSquare, boardInfo);
+              const coordTo = squareToPixels(toSquare, boardInfo);
 
-            await sleep(moveDelay);
+              await sleep(moveDelay);
 
-            chrome.runtime.sendMessage({
-              type: "DRAG_MOVE",
-              fromX: coordFrom.x,
-              fromY: coordFrom.y,
-              toX: coordTo.x,
-              toY: coordTo.y,
-            });
-          }
-        });
+              chrome.runtime.sendMessage({
+                type: "DRAG_MOVE",
+                fromX: coordFrom.x,
+                fromY: coordFrom.y,
+                toX: coordTo.x,
+                toY: coordTo.y,
+              });
+            }
+          });
+        }
       }
     }, interval);
 
