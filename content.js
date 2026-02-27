@@ -377,9 +377,9 @@ class komodo {
 
   async getMovesByFen(fen, side) {
     // await this.restartWorker();
-    if (this.multipv > 10) {
-      await this.restartWorker();
-    }
+    // if (this.multipv > 10) {
+    //   await this.restartWorker();
+    // }
     const results = [];
     const seenMoves = new Set();
     const infoLines = [];
@@ -484,15 +484,16 @@ class komodo {
 
       this.worker.addEventListener("message", onMessage);
 
+      this.worker.postMessage(`stop`);
       this.worker.postMessage(`position fen ${fen}`);
       this.worker.postMessage(`go depth ${this.depth}`);
     });
   }
 
   async getMovesByUCI(uciString, side, fen) {
-    if (this.multipv > 10) {
-      await this.restartWorker();
-    }
+    // if (this.multipv > 10) {
+    //   await this.restartWorker();
+    // }
 
     const results = [];
     const seenMoves = new Set();
@@ -599,6 +600,7 @@ class komodo {
       };
 
       this.worker.addEventListener("message", onMessage);
+      this.worker.postMessage(`stop`);
       this.worker.postMessage(`${uciString}`);
       this.worker.postMessage(`go depth ${this.depth}`);
     });
@@ -796,14 +798,14 @@ const startCheat = () => {
       // console.log(side);
       if (!Array.isArray(moves)) return;
 
-      if (
-        !(
-          (side === "w" && fen_.split(" ")[1] === "w") ||
-          (side === "b" && fen_.split(" ")[1] === "b")
-        )
-      ) {
-        return;
-      }
+      // if (
+      //   !(
+      //     (side === "w" && fen_.split(" ")[1] === "w") ||
+      //     (side === "b" && fen_.split(" ")[1] === "b")
+      //   )
+      // ) {
+      //   return;
+      // }
 
       if (config.onlyShowEval) return;
 
@@ -955,28 +957,25 @@ const startCheat = () => {
       }
 
       if (lastFEN !== fen_) {
-        engine.worker.postMessage("stop");
         clearHighlightSquares();
-        lastFEN = fen_;
-        engine.getMovesByFen(fen_, getSide()).then((moves) => {
-          chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-          // console.log(moves)
-
-          if (
+        if (
+          (
             (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
             (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-          ) {
+          )
+        ) {
+          lastFEN = fen_;
+          engine.getMovesByFen(fen_, getSide()).then((moves) => {
+            chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
             if (config.autoMove) {
               requestMove(moves[0].from, moves[0].to);
             }
-          }
-
-          if (moves.length > 0 && evalObj) {
-            evalObj.update(moves[0].eval, getSide());
-          }
-
-          highlightMovesOnBoard(moves, getSide()[0]);
-        });
+            if (moves.length > 0 && evalObj) {
+              evalObj.update(moves[0].eval, getSide());
+            }
+            highlightMovesOnBoard(moves, getSide()[0]);
+          });
+        }
       }
     }
 

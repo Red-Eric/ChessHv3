@@ -63,24 +63,92 @@ if (window.location.hostname.includes("chess.com")) {
 if (window.location.hostname.includes("lichess.org")) {
   window._lichessSockets = [];
 
+  function boardToFEN() {
+    const board = document.querySelector("cg-board");
+    if (!board) return null;
+
+    const boardRect = board.getBoundingClientRect();
+    const boardSize = boardRect.width; // width == height
+    const squareSize = boardSize / 8;
+
+    // matrice vide 8x8
+    const grid = Array.from({ length: 8 }, () => Array(8).fill(null));
+
+    const pieces = board.querySelectorAll("piece");
+
+    pieces.forEach((piece) => {
+      const style = piece.style.transform;
+      const match = style.match(/translate\(([^p]+)px,\s*([^p]+)px\)/);
+      if (!match) return;
+
+      const x = parseFloat(match[1]);
+      const y = parseFloat(match[2]);
+
+      const file = Math.round(x / squareSize);
+      const rank = Math.round(y / squareSize);
+
+      const classes = piece.className.split(" ");
+      const color = classes[0];
+      const type = classes[1];
+
+      const pieceMap = {
+        pawn: "p",
+        rook: "r",
+        knight: "n",
+        bishop: "b",
+        queen: "q",
+        king: "k",
+      };
+
+      let fenChar = pieceMap[type];
+      if (color === "white") fenChar = fenChar.toUpperCase();
+
+      // IMPORTANT :
+      // Dans cg-board, Y=0 est en haut (rank 8)
+      grid[rank][file] = fenChar;
+    });
+
+    // Construire FEN
+    let fenRows = [];
+
+    for (let r = 0; r < 8; r++) {
+      let row = "";
+      let empty = 0;
+
+      for (let f = 0; f < 8; f++) {
+        const piece = grid[r][f];
+        if (!piece) {
+          empty++;
+        } else {
+          if (empty > 0) {
+            row += empty;
+            empty = 0;
+          }
+          row += piece;
+        }
+      }
+
+      if (empty > 0) row += empty;
+      fenRows.push(row);
+    }
+
+    return fenRows.join("/");
+  }
+
   (function () {
     const OrigWS = window.WebSocket;
     window._lichessSockets = [];
-
     window.WebSocket = function (...args) {
       const ws = new OrigWS(...args);
-      // console.log("[WS]", ws.url);
       window._lichessSockets.push(ws);
       return ws;
     };
-
     window.WebSocket.prototype = OrigWS.prototype;
-    // console.log("WebSocket hook OK");
+
   })();
 
   window.playMove = function (uci) {
     if (!window._lichessSockets || !window._lichessSockets.length) {
-      // console.log("aucun socket");
       return;
     }
 
