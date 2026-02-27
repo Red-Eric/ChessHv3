@@ -1309,7 +1309,7 @@ const startCheat = () => {
       window.postMessage({ type: "FEN" }, "*");
     }
 
-    async function movePiece(from , to , delay) {
+    async function movePiece(from, to, delay) {
       const fromSquare = from;
       const toSquare = to;
       const moveDelay = delay;
@@ -1341,7 +1341,7 @@ const startCheat = () => {
 
     window.onkeyup = async (e) => {
       if (e.key === config.key) {
-        await movePiece(keyMove.from , keyMove.to, 0)
+        await movePiece(keyMove.from, keyMove.to, 0);
       }
     };
 
@@ -1366,7 +1366,11 @@ const startCheat = () => {
                 }
 
                 if (moves.length > 0 && config.autoMove) {
-                  await movePiece(moves[0].from , moves[0].to, randomIntBetween(0,config.delay))
+                  await movePiece(
+                    moves[0].from,
+                    moves[0].to,
+                    randomIntBetween(0, config.delay),
+                  );
                 }
 
                 chrome.runtime.sendMessage({
@@ -1745,6 +1749,42 @@ const startCheat = () => {
       return { update };
     }
 
+    async function movePiece(from, to, delay) {
+      const fromSquare = from;
+      const toSquare = to;
+      const moveDelay = delay;
+
+      const board = document.querySelector("cg-board");
+      const rect = board.getBoundingClientRect();
+
+      const boardInfo = {
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+        height: rect.height,
+      };
+
+      chrome.runtime.sendMessage({ type: "BOARD_INFO", boardInfo });
+      const coordFrom = squareToPixels(fromSquare, boardInfo);
+      const coordTo = squareToPixels(toSquare, boardInfo);
+
+      await sleep(moveDelay);
+
+      chrome.runtime.sendMessage({
+        type: "DRAG_MOVE",
+        fromX: coordFrom.x,
+        fromY: coordFrom.y,
+        toX: coordTo.x,
+        toY: coordTo.y,
+      });
+    }
+
+    window.onkeyup = async (e) => {
+      if (e.key === config.key) {
+        movePiece(keyMove.from, keyMove.to, 0);
+      }
+    };
+
     setInterval(() => {
       // eval bar
       if (!customEval && config.showEval) {
@@ -1767,6 +1807,8 @@ const startCheat = () => {
           (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
         ) {
           engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
+            keyMove.from = moves[0].from
+            keyMove.to = moves[0].to
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
             highlightMovesOnBoard(moves, getSide()[0]);
 
@@ -1775,33 +1817,11 @@ const startCheat = () => {
             }
 
             if (moves.length > 0 && config.autoMove) {
-              const fromSquare = moves[0].from;
-              const toSquare = moves[0].to;
-              const moveDelay = randomIntBetween(0, config.delay);
-
-              const board = document.querySelector("cg-board");
-              const rect = board.getBoundingClientRect();
-
-              const boardInfo = {
-                left: rect.left,
-                top: rect.top,
-                width: rect.width,
-                height: rect.height,
-              };
-
-              chrome.runtime.sendMessage({ type: "BOARD_INFO", boardInfo });
-              const coordFrom = squareToPixels(fromSquare, boardInfo);
-              const coordTo = squareToPixels(toSquare, boardInfo);
-
-              await sleep(moveDelay);
-
-              chrome.runtime.sendMessage({
-                type: "DRAG_MOVE",
-                fromX: coordFrom.x,
-                fromY: coordFrom.y,
-                toX: coordTo.x,
-                toY: coordTo.y,
-              });
+              movePiece(
+                moves[0].from,
+                moves[0].to,
+                randomIntBetween(0, config.delay),
+              );
             }
           });
         }
