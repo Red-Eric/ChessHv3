@@ -11,7 +11,6 @@ function sendConfigToSite(type, config, urlPattern) {
   });
 }
 
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   switch (message.type) {
     case "config":
@@ -142,113 +141,94 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 });
 
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-
   if (!sender.tab || !sender.tab.id) return;
   const tabId = sender.tab.id;
 
-  // ===== ATTACH DEBUGGER =====
   if (message.type === "ATTACH_DEBUGGER") {
-
-    chrome.debugger.attach({ tabId }, "1.3", () => {
-
-      if (chrome.runtime.lastError) {
-        console.error("Attach failed:", chrome.runtime.lastError.message);
-        sendResponse({ success: false, error: chrome.runtime.lastError.message });
+    chrome.tabs.get(tabId, (tab) => {
+      if (!tab || !tab.url) {
+        sendResponse({ success: false, error: "No tab URL" });
         return;
       }
 
-      console.log("Debugger attached to tab", tabId);
-      sendResponse({ success: true });
+      const url = new URL(tab.url);
+      const allowedDomains = ["lichess.org", "worldchess.com"];
+      if (!allowedDomains.includes(url.hostname)) {
+        sendResponse({ success: false, error: "Domain not allowed" });
+        return;
+      }
+
+      // ===== ATTACH DEBUGGER =====
+      chrome.debugger.attach({ tabId }, "1.3", () => {
+        if (chrome.runtime.lastError) {
+          sendResponse({
+            success: false,
+            error: chrome.runtime.lastError.message,
+          });
+          return;
+        }
+        console.log("Debugger attached to", tab.url);
+        sendResponse({ success: true });
+      });
     });
 
-    return true; // obligatoire pour async sendResponse
+    return true;
   }
-
-  // ===== CLICK EVENT =====
-  if (message.type === "CLICK_AT") {
-
-    chrome.debugger.sendCommand(
-      { tabId },
-      "Input.dispatchMouseEvent",
-      {
-        type: "mousePressed",
-        x: message.x,
-        y: message.y,
-        button: "left",
-        clickCount: 1
-      }
-    );
-
-    chrome.debugger.sendCommand(
-      { tabId },
-      "Input.dispatchMouseEvent",
-      {
-        type: "mouseReleased",
-        x: message.x,
-        y: message.y,
-        button: "left",
-        clickCount: 1
-      }
-    );
-  }
-
 });
 
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+  if (message.type !== "DRAG_MOVE") return;
 
-  if (!sender.tab || !sender.tab.id) return;
-  const tabId = sender.tab.id;
+  const { fromX, fromY, toX, toY } = message;
 
-  if (message.type === "DRAG_MOVE") {
+  const tabs = await chrome.tabs.query({});
 
-    const { fromX, fromY, toX, toY } = message;
+  const allowedDomains = ["lichess.org", "worldchess.com"];
+  const targetTabs = tabs.filter(tab => {
+    if (!tab.url) return false;
+    const url = new URL(tab.url);
+    return allowedDomains.includes(url.hostname);
+  });
 
-    // 1️⃣ Press
-    chrome.debugger.sendCommand(
-      { tabId },
-      "Input.dispatchMouseEvent",
-      {
-        type: "mousePressed",
-        x: fromX,
-        y: fromY,
-        button: "left",
-        clickCount: 1
-      }
-    );
+  for (const tab of targetTabs) {
+    const tabId = tab.id;
 
-    // 2️⃣ Move (interpolation simple)
+    if (!tabId) continue;
+
+    await sendMouseEvent(tabId, {
+      type: "mousePressed",
+      x: fromX,
+      y: fromY,
+      button: "left",
+      clickCount: 1,
+    });
+
     const steps = 10;
     for (let i = 1; i <= steps; i++) {
       const x = fromX + (toX - fromX) * (i / steps);
       const y = fromY + (toY - fromY) * (i / steps);
-
-      chrome.debugger.sendCommand(
-        { tabId },
-        "Input.dispatchMouseEvent",
-        {
-          type: "mouseMoved",
-          x,
-          y,
-          button: "left"
-        }
-      );
+      await sendMouseEvent(tabId, { type: "mouseMoved", x, y, button: "left" });
     }
 
     // 3️⃣ Release
-    chrome.debugger.sendCommand(
-      { tabId },
-      "Input.dispatchMouseEvent",
-      {
-        type: "mouseReleased",
-        x: toX,
-        y: toY,
-        button: "left",
-        clickCount: 1
-      }
-    );
+    await sendMouseEvent(tabId, {
+      type: "mouseReleased",
+      x: toX,
+      y: toY,
+      button: "left",
+      clickCount: 1,
+    });
   }
-
 });
+
+function sendMouseEvent(tabId, params) {
+  return new Promise((resolve, reject) => {
+    chrome.debugger.sendCommand({ tabId }, "Input.dispatchMouseEvent", params, (res) => {
+      if (chrome.runtime.lastError) return reject(chrome.runtime.lastError);
+      resolve(res);
+    });
+  });
+}
+
