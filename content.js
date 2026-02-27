@@ -90,31 +90,6 @@ let config = {
   key: " ",
 };
 
-// function getChessConfig() {
-//   return new Promise((resolve) => {
-//     chrome.storage.local.get(["chessConfig"], function (result) {
-//       const config = result.chessConfig || {
-//         elo: 3500,
-//         lines: 5,
-//         colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
-//         depth: 10,
-//         delay: 100,
-//         style: "Default",
-//         autoMove: false,
-//         winningMove: false,
-//         showEval: false,
-//         onlyShowEval: false,
-//         key: " ",
-//       };
-//       resolve(config);
-//     });
-//   });
-// }
-
-// getChessConfig().then((config_) => {
-//   config = config_;
-// });
-
 chrome.storage.local.get(["chessConfig"], (result) => {
   config = result.chessConfig || {
     elo: 3500,
@@ -1644,10 +1619,9 @@ const startCheat = () => {
 
     function createEvalBar(initialScore = "0.0", initialColor = "white") {
       const boardContainer = document.querySelector("cg-board");
-      let w_ = boardContainer.offsetWidth;
 
       if (!boardContainer) return console.error("Plateau non trouvé !");
-
+      let w_ = boardContainer.offsetWidth;
       // Conteneur principal
       const evalContainer = document.createElement("div");
       evalContainer.id = "customEval";
