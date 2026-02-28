@@ -386,10 +386,9 @@ class komodo {
   }
 
   async getMovesByFen(fen, side) {
-    // await this.restartWorker();
-    // if (this.multipv > 10) {
-    //   await this.restartWorker();
-    // }
+    this.worker.postMessage(`setoption name Personality value ${config.style}`);
+    this.worker.postMessage(`setoption name UCI Elo value ${config.elo}`);
+    this.worker.postMessage(`setoption name MultiPV value ${config.multipv}`);
     const results = [];
     const seenMoves = new Set();
     const infoLines = [];
@@ -1784,7 +1783,7 @@ const startCheat = () => {
         clearHighlightSquares();
 
         const boardContainer = document.querySelector("cg-board");
-        
+
         if (!config.showEval && customEval) {
           customEval.remove();
           customEval = null;
@@ -1832,7 +1831,7 @@ const startCheat = () => {
   }
 };
 
-const LOCAL_VERSION = "1.1";
+const LOCAL_VERSION = "1.2";
 
 let downloadlink = "https://www.youtube.com/@Redson_Eric";
 
