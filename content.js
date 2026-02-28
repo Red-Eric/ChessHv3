@@ -386,9 +386,10 @@ class komodo {
   }
 
   async getMovesByFen(fen, side) {
-    this.worker.postMessage(`setoption name Personality value ${config.style}`);
-    this.worker.postMessage(`setoption name UCI Elo value ${config.elo}`);
-    this.worker.postMessage(`setoption name MultiPV value ${config.multipv}`);
+    // await this.restartWorker();
+    // if (this.multipv > 10) {
+    //   await this.restartWorker();
+    // }
     const results = [];
     const seenMoves = new Set();
     const infoLines = [];
@@ -1783,7 +1784,7 @@ const startCheat = () => {
         clearHighlightSquares();
 
         const boardContainer = document.querySelector("cg-board");
-
+        
         if (!config.showEval && customEval) {
           customEval.remove();
           customEval = null;
