@@ -390,6 +390,11 @@ class komodo {
     // if (this.multipv > 10) {
     //   await this.restartWorker();
     // }
+
+    this.worker.postMessage(`setoption name Personality value ${this.style}`);
+    this.worker.postMessage(`setoption name UCI Elo value ${this.elo}`);
+    this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
+
     const results = [];
     const seenMoves = new Set();
     const infoLines = [];
@@ -794,16 +799,6 @@ const startCheat = () => {
     function highlightMovesOnBoard(moves, side) {
       // console.log(side);
       if (!Array.isArray(moves)) return;
-
-      // if (
-      //   !(
-      //     (side === "w" && fen_.split(" ")[1] === "w") ||
-      //     (side === "b" && fen_.split(" ")[1] === "b")
-      //   )
-      // ) {
-      //   return;
-      // }
-
       if (config.onlyShowEval) return;
 
       const parent = document.querySelector("wc-chess-board");
@@ -1133,16 +1128,6 @@ const startCheat = () => {
       // console.log(side);
       if (!Array.isArray(moves)) return;
 
-      // if (
-      //   !(
-      //     (side === "w" && fen_.split(" ")[1] === "w") ||
-      //     (side === "b" && fen_.split(" ")[1] === "b")
-      //   )
-      // ) {
-      //   return;
-      // }
-
-      // Si onlyShowEval est activé, on n'affiche rien
       if (config.onlyShowEval) return;
 
       const parent = document.querySelector("cg-container");
@@ -1177,10 +1162,6 @@ const startCheat = () => {
       function drawArrow(fromSquare, toSquare, color, score) {
         const from = squareToPosition(fromSquare);
         const to = squareToPosition(toSquare);
-        // console.log("from")
-        // console.log(from)
-        // console.log("to")
-        // console.log(to)
 
         const svg = document.createElementNS(
           "http://www.w3.org/2000/svg",
@@ -1235,7 +1216,7 @@ const startCheat = () => {
         line.setAttribute("marker-end", `url(#arrowhead-${color})`);
         line.setAttribute("opacity", "0.6");
         svg.appendChild(line);
-
+        /*
         if (score !== undefined) {
           const text = document.createElementNS(
             "http://www.w3.org/2000/svg",
@@ -1251,6 +1232,61 @@ const startCheat = () => {
           text.setAttribute("opacity", "1");
           text.textContent = score;
           svg.appendChild(text);
+        }*/
+
+        if (score !== undefined) {
+          const group = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "g",
+          );
+
+          const text = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "text",
+          );
+
+          text.setAttribute("x", to.x + squareSize - 4);
+          text.setAttribute("y", to.y + 12);
+          text.setAttribute("font-size", "13");
+          text.setAttribute("font-weight", "bold");
+          text.setAttribute("text-anchor", "end");
+          text.setAttribute("alignment-baseline", "hanging");
+          text.setAttribute("fill", "#ff0000");
+          text.textContent = score;
+
+          group.appendChild(text);
+          svg.appendChild(group);
+
+          requestAnimationFrame(() => {
+            const bbox = text.getBBox();
+
+            const paddingX = 6;
+            const paddingY = 4;
+
+            const rect = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "rect",
+            );
+
+            rect.setAttribute("x", bbox.x - paddingX);
+            rect.setAttribute("y", bbox.y - paddingY);
+            rect.setAttribute("width", bbox.width + paddingX * 2);
+            rect.setAttribute("height", bbox.height + paddingY * 2);
+
+            // Coins arrondis (border-radius)
+            rect.setAttribute("rx", "8");
+            rect.setAttribute("ry", "8");
+
+            // Background avec opacité
+            rect.setAttribute("fill", score < 0 ? "#312e2b" : "#ffffff");
+            rect.setAttribute("fill-opacity", "0.85");
+
+            // Bordure
+            rect.setAttribute("stroke", score < 0 ? "#000000" : "#cccccc");
+            rect.setAttribute("stroke-width", "1");
+
+            group.insertBefore(rect, text);
+          });
         }
 
         parent.appendChild(svg);
@@ -1784,7 +1820,7 @@ const startCheat = () => {
         clearHighlightSquares();
 
         const boardContainer = document.querySelector("cg-board");
-        
+
         if (!config.showEval && customEval) {
           customEval.remove();
           customEval = null;
