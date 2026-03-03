@@ -888,20 +888,67 @@ const startCheat = () => {
         svg.appendChild(line);
 
         if (score !== undefined) {
+          const group = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "g",
+          );
+
           const text = document.createElementNS(
             "http://www.w3.org/2000/svg",
             "text",
           );
-          text.setAttribute("x", to.x + squareSize - 4);
-          text.setAttribute("y", to.y + 12);
-          text.setAttribute("fill", color);
+
+          text.setAttribute("x", to.x + squareSize);
+          text.setAttribute("y", to.y);
           text.setAttribute("font-size", "13");
           text.setAttribute("font-weight", "bold");
-          text.setAttribute("text-anchor", "end");
-          text.setAttribute("alignment-baseline", "hanging");
-          text.setAttribute("opacity", "1");
-          text.textContent = score;
-          svg.appendChild(text);
+          text.setAttribute("text-anchor", "middle");
+          text.setAttribute("dominant-baseline", "middle");
+          text.setAttribute("fill", "#ff0000");
+
+          let isNegative = false;
+          let displayScore = score;
+
+          const hasHash = score.startsWith("#");
+          let raw = hasHash ? score.slice(1) : score;
+
+          if (raw.startsWith("-")) {
+            isNegative = true;
+            raw = raw.slice(1);
+          }
+
+          displayScore = hasHash ? "#" + raw : raw;
+          text.textContent = displayScore;
+
+          group.appendChild(text);
+          svg.appendChild(group);
+
+          requestAnimationFrame(() => {
+            const bbox = text.getBBox();
+
+            const paddingX = 6;
+            const paddingY = 4;
+
+            const rect = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "rect",
+            );
+
+            rect.setAttribute("x", bbox.x - paddingX);
+            rect.setAttribute("y", bbox.y - paddingY);
+            rect.setAttribute("width", bbox.width + paddingX * 2);
+            rect.setAttribute("height", bbox.height + paddingY * 2);
+
+            rect.setAttribute("rx", "8");
+            rect.setAttribute("ry", "8");
+
+            rect.setAttribute("fill", isNegative ? "#312e2b" : "#ffffff");
+            rect.setAttribute("fill-opacity", "0.85");
+            rect.setAttribute("stroke", isNegative ? "#000000" : "#cccccc");
+            rect.setAttribute("stroke-width", "1");
+
+            group.insertBefore(rect, text);
+          });
         }
 
         parent.appendChild(svg);
@@ -1125,7 +1172,6 @@ const startCheat = () => {
     }
 
     function highlightMovesOnBoard(moves, side) {
-      // console.log(side);
       if (!Array.isArray(moves)) return;
 
       if (config.onlyShowEval) return;
@@ -1216,23 +1262,6 @@ const startCheat = () => {
         line.setAttribute("marker-end", `url(#arrowhead-${color})`);
         line.setAttribute("opacity", "0.6");
         svg.appendChild(line);
-        /*
-        if (score !== undefined) {
-          const text = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "text",
-          );
-          text.setAttribute("x", to.x + squareSize - 4);
-          text.setAttribute("y", to.y + 12);
-          text.setAttribute("fill", color);
-          text.setAttribute("font-size", "13");
-          text.setAttribute("font-weight", "bold");
-          text.setAttribute("text-anchor", "end");
-          text.setAttribute("alignment-baseline", "hanging");
-          text.setAttribute("opacity", "1");
-          text.textContent = score;
-          svg.appendChild(text);
-        }*/
 
         if (score !== undefined) {
           const group = document.createElementNS(
@@ -1245,14 +1274,27 @@ const startCheat = () => {
             "text",
           );
 
-          text.setAttribute("x", to.x + squareSize - 4);
-          text.setAttribute("y", to.y + 12);
+          text.setAttribute("x", to.x + squareSize);
+          text.setAttribute("y", to.y);
           text.setAttribute("font-size", "13");
           text.setAttribute("font-weight", "bold");
-          text.setAttribute("text-anchor", "end");
-          text.setAttribute("alignment-baseline", "hanging");
+          text.setAttribute("text-anchor", "middle");
+          text.setAttribute("dominant-baseline", "middle");
           text.setAttribute("fill", "#ff0000");
-          text.textContent = score;
+
+          let isNegative = false;
+          let displayScore = score;
+
+          const hasHash = score.startsWith("#");
+          let raw = hasHash ? score.slice(1) : score;
+
+          if (raw.startsWith("-")) {
+            isNegative = true;
+            raw = raw.slice(1);
+          }
+
+          displayScore = hasHash ? "#" + raw : raw;
+          text.textContent = displayScore;
 
           group.appendChild(text);
           svg.appendChild(group);
@@ -1273,16 +1315,12 @@ const startCheat = () => {
             rect.setAttribute("width", bbox.width + paddingX * 2);
             rect.setAttribute("height", bbox.height + paddingY * 2);
 
-            // Coins arrondis (border-radius)
             rect.setAttribute("rx", "8");
             rect.setAttribute("ry", "8");
 
-            // Background avec opacité
-            rect.setAttribute("fill", score < 0 ? "#312e2b" : "#ffffff");
+            rect.setAttribute("fill", isNegative ? "#312e2b" : "#ffffff");
             rect.setAttribute("fill-opacity", "0.85");
-
-            // Bordure
-            rect.setAttribute("stroke", score < 0 ? "#000000" : "#cccccc");
+            rect.setAttribute("stroke", isNegative ? "#000000" : "#cccccc");
             rect.setAttribute("stroke-width", "1");
 
             group.insertBefore(rect, text);
@@ -1602,20 +1640,67 @@ const startCheat = () => {
         svg.appendChild(line);
 
         if (score !== undefined) {
+          const group = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "g",
+          );
+
           const text = document.createElementNS(
             "http://www.w3.org/2000/svg",
             "text",
           );
-          text.setAttribute("x", to.x + squareSize - 4);
-          text.setAttribute("y", to.y + 12);
-          text.setAttribute("fill", color);
+
+          text.setAttribute("x", to.x + squareSize);
+          text.setAttribute("y", to.y);
           text.setAttribute("font-size", "13");
           text.setAttribute("font-weight", "bold");
-          text.setAttribute("text-anchor", "end");
-          text.setAttribute("alignment-baseline", "hanging");
-          text.setAttribute("opacity", "1");
-          text.textContent = score;
-          svg.appendChild(text);
+          text.setAttribute("text-anchor", "middle");
+          text.setAttribute("dominant-baseline", "middle");
+          text.setAttribute("fill", "#ff0000");
+
+          let isNegative = false;
+          let displayScore = score;
+
+          const hasHash = score.startsWith("#");
+          let raw = hasHash ? score.slice(1) : score;
+
+          if (raw.startsWith("-")) {
+            isNegative = true;
+            raw = raw.slice(1);
+          }
+
+          displayScore = hasHash ? "#" + raw : raw;
+          text.textContent = displayScore;
+
+          group.appendChild(text);
+          svg.appendChild(group);
+
+          requestAnimationFrame(() => {
+            const bbox = text.getBBox();
+
+            const paddingX = 6;
+            const paddingY = 4;
+
+            const rect = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "rect",
+            );
+
+            rect.setAttribute("x", bbox.x - paddingX);
+            rect.setAttribute("y", bbox.y - paddingY);
+            rect.setAttribute("width", bbox.width + paddingX * 2);
+            rect.setAttribute("height", bbox.height + paddingY * 2);
+
+            rect.setAttribute("rx", "8");
+            rect.setAttribute("ry", "8");
+
+            rect.setAttribute("fill", isNegative ? "#312e2b" : "#ffffff");
+            rect.setAttribute("fill-opacity", "0.85");
+            rect.setAttribute("stroke", isNegative ? "#000000" : "#cccccc");
+            rect.setAttribute("stroke-width", "1");
+
+            group.insertBefore(rect, text);
+          });
         }
 
         parent.appendChild(svg);
