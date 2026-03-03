@@ -900,7 +900,7 @@ const startCheat = () => {
 
           text.setAttribute("x", to.x + squareSize);
           text.setAttribute("y", to.y);
-          text.setAttribute("font-size", "13");
+          text.setAttribute("font-size", "9");
           text.setAttribute("font-weight", "bold");
           text.setAttribute("text-anchor", "middle");
           text.setAttribute("dominant-baseline", "middle");
@@ -926,8 +926,8 @@ const startCheat = () => {
           requestAnimationFrame(() => {
             const bbox = text.getBBox();
 
-            const paddingX = 6;
-            const paddingY = 4;
+            const paddingX = 2;
+            const paddingY = 2;
 
             const rect = document.createElementNS(
               "http://www.w3.org/2000/svg",
@@ -1276,7 +1276,7 @@ const startCheat = () => {
 
           text.setAttribute("x", to.x + squareSize);
           text.setAttribute("y", to.y);
-          text.setAttribute("font-size", "13");
+          text.setAttribute("font-size", "9");
           text.setAttribute("font-weight", "bold");
           text.setAttribute("text-anchor", "middle");
           text.setAttribute("dominant-baseline", "middle");
@@ -1302,8 +1302,8 @@ const startCheat = () => {
           requestAnimationFrame(() => {
             const bbox = text.getBBox();
 
-            const paddingX = 6;
-            const paddingY = 4;
+            const paddingX = 2;
+            const paddingY = 2;
 
             const rect = document.createElementNS(
               "http://www.w3.org/2000/svg",
@@ -1652,7 +1652,7 @@ const startCheat = () => {
 
           text.setAttribute("x", to.x + squareSize);
           text.setAttribute("y", to.y);
-          text.setAttribute("font-size", "13");
+          text.setAttribute("font-size", "9");
           text.setAttribute("font-weight", "bold");
           text.setAttribute("text-anchor", "middle");
           text.setAttribute("dominant-baseline", "middle");
@@ -1678,8 +1678,8 @@ const startCheat = () => {
           requestAnimationFrame(() => {
             const bbox = text.getBBox();
 
-            const paddingX = 6;
-            const paddingY = 4;
+            const paddingX = 2;
+            const paddingY = 2;
 
             const rect = document.createElementNS(
               "http://www.w3.org/2000/svg",
