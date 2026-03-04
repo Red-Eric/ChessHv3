@@ -904,7 +904,7 @@ const startCheat = () => {
           text.setAttribute("font-weight", "bold");
           text.setAttribute("text-anchor", "middle");
           text.setAttribute("dominant-baseline", "middle");
-          text.setAttribute("fill", "#ff0000");
+          text.setAttribute("fill", color);
 
           let isNegative = false;
           let displayScore = score;
@@ -1282,7 +1282,7 @@ const startCheat = () => {
           text.setAttribute("font-weight", "bold");
           text.setAttribute("text-anchor", "middle");
           text.setAttribute("dominant-baseline", "middle");
-          text.setAttribute("fill", "#ff0000");
+          text.setAttribute("fill", color);
 
           let isNegative = false;
           let displayScore = score;
@@ -1660,7 +1660,7 @@ const startCheat = () => {
           text.setAttribute("font-weight", "bold");
           text.setAttribute("text-anchor", "middle");
           text.setAttribute("dominant-baseline", "middle");
-          text.setAttribute("fill", "#ff0000");
+          text.setAttribute("fill", color);
 
           let isNegative = false;
           let displayScore = score;
