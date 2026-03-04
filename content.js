@@ -915,6 +915,8 @@ const startCheat = () => {
           if (raw.startsWith("-")) {
             isNegative = true;
             raw = raw.slice(1);
+          } else if (raw.startsWith("+")) {
+            raw = raw.slice(1);
           }
 
           displayScore = hasHash ? "#" + raw : raw;
@@ -1291,6 +1293,8 @@ const startCheat = () => {
           if (raw.startsWith("-")) {
             isNegative = true;
             raw = raw.slice(1);
+          } else if (raw.startsWith("+")) {
+            raw = raw.slice(1);
           }
 
           displayScore = hasHash ? "#" + raw : raw;
@@ -1666,6 +1670,8 @@ const startCheat = () => {
 
           if (raw.startsWith("-")) {
             isNegative = true;
+            raw = raw.slice(1);
+          } else if (raw.startsWith("+")) {
             raw = raw.slice(1);
           }
 
