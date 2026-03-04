@@ -1544,15 +1544,6 @@ const startCheat = () => {
       // console.log(side);
       if (!Array.isArray(moves)) return;
 
-      if (
-        !(
-          (side === "w" && fen_.split(" ")[1] === "w") ||
-          (side === "b" && fen_.split(" ")[1] === "b")
-        )
-      ) {
-        return;
-      }
-
       // Si onlyShowEval est activé, on n'affiche rien
       if (config.onlyShowEval) return;
 
@@ -1895,11 +1886,10 @@ const startCheat = () => {
     setInterval(() => {
       // eval bar
 
-      if (!customEval && config.showEval) {
+      if (!(document.querySelector("#customEval")) && config.showEval) {
         const boardContainer = document.querySelector("cg-board");
         if (boardContainer) {
           evalObj = createEvalBar("0.0", getSide());
-          customEval = document.querySelector("#customEval");
         }
       }
 
@@ -1910,11 +1900,9 @@ const startCheat = () => {
         currentFen = fen_;
         clearHighlightSquares();
 
-        const boardContainer = document.querySelector("cg-board");
 
-        if (!config.showEval && customEval) {
-          customEval.remove();
-          customEval = null;
+        if (!config.showEval && (document.querySelector("#customEval"))) {
+          document.querySelector("#customEval").remove()
           evalObj = null;
         }
 
