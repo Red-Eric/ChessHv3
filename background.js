@@ -1861,7 +1861,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 //         return;
 //       }
 
-//       chrome.debugger.detach({ tabId }, async () => {
+//       // Détacher puis rattacher le debugger
+//       chrome.debugger.detach({ tabId }, () => {
 //         chrome.debugger.attach({ tabId }, "1.3", async () => {
 //           if (chrome.runtime.lastError) {
 //             sendResponse({
@@ -1871,10 +1872,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 //             return;
 //           }
 
-//           // Activer le debugger
 //           await chrome.debugger.sendCommand({ tabId }, "Debugger.enable");
 
-//           // Récupérer tous les scripts <script src> via scripting.executeScript
+//           // Récupérer les scripts
 //           let urls = [];
 //           try {
 //             const results = await chrome.scripting.executeScript({
@@ -1887,6 +1887,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 //             console.error(err);
 //           }
 
+//           let breakpointId = null;
 //           let found = false;
 
 //           for (const url of urls) {
@@ -1897,14 +1898,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 //               const TARGET = "this.onMove=(e,t,n)=>{n||this.enpassant(e,t)";
 //               const index = code.indexOf(TARGET);
 //               if (index === -1) continue;
+
 //               found = true;
-//               // Calculer ligne et colonne du `n`
+
 //               const before = code.slice(0, index);
 //               const lineNumber = before.split("\n").length - 1;
 //               const columnNumber =
 //                 before.split("\n").pop().length + TARGET.indexOf("n||");
 
-//               // Poser le breakpoint
 //               chrome.debugger.sendCommand(
 //                 { tabId },
 //                 "Debugger.setBreakpointByUrl",
@@ -1914,12 +1915,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 //                   columnNumber,
 //                 },
 //                 (res) => {
+//                   if (res && res.breakpointId) breakpointId = res.breakpointId;
 //                   console.log("Breakpoint posé sur n dans :", url, res);
 //                 },
 //               );
 
-//               // On peut arrêter après avoir trouvé le script
-//               break;
+//               break; // Stop après avoir trouvé le script
 //             } catch (e) {
 //               console.log("Impossible de lire :", url, e);
 //             }
@@ -1927,51 +1928,62 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
 //           if (!found) console.log("Aucun script contenant this.onMove trouvé");
 
-//           // Écouter les pauses
+//           // Listener pour les pauses
 //           chrome.debugger.onEvent.addListener(
 //             async (source, method, params) => {
-//               if (method === "Debugger.paused") {
-//                 try {
-//                   // Exécuter this.data.steps dans le contexte du callFrame
-//                   const evalRes = await chrome.debugger.sendCommand(
-//                     source,
-//                     "Debugger.evaluateOnCallFrame",
-//                     {
-//                       callFrameId: params.callFrames[0].callFrameId,
-//                       expression: "this.data.steps",
-//                       returnByValue: true,
-//                     },
-//                   );
-//                   // console.log("this.data.steps =", evalRes.result.value);
+//               if (method !== "Debugger.paused") return;
+//               if (
+//                 !params.hitBreakpoints ||
+//                 !breakpointId ||
+//                 !params.hitBreakpoints.includes(breakpointId)
+//               )
+//                 return;
+//               if (!params.callFrames || params.callFrames.length === 0) return;
 
-//                   if (evalRes.result.value.length > 0) {
-//                     let movesHitory = evalRes.result.value;
-//                     game.load(movesHitory[0].fen);
+//               try {
+//                 const evalRes = await chrome.debugger.sendCommand(
+//                   source,
+//                   "Debugger.evaluateOnCallFrame",
+//                   {
+//                     callFrameId: params.callFrames[0].callFrameId,
+//                     expression: "this.data.steps",
+//                     returnByValue: true,
+//                   },
+//                 );
 
-//                     for (let i = 1; i < movesHitory.length; i++) {
-//                       const move = movesHitory[i].san || movesHitory[i].uci;
-//                       if (!move) continue;
+//                 const movesHistory = evalRes.result?.value || [];
+//                 if (movesHistory.length > 0) {
+//                   game.load(movesHistory[0].fen); // FEN initial
+//                   for (let i = 1; i < movesHistory.length; i++) {
+//                     const move = movesHistory[i].san || movesHistory[i].uci;
+//                     if (!move) continue;
 
-//                       const result = game.move(move, { sloppy: true });
-//                       if (!result) {
-//                         console.error(
-//                           "Impossible de jouer le coup:",
-//                           move,
-//                           "à l’index",
-//                           i,
-//                         );
-//                       }
-//                     }
-
-//                     const pgn = game.pgn({ newline_char: '\n' });
-//                     console.log(pgn)
-
+//                     const result = game.move(move, { sloppy: true });
+//                     if (!result)
+//                       console.error(
+//                         "Impossible de jouer le coup:",
+//                         move,
+//                         "à l’index",
+//                         i,
+//                       );
 //                   }
-//                 } catch (e) {
-//                   console.error(e);
-//                 }
 
-//                 // Reprendre l'exécution
+//                   game.header(
+//                     "Variant",
+//                     "Chess960",
+//                     "SetUp",
+//                     "1",
+//                     "FEN",
+//                     movesHistory[0].fen,
+//                   );
+
+//                   const pgn = game.pgn();
+//                   console.log(pgn);
+//                 }
+//               } catch (e) {
+//                 console.error(e);
+//               } finally {
+//                 // Toujours reprendre l'exécution
 //                 chrome.debugger.sendCommand(source, "Debugger.resume");
 //               }
 //             },
@@ -1982,8 +1994,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 //       });
 //     });
 
-//     return true;
-//   } else if (message.type === "DETACH_DEBUGGER") {
+//     return true; // Async
+//   }
+
+//   if (message.type === "DETACH_DEBUGGER") {
 //     chrome.debugger.detach({ tabId }, () => {
 //       if (chrome.runtime.lastError) {
 //         sendResponse({
@@ -2012,13 +2026,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
 
       const urlTab = new URL(tab.url);
+      const host = urlTab.hostname;
+
       const allowedDomains = ["lichess.org", "worldchess.com"];
-      if (!allowedDomains.includes(urlTab.hostname)) {
+      if (!allowedDomains.includes(host)) {
         sendResponse({ success: false, error: "Domain not allowed" });
         return;
       }
 
-      // Détacher puis rattacher le debugger
       chrome.debugger.detach({ tabId }, () => {
         chrome.debugger.attach({ tabId }, "1.3", async () => {
           if (chrome.runtime.lastError) {
@@ -2031,7 +2046,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
           await chrome.debugger.sendCommand({ tabId }, "Debugger.enable");
 
-          // Récupérer les scripts
           let urls = [];
           try {
             const results = await chrome.scripting.executeScript({
@@ -2047,12 +2061,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           let breakpointId = null;
           let found = false;
 
+          let TARGET = "";
+          let BREAK_SEARCH = "";
+
+          if (host === "lichess.org") {
+            TARGET = "this.onMove=(e,t,n)=>{n||this.enpassant(e,t)";
+            BREAK_SEARCH = "n||";
+          }
+
+          if (host === "worldchess.com") {
+            TARGET = 'n.on("history",e=>{this.clearAll()}';
+            BREAK_SEARCH = "this.clearAll";
+          }
+
           for (const url of urls) {
             try {
               const res = await fetch(url);
               const code = await res.text();
 
-              const TARGET = "this.onMove=(e,t,n)=>{n||this.enpassant(e,t)";
               const index = code.indexOf(TARGET);
               if (index === -1) continue;
 
@@ -2060,8 +2086,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
               const before = code.slice(0, index);
               const lineNumber = before.split("\n").length - 1;
+
               const columnNumber =
-                before.split("\n").pop().length + TARGET.indexOf("n||");
+                before.split("\n").pop().length + TARGET.indexOf(BREAK_SEARCH);
 
               chrome.debugger.sendCommand(
                 { tabId },
@@ -2073,65 +2100,87 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 },
                 (res) => {
                   if (res && res.breakpointId) breakpointId = res.breakpointId;
-                  console.log("Breakpoint posé sur n dans :", url, res);
+                  console.log("Breakpoint posé dans :", url, res);
                 },
               );
 
-              break; // Stop après avoir trouvé le script
+              break;
             } catch (e) {
               console.log("Impossible de lire :", url, e);
             }
           }
 
-          if (!found) console.log("Aucun script contenant this.onMove trouvé");
+          if (!found) console.log("Script cible non trouvé");
 
-          // Listener pour les pauses
           chrome.debugger.onEvent.addListener(
             async (source, method, params) => {
               if (method !== "Debugger.paused") return;
+
               if (
                 !params.hitBreakpoints ||
                 !breakpointId ||
                 !params.hitBreakpoints.includes(breakpointId)
               )
                 return;
+
               if (!params.callFrames || params.callFrames.length === 0) return;
 
               try {
+                let expression = "";
+
+                if (host === "lichess.org") {
+                  expression = "this.data.steps";
+                }
+
+                if (host === "worldchess.com") {
+                  expression = "e";
+                }
+
                 const evalRes = await chrome.debugger.sendCommand(
                   source,
                   "Debugger.evaluateOnCallFrame",
                   {
                     callFrameId: params.callFrames[0].callFrameId,
-                    expression: "this.data.steps",
+                    expression,
                     returnByValue: true,
                   },
                 );
 
                 const movesHistory = evalRes.result?.value || [];
+
                 if (movesHistory.length > 0) {
-                  game.load(movesHistory[0].fen); // FEN initial
+                  game.load(movesHistory[0].fen);
+
                   for (let i = 1; i < movesHistory.length; i++) {
                     const move = movesHistory[i].san || movesHistory[i].uci;
                     if (!move) continue;
 
                     const result = game.move(move, { sloppy: true });
+
                     if (!result)
                       console.error(
                         "Impossible de jouer le coup:",
                         move,
-                        "à l’index",
+                        "index",
                         i,
                       );
                   }
 
-                  const pgn = game.pgn({ newline_char: "\n" });
+                  game.header(
+                    "Variant",
+                    "Chess960",
+                    "SetUp",
+                    "1",
+                    "FEN",
+                    movesHistory[0].fen,
+                  );
+
+                  const pgn = game.pgn();
                   console.log(pgn);
                 }
               } catch (e) {
                 console.error(e);
               } finally {
-                // Toujours reprendre l'exécution
                 chrome.debugger.sendCommand(source, "Debugger.resume");
               }
             },
@@ -2142,7 +2191,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       });
     });
 
-    return true; // Async
+    return true;
   }
 
   if (message.type === "DETACH_DEBUGGER") {
@@ -2154,6 +2203,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         });
         return;
       }
+
       console.log("Debugger detached from tab", tabId);
       sendResponse({ success: true });
     });
@@ -2219,5 +2269,3 @@ function sendMouseEvent(tabId, params) {
     );
   });
 }
-
-

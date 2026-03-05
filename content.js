@@ -1869,7 +1869,7 @@ const startCheat = () => {
       initialBlackAcc = 0,
       initialBlackElo = 0,
     ) {
-      const board = document.querySelector("cg-board").parentNode.parentNode;
+      const board = document.querySelector("cg-board");
       if (!board) return console.error("Board non trouvé !");
 
       const lowerSide = side.toLowerCase();
@@ -1980,6 +1980,7 @@ const startCheat = () => {
 
       const container = document.createElement("div");
       container.id = "accuracyContainer";
+      container.style.position = "relative"
       container.style.height = board.offsetHeight + "px";
 
       function createBar(id, position, colorSide) {

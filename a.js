@@ -1704,6 +1704,15 @@ let Chess = function (fen) {
 
 const chess = new Chess();
 
+function getStartFEN(fen) {
+  const board = fen.split(" ")[0];
+  const rows = board.split("/");
+
+  const blackBackRank = rows[0];
+  const whiteBackRank = blackBackRank.toUpperCase();
+
+  return `${blackBackRank}/pppppppp/8/8/8/8/PPPPPPPP/${whiteBackRank} w KQkq - 0 1`;
+}
 
 if (window.location.hostname.includes("chess.com")) {
   (function () {
@@ -1746,6 +1755,25 @@ if (window.location.hostname.includes("chess.com")) {
       if (event.source !== window) return;
       if (event.data?.type === "GET_FEN") {
         const game = getGameObject();
+        if (game) {
+          const fenInit = game.getHistoryFENs(1)[0];
+          const startFen = getStartFEN(fenInit);
+          chess.load(startFen);
+          chess.header(
+            "Variant",
+            "Chess960",
+            "SetUp",
+            "1",
+            "FEN",
+            startFen,
+          );
+          const moves = game.getHistorySANs();
+          moves.forEach((e, i) => {
+            chess.move(e);
+          });
+
+          console.log(chess.pgn());
+        }
         const fen =
           game?.getFEN() ||
           "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -1911,4 +1939,3 @@ if (window.location.hostname.includes("lichess.org")) {
     });
   })();
 }
-
