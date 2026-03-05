@@ -88,22 +88,26 @@ let config = {
   showEval: false,
   onlyShowEval: false,
   key: " ",
-};
+  stat: false,
+  moveClassification: false,
+}
 
 chrome.storage.local.get(["chessConfig"], (result) => {
   config = result.chessConfig || {
-    elo: 3500,
-    lines: 5,
-    colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
-    depth: 10,
-    delay: 100,
-    style: "Default",
-    autoMove: false,
-    winningMove: false,
-    showEval: false,
-    onlyShowEval: false,
-    key: " ",
-  };
+  elo: 3500,
+  lines: 5,
+  colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
+  depth: 10,
+  delay: 100,
+  style: "Default",
+  autoMove: false,
+  winningMove: false,
+  showEval: false,
+  onlyShowEval: false,
+  key: " ",
+  stat: false,
+  moveClassification: false,
+}
 
   engine.updateConfig(config.lines, config.depth, config.style, config.elo);
 });
