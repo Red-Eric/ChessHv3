@@ -26,7 +26,8 @@
     "offscreen",
     "tabs",
     "webNavigation",
-    "storage"
+    "storage",
+    "scripting"
   ],
   "host_permissions": [
     "https://www.chess.com/*",
@@ -34,7 +35,8 @@
     "https://*.chess.com/*",
     "https://api.timezonedb.com/*",
     "https://raw.githubusercontent.com/*",
-    "https://api.github.com/*"
+    "https://api.github.com/*",
+    "https://lichess.org/*"
   ],
   "content_scripts": [
     {
@@ -44,7 +46,7 @@
       "js": [
         "content.js"
       ],
-      "run_at": "document_start"
+      "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [

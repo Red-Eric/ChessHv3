@@ -140,26 +140,27 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 });
 
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (!sender.tab || !sender.tab.id) return;
   const tabId = sender.tab.id;
 
   if (message.type === "ATTACH_DEBUGGER") {
-    chrome.tabs.get(tabId, (tab) => {
+    chrome.tabs.get(tabId, async (tab) => {
       if (!tab || !tab.url) {
         sendResponse({ success: false, error: "No tab URL" });
         return;
       }
 
-      const url = new URL(tab.url);
+      const urlTab = new URL(tab.url);
       const allowedDomains = ["lichess.org", "worldchess.com"];
-      if (!allowedDomains.includes(url.hostname)) {
+      if (!allowedDomains.includes(urlTab.hostname)) {
         sendResponse({ success: false, error: "Domain not allowed" });
         return;
       }
 
-      chrome.debugger.detach({ tabId }, () => {
-        chrome.debugger.attach({ tabId }, "1.3", () => {
+      chrome.debugger.detach({ tabId }, async () => {
+        chrome.debugger.attach({ tabId }, "1.3", async () => {
           if (chrome.runtime.lastError) {
             sendResponse({
               success: false,
@@ -167,15 +168,96 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             });
             return;
           }
-          console.log("Debugger attached to", tab.url);
+
+          // Activer le debugger
+          await chrome.debugger.sendCommand({ tabId }, "Debugger.enable");
+
+          // Récupérer tous les scripts <script src> via scripting.executeScript
+          let urls = [];
+          try {
+            const results = await chrome.scripting.executeScript({
+              target: { tabId },
+              func: () =>
+                [...document.scripts].map((s) => s.src).filter(Boolean),
+            });
+            urls = results[0]?.result || [];
+          } catch (err) {
+            console.error(err);
+          }
+
+          let found = false;
+
+          for (const url of urls) {
+            try {
+              const res = await fetch(url);
+              const code = await res.text();
+
+              const TARGET = "this.onMove=(e,t,n)=>{n||this.enpassant(e,t)";
+              const index = code.indexOf(TARGET);
+              if (index === -1) continue;
+              found = true;
+              // Calculer ligne et colonne du `n`
+              const before = code.slice(0, index);
+              const lineNumber = before.split("\n").length - 1;
+              const columnNumber =
+                before.split("\n").pop().length + TARGET.indexOf("n||");
+
+              // Poser le breakpoint
+              chrome.debugger.sendCommand(
+                { tabId },
+                "Debugger.setBreakpointByUrl",
+                {
+                  url,
+                  lineNumber,
+                  columnNumber,
+                },
+                (res) => {
+                  console.log("Breakpoint posé sur n dans :", url, res);
+                },
+              );
+
+              // On peut arrêter après avoir trouvé le script
+              break;
+            } catch (e) {
+              console.log("Impossible de lire :", url, e);
+            }
+          }
+
+          if (!found) console.log("Aucun script contenant this.onMove trouvé");
+
+          // Écouter les pauses
+          chrome.debugger.onEvent.addListener(
+            async (source, method, params) => {
+              if (method === "Debugger.paused") {
+                try {
+                  // Exécuter this.data.steps dans le contexte du callFrame
+                  const evalRes = await chrome.debugger.sendCommand(
+                    source,
+                    "Debugger.evaluateOnCallFrame",
+                    {
+                      callFrameId: params.callFrames[0].callFrameId,
+                      expression: "this.data.steps",
+                      returnByValue: true,
+                    },
+                  );
+                  console.log("this.data.steps =", evalRes.result.value);
+                } catch (e) {
+                  console.error(e);
+                }
+
+                // Reprendre l'exécution
+                chrome.debugger.sendCommand(source, "Debugger.resume");
+              }
+            },
+          );
+
           sendResponse({ success: true });
         });
       });
     });
 
     return true;
-  } 
-  else if (message.type === "DETACH_DEBUGGER") {
+  } else if (message.type === "DETACH_DEBUGGER") {
     chrome.debugger.detach({ tabId }, () => {
       if (chrome.runtime.lastError) {
         sendResponse({
@@ -192,7 +274,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   if (message.type !== "DRAG_MOVE") return;
 
@@ -201,7 +282,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   const tabs = await chrome.tabs.query({});
 
   const allowedDomains = ["lichess.org", "worldchess.com"];
-  const targetTabs = tabs.filter(tab => {
+  const targetTabs = tabs.filter((tab) => {
     if (!tab.url) return false;
     const url = new URL(tab.url);
     return allowedDomains.includes(url.hostname);
@@ -240,10 +321,14 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
 function sendMouseEvent(tabId, params) {
   return new Promise((resolve, reject) => {
-    chrome.debugger.sendCommand({ tabId }, "Input.dispatchMouseEvent", params, (res) => {
-      if (chrome.runtime.lastError) return reject(chrome.runtime.lastError);
-      resolve(res);
-    });
+    chrome.debugger.sendCommand(
+      { tabId },
+      "Input.dispatchMouseEvent",
+      params,
+      (res) => {
+        if (chrome.runtime.lastError) return reject(chrome.runtime.lastError);
+        resolve(res);
+      },
+    );
   });
 }
-

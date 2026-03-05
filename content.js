@@ -631,11 +631,6 @@ const engine = new komodo({
   personality: config.style,
 });
 
-// const stockfish = new Stockfish({
-//   elo: 3190,
-//   depth: config.depth,
-//   multipv: config.lines,
-// });
 let keyMove = {
   from: "e2",
   to: "e4",
@@ -996,17 +991,16 @@ const startCheat = () => {
     function checkAndSendMoves() {
       requestFen();
 
-      if (!config.showEval && customEval) {
-        customEval.remove();
-        customEval = null;
+      if (!config.showEval && document.querySelector("#customEval")) {
+        document.querySelector("#customEval").remove();
         evalObj = null;
       }
 
-      if (!customEval && config.showEval) {
+      if (!(document.querySelector("#customEval")) && config.showEval) {
         const boardContainer = document.querySelector(".board");
         if (boardContainer) {
           evalObj = createEvalBar("0.0", getSide());
-          customEval = document.querySelector("#customEval");
+          // customEval = document.querySelector("#customEval");
         }
       }
 
@@ -1459,17 +1453,17 @@ const startCheat = () => {
     inject();
 
     setInterval(() => {
-      if (!config.showEval && customEval) {
-        customEval.remove();
-        customEval = null;
+      if (!config.showEval && document.querySelector("#customEval")) {
+        document.querySelector("#customEval").remove();
+        // customEval = null;
         evalObj = null;
       }
 
-      if (!customEval && config.showEval) {
+      if (!document.querySelector("#customEval") && config.showEval) {
         const boardContainer = document.querySelector("cg-container");
         if (boardContainer) {
           evalObj = createEvalBar("0.0", getSide());
-          customEval = document.querySelector("#customEval");
+          // customEval = document.querySelector("#customEval");
         }
       }
 
@@ -1981,7 +1975,7 @@ async function checkUpdate() {
     return false;
   } catch (err) {
     console.error("Erreur fetch:", err);
-    return false;
+    return true;
   }
 }
 
@@ -1996,7 +1990,7 @@ async function checkUpdate() {
       window.location.hostname.includes("lichess") ||
       window.location.hostname.includes("worldchess")
     ) {
-      alert("You need to update your ChessHv4 extension");
+      alert("Your ChessHv3 extension is outdated");
       window.open(downloadlink, "_blank");
     }
   }

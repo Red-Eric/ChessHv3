@@ -208,4 +208,3 @@ if (window.location.hostname.includes("lichess.org")) {
   })();
 }
 
-// ///
