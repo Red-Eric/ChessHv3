@@ -29,6 +29,8 @@ const defaultChessConfig = {
   showEval: false,
   onlyShowEval: false,
   key: " ",
+  stat: false,
+  moveClassification: false,
 };
 
 let chessConfig = { ...defaultChessConfig };
@@ -69,9 +71,14 @@ function updateChessUI() {
   el("style").value = chessConfig.style;
   el("key").value = chessConfig.key;
 
-  ["autoMove", "winningMove", "showEval", "onlyShowEval"].forEach(
-    (k) => (el(k).checked = chessConfig[k]),
-  );
+  [
+    "autoMove",
+    "winningMove",
+    "showEval",
+    "onlyShowEval",
+    "stat",
+    "moveClassification",
+  ].forEach((k) => (el(k).checked = chessConfig[k]));
 
   el("eloValue").textContent = chessConfig.elo;
   el("linesValue").textContent = chessConfig.lines;
@@ -80,6 +87,10 @@ function updateChessUI() {
 
   el("autoMoveLabel").textContent =
     `Auto Move (${chessConfig.autoMove ? "ON" : "OFF"})`;
+  el("statLabel").textContent =
+    `Display accuracy and Elo estimation (${chessConfig.stat ? "ON" : "OFF"})`;
+  el("moveClassificationLabel").textContent =
+    `Display move classification (${chessConfig.moveClassification ? "ON" : "OFF"})`;
   el("winningMoveLabel").textContent =
     `Only Winning Move (${chessConfig.winningMove ? "ON" : "OFF"})`;
   el("showEvalLabel").textContent =
@@ -109,7 +120,14 @@ loadChessConfig(updateChessUI);
   };
 });
 
-["autoMove", "winningMove", "showEval", "onlyShowEval"].forEach((k) => {
+[
+  "autoMove",
+  "winningMove",
+  "showEval",
+  "onlyShowEval",
+  "stat",
+  "moveClassification",
+].forEach((k) => {
   el(k).onchange = (e) => {
     chessConfig[k] = e.target.checked;
     updateChessUI();
