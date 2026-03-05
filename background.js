@@ -2026,6 +2026,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     },
                   );
 
+                  console.clear();
+
                   const movesHistory = evalRes.result?.value || [];
                   console.log(movesHistory);
 
@@ -2035,7 +2037,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                   game.load(startFen);
 
                   movesHistory.forEach((e, i) => {
-                    game.move(e.san);
+                    game.move(e.lan, { sloppy: true });
                   });
 
                   game.header(
@@ -2046,8 +2048,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     "FEN",
                     startFen,
                   );
-                  // console.clear()
-                  // console.log(game.pgn());
+                  console.log(game.pgn());
                 }
 
                 // const evalRes = await chrome.debugger.sendCommand(
