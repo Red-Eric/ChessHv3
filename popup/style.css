@@ -385,3 +385,123 @@ select:focus {
   color: var(--olive-vivid);
   font-weight: 700;
 }
+
+/* ================= LOAD / EXPORT PANELS ================= */
+.panel-title {
+  text-align: center;
+  margin-bottom: 24px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--grey-fish);
+  text-shadow: 0 0 24px rgba(184,189,176,0.2);
+}
+
+.panel-title::before {
+  content: '⟡ ';
+  color: var(--olive-vivid);
+  opacity: 0.8;
+}
+
+.load-textarea,
+.export-output {
+  width: 100%;
+  min-height: 180px;
+  padding: 14px 16px;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  color: var(--grey-fish);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.7;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  margin-bottom: 14px;
+}
+
+.load-textarea::placeholder {
+  color: var(--text-dim);
+}
+
+.load-textarea:focus {
+  border-color: var(--olive-vivid);
+  box-shadow: 0 0 0 3px var(--olive-glow);
+}
+
+.export-output {
+  display: none;
+  white-space: pre;
+  overflow: auto;
+  cursor: text;
+  user-select: all;
+}
+
+.action-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 10px 22px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border-radius: 8px;
+  border: 1px solid var(--olive-mid);
+  background: rgba(122,154,107,0.12);
+  color: var(--olive-vivid);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  background: rgba(122,154,107,0.22);
+  border-color: var(--olive-vivid);
+  box-shadow: 0 0 14px var(--olive-glow);
+  color: var(--grey-fish);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+#copyBtn {
+  display: none;
+}
+
+.load-feedback {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 8px 14px;
+  border-radius: 7px;
+  flex: 1;
+  min-width: 0;
+}
+
+.load-feedback.success {
+  color: var(--olive-vivid);
+  background: rgba(122,154,107,0.10);
+  border: 1px solid var(--olive-border);
+}
+
+.load-feedback.error {
+  color: #e74c3c;
+  background: rgba(231,76,60,0.08);
+  border: 1px solid rgba(231,76,60,0.25);
+}
+
+.load-hint {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 14px;
+  line-height: 1.55;
+}

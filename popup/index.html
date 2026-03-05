@@ -13,8 +13,11 @@
     <div class="tabs">
       <div class="tab active" data-panel="chess">Settings</div>
       <div class="tab" data-panel="stream">Stream</div>
+      <div class="tab" data-panel="load">Load</div>
+      <div class="tab" data-panel="export">Export</div>
     </div>
-    <!-- ================= SEttings ================= -->
+
+    <!-- ================= SETTINGS ================= -->
     <div class="panel active" id="chess">
       <div class="container">
         <h1>ChessHv3 - Settings</h1>
@@ -123,7 +126,6 @@
           <label>Play Best Move (Key)</label>
           <select id="key">
             <option value=" " selected>Space</option>
-
             <option value="a">a</option>
             <option value="z">z</option>
             <option value="e">e</option>
@@ -150,13 +152,11 @@
             <option value="v">v</option>
             <option value="b">b</option>
             <option value="n">n</option>
-
             <option value="Control">Control</option>
             <option value="Shift">Shift</option>
             <option value="Alt">Alt</option>
             <option value="Tab">Tab</option>
             <option value="CapsLock">CapsLock</option>
-
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>
@@ -167,7 +167,6 @@
             <option value="8">8</option>
             <option value="9">9</option>
             <option value="0">0</option>
-
             <option value="ArrowUp">ArrowUp</option>
             <option value="ArrowDown">ArrowDown</option>
             <option value="ArrowLeft">ArrowLeft</option>
@@ -188,6 +187,28 @@
         </div>
         <div class="setting-help">
           Automatically plays the best move for you.
+        </div>
+
+        <div class="setting">
+          <span id="moveClassificationLabel">Display move classification (OFF)</span>
+          <label class="toggle">
+            <input type="checkbox" id="moveClassification" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-help">
+          Show the classification of moves (Blunder, Best, Excellent, Inaccuracy).
+        </div>
+
+        <div class="setting">
+          <span id="statLabel">Display accuracy and Elo estimation (OFF)</span>
+          <label class="toggle">
+            <input type="checkbox" id="stat" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-help">
+          Show the real-time accuracy of the game and the estimated Elo.
         </div>
 
         <div class="setting">
@@ -229,6 +250,28 @@
         Launch your game and it will appear here automatically. Disable Show
         Eval Bar and enable Hide Arrows for best results.
       </p>
+    </div>
+
+    <!-- ================= LOAD SETTINGS ================= -->
+    <div class="panel" id="load">
+      <p class="panel-title">Load Settings</p>
+      <p class="load-hint">Paste a previously exported JSON config below and click Load.</p>
+      <textarea class="load-textarea" id="loadInput" placeholder='{ "elo": 2000, "lines": 3, ... }'></textarea>
+      <div class="action-row">
+        <button class="btn" id="loadBtn">Load Config</button>
+        <span class="load-feedback" id="loadFeedback"></span>
+      </div>
+    </div>
+
+    <!-- ================= EXPORT ================= -->
+    <div class="panel" id="export">
+      <p class="panel-title">Export Settings</p>
+      <p class="load-hint">Click Export to generate your current config as JSON.</p>
+      <pre class="export-output" id="exportOutput"></pre>
+      <div class="action-row">
+        <button class="btn" id="exportBtn">Export Config</button>
+        <button class="btn" id="copyBtn">Copy to Clipboard</button>
+      </div>
     </div>
 
     <script src="chessboard/jquery-3.4.1.min.js"></script>
