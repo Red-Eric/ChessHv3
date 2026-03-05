@@ -36,7 +36,8 @@
     "https://api.timezonedb.com/*",
     "https://raw.githubusercontent.com/*",
     "https://api.github.com/*",
-    "https://lichess.org/*"
+    "https://lichess.org/*",
+    "https://worldchess.com/*"
   ],
   "content_scripts": [
     {
