@@ -643,7 +643,191 @@ const startCheat = () => {
     let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     let side_index = 1;
     let evalObj = null;
-    let customEval = null;
+
+    function createAccuracyDisplay(
+      side = "white",
+      initialWhiteAcc = 0,
+      initialWhiteElo = 0,
+      initialBlackAcc = 0,
+      initialBlackElo = 0,
+    ) {
+      const board = document.querySelector("wc-chess-board");
+      if (!board) return console.error("Board non trouvé !");
+
+      const lowerSide = side.toLowerCase();
+      const upperSide = lowerSide === "white" ? "black" : "white";
+
+      // Inject styles once
+      if (!document.getElementById("accuracyStyles")) {
+        const style = document.createElement("style");
+        style.id = "accuracyStyles";
+        style.textContent = `
+            #accuracyContainer {
+                position: relative;
+                width: 100%;
+                z-index: 9999;
+                pointer-events: none;
+                font-family: 'Rajdhani', sans-serif;
+            }
+
+            .accuracy-bar {
+                position: absolute;
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0px;
+                padding: 4px 0;
+                box-sizing: border-box;
+            }
+
+            .accuracy-bar.lower { bottom: 0; }
+            .accuracy-bar.upper { top: 0; }
+
+            .accuracy-pill {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 5px 14px;
+                border-radius: 4px;
+                backdrop-filter: blur(6px);
+            }
+
+            .accuracy-pill.side-white {
+                background: rgba(255, 255, 255, 0.12);
+                border: 1px solid rgba(255, 255, 255, 0.22);
+            }
+
+            .accuracy-pill.side-black {
+                background: rgba(49, 46, 43, 0.75);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .accuracy-stat {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                line-height: 1;
+            }
+
+            .accuracy-label {
+                font-size: 9px;
+                font-weight: 700;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                opacity: 0.6;
+            }
+
+            .accuracy-value {
+                font-size: 15px;
+                font-weight: 700;
+                letter-spacing: 0.04em;
+            }
+
+            .accuracy-pill.side-white .accuracy-label,
+            .accuracy-pill.side-white .accuracy-value {
+                color: #ffffff;
+            }
+
+            .accuracy-pill.side-black .accuracy-label,
+            .accuracy-pill.side-black .accuracy-value {
+                color: #ffffff;
+            }
+
+            .accuracy-divider {
+                width: 1px;
+                height: 28px;
+                background: rgba(255,255,255,0.2);
+                margin: 0 2px;
+            }
+
+            .accuracy-icon {
+                font-size: 13px;
+                opacity: 0.7;
+                margin-right: 2px;
+            }
+
+            .accuracy-value .unit {
+                font-size: 10px;
+                opacity: 0.7;
+                font-weight: 600;
+            }
+
+            .acc-glow {
+                text-shadow: 0 0 8px rgba(255,255,255,0.3);
+            }
+        `;
+        document.head.appendChild(style);
+      }
+
+      const container = document.createElement("div");
+      container.id = "accuracyContainer";
+      container.style.height = board.offsetHeight + "px";
+
+      function createBar(id, position, colorSide) {
+        const bar = document.createElement("div");
+        bar.className = `accuracy-bar ${position}`;
+        bar.id = id;
+
+        bar.innerHTML = `
+            <div class="accuracy-pill side-${colorSide}">
+                <span class="accuracy-icon">${colorSide === "white" ? "♔" : "♚"}</span>
+                <div class="accuracy-stat">
+                    <span class="accuracy-label">Accuracy</span>
+                    <span class="accuracy-value acc-glow acc-val">0<span class="unit">%</span></span>
+                </div>
+                <div class="accuracy-divider"></div>
+                <div class="accuracy-stat">
+                    <span class="accuracy-label">Est. Elo</span>
+                    <span class="accuracy-value elo-val">—</span>
+                </div>
+            </div>
+        `;
+        return bar;
+      }
+
+      const lowerBar = createBar(`accuracy_${lowerSide}`, "lower", lowerSide);
+      const upperBar = createBar(`accuracy_${upperSide}`, "upper", upperSide);
+
+      lowerBar.style.position = "relative";
+      lowerBar.style.top =
+        document.querySelector("wc-chess-board").offsetHeight + "px";
+
+      window.test = upperBar;
+      upperBar.style.position = "relative";
+      upperBar.style.top = "-100px";
+
+      container.appendChild(lowerBar);
+      container.appendChild(upperBar);
+      board.appendChild(container);
+
+      function setBar(bar, acc, elo) {
+        bar.querySelector(".acc-val").innerHTML =
+          `${acc}<span class="unit">%</span>`;
+        bar.querySelector(".elo-val").textContent = elo;
+      }
+
+      function update(whiteAcc, whiteElo, blackAcc, blackElo) {
+        if (lowerSide === "white") {
+          setBar(lowerBar, whiteAcc, whiteElo);
+          setBar(upperBar, blackAcc, blackElo);
+        } else {
+          setBar(lowerBar, blackAcc, blackElo);
+          setBar(upperBar, whiteAcc, whiteElo);
+        }
+      }
+
+      update(
+        initialWhiteAcc,
+        initialWhiteElo,
+        initialBlackAcc,
+        initialBlackElo,
+      );
+      return { update };
+    }
+
+    //     const accDisplay = createAccuracyDisplay("white", 85.05, 1250, 78.3, 1200);
+    // accDisplay.update(87.2, 1260, 79.5, 1210);
 
     function createEvalBar(initialScore = "0.0", initialColor = "white") {
       const boardContainer = document.querySelector(".board");
@@ -996,7 +1180,7 @@ const startCheat = () => {
         evalObj = null;
       }
 
-      if (!(document.querySelector("#customEval")) && config.showEval) {
+      if (!document.querySelector("#customEval") && config.showEval) {
         const boardContainer = document.querySelector(".board");
         if (boardContainer) {
           evalObj = createEvalBar("0.0", getSide());
@@ -1051,8 +1235,192 @@ const startCheat = () => {
     });
     let fen_ = "";
     let evalObj = null;
-    let customEval = null;
-    let lastUCIPos;
+    let accuracyObj = null;
+
+    function createAccuracyDisplay(
+      side = "white",
+      initialWhiteAcc = 0,
+      initialWhiteElo = 0,
+      initialBlackAcc = 0,
+      initialBlackElo = 0,
+    ) {
+      const board = document.querySelector("cg-board");
+      if (!board) return console.error("Board non trouvé !");
+
+      const lowerSide = side.toLowerCase();
+      const upperSide = lowerSide === "white" ? "black" : "white";
+
+      // Inject styles once
+      if (!document.getElementById("accuracyStyles")) {
+        const style = document.createElement("style");
+        style.id = "accuracyStyles";
+        style.textContent = `
+            #accuracyContainer {
+                position: relative;
+                width: 100%;
+                z-index: 9999;
+                pointer-events: none;
+                font-family: 'Rajdhani', sans-serif;
+            }
+
+            .accuracy-bar {
+                position: absolute;
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0px;
+                padding: 4px 0;
+                box-sizing: border-box;
+            }
+
+            .accuracy-bar.lower { bottom: 0; }
+            .accuracy-bar.upper { top: 0; }
+
+            .accuracy-pill {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 5px 14px;
+                border-radius: 4px;
+                backdrop-filter: blur(6px);
+            }
+
+            .accuracy-pill.side-white {
+                background: rgba(255, 255, 255, 0.12);
+                border: 1px solid rgba(255, 255, 255, 0.22);
+            }
+
+            .accuracy-pill.side-black {
+                background: rgba(49, 46, 43, 0.75);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .accuracy-stat {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                line-height: 1;
+            }
+
+            .accuracy-label {
+                font-size: 9px;
+                font-weight: 700;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                opacity: 0.6;
+            }
+
+            .accuracy-value {
+                font-size: 15px;
+                font-weight: 700;
+                letter-spacing: 0.04em;
+            }
+
+            .accuracy-pill.side-white .accuracy-label,
+            .accuracy-pill.side-white .accuracy-value {
+                color: #ffffff;
+            }
+
+            .accuracy-pill.side-black .accuracy-label,
+            .accuracy-pill.side-black .accuracy-value {
+                color: #ffffff;
+            }
+
+            .accuracy-divider {
+                width: 1px;
+                height: 28px;
+                background: rgba(255,255,255,0.2);
+                margin: 0 2px;
+            }
+
+            .accuracy-icon {
+                font-size: 13px;
+                opacity: 0.7;
+                margin-right: 2px;
+            }
+
+            .accuracy-value .unit {
+                font-size: 10px;
+                opacity: 0.7;
+                font-weight: 600;
+            }
+
+            .acc-glow {
+                text-shadow: 0 0 8px rgba(255,255,255,0.3);
+            }
+        `;
+        document.head.appendChild(style);
+      }
+
+      const container = document.createElement("div");
+      container.id = "accuracyContainer";
+      container.style.height = board.offsetHeight + "px";
+
+      function createBar(id, position, colorSide) {
+        const bar = document.createElement("div");
+        bar.className = `accuracy-bar ${position}`;
+        bar.id = id;
+
+        bar.innerHTML = `
+            <div class="accuracy-pill side-${colorSide}">
+                <span class="accuracy-icon">${colorSide === "white" ? "♔" : "♚"}</span>
+                <div class="accuracy-stat">
+                    <span class="accuracy-label">Accuracy</span>
+                    <span class="accuracy-value acc-glow acc-val">0<span class="unit">%</span></span>
+                </div>
+                <div class="accuracy-divider"></div>
+                <div class="accuracy-stat">
+                    <span class="accuracy-label">Est. Elo</span>
+                    <span class="accuracy-value elo-val">—</span>
+                </div>
+            </div>
+        `;
+        return bar;
+      }
+
+      const lowerBar = createBar(`accuracy_${lowerSide}`, "lower", lowerSide);
+      const upperBar = createBar(`accuracy_${upperSide}`, "upper", upperSide);
+
+      lowerBar.style.position = "relative";
+      lowerBar.style.top =
+        document.querySelector("cg-board").offsetHeight + "px";
+
+      window.test = upperBar;
+      upperBar.style.position = "relative";
+      upperBar.style.top = "-100px";
+
+      container.appendChild(lowerBar);
+      container.appendChild(upperBar);
+      board.appendChild(container);
+
+      function setBar(bar, acc, elo) {
+        bar.querySelector(".acc-val").innerHTML =
+          `${acc}<span class="unit">%</span>`;
+        bar.querySelector(".elo-val").textContent = elo;
+      }
+
+      function update(whiteAcc, whiteElo, blackAcc, blackElo) {
+        if (lowerSide === "white") {
+          setBar(lowerBar, whiteAcc, whiteElo);
+          setBar(upperBar, blackAcc, blackElo);
+        } else {
+          setBar(lowerBar, blackAcc, blackElo);
+          setBar(upperBar, whiteAcc, whiteElo);
+        }
+      }
+
+      update(
+        initialWhiteAcc,
+        initialWhiteElo,
+        initialBlackAcc,
+        initialBlackElo,
+      );
+      return { update };
+    }
+
+    //     const accDisplay = createAccuracyDisplay("white", 85.05, 1250, 78.3, 1200);
+    // accDisplay.update(87.2, 1260, 79.5, 1210);
 
     function createEvalBar(initialScore = "0.0", initialColor = "white") {
       const boardContainer = document.querySelector("cg-board");
@@ -1493,7 +1861,192 @@ const startCheat = () => {
     let fen_ = "";
     let currentFen = "";
     let evalObj = null;
-    let customEval = null;
+
+    function createAccuracyDisplay(
+      side = "white",
+      initialWhiteAcc = 0,
+      initialWhiteElo = 0,
+      initialBlackAcc = 0,
+      initialBlackElo = 0,
+    ) {
+      const board = document.querySelector("cg-board").parentNode.parentNode;
+      if (!board) return console.error("Board non trouvé !");
+
+      const lowerSide = side.toLowerCase();
+      const upperSide = lowerSide === "white" ? "black" : "white";
+
+      // Inject styles once
+      if (!document.getElementById("accuracyStyles")) {
+        const style = document.createElement("style");
+        style.id = "accuracyStyles";
+        style.textContent = `
+            #accuracyContainer {
+                position: relative;
+                width: 100%;
+                z-index: 9999;
+                pointer-events: none;
+                font-family: 'Rajdhani', sans-serif;
+            }
+
+            .accuracy-bar {
+                position: absolute;
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0px;
+                padding: 4px 0;
+                box-sizing: border-box;
+            }
+
+            .accuracy-bar.lower { bottom: 0; }
+            .accuracy-bar.upper { top: 0; }
+
+            .accuracy-pill {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 5px 14px;
+                border-radius: 4px;
+                backdrop-filter: blur(6px);
+            }
+
+            .accuracy-pill.side-white {
+                background: rgba(255, 255, 255, 0.12);
+                border: 1px solid rgba(255, 255, 255, 0.22);
+            }
+
+            .accuracy-pill.side-black {
+                background: rgba(49, 46, 43, 0.75);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .accuracy-stat {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                line-height: 1;
+            }
+
+            .accuracy-label {
+                font-size: 9px;
+                font-weight: 700;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                opacity: 0.6;
+            }
+
+            .accuracy-value {
+                font-size: 15px;
+                font-weight: 700;
+                letter-spacing: 0.04em;
+            }
+
+            .accuracy-pill.side-white .accuracy-label,
+            .accuracy-pill.side-white .accuracy-value {
+                color: #ffffff;
+            }
+
+            .accuracy-pill.side-black .accuracy-label,
+            .accuracy-pill.side-black .accuracy-value {
+                color: #ffffff;
+            }
+
+            .accuracy-divider {
+                width: 1px;
+                height: 28px;
+                background: rgba(255,255,255,0.2);
+                margin: 0 2px;
+            }
+
+            .accuracy-icon {
+                font-size: 13px;
+                opacity: 0.7;
+                margin-right: 2px;
+            }
+
+            .accuracy-value .unit {
+                font-size: 10px;
+                opacity: 0.7;
+                font-weight: 600;
+            }
+
+            .acc-glow {
+                text-shadow: 0 0 8px rgba(255,255,255,0.3);
+            }
+        `;
+        document.head.appendChild(style);
+      }
+
+      const container = document.createElement("div");
+      container.id = "accuracyContainer";
+      container.style.height = board.offsetHeight + "px";
+
+      function createBar(id, position, colorSide) {
+        const bar = document.createElement("div");
+        bar.className = `accuracy-bar ${position}`;
+        bar.id = id;
+
+        bar.innerHTML = `
+            <div class="accuracy-pill side-${colorSide}">
+                <span class="accuracy-icon">${colorSide === "white" ? "♔" : "♚"}</span>
+                <div class="accuracy-stat">
+                    <span class="accuracy-label">Accuracy</span>
+                    <span class="accuracy-value acc-glow acc-val">0<span class="unit">%</span></span>
+                </div>
+                <div class="accuracy-divider"></div>
+                <div class="accuracy-stat">
+                    <span class="accuracy-label">Est. Elo</span>
+                    <span class="accuracy-value elo-val">—</span>
+                </div>
+            </div>
+        `;
+        return bar;
+      }
+
+      const lowerBar = createBar(`accuracy_${lowerSide}`, "lower", lowerSide);
+      const upperBar = createBar(`accuracy_${upperSide}`, "upper", upperSide);
+
+      lowerBar.style.position = "relative";
+      lowerBar.style.top =
+        document.querySelector("cg-board").offsetHeight + "px";
+
+      window.upper = upperBar;
+      window.lower = lowerBar;
+      upperBar.style.position = "relative";
+      upperBar.style.top = "-100px";
+
+      container.appendChild(lowerBar);
+      container.appendChild(upperBar);
+      board.appendChild(container);
+
+      function setBar(bar, acc, elo) {
+        bar.querySelector(".acc-val").innerHTML =
+          `${acc}<span class="unit">%</span>`;
+        bar.querySelector(".elo-val").textContent = elo;
+      }
+
+      function update(whiteAcc, whiteElo, blackAcc, blackElo) {
+        if (lowerSide === "white") {
+          setBar(lowerBar, whiteAcc, whiteElo);
+          setBar(upperBar, blackAcc, blackElo);
+        } else {
+          setBar(lowerBar, blackAcc, blackElo);
+          setBar(upperBar, whiteAcc, whiteElo);
+        }
+      }
+
+      update(
+        initialWhiteAcc,
+        initialWhiteElo,
+        initialBlackAcc,
+        initialBlackElo,
+      );
+      return { update };
+    }
+
+    // const accDisplay = createAccuracyDisplay("white", 85.05, 1250, 78.3, 1200);
+    // accDisplay.update(87.2, 1260, 79.5, 1210);
 
     function getFEN() {
       const pTags = document.querySelectorAll("p");
@@ -1880,7 +2433,7 @@ const startCheat = () => {
     setInterval(() => {
       // eval bar
 
-      if (!(document.querySelector("#customEval")) && config.showEval) {
+      if (!document.querySelector("#customEval") && config.showEval) {
         const boardContainer = document.querySelector("cg-board");
         if (boardContainer) {
           evalObj = createEvalBar("0.0", getSide());
@@ -1894,9 +2447,8 @@ const startCheat = () => {
         currentFen = fen_;
         clearHighlightSquares();
 
-
-        if (!config.showEval && (document.querySelector("#customEval"))) {
-          document.querySelector("#customEval").remove()
+        if (!config.showEval && document.querySelector("#customEval")) {
+          document.querySelector("#customEval").remove();
           evalObj = null;
         }
 
