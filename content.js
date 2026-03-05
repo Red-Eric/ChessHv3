@@ -84,13 +84,13 @@ let config = {
   delay: 100,
   style: "Default",
   autoMove: false,
+  moveClassification: false,
+  stat: false,
   winningMove: false,
   showEval: false,
   onlyShowEval: false,
   key: " ",
-  stat: false,
-  moveClassification: false,
-}
+};
 
 chrome.storage.local.get(["chessConfig"], (result) => {
   config = result.chessConfig || {
@@ -101,13 +101,13 @@ chrome.storage.local.get(["chessConfig"], (result) => {
   delay: 100,
   style: "Default",
   autoMove: false,
+  moveClassification: false,
+  stat: false,
   winningMove: false,
   showEval: false,
   onlyShowEval: false,
   key: " ",
-  stat: false,
-  moveClassification: false,
-}
+};
 
   engine.updateConfig(config.lines, config.depth, config.style, config.elo);
 });
