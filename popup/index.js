@@ -15,11 +15,12 @@ document.querySelectorAll(".tab").forEach((tab) => {
 
 const el = (id) => document.getElementById(id);
 
-/* ================= DEFAULT CONFIG ================= */
+/* ================= CHESS.COM ================= */
+
 const defaultChessConfig = {
-  elo: 2800,
+  elo: 3500,
   lines: 5,
-  colors: ["#4f8cff", "#2ecc71", "#f1c40f", "#e67e22", "#e74c3c"],
+  colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
   depth: 10,
   delay: 100,
   style: "Default",
@@ -28,8 +29,6 @@ const defaultChessConfig = {
   showEval: false,
   onlyShowEval: false,
   key: " ",
-  stat: false,
-  moveClassification: false,
 };
 
 let chessConfig = { ...defaultChessConfig };
@@ -37,19 +36,22 @@ let chessConfig = { ...defaultChessConfig };
 function loadChessConfig(callback) {
   chrome.storage.local.get(["chessConfig"], function (result) {
     const savedConfig = result.chessConfig;
+
     if (savedConfig) {
       chessConfig = { ...defaultChessConfig, ...savedConfig };
     } else {
       chessConfig = { ...defaultChessConfig };
     }
+
     updateChessUI();
+
     if (callback) callback();
   });
 }
 
 function saveChessConfig() {
   chrome.storage.local.set({ chessConfig }, function () {
-    console.log("Config saved");
+    console.log("Config sauvegardée !");
   });
 }
 
@@ -60,14 +62,6 @@ function hideExtraColorInputs(lines) {
   });
 }
 
-function setToggleState(id, value) {
-  const stateEl = document.getElementById(id + "State");
-  if (stateEl) {
-    stateEl.textContent = value ? "ON" : "OFF";
-    stateEl.classList.toggle("on", value);
-  }
-}
-
 function updateChessUI() {
   ["elo", "lines", "depth", "delay"].forEach(
     (k) => (el(k).value = chessConfig[k]),
@@ -75,33 +69,35 @@ function updateChessUI() {
   el("style").value = chessConfig.style;
   el("key").value = chessConfig.key;
 
-  [
-    "autoMove",
-    "winningMove",
-    "showEval",
-    "onlyShowEval",
-    "stat",
-    "moveClassification",
-  ].forEach((k) => {
-    el(k).checked = chessConfig[k];
-    setToggleState(k, chessConfig[k]);
-  });
+  ["autoMove", "winningMove", "showEval", "onlyShowEval"].forEach(
+    (k) => (el(k).checked = chessConfig[k]),
+  );
 
   el("eloValue").textContent = chessConfig.elo;
   el("linesValue").textContent = chessConfig.lines;
   el("depthValue").textContent = chessConfig.depth;
   el("delayValue").textContent = chessConfig.delay;
 
-  const colorIds = ["colorBest", "color2", "color3", "color4", "color5"];
-  colorIds.forEach((id, i) => {
-    if (el(id)) el(id).value = chessConfig.colors[i] || "#ffffff";
-  });
+  el("autoMoveLabel").textContent =
+    `Auto Move (${chessConfig.autoMove ? "ON" : "OFF"})`;
+  el("winningMoveLabel").textContent =
+    `Only Winning Move (${chessConfig.winningMove ? "ON" : "OFF"})`;
+  el("showEvalLabel").textContent =
+    `Show Eval Bar (${chessConfig.showEval ? "ON" : "OFF"})`;
+  el("onlyShowEvalLabel").textContent =
+    `Hide Arrows (${chessConfig.onlyShowEval ? "ON" : "OFF"})`;
 
-  hideExtraColorInputs(chessConfig.lines);
   console.clear();
   console.log(chessConfig);
+  hideExtraColorInputs(chessConfig.lines);
 }
 
+// Sauvegarder la config
+function saveChess() {
+  saveChessConfig();
+}
+
+// Charger la config et mettre à jour l’UI
 loadChessConfig(updateChessUI);
 
 /* ================= INPUT HANDLERS ================= */
@@ -109,35 +105,28 @@ loadChessConfig(updateChessUI);
   el(k).oninput = (e) => {
     chessConfig[k] = +e.target.value;
     updateChessUI();
-    saveChessConfig();
+    saveChess();
   };
 });
 
-[
-  "autoMove",
-  "winningMove",
-  "showEval",
-  "onlyShowEval",
-  "stat",
-  "moveClassification",
-].forEach((k) => {
+["autoMove", "winningMove", "showEval", "onlyShowEval"].forEach((k) => {
   el(k).onchange = (e) => {
     chessConfig[k] = e.target.checked;
     updateChessUI();
-    saveChessConfig();
+    saveChess();
   };
 });
 
 el("style").onchange = (e) => {
   chessConfig.style = e.target.value;
   updateChessUI();
-  saveChessConfig();
+  saveChess();
 };
 
 el("key").onchange = (e) => {
   chessConfig.key = e.target.value;
   updateChessUI();
-  saveChessConfig();
+  saveChess();
 };
 
 const allColorInputs = document.querySelectorAll('input[type="color"]');
@@ -145,80 +134,9 @@ allColorInputs.forEach((input, index) => {
   input.addEventListener("input", (e) => {
     chessConfig.colors[index] = e.target.value;
     updateChessUI();
-    saveChessConfig();
+    saveChess();
   });
 });
-
-/* ================= IMPORT / EXPORT ================= */
-
-// EXPORT
-document.getElementById("btnExport").onclick = () => {
-  const json = JSON.stringify(chessConfig, null, 2);
-  document.getElementById("exportJson").value = json;
-  const s = document.getElementById("exportStatus");
-  s.textContent = "✓ CONFIG EXPORTED";
-  s.className = "io-status success";
-  setTimeout(() => {
-    s.textContent = "";
-    s.className = "io-status";
-  }, 3000);
-};
-
-// COPY
-document.getElementById("btnCopy").onclick = () => {
-  const box = document.getElementById("exportJson");
-  const val = box.value;
-  if (!val) return;
-  navigator.clipboard.writeText(val).then(() => {
-    const btn = document.getElementById("btnCopy");
-    const s = document.getElementById("exportStatus");
-    btn.classList.add("copied");
-    btn.querySelector(".btn-icon").textContent = "✓";
-    s.textContent = "✓ COPIED TO CLIPBOARD";
-    s.className = "io-status success";
-    setTimeout(() => {
-      btn.classList.remove("copied");
-      btn.querySelector(".btn-icon").textContent = "⎘";
-      s.textContent = "";
-      s.className = "io-status";
-    }, 2500);
-  });
-};
-
-// LOAD
-document.getElementById("btnLoad").onclick = () => {
-  const raw = document.getElementById("importJson").value.trim();
-  const s = document.getElementById("importStatus");
-  if (!raw) {
-    s.textContent = "✕ EMPTY — PASTE A CONFIG FIRST";
-    s.className = "io-status error";
-    setTimeout(() => {
-      s.textContent = "";
-      s.className = "io-status";
-    }, 3000);
-    return;
-  }
-  try {
-    const parsed = JSON.parse(raw);
-    chessConfig = { ...defaultChessConfig, ...parsed };
-    saveChessConfig();
-    updateChessUI();
-    s.textContent = "✓ CONFIG LOADED SUCCESSFULLY";
-    s.className = "io-status success";
-    document.getElementById("importJson").value = "";
-    setTimeout(() => {
-      s.textContent = "";
-      s.className = "io-status";
-    }, 3000);
-  } catch (e) {
-    s.textContent = "✕ INVALID JSON — CHECK FORMAT";
-    s.className = "io-status error";
-    setTimeout(() => {
-      s.textContent = "";
-      s.className = "io-status";
-    }, 3500);
-  }
-};
 
 // ===== Chessboard Panel =====
 
@@ -228,6 +146,7 @@ function createEvalBar(initialScore = "0.0", initialColor = "white") {
 
   if (!boardContainer) return console.error("Plateau non trouvé !");
 
+  // Conteneur principal
   const evalContainer = document.createElement("div");
   evalContainer.id = "customEval";
   evalContainer.style.zIndex = "9999";
@@ -256,6 +175,7 @@ function createEvalBar(initialScore = "0.0", initialColor = "white") {
   evalContainer.appendChild(topBar);
   evalContainer.appendChild(bottomBar);
 
+  // Ligne médiane
   const midLine = document.createElement("div");
   midLine.style.position = "absolute";
   midLine.style.top = "50%";
@@ -266,6 +186,7 @@ function createEvalBar(initialScore = "0.0", initialColor = "white") {
   midLine.style.transform = "translateY(-50%)";
   evalContainer.appendChild(midLine);
 
+  // Texte en bas
   const scoreText = document.createElement("div");
   scoreText.style.position = "absolute";
   scoreText.style.bottom = "0";
@@ -278,6 +199,7 @@ function createEvalBar(initialScore = "0.0", initialColor = "white") {
   evalContainer.appendChild(scoreText);
 
   boardContainer.parentNode.style.display = "flex";
+  // boardContainer.parentNode.appendChild(evalContainer);
   boardContainer.parentNode.insertBefore(evalContainer, boardContainer);
 
   function parseScore(scoreStr) {
@@ -348,6 +270,16 @@ function clearHighlightSquares() {
 
 function highlightMovesOnBoard(moves, side, fen) {
   if (!Array.isArray(moves)) return;
+
+  if (
+    !(
+      (side === "w" && fen.split(" ")[1] === "w") ||
+      (side === "b" && fen.split(" ")[1] === "b")
+    )
+  ) {
+    return;
+  }
+
   const parent = document.querySelector("#board1");
   if (!parent) return;
 
@@ -426,66 +358,20 @@ function highlightMovesOnBoard(moves, side, fen) {
     svg.appendChild(line);
 
     if (score !== undefined) {
-      const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-
       const text = document.createElementNS(
         "http://www.w3.org/2000/svg",
         "text",
       );
-
-      text.setAttribute("x", to.x + squareSize);
-      text.setAttribute("y", to.y);
-      text.setAttribute("font-size", "9");
-      text.setAttribute("font-weight", "bold");
-      text.setAttribute("text-anchor", "middle");
-      text.setAttribute("dominant-baseline", "middle");
+      text.setAttribute("x", to.x + squareSize - 4);
+      text.setAttribute("y", to.y + 12);
       text.setAttribute("fill", color);
-
-      let isNegative = false;
-      let displayScore = score;
-
-      const hasHash = score.startsWith("#");
-      let raw = hasHash ? score.slice(1) : score;
-
-      if (raw.startsWith("-")) {
-        isNegative = true;
-        raw = raw.slice(1);
-      } else if (raw.startsWith("+")) {
-        raw = raw.slice(1);
-      }
-
-      displayScore = hasHash ? "#" + raw : raw;
-      text.textContent = displayScore;
-
-      group.appendChild(text);
-      svg.appendChild(group);
-
-      requestAnimationFrame(() => {
-        const bbox = text.getBBox();
-
-        const paddingX = 2;
-        const paddingY = 2;
-
-        const rect = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "rect",
-        );
-
-        rect.setAttribute("x", bbox.x - paddingX);
-        rect.setAttribute("y", bbox.y - paddingY);
-        rect.setAttribute("width", bbox.width + paddingX * 2);
-        rect.setAttribute("height", bbox.height + paddingY * 2);
-
-        rect.setAttribute("rx", "8");
-        rect.setAttribute("ry", "8");
-
-        rect.setAttribute("fill", isNegative ? "#312e2b" : "#ffffff");
-        rect.setAttribute("fill-opacity", "0.85");
-        rect.setAttribute("stroke", isNegative ? "#000000" : "#cccccc");
-        rect.setAttribute("stroke-width", "1");
-
-        group.insertBefore(rect, text);
-      });
+      text.setAttribute("font-size", "13");
+      text.setAttribute("font-weight", "bold");
+      text.setAttribute("text-anchor", "end");
+      text.setAttribute("alignment-baseline", "hanging");
+      text.setAttribute("opacity", "1");
+      text.textContent = score;
+      svg.appendChild(text);
     }
 
     parent.appendChild(svg);
@@ -493,6 +379,7 @@ function highlightMovesOnBoard(moves, side, fen) {
 
   parent.style.position = "relative";
 
+  // Filtrage des coups si config.winningMove est actif
   let filteredMoves = moves;
 
   filteredMoves.slice(0, maxMoves).forEach((move, index) => {
@@ -500,3 +387,40 @@ function highlightMovesOnBoard(moves, side, fen) {
     drawArrow(move.from, move.to, color, move.eval);
   });
 }
+
+var board1 = null;
+var evalBar = null;
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  try {
+    if (
+      message.type === "TO_POPUP" &&
+      Array.isArray(message.data) &&
+      message.data.length > 0
+    ) {
+      const data = message.data[0];
+      if (!data.fen || !data.side || !data.eval) return;
+
+      const flag = document.querySelector(".tab.active").innerText === "Stream";
+
+      if (flag && !board1 && !evalBar) {
+        board1 = Chessboard("board1", "start");
+        board1.orientation("white");
+        evalBar = createEvalBar();
+      }
+
+      if (board1 && flag) {
+        board1.orientation(data.side);
+        board1.position(data.fen);
+      }
+
+      clearHighlightSquares();
+      highlightMovesOnBoard(message.data, data.side[0], data.fen);
+      if (evalBar && typeof evalBar.update === "function") {
+        evalBar.update(data.eval, data.side);
+      }
+    }
+  } catch (err) {
+    console.warn("Erreur message TO_POPUP ignorée :", err);
+  }
+});

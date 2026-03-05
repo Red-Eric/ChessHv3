@@ -4,126 +4,106 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ChessHv3 Setting</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="chessboard/chessboard-1.0.0.css" />
   </head>
 
   <body>
-    <div class="scanlines"></div>
-    <div class="vignette"></div>
-
     <div class="tabs">
-      <div class="tab active" data-panel="chess">
-        <span class="tab-icon">⚙</span> CONFIG
-      </div>
-      <div class="tab" data-panel="stream">
-        <span class="tab-icon">◉</span> STREAM
-      </div>
-      <div class="tab" data-panel="load">
-        <span class="tab-icon">⬇</span> IMPORT
-      </div>
-      <div class="tab" data-panel="export">
-        <span class="tab-icon">⬆</span> EXPORT
-      </div>
+      <div class="tab active" data-panel="chess">Settings</div>
+      <div class="tab" data-panel="stream">Stream</div>
     </div>
-
-    <!-- ================= SETTINGS ================= -->
+    <!-- ================= SEttings ================= -->
     <div class="panel active" id="chess">
+      <div class="container">
+        <h1>ChessHv3 - Settings</h1>
 
-      <div class="section-label">// ENGINE PARAMETERS</div>
+        <div class="setting">
+          <label>ELO : <span id="eloValue">2800</span></label>
+          <input
+            type="range"
+            id="elo"
+            min="100"
+            max="2800"
+            step="10"
+            value="3500"
+          />
+        </div>
+        <div class="setting-help">
+          ELO defines the engine strength. Higher values make the engine play
+          stronger.
+        </div>
 
-      <div class="setting">
-        <div class="setting-info">
-          <label class="setting-name">ELO RATING</label>
-          <span class="setting-desc">Engine strength calibration</span>
-          <span class="setting-explain">Controls how strong the engine plays. 100 = beginner level, 2800 = grandmaster strength. Lower values introduce intentional inaccuracies to simulate human play.</span>
-        </div>
-        <div class="setting-control">
-          <span class="value-display" id="eloValue">2800</span>
-          <input type="range" id="elo" min="100" max="2800" step="10" value="2800" />
-        </div>
-      </div>
-
-      <div class="setting">
-        <div class="setting-info">
-          <label class="setting-name">SEARCH DEPTH</label>
-          <span class="setting-desc">Computation levels per move</span>
-          <span class="setting-explain">How many half-moves (plies) ahead the engine calculates. Higher depth = stronger analysis but slower response. Depth 10 is optimal for most situations.</span>
-        </div>
-        <div class="setting-control">
-          <span class="value-display" id="depthValue">10</span>
-          <input type="range" id="depth" min="1" max="15" value="10" />
-        </div>
-      </div>
-
-      <div class="setting">
-        <div class="setting-info">
-          <label class="setting-name">AUTO MOVE DELAY</label>
-          <span class="setting-desc">Random delay before playing (ms)</span>
-          <span class="setting-explain">Adds a timed pause before the engine automatically plays its move. Mimics human think time. 100ms = near-instant, 20000ms = 20 second pause before playing.</span>
-        </div>
-        <div class="setting-control">
-          <span class="value-display"><span id="delayValue">100</span><span class="unit">ms</span></span>
-          <input type="range" id="delay" min="100" max="20000" step="50" value="100" />
-        </div>
-      </div>
-
-      <div class="section-label">// VISUAL OUTPUT</div>
-
-      <div class="setting">
-        <div class="setting-info">
-          <label class="setting-name">ARROW COUNT</label>
-          <span class="setting-desc">Best move arrows on board</span>
-          <span class="setting-explain">Number of candidate move arrows shown on the board. Arrow #1 is the engine's top choice. Each subsequent arrow shows an alternative line ranked by evaluation score.</span>
-        </div>
-        <div class="setting-control">
-          <span class="value-display" id="linesValue">5</span>
+        <div class="setting">
+          <label>Arrows : <span id="linesValue">5</span></label>
           <input type="range" id="lines" min="2" max="5" value="5" />
         </div>
-      </div>
-
-      <div class="setting color-setting">
-        <div class="setting-info">
-          <label class="setting-name">ARROW PALETTE</label>
-          <span class="setting-desc">Color map for ranked moves</span>
-          <span class="setting-explain">Assign a unique color to each ranked move arrow. #1 is the best move, #5 is the weakest displayed. Helps visually distinguish move quality at a glance on the board.</span>
+        <div class="setting-help">
+          Number of best move arrows displayed on the board.
         </div>
-        <div class="color-row">
-          <div class="color-item">
-            <input type="color" id="colorBest" value="#4f8cff" />
-            <span>#1</span>
-          </div>
-          <div class="color-item">
-            <input type="color" id="color2" value="#2ecc71" />
-            <span>#2</span>
-          </div>
-          <div class="color-item">
-            <input type="color" id="color3" value="#f1c40f" />
-            <span>#3</span>
-          </div>
-          <div class="color-item">
-            <input type="color" id="color4" value="#e67e22" />
-            <span>#4</span>
-          </div>
-          <div class="color-item">
-            <input type="color" id="color5" value="#e74c3c" />
-            <span>#5</span>
+
+        <div class="setting">
+          <h2>Arrow Colors</h2>
+
+          <div class="color-row">
+            <div class="color-item">
+              <input type="color" id="colorBest" value="#4f8cff" />
+              <span>bestMove</span>
+            </div>
+
+            <div class="color-item">
+              <input type="color" id="color2" value="#2ecc71" />
+              <span>2nd</span>
+            </div>
+
+            <div class="color-item">
+              <input type="color" id="color3" value="#f1c40f" />
+              <span>3rd</span>
+            </div>
+
+            <div class="color-item">
+              <input type="color" id="color4" value="#e67e22" />
+              <span>4th</span>
+            </div>
+
+            <div class="color-item">
+              <input type="color" id="color5" value="#e74c3c" />
+              <span>5th</span>
+            </div>
           </div>
         </div>
-      </div>
-
-      <div class="section-label">// BEHAVIOR</div>
-
-      <div class="setting">
-        <div class="setting-info">
-          <label class="setting-name">PLAY STYLE</label>
-          <span class="setting-desc">Engine personality profile</span>
-          <span class="setting-explain">Shapes how the engine approaches positions. Aggressive favors attacks and sacrifices. Defensive builds solid structures. Positional plays for long-term advantages. Human mimics realistic decision patterns with natural errors.</span>
+        <div class="setting-help">
+          Customize the arrow colors for the top 5 engine moves.
         </div>
-        <div class="setting-control">
+
+        <div class="setting">
+          <label>Depth : <span id="depthValue">10</span></label>
+          <input type="range" id="depth" min="1" max="15" value="10" />
+        </div>
+        <div class="setting-help">
+          Search depth of the engine: the higher the depth, the longer the
+          computation time.
+        </div>
+
+        <div class="setting">
+          <label>Auto Move Delay : <span id="delayValue">100</span> ms</label>
+          <input
+            type="range"
+            id="delay"
+            min="100"
+            max="20000"
+            step="50"
+            value="100"
+          />
+        </div>
+        <div class="setting-help">
+          Delay before the engine automatically plays a move. The actual delay
+          is randomly selected between 0 ms and the chosen value.
+        </div>
+
+        <div class="setting">
+          <label>Style</label>
           <select id="style">
             <option selected>Default</option>
             <option>Aggressive</option>
@@ -135,185 +115,121 @@
             <option>Human</option>
           </select>
         </div>
-      </div>
-
-      <div class="setting">
-        <div class="setting-info">
-          <label class="setting-name">HOTKEY</label>
-          <span class="setting-desc">Trigger best move instantly</span>
-          <span class="setting-explain">Press this key anywhere on the page to instantly request the engine's top move recommendation. Choose a key that won't conflict with your browser or the chess platform's own shortcuts.</span>
+        <div class="setting-help">
+          Defines the preferred playstyle of the engine.
         </div>
-        <div class="setting-control">
+
+        <div class="setting">
+          <label>Play Best Move (Key)</label>
           <select id="key">
-            <option value=" " selected>SPACE</option>
-            <option value="a">A</option><option value="z">Z</option>
-            <option value="e">E</option><option value="r">R</option>
-            <option value="t">T</option><option value="y">Y</option>
-            <option value="u">U</option><option value="i">I</option>
-            <option value="o">O</option><option value="p">P</option>
-            <option value="q">Q</option><option value="s">S</option>
-            <option value="d">D</option><option value="f">F</option>
-            <option value="g">G</option><option value="h">H</option>
-            <option value="j">J</option><option value="k">K</option>
-            <option value="l">L</option><option value="m">M</option>
-            <option value="w">W</option><option value="x">X</option>
-            <option value="c">C</option><option value="v">V</option>
-            <option value="b">B</option><option value="n">N</option>
-            <option value="Control">CTRL</option>
-            <option value="Shift">SHIFT</option>
-            <option value="Alt">ALT</option>
-            <option value="Tab">TAB</option>
-            <option value="CapsLock">CAPS</option>
-            <option value="1">1</option><option value="2">2</option>
-            <option value="3">3</option><option value="4">4</option>
-            <option value="5">5</option><option value="6">6</option>
-            <option value="7">7</option><option value="8">8</option>
-            <option value="9">9</option><option value="0">0</option>
-            <option value="ArrowUp">↑</option>
-            <option value="ArrowDown">↓</option>
-            <option value="ArrowLeft">←</option>
-            <option value="ArrowRight">→</option>
+            <option value=" " selected>Space</option>
+
+            <option value="a">a</option>
+            <option value="z">z</option>
+            <option value="e">e</option>
+            <option value="r">r</option>
+            <option value="t">t</option>
+            <option value="y">y</option>
+            <option value="u">u</option>
+            <option value="i">i</option>
+            <option value="o">o</option>
+            <option value="p">p</option>
+            <option value="q">q</option>
+            <option value="s">s</option>
+            <option value="d">d</option>
+            <option value="f">f</option>
+            <option value="g">g</option>
+            <option value="h">h</option>
+            <option value="j">j</option>
+            <option value="k">k</option>
+            <option value="l">l</option>
+            <option value="m">m</option>
+            <option value="w">w</option>
+            <option value="x">x</option>
+            <option value="c">c</option>
+            <option value="v">v</option>
+            <option value="b">b</option>
+            <option value="n">n</option>
+
+            <option value="Control">Control</option>
+            <option value="Shift">Shift</option>
+            <option value="Alt">Alt</option>
+            <option value="Tab">Tab</option>
+            <option value="CapsLock">CapsLock</option>
+
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="0">0</option>
+
+            <option value="ArrowUp">ArrowUp</option>
+            <option value="ArrowDown">ArrowDown</option>
+            <option value="ArrowLeft">ArrowLeft</option>
+            <option value="ArrowRight">ArrowRight</option>
           </select>
         </div>
-      </div>
+        <div class="setting-help">
+          Enables a shortcut key that, when pressed, automatically plays the
+          best move calculated by the analysis engine for the current position.
+        </div>
 
-      <div class="section-label">// TOGGLES</div>
-
-      <div class="toggle-grid">
-
-        <div class="toggle-row">
-          <div class="toggle-label">
-            <span class="toggle-name" id="autoMoveLabel">AUTO MOVE</span>
-            <span class="toggle-state" id="autoMoveState">OFF</span>
-            <span class="toggle-explain">Engine automatically plays the best move after the configured delay. Disable to only receive move suggestions without the engine playing on your behalf.</span>
-          </div>
+        <div class="setting">
+          <span id="autoMoveLabel">Auto Move (OFF)</span>
           <label class="toggle">
             <input type="checkbox" id="autoMove" />
             <span class="slider"></span>
           </label>
         </div>
-
-        <div class="toggle-row">
-          <div class="toggle-label">
-            <span class="toggle-name" id="statLabel">ACCURACY + ELO</span>
-            <span class="toggle-state" id="statState">OFF</span>
-            <span class="toggle-explain">Displays a live accuracy percentage and estimated ELO rating based on the quality of moves played during the current game session.</span>
-          </div>
-          <label class="toggle">
-            <input type="checkbox" id="stat" />
-            <span class="slider"></span>
-          </label>
+        <div class="setting-help">
+          Automatically plays the best move for you.
         </div>
 
-        <div class="toggle-row">
-          <div class="toggle-label">
-            <span class="toggle-name" id="moveClassificationLabel">MOVE CLASSIFICATION</span>
-            <span class="toggle-state" id="moveClassificationState">OFF</span>
-            <span class="toggle-explain">Labels each move as Brilliant, Best, Excellent, Good, Inaccuracy, Mistake, or Blunder based on how it compares to the engine's top evaluation line.</span>
-          </div>
-          <label class="toggle">
-            <input type="checkbox" id="moveClassification" />
-            <span class="slider"></span>
-          </label>
-        </div>
-
-        <div class="toggle-row">
-          <div class="toggle-label">
-            <span class="toggle-name" id="winningMoveLabel">WINNING MOVES ONLY</span>
-            <span class="toggle-state" id="winningMoveState">OFF</span>
-            <span class="toggle-explain">Filters displayed arrows to only show moves that maintain or improve a winning advantage. No arrows will appear in equal or losing positions.</span>
-          </div>
+        <div class="setting">
+          <span id="winningMoveLabel">Only Winning Move (OFF)</span>
           <label class="toggle">
             <input type="checkbox" id="winningMove" />
             <span class="slider"></span>
           </label>
         </div>
+        <div class="setting-help">
+          Shows only moves that keep a winning advantage (moves that gain +2
+          material points or more).
+        </div>
 
-        <div class="toggle-row">
-          <div class="toggle-label">
-            <span class="toggle-name" id="showEvalLabel">EVAL BAR</span>
-            <span class="toggle-state" id="showEvalState">OFF</span>
-            <span class="toggle-explain">Shows a vertical evaluation bar beside the board indicating which side holds the advantage. The white section grows as the position becomes more favorable for white.</span>
-          </div>
+        <div class="setting">
+          <span id="showEvalLabel">Show Eval Bar (OFF)</span>
           <label class="toggle">
             <input type="checkbox" id="showEval" />
             <span class="slider"></span>
           </label>
         </div>
+        <div class="setting-help">Displays the engine evaluation bar.</div>
 
-        <div class="toggle-row">
-          <div class="toggle-label">
-            <span class="toggle-name" id="onlyShowEvalLabel">HIDE ARROWS</span>
-            <span class="toggle-state" id="onlyShowEvalState">OFF</span>
-            <span class="toggle-explain">Hides all move arrows on the board. Only the eval bar and statistics remain visible. Ideal for a clean stream overlay or more discreet use during a game.</span>
-          </div>
+        <div class="setting">
+          <span id="onlyShowEvalLabel">Hide Arrows (OFF)</span>
           <label class="toggle">
             <input type="checkbox" id="onlyShowEval" />
             <span class="slider"></span>
           </label>
         </div>
-
+        <div class="setting-help">Hides move suggestions.</div>
       </div>
     </div>
 
     <!-- ================= STREAM ================= -->
     <div class="panel" id="stream">
-      <div class="section-label">// LIVE BOARD FEED</div>
-      <div id="board1" style="width: 560px"></div>
-      <p class="stream-hint">⟡ Launch a game — board will sync automatically.<br>Tip: Disable Eval Bar + Enable Hide Arrows for clean output.</p>
+      <div id="board1" style="width: 600px"></div>
+      <p>
+        Launch your game and it will appear here automatically. Disable Show
+        Eval Bar and enable Hide Arrows for best results.
+      </p>
     </div>
-
-    <!-- ================= IMPORT ================= -->
-    <div class="panel" id="load">
-      <div class="section-label">// IMPORT CONFIGURATION</div>
-      <div class="io-card">
-        <div class="io-header">
-          <span class="io-title">PASTE JSON CONFIG</span>
-          <span class="io-hint">Paste a previously exported config below and click Load.</span>
-        </div>
-        <textarea id="importJson" class="json-box" spellcheck="false" placeholder='{
-  "elo": 2800,
-  "lines": 5,
-  "depth": 10,
-  ...
-}'></textarea>
-        <div class="io-actions">
-          <div id="importStatus" class="io-status"></div>
-          <button class="btn btn-primary" id="btnLoad">
-            <span class="btn-icon">⬇</span> LOAD CONFIG
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ================= EXPORT ================= -->
-    <div class="panel" id="export">
-      <div class="section-label">// EXPORT CONFIGURATION</div>
-      <div class="io-card">
-        <div class="io-header">
-          <span class="io-title">CURRENT CONFIG JSON</span>
-          <span class="io-hint">Click Export to generate your config. Copy or share it anywhere.</span>
-        </div>
-        <textarea id="exportJson" class="json-box" spellcheck="false" readonly placeholder="Click the button below to generate your config..."></textarea>
-        <div class="io-actions">
-          <div id="exportStatus" class="io-status"></div>
-          <div class="btn-group">
-            <button class="btn btn-secondary" id="btnExport">
-              <span class="btn-icon">⬆</span> EXPORT
-            </button>
-            <button class="btn btn-copy" id="btnCopy">
-              <span class="btn-icon">⎘</span> COPY
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <footer>
-      <span>CHESSHV3</span>
-      <span class="footer-sep">//</span>
-      <span>ENGINE CTRL v3.0</span>
-    </footer>
 
     <script src="chessboard/jquery-3.4.1.min.js"></script>
     <script src="chessboard/chessboard-1.0.0.js"></script>
