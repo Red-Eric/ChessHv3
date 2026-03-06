@@ -1079,9 +1079,26 @@ const startCheat = () => {
     let evalObj = null;
     let statObj = null;
 
-    // Exemple d'utilisation :
-    // const accDisplay = createSimpleAccuracyDisplay(85.05, 1250, 78.3, 1200);
-    // accDisplay.update(87.2, 1260, 79.5, 1210);
+    function getElo(side) {
+      const players = document.querySelectorAll(".player-playerContent");
+      if (players.length < 2) return null;
+
+      const extractElo = (text) => {
+        const match = text.match(/\((\d+)\)/);
+        return match ? parseInt(match[1], 10) : null;
+      };
+
+      const topElo = extractElo(players[0].innerText);
+      const bottomElo = extractElo(players[1].innerText);
+
+      if (side.toLowerCase() === "white") {
+        return { white: bottomElo, black: topElo };
+      } else if (side.toLowerCase() === "black") {
+        return { white: topElo, black: bottomElo };
+      } else {
+        return null;
+      }
+    }
 
     function createEvalBar(initialScore = "0.0", initialColor = "white") {
       const boardContainer = document.querySelector(".board");
@@ -1494,8 +1511,21 @@ const startCheat = () => {
     let evalObj = null;
     let statObj = null;
 
-    // const accDisplay = createSimpleAccuracyDisplay(85.05, 1250, 78.3, 1200);
-    // accDisplay.update(87.2, 1260, 79.5, 1210);
+    function getElo(side) {
+      const ratings = document.querySelectorAll("rating");
+      if (ratings.length < 2) return null;
+
+      const topElo = parseInt(ratings[0].innerText, 10);
+      const bottomElo = parseInt(ratings[1].innerText, 10);
+
+      if (side.toLowerCase() === "white") {
+        return { white: bottomElo, black: topElo };
+      } else if (side.toLowerCase() === "black") {
+        return { white: topElo, black: bottomElo };
+      } else {
+        return null;
+      }
+    }
 
     function createEvalBar(initialScore = "0.0", initialColor = "white") {
       const boardContainer = document.querySelector("cg-board");
