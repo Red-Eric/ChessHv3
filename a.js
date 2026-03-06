@@ -1752,13 +1752,16 @@ if (window.location.hostname.includes("chess.com")) {
     }
 
     window.addEventListener("message", (event) => {
+
       if (event.source !== window) return;
       if (event.data?.type === "GET_FEN") {
         const game = getGameObject();
         if (game) {
+          let fenHistory = []
           const fenInit = game.getHistoryFENs(1)[0];
           const startFen = getStartFEN(fenInit);
           chess.load(startFen);
+          fenHistory.push(chess.fen())
           chess.header(
             "Variant",
             "Chess960",
@@ -1770,7 +1773,10 @@ if (window.location.hostname.includes("chess.com")) {
           const moves = game.getHistorySANs();
           moves.forEach((e, i) => {
             chess.move(e);
+            fenHistory.push(chess.fen())
           });
+
+          console.log(fenHistory)
 
           // console.log(chess.pgn());
         }

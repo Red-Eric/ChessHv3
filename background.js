@@ -1980,15 +1980,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                   );
 
                   const movesHistory = evalRes.result?.value || [];
-
+                  let fenhistory = [];
                   if (movesHistory.length > 0) {
                     game.load(movesHistory[0].fen);
+
+                    fenhistory.push(game.fen())
 
                     for (let i = 1; i < movesHistory.length; i++) {
                       const move = movesHistory[i].san || movesHistory[i].uci;
                       if (!move) continue;
 
                       const result = game.move(move, { sloppy: true });
+
+                      fenhistory.push(game.fen())
+
 
                       if (!result)
                         console.error(
@@ -2008,8 +2013,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                       movesHistory[0].fen,
                     );
 
-                    const pgn = game.pgn();
-                    console.log(pgn);
+                    // console.clear()
+                    // console.log(fenhistory)
+
+                    // const pgn = game.pgn();
+                    // console.log(pgn);
                   }
                 }
 
@@ -2029,6 +2037,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                   console.clear();
 
                   const movesHistory = evalRes.result?.value || [];
+                  const fenhistory = [];
                   console.log(movesHistory);
 
                   const fenInit = movesHistory[0].fen;
@@ -2036,8 +2045,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
                   game.load(startFen);
 
+                  fenhistory.push(game.fen())
+
                   movesHistory.forEach((e, i) => {
                     game.move(e.lan, { sloppy: true });
+                    fenhistory.push(game.fen())
                   });
 
                   game.header(
@@ -2048,18 +2060,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     "FEN",
                     startFen,
                   );
-                  console.log(game.pgn());
+                  // console.log(game.pgn());
                 }
 
-                // const evalRes = await chrome.debugger.sendCommand(
-                //   source,
-                //   "Debugger.evaluateOnCallFrame",
-                //   {
-                //     callFrameId: params.callFrames[0].callFrameId,
-                //     expression,
-                //     returnByValue: true,
-                //   },
-                // );
               } catch (e) {
                 console.error(e);
               } finally {
