@@ -1982,8 +1982,29 @@ const startCheat = () => {
     let currentFen = "";
     let evalObj = null;
 
-    // const accDisplay = createAccuracyDisplay("white", 85.05, 1250, 78.3, 1200);
-    // accDisplay.update(87.2, 1260, 79.5, 1210);
+    function getElo(side) {
+      const allPlayerInfo = document.querySelectorAll(
+        '[data-component="GamePlayerInfo"]',
+      );
+      if (allPlayerInfo.length < 2) return null;
+
+      const extractElo = (text) => {
+        const match = text.match(/\n(\d+)$/); // prend le nombre après le \n
+        return match ? parseInt(match[1], 10) : null;
+      };
+
+      const topElo = extractElo(allPlayerInfo[0].innerText);
+      const bottomElo = extractElo(allPlayerInfo[1].innerText);
+
+      if (side.toLowerCase() === "white") {
+        return { white: bottomElo, black: topElo };
+      } else if (side.toLowerCase() === "black") {
+        return { white: topElo, black: bottomElo };
+      } else {
+        return null;
+      }
+    }
+
 
     function getFEN() {
       const pTags = document.querySelectorAll("p");
