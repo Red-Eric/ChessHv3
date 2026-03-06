@@ -139,6 +139,55 @@ const blunderSVG = `<svg xmlns="http://www.w3.org/2000/svg" class="" width="24" 
   </g>
     </svg>`;
 
+function placeSVGOnBoard(side, square, svgCode) {
+  const board = document.querySelector("wc-chess-board") || document.querySelector("cg-board");
+  if (!board) return;
+
+  const rect = board.getBoundingClientRect();
+  const boardSize = rect.width;
+  const squareSize = boardSize / 8;
+
+  const file = square.charCodeAt(0) - 97;
+  const rank = parseInt(square[1]);
+
+  let x, y;
+
+  if (side === "white") {
+    x = file * squareSize;
+    y = (8 - rank) * squareSize;
+  } else {
+    x = (7 - file) * squareSize;
+    y = (rank - 1) * squareSize;
+  }
+
+  const squareContainer = document.createElement("div");
+  squareContainer.style.position = "absolute";
+  squareContainer.style.left = rect.left + x + "px";
+  squareContainer.style.top = rect.top + y + "px";
+  squareContainer.style.width = squareSize + "px";
+  squareContainer.style.height = squareSize + "px";
+  squareContainer.style.pointerEvents = "none";
+
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = svgCode;
+
+  const svg = wrapper.querySelector("svg");
+  svg.style.position = "absolute";
+  svg.style.zIndex = "9999";
+
+  squareContainer.appendChild(svg);
+  document.body.appendChild(squareContainer);
+
+  // Décalage pour que le centre du SVG soit au coin haut gauche
+  requestAnimationFrame(() => {
+    const box = svg.getBBox();
+    svg.style.left = -box.width / 2 + "px";
+    svg.style.top = -box.height / 2 + "px";
+  });
+}
+
+// placeSVGOnBoard("white", "e2", blunderSVG)
+
 function clickButtonsByText(text) {
   const buttons = Array.from(document.querySelectorAll("button"));
   const targetButtons = buttons.filter((btn) =>
@@ -780,6 +829,7 @@ const startCheat = () => {
     let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     let side_index = 1;
     let evalObj = null;
+    let statObj = null;
 
     function createAccuracyDisplay(
       side = "white",
@@ -1321,8 +1371,16 @@ const startCheat = () => {
         const boardContainer = document.querySelector(".board");
         if (boardContainer) {
           evalObj = createEvalBar("0.0", getSide());
-          // customEval = document.querySelector("#customEval");
         }
+      }
+
+      if (config.stat && !document.querySelector("#accuracyContainer")) {
+        statObj = createAccuracyDisplay(getSide(), 100, 1500, 100, 1500);
+      }
+
+      if (!config.stat && document.querySelector("#accuracyContainer")) {
+        statObj = null;
+        document.querySelector("#accuracyContainer").remove();
       }
 
       if (lastFEN !== fen_) {
@@ -1372,7 +1430,7 @@ const startCheat = () => {
     });
     let fen_ = "";
     let evalObj = null;
-    let accuracyObj = null;
+    let statObj = null;
 
     function createAccuracyDisplay(
       side = "white",
@@ -1919,6 +1977,15 @@ const startCheat = () => {
     /////////////////////////////////////////////   calculation /////////////////////////////////////////////
     function inject() {
       window.addEventListener("message", (event) => {
+        if (config.stat && !document.querySelector("#accuracyContainer")) {
+          statObj = createAccuracyDisplay(getSide(), 100, 1500, 100, 1500);
+        }
+
+        if (!config.stat && document.querySelector("#accuracyContainer")) {
+          statObj = null;
+          document.querySelector("#accuracyContainer").remove();
+        }
+
         if (event.source !== window) return;
         if (event.data && event.data.type === "FEN_RESPONSE") {
           if (event.data.fen !== fen_) {

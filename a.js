@@ -1772,7 +1772,7 @@ if (window.location.hostname.includes("chess.com")) {
             chess.move(e);
           });
 
-          console.log(chess.pgn());
+          // console.log(chess.pgn());
         }
         const fen =
           game?.getFEN() ||
