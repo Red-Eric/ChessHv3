@@ -1979,12 +1979,29 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     },
                   );
 
+                  expression = "({ e, t, n })";
+
+                  const evalRes2 = await chrome.debugger.sendCommand(
+                    source,
+                    "Debugger.evaluateOnCallFrame",
+                    {
+                      callFrameId: params.callFrames[0].callFrameId,
+                      expression,
+                      returnByValue: true,
+                    },
+                  );
+
+                  const { e, t, n } = evalRes2.result.value;
+                  // e from , t to
+
+                  const lastMove = e + t;
+
                   const movesHistory = evalRes.result?.value || [];
                   let fenhistory = [];
                   if (movesHistory.length > 0) {
                     game.load(movesHistory[0].fen);
 
-                    fenhistory.push(game.fen())
+                    fenhistory.push(game.fen());
 
                     for (let i = 1; i < movesHistory.length; i++) {
                       const move = movesHistory[i].san || movesHistory[i].uci;
@@ -1992,8 +2009,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
                       const result = game.move(move, { sloppy: true });
 
-                      fenhistory.push(game.fen())
-
+                      fenhistory.push(game.fen());
 
                       if (!result)
                         console.error(
@@ -2004,6 +2020,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         );
                     }
 
+                    game.move(lastMove, { sloppy: true });
+                    fenhistory.push(game.fen());
                     game.header(
                       "Variant",
                       "Chess960",
@@ -2012,6 +2030,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                       "FEN",
                       movesHistory[0].fen,
                     );
+
+                    chrome.tabs.query({}, (tabs) => {
+                      for (const tab of tabs) {
+                        if (tab.url && tab.url.includes("lichess")) {
+                          chrome.tabs.sendMessage(tab.id, {
+                            type: "history",
+                            data: fenhistory,
+                          });
+                        }
+                      }
+                    });
 
                     // console.clear()
                     // console.log(fenhistory)
@@ -2038,18 +2067,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
                   const movesHistory = evalRes.result?.value || [];
                   const fenhistory = [];
-                  console.log(movesHistory);
+                  // console.log(movesHistory);
 
                   const fenInit = movesHistory[0].fen;
                   const startFen = getStartFEN(fenInit);
 
                   game.load(startFen);
 
-                  fenhistory.push(game.fen())
+                  fenhistory.push(game.fen());
 
                   movesHistory.forEach((e, i) => {
                     game.move(e.lan, { sloppy: true });
-                    fenhistory.push(game.fen())
+                    fenhistory.push(game.fen());
                   });
 
                   game.header(
@@ -2060,9 +2089,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     "FEN",
                     startFen,
                   );
+
+                  chrome.tabs.query({}, (tabs) => {
+                    for (const tab of tabs) {
+                      if (tab.url && tab.url.includes("worldchess")) {
+                        chrome.tabs.sendMessage(tab.id, {
+                          type: "history",
+                          data: fenhistory,
+                        });
+                      }
+                    }
+                  });
+
+                  // console.clear()
+                  // console.log(fenhistory)
                   // console.log(game.pgn());
                 }
-
               } catch (e) {
                 console.error(e);
               } finally {

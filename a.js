@@ -1776,9 +1776,9 @@ if (window.location.hostname.includes("chess.com")) {
             fenHistory.push(chess.fen())
           });
 
+          
           console.log(fenHistory)
-
-          // console.log(chess.pgn());
+          console.log(chess.pgn());
         }
         const fen =
           game?.getFEN() ||
