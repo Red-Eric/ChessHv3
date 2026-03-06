@@ -1939,3 +1939,34 @@ if (window.location.hostname.includes("lichess.org")) {
     });
   })();
 }
+
+
+///////////////
+
+
+
+const board = document.querySelector("wc-chess-board");
+
+const p = document.createElement("p");
+const p1 = document.createElement("p");
+
+p.innerText = "| accuracy : 85.05% | Estimation Elo : 1250 |";
+p1.innerText = "| accuracy : 85.05% | Estimation Elo : 1250 |";
+
+p.style.color = "red"
+p1.style.color = "red"
+
+board.appendChild(p);
+board.appendChild(p1);
+
+p.style.position = "relative";
+p1.style.position = "relative";
+
+p.style.textAlign = "center";
+p1.style.textAlign = "center";
+
+p.id = "top";
+p1.id = "bottom";
+
+p.style.top = "-20px";
+p1.style.top = (board.offsetHeight) - 10+"px"

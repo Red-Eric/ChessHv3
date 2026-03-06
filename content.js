@@ -140,7 +140,9 @@ const blunderSVG = `<svg xmlns="http://www.w3.org/2000/svg" class="" width="24" 
     </svg>`;
 
 function placeSVGOnBoard(side, square, svgCode) {
-  const board = document.querySelector("wc-chess-board") || document.querySelector("cg-board");
+  const board =
+    document.querySelector("wc-chess-board") ||
+    document.querySelector("cg-board");
   if (!board) return;
 
   const rect = board.getBoundingClientRect();
@@ -831,176 +833,133 @@ const startCheat = () => {
     let evalObj = null;
     let statObj = null;
 
-    function createAccuracyDisplay(
-      side = "white",
+    function createSimpleAccuracyDisplay(
       initialWhiteAcc = 0,
       initialWhiteElo = 0,
       initialBlackAcc = 0,
       initialBlackElo = 0,
+      side = "white",
     ) {
       const board = document.querySelector("wc-chess-board");
       if (!board) return console.error("Board non trouvé !");
 
-      const lowerSide = side.toLowerCase();
-      const upperSide = lowerSide === "white" ? "black" : "white";
-
-      // Inject styles once
-      if (!document.getElementById("accuracyStyles")) {
+      if (!document.getElementById("acc-display-styles")) {
         const style = document.createElement("style");
-        style.id = "accuracyStyles";
+        style.id = "acc-display-styles";
         style.textContent = `
-            #accuracyContainer {
-                position: relative;
-                width: 100%;
-                z-index: 9999;
-                pointer-events: none;
-                font-family: 'Rajdhani', sans-serif;
-            }
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@600;800&display=swap');
 
-            .accuracy-bar {
-                position: absolute;
-                width: 100%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 0px;
-                padding: 4px 0;
-                box-sizing: border-box;
-            }
+        #acc-top, #acc-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            font-family: 'Share Tech Mono', monospace;
+            letter-spacing: 0.04em;
+            position: relative;
+            text-align: center;
+        }
 
-            .accuracy-bar.lower { bottom: 0; }
-            .accuracy-bar.upper { top: 0; }
+        .acc-pill {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 16px;
+            border-radius: 3px;
+            font-size: 11.5px;
+            font-weight: 400;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
 
-            .accuracy-pill {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                padding: 5px 14px;
-                border-radius: 4px;
-                backdrop-filter: blur(6px);
-            }
+        #acc-top .acc-pill {
+            background: linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(220,220,220,0.06) 100%);
+            border: 1px solid rgba(255,255,255,0.18);
+            color: #e8e8e8;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+        }
 
-            .accuracy-pill.side-white {
-                background: rgba(255, 255, 255, 0.12);
-                border: 1px solid rgba(255, 255, 255, 0.22);
-            }
+        #acc-bottom .acc-pill {
+            background: linear-gradient(135deg, rgba(20,20,20,0.75) 0%, rgba(40,40,40,0.55) 100%);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #b0b0b0;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
+        }
 
-            .accuracy-pill.side-black {
-                background: rgba(49, 46, 43, 0.75);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-            }
+        .acc-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            opacity: 0.5;
+        }
 
-            .accuracy-stat {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                line-height: 1;
-            }
+        .acc-value { font-size: 13px; }
+        #acc-top .acc-value.acc-pct { color: #ffffff; }
+        #acc-bottom .acc-value.acc-pct { color: #d4d4d4; }
+        .acc-value.acc-elo { opacity: 0.7; font-size: 11.5px; }
 
-            .accuracy-label {
-                font-size: 9px;
-                font-weight: 700;
-                letter-spacing: 0.12em;
-                text-transform: uppercase;
-                opacity: 0.6;
-            }
+        .acc-sep {
+            width: 1px;
+            height: 16px;
+            background: rgba(255,255,255,0.15);
+            margin: 0 2px;
+        }
 
-            .accuracy-value {
-                font-size: 15px;
-                font-weight: 700;
-                letter-spacing: 0.04em;
-            }
+        .acc-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
 
-            .accuracy-pill.side-white .accuracy-label,
-            .accuracy-pill.side-white .accuracy-value {
-                color: #ffffff;
-            }
+        #acc-top .acc-dot {
+            background: #fff;
+            box-shadow: 0 0 6px rgba(255,255,255,0.9);
+        }
 
-            .accuracy-pill.side-black .accuracy-label,
-            .accuracy-pill.side-black .accuracy-value {
-                color: #ffffff;
-            }
-
-            .accuracy-divider {
-                width: 1px;
-                height: 28px;
-                background: rgba(255,255,255,0.2);
-                margin: 0 2px;
-            }
-
-            .accuracy-icon {
-                font-size: 13px;
-                opacity: 0.7;
-                margin-right: 2px;
-            }
-
-            .accuracy-value .unit {
-                font-size: 10px;
-                opacity: 0.7;
-                font-weight: 600;
-            }
-
-            .acc-glow {
-                text-shadow: 0 0 8px rgba(255,255,255,0.3);
-            }
-        `;
+        #acc-bottom .acc-dot {
+            background: #555;
+            box-shadow: 0 0 4px rgba(0,0,0,0.8);
+        }
+    `;
         document.head.appendChild(style);
       }
 
-      const container = document.createElement("div");
-      container.id = "accuracyContainer";
-      container.style.height = board.offsetHeight + "px";
-
-      function createBar(id, position, colorSide) {
-        const bar = document.createElement("div");
-        bar.className = `accuracy-bar ${position}`;
-        bar.id = id;
-
-        bar.innerHTML = `
-            <div class="accuracy-pill side-${colorSide}">
-                <span class="accuracy-icon">${colorSide === "white" ? "♔" : "♚"}</span>
-                <div class="accuracy-stat">
-                    <span class="accuracy-label">Accuracy</span>
-                    <span class="accuracy-value acc-glow acc-val">0<span class="unit">%</span></span>
-                </div>
-                <div class="accuracy-divider"></div>
-                <div class="accuracy-stat">
-                    <span class="accuracy-label">Est. Elo</span>
-                    <span class="accuracy-value elo-val">—</span>
-                </div>
-            </div>
-        `;
-        return bar;
+      function pillHTML(acc, elo) {
+        return `
+        <div class="acc-pill">
+            <span class="acc-dot"></span>
+            <span class="acc-label">Accuracy</span>
+            <span class="acc-value acc-pct">${acc}%</span>
+            <div class="acc-sep"></div>
+            <span class="acc-label">Elo est.</span>
+            <span class="acc-value acc-elo">${elo || "—"}</span>
+        </div>
+    `;
       }
 
-      const lowerBar = createBar(`accuracy_${lowerSide}`, "lower", lowerSide);
-      const upperBar = createBar(`accuracy_${upperSide}`, "upper", upperSide);
+      const p = document.createElement("p");
+      const p1 = document.createElement("p");
 
-      lowerBar.style.position = "relative";
-      lowerBar.style.top =
-        document.querySelector("wc-chess-board").offsetHeight + "px";
+      p.id = "acc-top";
+      p1.id = "acc-bottom";
 
-      window.test = upperBar;
-      upperBar.style.position = "relative";
-      upperBar.style.top = "-100px";
+      p.style.top = "-40px";
+      p1.style.top = board.offsetHeight - 32 + "px";
 
-      container.appendChild(lowerBar);
-      container.appendChild(upperBar);
-      board.appendChild(container);
+      board.appendChild(p);
+      board.appendChild(p1);
 
-      function setBar(bar, acc, elo) {
-        bar.querySelector(".acc-val").innerHTML =
-          `${acc}<span class="unit">%</span>`;
-        bar.querySelector(".elo-val").textContent = elo;
-      }
-
-      function update(whiteAcc, whiteElo, blackAcc, blackElo) {
-        if (lowerSide === "white") {
-          setBar(lowerBar, whiteAcc, whiteElo);
-          setBar(upperBar, blackAcc, blackElo);
+      function update(whiteAcc, whiteElo, blackAcc, blackElo, newSide) {
+        if (newSide !== undefined) side = newSide;
+        if (side === "white") {
+          p.innerHTML = pillHTML(blackAcc, blackElo);
+          p1.innerHTML = pillHTML(whiteAcc, whiteElo);
         } else {
-          setBar(lowerBar, blackAcc, blackElo);
-          setBar(upperBar, whiteAcc, whiteElo);
+          p.innerHTML = pillHTML(whiteAcc, whiteElo);
+          p1.innerHTML = pillHTML(blackAcc, blackElo);
         }
       }
 
@@ -1013,7 +972,8 @@ const startCheat = () => {
       return { update };
     }
 
-    //     const accDisplay = createAccuracyDisplay("white", 85.05, 1250, 78.3, 1200);
+    // Exemple d'utilisation :
+    // const accDisplay = createSimpleAccuracyDisplay(85.05, 1250, 78.3, 1200);
     // accDisplay.update(87.2, 1260, 79.5, 1210);
 
     function createEvalBar(initialScore = "0.0", initialColor = "white") {
@@ -1129,11 +1089,6 @@ const startCheat = () => {
     }
 
     function inject() {
-      // const s = document.createElement("script");
-      // s.src = chrome.runtime.getURL("a.js");
-      // (document.head || document.documentElement).appendChild(s);
-      // s.onload = () => s.remove();
-
       window.addEventListener("message", (event) => {
         if (event.source !== window) return;
         if (event.data && event.data.type === "FEN_RESPONSE") {
@@ -1374,13 +1329,22 @@ const startCheat = () => {
         }
       }
 
-      if (config.stat && !document.querySelector("#accuracyContainer")) {
-        statObj = createAccuracyDisplay(getSide(), 100, 1500, 100, 1500);
+      if (
+        config.stat &&
+        !document.querySelector("#acc-top") &&
+        !document.querySelector("#acc-bottom")
+      ) {
+        statObj = createSimpleAccuracyDisplay(100, 1500, 100, 1500, getSide());
       }
 
-      if (!config.stat && document.querySelector("#accuracyContainer")) {
+      if (
+        !config.stat &&
+        document.querySelector("#acc-top") &&
+        document.querySelector("#acc-bottom")
+      ) {
         statObj = null;
-        document.querySelector("#accuracyContainer").remove();
+        document.querySelector("#acc-top").remove();
+        document.querySelector("#acc-bottom").remove();
       }
 
       if (lastFEN !== fen_) {
@@ -1432,177 +1396,169 @@ const startCheat = () => {
     let evalObj = null;
     let statObj = null;
 
-    function createAccuracyDisplay(
-      side = "white",
+    function createSimpleAccuracyDisplay(
       initialWhiteAcc = 0,
       initialWhiteElo = 0,
       initialBlackAcc = 0,
       initialBlackElo = 0,
+      side = "white",
     ) {
       const board = document.querySelector("cg-board");
       if (!board) return console.error("Board non trouvé !");
 
-      const lowerSide = side.toLowerCase();
-      const upperSide = lowerSide === "white" ? "black" : "white";
-
-      // Inject styles once
-      if (!document.getElementById("accuracyStyles")) {
+      if (!document.getElementById("acc-display-styles")) {
         const style = document.createElement("style");
-        style.id = "accuracyStyles";
+        style.id = "acc-display-styles";
         style.textContent = `
-            #accuracyContainer {
-                position: relative;
-                width: 100%;
-                z-index: 9999;
-                pointer-events: none;
-                font-family: 'Rajdhani', sans-serif;
-            }
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@600;800&display=swap');
 
-            .accuracy-bar {
-                position: absolute;
-                width: 100%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 0px;
-                padding: 4px 0;
-                box-sizing: border-box;
-            }
+        .acc-bar {
+            position: absolute;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            pointer-events: none;
+            font-family: 'Share Tech Mono', monospace;
+            letter-spacing: 0.04em;
+            z-index: 9999;
+        }
 
-            .accuracy-bar.lower { bottom: 0; }
-            .accuracy-bar.upper { top: 0; }
+        .acc-pill {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 14px;
+            border-radius: 3px;
+            font-size: 11.5px;
+            font-weight: 400;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            transition: opacity 0.3s ease;
+        }
 
-            .accuracy-pill {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                padding: 5px 14px;
-                border-radius: 4px;
-                backdrop-filter: blur(6px);
-            }
+        .acc-bar.top .acc-pill {
+            background: linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(220,220,220,0.06) 100%);
+            border: 1px solid rgba(255,255,255,0.18);
+            color: #e8e8e8;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+        }
 
-            .accuracy-pill.side-white {
-                background: rgba(255, 255, 255, 0.12);
-                border: 1px solid rgba(255, 255, 255, 0.22);
-            }
+        .acc-bar.bottom .acc-pill {
+            background: linear-gradient(135deg, rgba(20,20,20,0.75) 0%, rgba(40,40,40,0.55) 100%);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #b0b0b0;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
+        }
 
-            .accuracy-pill.side-black {
-                background: rgba(49, 46, 43, 0.75);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-            }
+        .acc-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            opacity: 0.5;
+        }
 
-            .accuracy-stat {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                line-height: 1;
-            }
+        .acc-value {
+            font-size: 13px;
+            font-weight: 400;
+        }
 
-            .accuracy-label {
-                font-size: 9px;
-                font-weight: 700;
-                letter-spacing: 0.12em;
-                text-transform: uppercase;
-                opacity: 0.6;
-            }
+        .acc-bar.top .acc-value.acc-pct {
+            color: #ffffff;
+        }
 
-            .accuracy-value {
-                font-size: 15px;
-                font-weight: 700;
-                letter-spacing: 0.04em;
-            }
+        .acc-bar.bottom .acc-value.acc-pct {
+            color: #d4d4d4;
+        }
 
-            .accuracy-pill.side-white .accuracy-label,
-            .accuracy-pill.side-white .accuracy-value {
-                color: #ffffff;
-            }
+        .acc-value.acc-elo {
+            opacity: 0.7;
+            font-size: 11.5px;
+        }
 
-            .accuracy-pill.side-black .accuracy-label,
-            .accuracy-pill.side-black .accuracy-value {
-                color: #ffffff;
-            }
+        .acc-sep {
+            width: 1px;
+            height: 16px;
+            background: rgba(255,255,255,0.15);
+            margin: 0 2px;
+        }
 
-            .accuracy-divider {
-                width: 1px;
-                height: 28px;
-                background: rgba(255,255,255,0.2);
-                margin: 0 2px;
-            }
+        .acc-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
 
-            .accuracy-icon {
-                font-size: 13px;
-                opacity: 0.7;
-                margin-right: 2px;
-            }
+        .acc-bar.top .acc-dot {
+            background: #ffffff;
+            box-shadow: 0 0 6px rgba(255,255,255,0.8);
+        }
 
-            .accuracy-value .unit {
-                font-size: 10px;
-                opacity: 0.7;
-                font-weight: 600;
-            }
-
-            .acc-glow {
-                text-shadow: 0 0 8px rgba(255,255,255,0.3);
-            }
-        `;
+        .acc-bar.bottom .acc-dot {
+            background: #555;
+            box-shadow: 0 0 4px rgba(0,0,0,0.8);
+        }
+    `;
         document.head.appendChild(style);
       }
 
       const container = document.createElement("div");
-      container.id = "accuracyContainer";
+      container.style.position = "relative";
+      container.style.width = "100%";
       container.style.height = board.offsetHeight + "px";
+      container.style.pointerEvents = "none";
+      container.style.zIndex = 9999;
+      board.appendChild(container);
 
-      function createBar(id, position, colorSide) {
+      function createBar(id, topPosition, barClass) {
         const bar = document.createElement("div");
-        bar.className = `accuracy-bar ${position}`;
         bar.id = id;
+        bar.className = `acc-bar ${barClass}`;
+        bar.style.top = topPosition;
 
         bar.innerHTML = `
-            <div class="accuracy-pill side-${colorSide}">
-                <span class="accuracy-icon">${colorSide === "white" ? "♔" : "♚"}</span>
-                <div class="accuracy-stat">
-                    <span class="accuracy-label">Accuracy</span>
-                    <span class="accuracy-value acc-glow acc-val">0<span class="unit">%</span></span>
-                </div>
-                <div class="accuracy-divider"></div>
-                <div class="accuracy-stat">
-                    <span class="accuracy-label">Est. Elo</span>
-                    <span class="accuracy-value elo-val">—</span>
-                </div>
-            </div>
-        `;
+        <div class="acc-pill">
+            <span class="acc-dot"></span>
+            <span class="acc-label">Accuracy</span>
+            <span class="acc-value acc-pct">0%</span>
+            <div class="acc-sep"></div>
+            <span class="acc-label">Elo est.</span>
+            <span class="acc-value acc-elo">—</span>
+        </div>
+    `;
         return bar;
       }
 
-      const lowerBar = createBar(`accuracy_${lowerSide}`, "lower", lowerSide);
-      const upperBar = createBar(`accuracy_${upperSide}`, "upper", upperSide);
+      const topBar = createBar("topBar", "-35px", "top");
+      const bottomBar = createBar(
+        "bottomBar",
+        board.offsetHeight + 8 + "px",
+        "bottom",
+      );
+      container.appendChild(topBar);
+      container.appendChild(bottomBar);
 
-      lowerBar.style.position = "relative";
-      lowerBar.style.top =
-        document.querySelector("cg-board").offsetHeight + "px";
+      function update(whiteAcc, whiteElo, blackAcc, blackElo, newSide) {
+        if (newSide !== undefined) side = newSide;
 
-      window.test = upperBar;
-      upperBar.style.position = "relative";
-      upperBar.style.top = "-100px";
+        const [topPct, topElo] = topBar.querySelectorAll(".acc-value");
+        const [btmPct, btmElo] = bottomBar.querySelectorAll(".acc-value");
 
-      container.appendChild(lowerBar);
-      container.appendChild(upperBar);
-      board.appendChild(container);
+        // side "white" : white en bas, black en haut
+        // side "black" : black en bas, white en haut
+        const [topAcc, topEloVal, btmAcc, btmEloVal] =
+          side === "white"
+            ? [blackAcc, blackElo, whiteAcc, whiteElo]
+            : [whiteAcc, whiteElo, blackAcc, blackElo];
 
-      function setBar(bar, acc, elo) {
-        bar.querySelector(".acc-val").innerHTML =
-          `${acc}<span class="unit">%</span>`;
-        bar.querySelector(".elo-val").textContent = elo;
-      }
-
-      function update(whiteAcc, whiteElo, blackAcc, blackElo) {
-        if (lowerSide === "white") {
-          setBar(lowerBar, whiteAcc, whiteElo);
-          setBar(upperBar, blackAcc, blackElo);
-        } else {
-          setBar(lowerBar, blackAcc, blackElo);
-          setBar(upperBar, whiteAcc, whiteElo);
-        }
+        topPct.textContent = `${topAcc}%`;
+        topElo.textContent = topEloVal || "—";
+        btmPct.textContent = `${btmAcc}%`;
+        btmElo.textContent = btmEloVal || "—";
       }
 
       update(
@@ -1614,7 +1570,7 @@ const startCheat = () => {
       return { update };
     }
 
-    //     const accDisplay = createAccuracyDisplay("white", 85.05, 1250, 78.3, 1200);
+    // const accDisplay = createSimpleAccuracyDisplay(85.05, 1250, 78.3, 1200);
     // accDisplay.update(87.2, 1260, 79.5, 1210);
 
     function createEvalBar(initialScore = "0.0", initialColor = "white") {
@@ -1977,13 +1933,28 @@ const startCheat = () => {
     /////////////////////////////////////////////   calculation /////////////////////////////////////////////
     function inject() {
       window.addEventListener("message", (event) => {
-        if (config.stat && !document.querySelector("#accuracyContainer")) {
-          statObj = createAccuracyDisplay(getSide(), 100, 1500, 100, 1500);
+        if (
+          config.stat &&
+          !document.querySelector("#topBar") &&
+          !document.querySelector("#bottomBar")
+        ) {
+          statObj = createSimpleAccuracyDisplay(
+            100,
+            1500,
+            100,
+            1500,
+            getSide(),
+          );
         }
 
-        if (!config.stat && document.querySelector("#accuracyContainer")) {
+        if (
+          !config.stat &&
+          document.querySelector("#topBar") &&
+          document.querySelector("#bottomBar")
+        ) {
           statObj = null;
-          document.querySelector("#accuracyContainer").remove();
+          document.querySelector("#topBar").remove();
+          document.querySelector("#bottomBar").remove();
         }
 
         if (event.source !== window) return;
