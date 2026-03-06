@@ -831,167 +831,176 @@ function createSimpleAccuracyDisplay(
   initialBlackElo = 0,
   side = "white",
 ) {
+  // ─── Styles ───────────────────────────────────────────────────────────────
+
   if (!document.getElementById("acc-display-styles")) {
     const style = document.createElement("style");
     style.id = "acc-display-styles";
     style.textContent = `
-  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Barlow+Condensed:wght@600;700&display=swap');
+      #acc-widget {
+        position: fixed;
+        z-index: 999999;
+        top: 80px;
+        left: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        cursor: grab;
+        user-select: none;
+        filter: drop-shadow(0 6px 24px rgba(0,0,0,0.28));
+      }
 
-  #acc-widget {
-      position: fixed;
-      z-index: 999999;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      cursor: grab;
-      user-select: none;
-      top: 80px;
-      left: 20px;
-  }
+      #acc-widget.dragging {
+        cursor: grabbing;
+        filter: drop-shadow(0 14px 40px rgba(0,0,0,0.45));
+        transform: scale(1.015);
+        transition: transform 0.12s ease, filter 0.12s ease;
+      }
 
-  #acc-widget.dragging {
-      cursor: grabbing;
-  }
+      /* ── Row: side indicator + pill ── */
 
-  .acc-row {
-      display: flex;
-      align-items: center;
-      pointer-events: none;
-      position: relative;
-  }
+      .acc-row {
+        display: flex;
+        align-items: center;
+        pointer-events: none;
+      }
 
-  .acc-pill {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 7px 14px 7px 12px;
-      border-radius: 4px;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 11px;
-      font-weight: 400;
-      letter-spacing: 0.02em;
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      transition: opacity 0.2s;
-      position: relative;
-  }
+      .acc-you-bar {
+        width: 3px;
+        height: 40px;
+        border-radius: 2px;
+        margin-right: 7px;
+        flex-shrink: 0;
+      }
+      .acc-you-bar-white { background: #b0b0b0; }
+      .acc-you-bar-black { background: #444; }
 
-  /* White pill */
-  .acc-pill-white {
-      background: linear-gradient(135deg, rgba(252,252,252,0.97) 0%, rgba(232,232,232,0.95) 100%);
-      border: 1px solid rgba(0,0,0,0.12);
-      color: #1a1a1a;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,1);
-  }
+      .acc-spacer {
+        width: 10px;
+        flex-shrink: 0;
+      }
 
-  /* Black pill */
-  .acc-pill-black {
-      background: linear-gradient(135deg, rgba(20,20,20,0.97) 0%, rgba(38,38,38,0.95) 100%);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: #cccccc;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.04);
-  }
+      /* ── Pill ── */
 
-  .acc-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      flex-shrink: 0;
-  }
+      .acc-pill {
+        display: flex;
+        align-items: stretch;
+        border-radius: 8px;
+        width: 230px;
+        overflow: hidden;
+        position: relative;
+      }
 
-  .acc-pill-white .acc-dot {
-      background: #222;
-      box-shadow: 0 0 5px rgba(0,0,0,0.35);
-  }
+      .acc-pill-white {
+        background: #f4f4f2;
+        border: 1px solid rgba(0,0,0,0.10);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+      }
 
-  .acc-pill-black .acc-dot {
-      background: #fff;
-      box-shadow: 0 0 7px rgba(255,255,255,0.8);
-  }
+      .acc-pill-black {
+        background: #18181a;
+        border: 1px solid rgba(255,255,255,0.07);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+      }
 
-  .acc-label {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 9.5px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.13em;
-      opacity: 0.42;
-  }
+      /* Coloured left edge */
+      .acc-pill::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 3px;
+        border-radius: 8px 0 0 8px;
+        z-index: 2;
+      }
+      .acc-pill-white::before { background: linear-gradient(180deg, #c8c8c8, #888); }
+      .acc-pill-black::before { background: linear-gradient(180deg, #555, #1e1e1e); }
 
-  .acc-pct {
-      font-size: 13px;
-      font-weight: 500;
-      letter-spacing: 0.01em;
-  }
+      /* ── Segments ── */
 
-  .acc-pill-white .acc-pct { color: #111; }
-  .acc-pill-black .acc-pct { color: #fff; }
+      .acc-segment {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 10px 12px 10px 16px;
+        flex: 1;
+        position: relative;
+        z-index: 1;
+      }
 
-  .acc-elo {
-      font-size: 11px;
-      opacity: 0.55;
-  }
+      .acc-segment-elo {
+        flex: 0.85;
+        border-left-width: 1px;
+        border-left-style: solid;
+      }
+      .acc-pill-white .acc-segment-elo { border-left-color: rgba(0,0,0,0.08); }
+      .acc-pill-black .acc-segment-elo { border-left-color: rgba(255,255,255,0.07); }
 
-  .acc-sep {
-      width: 1px;
-      height: 14px;
-      background: rgba(128,128,128,0.25);
-      margin: 0 1px;
-  }
+      /* ── Labels & values ── */
 
-  /* "You" badge — sits right outside the pill on the right */
-  .acc-you-badge {
-      display: flex;
-      align-items: center;
-      margin-left: 7px;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 9px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.18em;
-      padding: 2px 6px;
-      border-radius: 2px;
-      pointer-events: none;
-  }
+      .acc-label {
+        font-family: ui-monospace, 'Cascadia Code', 'Courier New', monospace;
+        font-size: 8.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        margin-bottom: 4px;
+      }
+      .acc-pill-white .acc-label { color: #aaa; }
+      .acc-pill-black .acc-label { color: #4a4a4a; }
 
-  .acc-you-badge-white {
-      background: rgba(0,0,0,0.08);
-      color: #333;
-      border: 1px solid rgba(0,0,0,0.1);
-  }
+      .acc-value {
+        font-family: ui-monospace, 'Cascadia Code', 'Courier New', monospace;
+        font-size: 16px;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        line-height: 1;
+      }
+      .acc-pill-white .acc-value { color: #111; }
+      .acc-pill-black .acc-value { color: #e8e8e8; }
 
-  .acc-you-badge-black {
-      background: rgba(255,255,255,0.07);
-      color: #aaa;
-      border: 1px solid rgba(255,255,255,0.1);
-  }
-`;
+      /* ── Update flash ── */
+
+      @keyframes acc-flash {
+        0%   { opacity: 0.35; }
+        100% { opacity: 1; }
+      }
+      .acc-pill.updated {
+        animation: acc-flash 0.3s ease-out forwards;
+      }
+    `;
     document.head.appendChild(style);
   }
 
+  // ─── HTML builder ─────────────────────────────────────────────────────────
+
   function rowHTML(acc, elo, color, isYou) {
-    const pillClass = `acc-pill acc-pill-${color}`;
-    const badgeClass = `acc-you-badge acc-you-badge-${color}`;
+    const left = isYou
+      ? `<div class="acc-you-bar acc-you-bar-${color}"></div>`
+      : `<div class="acc-spacer"></div>`;
+
     return `
-  <div class="acc-row">
-    <div class="${pillClass}">
-      <span class="acc-dot"></span>
-      <span class="acc-label">Acc</span>
-      <span class="acc-pct">${acc}%</span>
-      <div class="acc-sep"></div>
-      <span class="acc-label">Elo</span>
-      <span class="acc-elo">${elo || "—"}</span>
-    </div>
-    ${isYou ? `<span class="${badgeClass}">You</span>` : ""}
-  </div>
-`;
+      <div class="acc-row">
+        ${left}
+        <div class="acc-pill acc-pill-${color}" id="acc-pill-${color}">
+          <div class="acc-segment acc-segment-acc">
+            <span class="acc-label">Accuracy</span>
+            <span class="acc-value">${acc}%</span>
+          </div>
+          <div class="acc-segment acc-segment-elo">
+            <span class="acc-label">Elo Estimation</span>
+            <span class="acc-value">${elo || "—"}</span>
+          </div>
+        </div>
+      </div>
+    `;
   }
+
+  // ─── Widget mount ─────────────────────────────────────────────────────────
 
   const widget = document.createElement("div");
   widget.id = "acc-widget";
   document.body.appendChild(widget);
 
-  // Load saved position
   chrome.storage.local.get("accWidgetPos", (result) => {
     if (result.accWidgetPos) {
       widget.style.left = result.accWidgetPos.left;
@@ -999,7 +1008,8 @@ function createSimpleAccuracyDisplay(
     }
   });
 
-  // Drag logic
+  // ─── Drag ─────────────────────────────────────────────────────────────────
+
   let isDragging = false;
   let offsetX = 0,
     offsetY = 0;
@@ -1014,8 +1024,8 @@ function createSimpleAccuracyDisplay(
 
   document.addEventListener("mousemove", (e) => {
     if (!isDragging) return;
-    widget.style.left = e.clientX - offsetX + "px";
-    widget.style.top = e.clientY - offsetY + "px";
+    widget.style.left = `${e.clientX - offsetX}px`;
+    widget.style.top = `${e.clientY - offsetY}px`;
   });
 
   document.addEventListener("mouseup", () => {
@@ -1027,21 +1037,33 @@ function createSimpleAccuracyDisplay(
     });
   });
 
+  // ─── Flash helper ─────────────────────────────────────────────────────────
+
+  function flashPill(color) {
+    const pill = document.getElementById(`acc-pill-${color}`);
+    if (!pill) return;
+    pill.classList.remove("updated");
+    void pill.offsetWidth; // force reflow to restart animation
+    pill.classList.add("updated");
+  }
+
+  // ─── Update ───────────────────────────────────────────────────────────────
+
   function update(whiteAcc, whiteElo, blackAcc, blackElo, newSide) {
     if (newSide !== undefined) side = newSide;
 
-    // "You" is always on the bottom row = your own color
-    // side === "white" → white at bottom, black on top
-    // side === "black" → black at bottom, white on top
     if (side === "white") {
       widget.innerHTML =
-        rowHTML(blackAcc, blackElo, "black", false) + // top = opponent (black)
-        rowHTML(whiteAcc, whiteElo, "white", true); // bottom = you (white)
+        rowHTML(blackAcc, blackElo, "black", false) +
+        rowHTML(whiteAcc, whiteElo, "white", true);
     } else {
       widget.innerHTML =
-        rowHTML(whiteAcc, whiteElo, "white", false) + // top = opponent (white)
-        rowHTML(blackAcc, blackElo, "black", true); // bottom = you (black)
+        rowHTML(whiteAcc, whiteElo, "white", false) +
+        rowHTML(blackAcc, blackElo, "black", true);
     }
+
+    flashPill("white");
+    flashPill("black");
   }
 
   update(initialWhiteAcc, initialWhiteElo, initialBlackAcc, initialBlackElo);
