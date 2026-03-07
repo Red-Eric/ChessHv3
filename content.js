@@ -3457,7 +3457,7 @@ const BrillantSVG = `<svg xmlns="http://www.w3.org/2000/svg" class="${classMoveC
   </g>
     </svg>`;
 
-const forcedSVG = `<svg xmlns="http://www.w3.org/2000/svg" class="${classMoveClassification}" width="100%" height="100%" viewBox="0 0 18 19">
+const forcedSVG = `<svg xmlns="http://www.w3.org/2000/svg" class="${classMoveClassification}" width="24" height="24" viewBox="0 0 18 19">
       <g id="forced">
     <g id="fast_win">
       <g>
@@ -5346,10 +5346,8 @@ function placeSVGOnBoard(side, square, svgCode) {
 
   const squareContainer = document.createElement("div");
   squareContainer.style.position = "absolute";
-  squareContainer.style.left = rect.left + x + "px";
+  squareContainer.style.left = rect.left + x + squareSize + "px"; // coin droit
   squareContainer.style.top = rect.top + y + "px";
-  squareContainer.style.width = squareSize + "px";
-  squareContainer.style.height = squareSize + "px";
   squareContainer.style.pointerEvents = "none";
 
   const wrapper = document.createElement("div");
@@ -5362,7 +5360,6 @@ function placeSVGOnBoard(side, square, svgCode) {
   squareContainer.appendChild(svg);
   document.body.appendChild(squareContainer);
 
-  // Décalage pour que le centre du SVG soit au coin haut gauche
   requestAnimationFrame(() => {
     const box = svg.getBBox();
     svg.style.left = -box.width / 2 + "px";
@@ -5760,9 +5757,6 @@ class ChessAnalyzer {
     });
   }
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // CLASSIFICATION — style Chess.com
-  // ═══════════════════════════════════════════════════════════════════════
 
   _classifyMoves(positions) {
     const positionsWP = positions.map((p) => this._getPositionWinPercentage(p));
@@ -7026,6 +7020,9 @@ const startCheat = () => {
             if (lastClassification) {
               const moveIndexFromClassification = lastClassification.moveIndex;
               const classification = lastClassification.classification;
+
+              console.clear()
+              console.log(classification)
 
               let squaresMoves = document.querySelectorAll(".highlight");
               squaresMoves.forEach((e, i) => {
