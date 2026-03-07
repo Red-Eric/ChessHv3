@@ -1702,6 +1702,7 @@ let Chess = function (fen) {
   };
 };
 
+
 const chess = new Chess();
 
 function getStartFEN(fen) {
