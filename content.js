@@ -1093,6 +1093,8 @@ function createSimpleAccuracyDisplay(
     const style = document.createElement("style");
     style.id = "acc-display-styles";
     style.textContent = `
+      @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap');
+
       #acc-widget {
         position: fixed;
         z-index: 999999;
@@ -1100,14 +1102,14 @@ function createSimpleAccuracyDisplay(
         left: 20px;
         display: flex;
         flex-direction: column;
-        gap: 3px;
+        gap: 4px;
         cursor: grab;
         user-select: none;
       }
 
       #acc-widget.dragging {
         cursor: grabbing;
-        opacity: 0.75;
+        opacity: 0.8;
       }
 
       .acc-row {
@@ -1116,85 +1118,123 @@ function createSimpleAccuracyDisplay(
         pointer-events: none;
       }
 
-      /* ── You marker: small square dot ── */
-
-      .acc-dot {
-        width: 4px;
-        height: 4px;
-        border-radius: 1px;
-        margin-right: 7px;
+      /* ── You marker ── */
+      .acc-side-badge {
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        font-family: 'DM Mono', monospace;
+        font-size: 6px;
+        font-weight: 500;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        margin-right: 6px;
+        padding: 5px 3px;
+        border-radius: 2px;
         flex-shrink: 0;
+        line-height: 1;
       }
-      .acc-dot-white { background: #c0c0c0; }
-      .acc-dot-black { background: #404040; }
-      .acc-spacer { width: 11px; flex-shrink: 0; }
+
+      .acc-side-badge-white {
+        background: #e8e8e6;
+        color: #888;
+      }
+
+      .acc-side-badge-black {
+        background: #222;
+        color: #555;
+      }
+
+      .acc-side-badge-you-white {
+        background: #1a1a1a;
+        color: #d4d4d4;
+      }
+
+      .acc-side-badge-you-black {
+        background: #f0f0ee;
+        color: #555;
+      }
+
+      .acc-spacer { width: 17px; flex-shrink: 0; }
 
       /* ── Card ── */
-
       .acc-card {
-        width: 210px;
+        width: 206px;
         display: grid;
         grid-template-columns: 1fr 1fr;
-        border-radius: 2px;
+        border-radius: 6px;
         overflow: hidden;
       }
 
       .acc-card-white {
-        background: #f8f8f7;
-        outline: 1px solid #d8d8d8;
+        background: #fafaf9;
+        outline: 1px solid #e2e2de;
         box-shadow:
-          0 1px 2px rgba(0,0,0,0.06),
-          0 3px 12px rgba(0,0,0,0.04);
+          0 1px 3px rgba(0,0,0,0.05),
+          0 4px 16px rgba(0,0,0,0.04);
       }
 
       .acc-card-black {
-        background: #101010;
-        outline: 1px solid rgba(255,255,255,0.07);
+        background: #111110;
+        outline: 1px solid rgba(255,255,255,0.06);
         box-shadow:
-          0 1px 2px rgba(0,0,0,0.5),
-          0 3px 12px rgba(0,0,0,0.4);
+          0 1px 3px rgba(0,0,0,0.6),
+          0 4px 16px rgba(0,0,0,0.45);
+      }
+
+      /* Active card (your side) gets a subtle highlight */
+      .acc-card-active-white {
+        outline: 1.5px solid #c8c8c2;
+      }
+
+      .acc-card-active-black {
+        outline: 1.5px solid rgba(255,255,255,0.14);
       }
 
       /* ── Segments ── */
-
       .acc-segment {
-        padding: 8px 10px;
+        padding: 9px 11px;
         display: flex;
         flex-direction: column;
-        gap: 3px;
+        gap: 5px;
       }
 
       .acc-segment:first-child {
         border-right-width: 1px;
         border-right-style: solid;
       }
-      .acc-card-white .acc-segment:first-child { border-right-color: #e2e2e2; }
+      .acc-card-white .acc-segment:first-child { border-right-color: #e2e2de; }
       .acc-card-black .acc-segment:first-child { border-right-color: rgba(255,255,255,0.05); }
 
       /* ── Label ── */
-
       .acc-label {
-        font-family: 'Courier New', Courier, monospace;
-        font-size: 6.5px;
-        font-weight: 700;
+        font-family: 'DM Sans', 'DM Mono', sans-serif;
+        font-size: 9px;
+        font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.16em;
+        letter-spacing: 0.12em;
         white-space: nowrap;
       }
-      .acc-card-white .acc-label { color: #b0b0b0; }
-      .acc-card-black .acc-label { color: #383838; }
+      .acc-card-white .acc-label { color: #888882; }
+      .acc-card-black .acc-label { color: #555550; }
 
       /* ── Value ── */
-
       .acc-value {
-        font-family: 'Courier New', Courier, monospace;
-        font-size: 17px;
-        font-weight: 700;
-        letter-spacing: -0.03em;
+        font-family: 'DM Mono', 'Courier New', monospace;
+        font-size: 22px;
+        font-weight: 500;
+        letter-spacing: -0.04em;
         line-height: 1;
       }
-      .acc-card-white .acc-value { color: #161616; }
-      .acc-card-black .acc-value { color: #e6e6e6; }
+      .acc-card-white .acc-value { color: #111110; }
+      .acc-card-black .acc-value { color: #ebebea; }
+
+      /* Dim inactive card values slightly */
+      .acc-card-inactive .acc-value {
+        opacity: 0.45;
+      }
+      .acc-card-inactive .acc-label {
+        opacity: 0.55;
+      }
     `;
     document.head.appendChild(style);
   }
@@ -1202,20 +1242,25 @@ function createSimpleAccuracyDisplay(
   // ─── HTML builder ─────────────────────────────────────────────────────────
 
   function rowHTML(color, isYou) {
-    const left = isYou
-      ? `<div class="acc-dot acc-dot-${color}"></div>`
-      : `<div class="acc-spacer"></div>`;
+    const badgeText = isYou ? "you" : "&nbsp;";
+    const badgeClass = isYou
+      ? `acc-side-badge acc-side-badge-you-${color}`
+      : `acc-side-badge acc-side-badge-${color}`;
+
+    const activeClass = isYou
+      ? `acc-card-active-${color}`
+      : `acc-card-inactive`;
 
     return `
       <div class="acc-row">
-        ${left}
-        <div class="acc-card acc-card-${color}" id="acc-card-${color}">
+        <div class="${badgeClass}">${badgeText}</div>
+        <div class="acc-card acc-card-${color} ${activeClass}" id="acc-card-${color}">
           <div class="acc-segment">
             <span class="acc-label">Accuracy</span>
             <span class="acc-value" id="acc-val-acc-${color}">—</span>
           </div>
           <div class="acc-segment">
-            <span class="acc-label">Game Rating</span>
+            <span class="acc-label">Rating</span>
             <span class="acc-value" id="acc-val-elo-${color}">—</span>
           </div>
         </div>
@@ -1287,21 +1332,16 @@ function createSimpleAccuracyDisplay(
 
   // ─── Update (never rebuilds DOM, only updates text nodes) ─────────────────
 
-  let isFirstRender = true;
-
   function update(whiteAcc, whiteElo, blackAcc, blackElo, newSide) {
     if (newSide !== undefined && newSide !== side) {
       side = newSide;
       render();
-      isFirstRender = true;
     }
 
     setVal("acc-val-acc-white", `${whiteAcc}%`);
     setVal("acc-val-elo-white", whiteElo || "—");
     setVal("acc-val-acc-black", `${blackAcc}%`);
     setVal("acc-val-elo-black", blackElo || "—");
-
-    isFirstRender = false;
   }
 
   render();

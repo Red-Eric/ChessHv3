@@ -37,7 +37,8 @@
     "https://raw.githubusercontent.com/*",
     "https://api.github.com/*",
     "https://lichess.org/*",
-    "https://worldchess.com/*"
+    "https://worldchess.com/*",
+    "https://fonts.googleapis.com/*"
   ],
   "content_scripts": [
     {
