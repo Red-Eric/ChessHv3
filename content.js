@@ -4,6 +4,19 @@ const apiExpiration =
 
 let debugEngine = false;
 
+function randomString(length) {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
+
+  for (let i = 0; i < length; i++) {
+    const index = Math.floor(Math.random() * chars.length);
+    result += chars[index];
+  }
+
+  return result;
+}
+
+
 let url = window.location.href;
 
 const BrillantSVG = `<svg xmlns="http://www.w3.org/2000/svg" class="" width="24" height="24" viewBox="0 0 18 19">
