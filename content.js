@@ -1100,20 +1100,15 @@ function createSimpleAccuracyDisplay(
         left: 20px;
         display: flex;
         flex-direction: column;
-        gap: 5px;
+        gap: 3px;
         cursor: grab;
         user-select: none;
-        filter: drop-shadow(0 6px 24px rgba(0,0,0,0.28));
       }
 
       #acc-widget.dragging {
         cursor: grabbing;
-        filter: drop-shadow(0 14px 40px rgba(0,0,0,0.45));
-        transform: scale(1.015);
-        transition: transform 0.12s ease, filter 0.12s ease;
+        opacity: 0.75;
       }
-
-      /* ── Row: side indicator + pill ── */
 
       .acc-row {
         display: flex;
@@ -1121,130 +1116,107 @@ function createSimpleAccuracyDisplay(
         pointer-events: none;
       }
 
-      .acc-you-bar {
-        width: 3px;
-        height: 40px;
-        border-radius: 2px;
+      /* ── You marker: small square dot ── */
+
+      .acc-dot {
+        width: 4px;
+        height: 4px;
+        border-radius: 1px;
         margin-right: 7px;
         flex-shrink: 0;
       }
-      .acc-you-bar-white { background: #b0b0b0; }
-      .acc-you-bar-black { background: #444; }
+      .acc-dot-white { background: #c0c0c0; }
+      .acc-dot-black { background: #404040; }
+      .acc-spacer { width: 11px; flex-shrink: 0; }
 
-      .acc-spacer {
-        width: 10px;
-        flex-shrink: 0;
-      }
+      /* ── Card ── */
 
-      /* ── Pill ── */
-
-      .acc-pill {
-        display: flex;
-        align-items: stretch;
-        border-radius: 8px;
-        width: 230px;
+      .acc-card {
+        width: 210px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border-radius: 2px;
         overflow: hidden;
-        position: relative;
       }
 
-      .acc-pill-white {
-        background: #f4f4f2;
-        border: 1px solid rgba(0,0,0,0.10);
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+      .acc-card-white {
+        background: #f8f8f7;
+        outline: 1px solid #d8d8d8;
+        box-shadow:
+          0 1px 2px rgba(0,0,0,0.06),
+          0 3px 12px rgba(0,0,0,0.04);
       }
 
-      .acc-pill-black {
-        background: #18181a;
-        border: 1px solid rgba(255,255,255,0.07);
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+      .acc-card-black {
+        background: #101010;
+        outline: 1px solid rgba(255,255,255,0.07);
+        box-shadow:
+          0 1px 2px rgba(0,0,0,0.5),
+          0 3px 12px rgba(0,0,0,0.4);
       }
-
-      /* Coloured left edge */
-      .acc-pill::before {
-        content: '';
-        position: absolute;
-        left: 0; top: 0; bottom: 0;
-        width: 3px;
-        border-radius: 8px 0 0 8px;
-        z-index: 2;
-      }
-      .acc-pill-white::before { background: linear-gradient(180deg, #c8c8c8, #888); }
-      .acc-pill-black::before { background: linear-gradient(180deg, #555, #1e1e1e); }
 
       /* ── Segments ── */
 
       .acc-segment {
+        padding: 8px 10px;
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        padding: 10px 12px 10px 16px;
-        flex: 1;
-        position: relative;
-        z-index: 1;
+        gap: 3px;
       }
 
-      .acc-segment-elo {
-        flex: 0.85;
-        border-left-width: 1px;
-        border-left-style: solid;
+      .acc-segment:first-child {
+        border-right-width: 1px;
+        border-right-style: solid;
       }
-      .acc-pill-white .acc-segment-elo { border-left-color: rgba(0,0,0,0.08); }
-      .acc-pill-black .acc-segment-elo { border-left-color: rgba(255,255,255,0.07); }
+      .acc-card-white .acc-segment:first-child { border-right-color: #e2e2e2; }
+      .acc-card-black .acc-segment:first-child { border-right-color: rgba(255,255,255,0.05); }
 
-      /* ── Labels & values ── */
+      /* ── Label ── */
 
       .acc-label {
-        font-family: ui-monospace, 'Cascadia Code', 'Courier New', monospace;
-        font-size: 8.5px;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 6.5px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.14em;
-        margin-bottom: 4px;
+        letter-spacing: 0.16em;
+        white-space: nowrap;
       }
-      .acc-pill-white .acc-label { color: #aaa; }
-      .acc-pill-black .acc-label { color: #4a4a4a; }
+      .acc-card-white .acc-label { color: #b0b0b0; }
+      .acc-card-black .acc-label { color: #383838; }
+
+      /* ── Value ── */
 
       .acc-value {
-        font-family: ui-monospace, 'Cascadia Code', 'Courier New', monospace;
-        font-size: 16px;
-        font-weight: 500;
-        letter-spacing: -0.02em;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 17px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
         line-height: 1;
       }
-      .acc-pill-white .acc-value { color: #111; }
-      .acc-pill-black .acc-value { color: #e8e8e8; }
-
-      /* ── Update flash ── */
-
-      @keyframes acc-flash {
-        0%   { opacity: 0.35; }
-        100% { opacity: 1; }
-      }
-      .acc-pill.updated {
-        animation: acc-flash 0.3s ease-out forwards;
-      }
+      .acc-card-white .acc-value { color: #161616; }
+      .acc-card-black .acc-value { color: #e6e6e6; }
     `;
     document.head.appendChild(style);
   }
 
   // ─── HTML builder ─────────────────────────────────────────────────────────
 
-  function rowHTML(acc, elo, color, isYou) {
+  function rowHTML(color, isYou) {
     const left = isYou
-      ? `<div class="acc-you-bar acc-you-bar-${color}"></div>`
+      ? `<div class="acc-dot acc-dot-${color}"></div>`
       : `<div class="acc-spacer"></div>`;
 
     return `
       <div class="acc-row">
         ${left}
-        <div class="acc-pill acc-pill-${color}" id="acc-pill-${color}">
-          <div class="acc-segment acc-segment-acc">
+        <div class="acc-card acc-card-${color}" id="acc-card-${color}">
+          <div class="acc-segment">
             <span class="acc-label">Accuracy</span>
-            <span class="acc-value">${acc}%</span>
+            <span class="acc-value" id="acc-val-acc-${color}">—</span>
           </div>
-          <div class="acc-segment acc-segment-elo">
-            <span class="acc-label">Elo Estimation</span>
-            <span class="acc-value">${elo || "—"}</span>
+          <div class="acc-segment">
+            <span class="acc-label">Game Rating</span>
+            <span class="acc-value" id="acc-val-elo-${color}">—</span>
           </div>
         </div>
       </div>
@@ -1260,15 +1232,28 @@ function createSimpleAccuracyDisplay(
   chrome.storage.local.get("accWidgetPos", (result) => {
     if (result.accWidgetPos) {
       widget.style.left = result.accWidgetPos.left;
-      widget.style.top = result.accWidgetPos.top;
+      widget.style.top  = result.accWidgetPos.top;
     }
   });
+
+  // ─── Render structure ─────────────────────────────────────────────────────
+
+  function render() {
+    if (side === "white") {
+      widget.innerHTML =
+        rowHTML("black", false) +
+        rowHTML("white", true);
+    } else {
+      widget.innerHTML =
+        rowHTML("white", false) +
+        rowHTML("black", true);
+    }
+  }
 
   // ─── Drag ─────────────────────────────────────────────────────────────────
 
   let isDragging = false;
-  let offsetX = 0,
-    offsetY = 0;
+  let offsetX = 0, offsetY = 0;
 
   widget.addEventListener("mousedown", (e) => {
     isDragging = true;
@@ -1281,7 +1266,7 @@ function createSimpleAccuracyDisplay(
   document.addEventListener("mousemove", (e) => {
     if (!isDragging) return;
     widget.style.left = `${e.clientX - offsetX}px`;
-    widget.style.top = `${e.clientY - offsetY}px`;
+    widget.style.top  = `${e.clientY - offsetY}px`;
   });
 
   document.addEventListener("mouseup", () => {
@@ -1293,35 +1278,33 @@ function createSimpleAccuracyDisplay(
     });
   });
 
-  // ─── Flash helper ─────────────────────────────────────────────────────────
+  // ─── Helpers ──────────────────────────────────────────────────────────────
 
-  function flashPill(color) {
-    const pill = document.getElementById(`acc-pill-${color}`);
-    if (!pill) return;
-    pill.classList.remove("updated");
-    void pill.offsetWidth; // force reflow to restart animation
-    pill.classList.add("updated");
+  function setVal(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
   }
 
-  // ─── Update ───────────────────────────────────────────────────────────────
+  // ─── Update (never rebuilds DOM, only updates text nodes) ─────────────────
+
+  let isFirstRender = true;
 
   function update(whiteAcc, whiteElo, blackAcc, blackElo, newSide) {
-    if (newSide !== undefined) side = newSide;
-
-    if (side === "white") {
-      widget.innerHTML =
-        rowHTML(blackAcc, blackElo, "black", false) +
-        rowHTML(whiteAcc, whiteElo, "white", true);
-    } else {
-      widget.innerHTML =
-        rowHTML(whiteAcc, whiteElo, "white", false) +
-        rowHTML(blackAcc, blackElo, "black", true);
+    if (newSide !== undefined && newSide !== side) {
+      side = newSide;
+      render();
+      isFirstRender = true;
     }
 
-    flashPill("white");
-    flashPill("black");
+    setVal("acc-val-acc-white", `${whiteAcc}%`);
+    setVal("acc-val-elo-white", whiteElo || "—");
+    setVal("acc-val-acc-black", `${blackAcc}%`);
+    setVal("acc-val-elo-black", blackElo || "—");
+
+    isFirstRender = false;
   }
 
+  render();
   update(initialWhiteAcc, initialWhiteElo, initialBlackAcc, initialBlackElo);
   return { update };
 }
