@@ -3457,6 +3457,21 @@ const BrillantSVG = `<svg xmlns="http://www.w3.org/2000/svg" class="${classMoveC
   </g>
     </svg>`;
 
+const forcedSVG = `<svg xmlns="http://www.w3.org/2000/svg" class="${classMoveClassification}" width="100%" height="100%" viewBox="0 0 18 19">
+      <g id="forced">
+    <g id="fast_win">
+      <g>
+        <path class="icon-shadow" opacity="0.3" d="M9,.5a9,9,0,1,0,9,9A9,9,0,0,0,9,.5Z"></path>
+        <path class="icon-background" fill="#96af8b" d="M9,0a9,9,0,1,0,9,9A9,9,0,0,0,9,0Z"></path>
+      </g>
+    </g>
+    <g class="icon-component-shadow" opacity="0.2">
+      <path d="M14.39,9.07,9,4.31a.31.31,0,0,0-.3,0,.32.32,0,0,0-.13.1.29.29,0,0,0,0,.16V7.42H3.9a.58.58,0,0,0-.19,0,.5.5,0,0,0-.17.11.91.91,0,0,0-.11.16.63.63,0,0,0,0,.19v3.41a.58.58,0,0,0,0,.19.64.64,0,0,0,.11.16.39.39,0,0,0,.17.11.41.41,0,0,0,.19,0H8.5v2.74a.26.26,0,0,0,.16.26.3.3,0,0,0,.16,0A.34.34,0,0,0,9,14.79L14.39,10a.69.69,0,0,0,.16-.22.7.7,0,0,0,0-.52A.69.69,0,0,0,14.39,9.07Z"></path>
+    </g>
+    <path class="icon-component" fill="#fff" d="M14.39,8.57,9,3.81a.31.31,0,0,0-.3,0,.32.32,0,0,0-.13.1A.29.29,0,0,0,8.5,4V6.92H3.9a.58.58,0,0,0-.19,0,.5.5,0,0,0-.17.11.91.91,0,0,0-.11.16.63.63,0,0,0,0,.19v3.41a.58.58,0,0,0,0,.19.64.64,0,0,0,.11.16.39.39,0,0,0,.17.11.41.41,0,0,0,.19,0H8.5v2.74a.26.26,0,0,0,.16.26.3.3,0,0,0,.16,0A.34.34,0,0,0,9,14.29l5.42-4.76a.69.69,0,0,0,.16-.22.7.7,0,0,0,0-.52A.69.69,0,0,0,14.39,8.57Z"></path>
+  </g>
+    </svg>`;
+
 const greatMoveSVG = `<svg xmlns="http://www.w3.org/2000/svg" class="${classMoveClassification}" width="24" height="24" viewBox="0 0 18 19">
       <g id="great_find">
     <path class="icon-shadow" opacity="0.3" d="M9,.5a9,9,0,1,0,9,9A9,9,0,0,0,9,.5Z"></path>
@@ -3574,6 +3589,20 @@ const blunderSVG = `<svg xmlns="http://www.w3.org/2000/svg" class="${classMoveCl
     </g>
   </g>
     </svg>`;
+
+const classificationSVG = {
+  [MoveClassification.Best]: bestMoveSVG,
+  [MoveClassification.Blunder]: blunderSVG,
+  [MoveClassification.Book]: bookSVG,
+  [MoveClassification.Brilliant]: BrillantSVG,
+  [MoveClassification.Excellent]: excellentMoveSVG,
+  [MoveClassification.Forced]: forcedSVG,
+  [MoveClassification.Good]: goodMoveSVG,
+  [MoveClassification.Great]: greatMoveSVG,
+  [MoveClassification.Inaccuracy]: inaccuracyMoveSVG,
+  [MoveClassification.Miss]: missSVG,
+  [MoveClassification.Mistake]: mistakeSVG,
+};
 
 let Chess = function (fen) {
   var BLACK = "b";
@@ -7001,40 +7030,10 @@ const startCheat = () => {
               let squaresMoves = document.querySelectorAll(".highlight");
               squaresMoves.forEach((e, i) => {
                 if (e.getAttribute("class").includes(squareToIndex(to))) {
-                  // placeSVGOnBoard(getSide(), to, BrillantSVG)
+                  const svg = classificationSVG[classification];
 
-                  if (classification === MoveClassification.Best) {
-                    placeSVGOnBoard(getSide(), to, bestMoveSVG);
-                  }
-                  if (classification === MoveClassification.Blunder) {
-                    placeSVGOnBoard(getSide(), to, blunderSVG);
-                  }
-                  if (classification === MoveClassification.Book) {
-                    placeSVGOnBoard(getSide(), to, bookSVG);
-                  }
-                  if (classification === MoveClassification.Brilliant) {
-                    placeSVGOnBoard(getSide(), to, BrillantSVG);
-                  }
-                  if (classification === MoveClassification.Excellent) {
-                    placeSVGOnBoard(getSide(), to, excellentMoveSVG);
-                  }
-                  // if(classification === MoveClassification.Forced){
-                  //   placeSVGOnBoard(getSide(), to, )
-                  // }
-                  if (classification === MoveClassification.Good) {
-                    placeSVGOnBoard(getSide(), to, goodMoveSVG);
-                  }
-                  if (classification === MoveClassification.Great) {
-                    placeSVGOnBoard(getSide(), to, greatMoveSVG);
-                  }
-                  if (classification === MoveClassification.Inaccuracy) {
-                    placeSVGOnBoard(getSide(), to, inaccuracyMoveSVG);
-                  }
-                  if (classification === MoveClassification.Miss) {
-                    placeSVGOnBoard(getSide(), to, missSVG);
-                  }
-                  if (classification === MoveClassification.Mistake) {
-                    placeSVGOnBoard(getSide(), to, mistakeSVG);
+                  if (svg) {
+                    placeSVGOnBoard(getSide(), to, svg);
                   }
                 }
               });
