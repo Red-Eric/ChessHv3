@@ -384,55 +384,31 @@ class ChessAnalyzer {
     this._queue = [];
     this._running = false;
   }
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // POINT D'ENTRÉE PRINCIPAL
-  // ═══════════════════════════════════════════════════════════════════════
-
-  /**
-   * Appelle update() à chaque fois que fenHistory grandit (nouveau coup joué).
-   * Seuls les FENs absents du cache sont envoyés à Stockfish.
-   *
-   * @param {string[]} fenHistory   — tableau complet depuis le FEN initial
-   * @param {object}   opts
-   * @param {number}   [opts.whiteElo]
-   * @param {number}   [opts.blackElo]
-   * @param {function} [opts.onProgress]  — (ratio: 0→1) après chaque FEN calculé
-   * @returns {Promise<AnalysisResult>}
-   */
   async update(fenHistory, { whiteElo, blackElo, onProgress } = {}) {
     if (fenHistory.length < 2) throw new Error("Need at least 2 FENs");
 
-    // 1. Identifier les FENs manquants
+  
     const newFens = fenHistory.filter((fen) => !this._cache.has(fen));
 
-    // 2. Évaluer les nouveaux via la queue
     if (newFens.length > 0) {
       await this._enqueueAndWait(newFens, () => {
         onProgress?.(this._cache.size / fenHistory.length);
       });
     }
 
-    // 3. Reconstituer les positions depuis le cache
     const positions = fenHistory.map((fen) => this._cache.get(fen));
-
-    // 4. Détecter best move
     const withPlayed = this._attachPlayedMoves(positions, fenHistory);
 
-    // 5. Classifier
     const classified = this._classifyMoves(withPlayed);
 
-    // 6. Accuracy
     const {
       white: whiteAcc,
       black: blackAcc,
       movesAccuracy,
     } = this._computeAccuracy(classified);
 
-    // 7. Elo
     const eloEst = this._computeEstimatedElo(classified, whiteElo, blackElo);
 
-    // 8. Résultat coup par coup
     const moves = classified.slice(1).map((pos, i) => ({
       moveIndex: i + 1,
       isWhite: i % 2 === 0,
@@ -1351,12 +1327,13 @@ function createSimpleAccuracyDisplay(
 }
 
 const startCheat = () => {
-  if (window.location.hostname.includes("chess.com")) {
+  if (window.location.host === "www.chess.com") {
     let lastFEN = "";
     let isGameOver = false;
     let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     let side_index = 1;
     let evalObj = null;
+    let chessComFenHistory = [];
     let statObj = null;
 
     function getElo(side) {
@@ -1499,6 +1476,7 @@ const startCheat = () => {
           fen_ = event.data.fen;
           side_index = event.data.side_;
           isGameOver = event.data.isGameOver;
+          chessComFenHistory = event.data.fenHistory;
         }
       });
     }
@@ -1718,7 +1696,7 @@ const startCheat = () => {
       }
     };
 
-    function checkAndSendMoves() {
+    async function checkAndSendMoves() {
       requestFen();
 
       if (!config.showEval && document.querySelector("#customEval")) {
@@ -1742,7 +1720,23 @@ const startCheat = () => {
         document.querySelector("#acc-widget").remove();
       }
 
-      if (lastFEN !== fen_) {
+      if (lastFEN !== fen_) { 
+        //accuracy
+        const whiteElo = getElo(getSide())?.white || null
+        const blackElo = getElo(getSide())?.black || null
+
+        if (config.stat && statObj) {  
+          const result = await analyzer.update(chessComFenHistory, {whiteElo : whiteElo , blackElo : blackElo});
+          statObj.update(
+            result.white.accuracy,
+            result.white.elo,
+            result.black.accuracy,
+            result.black.elo,
+            getSide(),
+          );
+        }
+
+        //
         clearHighlightSquares();
         if (
           (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
@@ -1781,7 +1775,7 @@ const startCheat = () => {
     });
   }
 
-  if (window.location.hostname.includes("lichess")) {
+  if (window.location.host === "lichess.org") {
     chrome.runtime.sendMessage({ type: "ATTACH_DEBUGGER" }, (res) => {
       if (res?.success) {
         let ok = true;
@@ -2254,14 +2248,18 @@ const startCheat = () => {
 
     chrome.runtime.onMessage.addListener(async (message, sender) => {
       if (message.type === "history") {
+        
+        const whiteElo = getElo(getSide())?.white || null
+        const blackElo = getElo(getSide())?.black || null
+
         if (config.stat && statObj) {
           lichessFenHistory = message.data;
-          const result = await analyzer.update(lichessFenHistory);
+          const result = await analyzer.update(lichessFenHistory, {whiteElo : whiteElo , blackElo : blackElo});
           statObj.update(
             result.white.accuracy,
-            1500,
+            result.white.elo,
             result.black.accuracy,
-            1500,
+            result.black.elo,
             getSide(),
           );
         }
@@ -2269,7 +2267,7 @@ const startCheat = () => {
     });
   }
 
-  if (window.location.hostname.includes("worldchess")) {
+  if (window.location.host === "worldchess.com") {
     chrome.runtime.sendMessage({ type: "ATTACH_DEBUGGER" }, (res) => {
       if (res?.success) {
         console.log("Debugger ready");
@@ -2688,16 +2686,22 @@ const startCheat = () => {
     setInterval(() => {
       // eval bar
 
-      // if (config.stat && !document.querySelector("#acc-widget")) {
-      //   statObj = createSimpleAccuracyDisplay(100, 1500, 100, 1500, getSide());
-      //   console.log(statObj)
 
-      // }
+      if (config.stat && !document.querySelector("#acc-widget")) {
+          statObj = createSimpleAccuracyDisplay(
+            100,
+            1500,
+            100,
+            1500,
+            getSide(),
+          );
+        }
 
-      // if (!config.stat && document.querySelector("#acc-widget")) {
-      //   statObj = null;
-      //   document.querySelector("#acc-widget").remove();
-      // }
+        if (!config.stat && document.querySelector("#acc-widget")) {
+          statObj = null;
+          document.querySelector("#acc-widget").remove();
+        }
+
 
       if (!document.querySelector("#customEval") && config.showEval) {
         const boardContainer = document.querySelector("cg-board");
@@ -2760,15 +2764,18 @@ const startCheat = () => {
     chrome.runtime.onMessage.addListener(async (message, sender) => {
       if (message.type === "history") {
         
+        const whiteElo = getElo(getSide())?.white || null
+        const blackElo = getElo(getSide())?.black || null
+
         if (config.stat && statObj) {
           let historyMessage = message.data;
-          const result = await analyzer.update(historyMessage);
-          console.log(result)
+          const result = await analyzer.update(historyMessage, {whiteElo : whiteElo , blackElo : blackElo});
+          // console.log(result)
           statObj.update(
             result.white.accuracy,
-            1500,
+            result.white.elo,
             result.black.accuracy,
-            1500,
+            result.black.elo,
             getSide(),
           );
         }

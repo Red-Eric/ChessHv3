@@ -1714,7 +1714,7 @@ function getStartFEN(fen) {
   return `${blackBackRank}/pppppppp/8/8/8/8/PPPPPPPP/${whiteBackRank} w KQkq - 0 1`;
 }
 
-if (window.location.hostname.includes("chess.com")) {
+if (window.location.host === "www.chess.com") {
   (function () {
     function getGameObject() {
       if (window.game) return window.game;
@@ -1756,8 +1756,9 @@ if (window.location.hostname.includes("chess.com")) {
       if (event.source !== window) return;
       if (event.data?.type === "GET_FEN") {
         const game = getGameObject();
+        let fenHistory = []
         if (game) {
-          let fenHistory = []
+          
           const fenInit = game.getHistoryFENs(1)[0];
           const startFen = getStartFEN(fenInit);
           chess.load(startFen);
@@ -1776,9 +1777,11 @@ if (window.location.hostname.includes("chess.com")) {
             fenHistory.push(chess.fen())
           });
 
-          
-          console.log(fenHistory)
-          console.log(chess.pgn());
+          // console.clear()
+
+          // console.log(fenHistory)
+
+    
         }
         const fen =
           game?.getFEN() ||
@@ -1786,7 +1789,7 @@ if (window.location.hostname.includes("chess.com")) {
         const side_ = game?.getPlayingAs?.() || 1;
         const isGameOver = game?.isGameOver?.() || false;
         window.postMessage(
-          { type: "FEN_RESPONSE", fen, side_, isGameOver },
+          { type: "FEN_RESPONSE", fen, side_, isGameOver,  fenHistory},
           "*",
         );
       }
@@ -1798,7 +1801,7 @@ if (window.location.hostname.includes("chess.com")) {
   })();
 }
 
-if (window.location.hostname.includes("lichess.org")) {
+if (window.location.host === "lichess.org") {
   window._lichessSockets = [];
 
   function boardToFEN() {
