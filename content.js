@@ -3568,117 +3568,162 @@ const startCheat = () => {
     }
 
     function createEvalBar(initialScore = "0.0", initialColor = "white") {
-      const boardContainer = document.querySelector("cg-board");
-      let w_ = boardContainer.offsetWidth;
+  const boardContainer = document.querySelector("cg-board");
+  if (!boardContainer) return console.error("Plateau non trouvé !");
+  const w_ = boardContainer.offsetWidth;
 
-      if (!boardContainer) return console.error("Plateau non trouvé !");
+  if (!document.getElementById("evalBarStyles")) {
+    const style = document.createElement("style");
+    style.id = "evalBarStyles";
+    style.textContent = `
+      @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@500;700&display=swap');
 
-      // Conteneur principal
-      const evalContainer = document.createElement("div");
-      evalContainer.id = "customEval";
-      evalContainer.style.zIndex = "9999";
-      evalContainer.style.width = `${(w_ * 6) / 100}px`;
-      evalContainer.style.height = `${boardContainer.offsetWidth}px`;
-      evalContainer.style.background = "#eee";
-      evalContainer.style.marginLeft = "10px";
-      evalContainer.style.position = "relative";
-      evalContainer.style.left = "-50px";
-      evalContainer.style.border = "1px solid #aaa";
-      evalContainer.style.borderRadius = "4px";
-      evalContainer.style.overflow = "hidden";
-
-      const topBar = document.createElement("div");
-      const bottomBar = document.createElement("div");
-
-      [topBar, bottomBar].forEach((bar) => {
-        bar.style.width = "100%";
-        bar.style.position = "absolute";
-        bar.style.transition = "height 0.3s ease";
-      });
-
-      topBar.style.top = "0";
-      bottomBar.style.bottom = "0";
-
-      evalContainer.appendChild(topBar);
-      evalContainer.appendChild(bottomBar);
-
-      // Texte en bas
-      const scoreText = document.createElement("div");
-      scoreText.style.position = "absolute";
-      scoreText.style.bottom = "0";
-      scoreText.style.left = "50%";
-      scoreText.style.transform = "translateX(-50%)";
-      scoreText.style.color = "red";
-      scoreText.style.fontWeight = "bold";
-      scoreText.style.fontSize = "12px";
-      scoreText.style.pointerEvents = "none";
-      evalContainer.appendChild(scoreText);
-
-      boardContainer.parentNode.style.display = "flex";
-      // boardContainer.parentNode.appendChild(evalContainer);
-      boardContainer.parentNode.insertBefore(evalContainer, boardContainer);
-
-      function parseScore(scoreStr) {
-        if (!scoreStr) {
-          return { score: 0, mate: false };
-        }
-
-        scoreStr = scoreStr.trim();
-        let mate = false;
-        let score = 0;
-
-        if (scoreStr.startsWith("#")) {
-          mate = true;
-          scoreStr = scoreStr.slice(1);
-        }
-
-        score = parseFloat(scoreStr.replace("+", "")) || 0;
-        return { score, mate };
+      #customEval {
+        position: relative;
+        left: -50px;
+        margin-left: 10px;
+        border-radius: 3px;
+        overflow: hidden;
+        background: #1a1a1a;
+        flex-shrink: 0;
       }
 
-      function update(scoreStr, color = "white") {
-        let { score, mate } = parseScore(scoreStr);
-        let percent = 50;
-
-        if (mate) {
-          let sign = score > 0 ? "+" : "-";
-          scoreText.textContent = "#" + sign + Math.abs(score);
-          if (
-            (score > 0 && color === "white") ||
-            (score < 0 && color === "black")
-          ) {
-            percent = 100;
-          } else {
-            percent = 0;
-          }
-        } else {
-          let sign = score > 0 ? "+" : "";
-          scoreText.textContent = sign + score.toFixed(1);
-          if (color === "black") score = -score;
-          if (score >= 7) {
-            percent = 90;
-          } else if (score <= -7) {
-            percent = 10;
-          } else {
-            percent = 50 + (score / 7) * 40;
-          }
-        }
-
-        if (color === "white") {
-          bottomBar.style.background = "#ffffff";
-          topBar.style.background = "#312e2b";
-        } else {
-          bottomBar.style.background = "#312e2b";
-          topBar.style.background = "#ffffff";
-        }
-
-        bottomBar.style.height = percent + "%";
-        topBar.style.height = 100 - percent + "%";
+      #customEval .track {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
       }
 
-      update(initialScore, initialColor);
-      return { update };
+      #customEval .seg-black {
+        background: #302e2c;
+        transition: height 0.3s ease;
+        flex-shrink: 0;
+      }
+
+      #customEval .seg-white {
+        background: #f0ede8;
+        transition: height 0.3s ease;
+        flex-shrink: 0;
+      }
+
+      #customEval .score-white {
+        position: absolute;
+        bottom: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: 'Noto Sans', sans-serif;
+        font-size: 9.5px;
+        font-weight: 700;
+        color: #302e2c;
+        pointer-events: none;
+        z-index: 5;
+        letter-spacing: 0.02em;
+        white-space: nowrap;
+        transition: opacity 0.2s;
+      }
+
+      #customEval .score-black {
+        position: absolute;
+        top: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: 'Noto Sans', sans-serif;
+        font-size: 9.5px;
+        font-weight: 700;
+        color: #f0ede8;
+        pointer-events: none;
+        z-index: 5;
+        letter-spacing: 0.02em;
+        white-space: nowrap;
+        transition: opacity 0.2s;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  const evalContainer = document.createElement("div");
+  evalContainer.id = "customEval";
+  evalContainer.style.zIndex = "9999";
+  evalContainer.style.width = `${(w_ * 6) / 100}px`;
+  evalContainer.style.height = `${w_}px`;
+
+  const track = document.createElement("div");
+  track.className = "track";
+
+  const segBlack = document.createElement("div");
+  segBlack.className = "seg-black";
+
+  const segWhite = document.createElement("div");
+  segWhite.className = "seg-white";
+
+  track.appendChild(segBlack);
+  track.appendChild(segWhite);
+  evalContainer.appendChild(track);
+
+  // Two score labels: one on white side, one on black side
+  const scoreLabelWhite = document.createElement("div");
+  scoreLabelWhite.className = "score-white";
+
+  const scoreLabelBlack = document.createElement("div");
+  scoreLabelBlack.className = "score-black";
+
+  evalContainer.appendChild(scoreLabelWhite);
+  evalContainer.appendChild(scoreLabelBlack);
+
+  boardContainer.parentNode.style.display = "flex";
+  boardContainer.parentNode.insertBefore(evalContainer, boardContainer);
+
+  function parseScore(scoreStr) {
+    if (!scoreStr) return { score: 0, mate: false };
+    scoreStr = scoreStr.trim();
+    let mate = false;
+    if (scoreStr.startsWith("#")) { mate = true; scoreStr = scoreStr.slice(1); }
+    const score = parseFloat(scoreStr.replace("+", "")) || 0;
+    return { score, mate };
+  }
+
+  function update(scoreStr, color = "white") {
+    let { score, mate } = parseScore(scoreStr);
+    let percent = 50;
+    let displayText = "";
+
+    if (mate) {
+      const sign = score > 0 ? "+" : "-";
+      displayText = "M" + Math.abs(score);
+      percent = ((score > 0 && color === "white") || (score < 0 && color === "black")) ? 95 : 5;
+    } else {
+      const rawScore = color === "black" ? -score : score;
+      const sign = score > 0 ? "+" : "";
+      displayText = sign + score.toFixed(1);
+      if (rawScore >= 7) percent = 90;
+      else if (rawScore <= -7) percent = 10;
+      else percent = 50 + (rawScore / 7) * 40;
     }
+
+    const blackPercent = 100 - percent;
+    segBlack.style.height = blackPercent + "%";
+    segWhite.style.height = percent + "%";
+
+    // Show score on the dominant (larger) side only
+    const whiteIsBigger = percent >= 50;
+
+    if (whiteIsBigger) {
+      scoreLabelWhite.textContent = displayText;
+      scoreLabelWhite.style.opacity = "1";
+      scoreLabelBlack.textContent = "";
+      scoreLabelBlack.style.opacity = "0";
+    } else {
+      scoreLabelBlack.textContent = displayText;
+      scoreLabelBlack.style.opacity = "1";
+      scoreLabelWhite.textContent = "";
+      scoreLabelWhite.style.opacity = "0";
+    }
+  }
+
+  update(initialScore, initialColor);
+  return { update };
+}
 
     function highlightMovesOnBoard(moves, side) {
       if (!Array.isArray(moves)) return;
