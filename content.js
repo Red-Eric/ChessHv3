@@ -7,7 +7,8 @@ const apiExpiration2 =
 let debugEngine = false;
 
 function randomString(length) {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let result = "";
 
   for (let i = 0; i < length; i++) {
@@ -17,7 +18,6 @@ function randomString(length) {
 
   return result;
 }
-
 
 let url = window.location.href;
 
@@ -2119,7 +2119,6 @@ class ChessAnalyzer {
   async update(fenHistory, { whiteElo, blackElo, onProgress } = {}) {
     if (fenHistory.length < 2) return;
 
-  
     const newFens = fenHistory.filter((fen) => !this._cache.has(fen));
 
     if (newFens.length > 0) {
@@ -3008,7 +3007,7 @@ function createSimpleAccuracyDisplay(
   chrome.storage.local.get("accWidgetPos", (result) => {
     if (result.accWidgetPos) {
       widget.style.left = result.accWidgetPos.left;
-      widget.style.top  = result.accWidgetPos.top;
+      widget.style.top = result.accWidgetPos.top;
     }
   });
 
@@ -3016,20 +3015,17 @@ function createSimpleAccuracyDisplay(
 
   function render() {
     if (side === "white") {
-      widget.innerHTML =
-        rowHTML("black", false) +
-        rowHTML("white", true);
+      widget.innerHTML = rowHTML("black", false) + rowHTML("white", true);
     } else {
-      widget.innerHTML =
-        rowHTML("white", false) +
-        rowHTML("black", true);
+      widget.innerHTML = rowHTML("white", false) + rowHTML("black", true);
     }
   }
 
   // ─── Drag ─────────────────────────────────────────────────────────────────
 
   let isDragging = false;
-  let offsetX = 0, offsetY = 0;
+  let offsetX = 0,
+    offsetY = 0;
 
   widget.addEventListener("mousedown", (e) => {
     isDragging = true;
@@ -3042,7 +3038,7 @@ function createSimpleAccuracyDisplay(
   document.addEventListener("mousemove", (e) => {
     if (!isDragging) return;
     widget.style.left = `${e.clientX - offsetX}px`;
-    widget.style.top  = `${e.clientY - offsetY}px`;
+    widget.style.top = `${e.clientY - offsetY}px`;
   });
 
   document.addEventListener("mouseup", () => {
@@ -3474,31 +3470,35 @@ const startCheat = () => {
         document.querySelector("#acc-widget").remove();
       }
 
-      if (lastFEN !== fen_) { 
+      if (lastFEN !== fen_) {
         //accuracy
-        const whiteElo = getElo(getSide())?.white || null
-        const blackElo = getElo(getSide())?.black || null
+        const whiteElo = getElo(getSide())?.white || null;
+        const blackElo = getElo(getSide())?.black || null;
 
-
-        if(config.moveClassification){
+        if (config.moveClassification) {
           if (chessComFenHistory.at(-2) && chessComFenHistory.at(-1)) {
-            const move = getMoveFromFEN(chessComFenHistory.at(-2), chessComFenHistory.at(-1));
-            
-          } 
+            const move = getMoveFromFEN(
+              chessComFenHistory.at(-2),
+              chessComFenHistory.at(-1),
+            );
+          }
         }
 
-        
+        if (config.stat && statObj) {
+          const result = await analyzer.update(chessComFenHistory, {
+            whiteElo: whiteElo,
+            blackElo: blackElo,
+          });
 
-
-        if (config.stat && statObj) {  
-          const result = await analyzer.update(chessComFenHistory, {whiteElo : whiteElo , blackElo : blackElo});
-          statObj.update(
-            result.white.accuracy,
-            result.white.elo,
-            result.black.accuracy,
-            result.black.elo,
-            getSide(),
-          );
+          if (result) {
+            statObj.update(
+              result.white.accuracy,
+              result.white.elo,
+              result.black.accuracy,
+              result.black.elo,
+              getSide(),
+            );
+          }
         }
 
         //
@@ -4013,20 +4013,25 @@ const startCheat = () => {
 
     chrome.runtime.onMessage.addListener(async (message, sender) => {
       if (message.type === "history") {
-        
-        const whiteElo = getElo(getSide())?.white || null
-        const blackElo = getElo(getSide())?.black || null
+        const whiteElo = getElo(getSide())?.white || null;
+        const blackElo = getElo(getSide())?.black || null;
 
         if (config.stat && statObj) {
           lichessFenHistory = message.data;
-          const result = await analyzer.update(lichessFenHistory, {whiteElo : whiteElo , blackElo : blackElo});
-          statObj.update(
-            result.white.accuracy,
-            result.white.elo,
-            result.black.accuracy,
-            result.black.elo,
-            getSide(),
-          );
+          const result = await analyzer.update(lichessFenHistory, {
+            whiteElo: whiteElo,
+            blackElo: blackElo,
+          });
+
+          if (result) {
+            statObj.update(
+              result.white.accuracy,
+              result.white.elo,
+              result.black.accuracy,
+              result.black.elo,
+              getSide(),
+            );
+          }
         }
       }
     });
@@ -4451,22 +4456,14 @@ const startCheat = () => {
     setInterval(() => {
       // eval bar
 
-
       if (config.stat && !document.querySelector("#acc-widget")) {
-          statObj = createSimpleAccuracyDisplay(
-            100,
-            1500,
-            100,
-            1500,
-            getSide(),
-          );
-        }
+        statObj = createSimpleAccuracyDisplay(100, 1500, 100, 1500, getSide());
+      }
 
-        if (!config.stat && document.querySelector("#acc-widget")) {
-          statObj = null;
-          document.querySelector("#acc-widget").remove();
-        }
-
+      if (!config.stat && document.querySelector("#acc-widget")) {
+        statObj = null;
+        document.querySelector("#acc-widget").remove();
+      }
 
       if (!document.querySelector("#customEval") && config.showEval) {
         const boardContainer = document.querySelector("cg-board");
@@ -4528,21 +4525,24 @@ const startCheat = () => {
 
     chrome.runtime.onMessage.addListener(async (message, sender) => {
       if (message.type === "history") {
-        
-        const whiteElo = getElo(getSide())?.white || null
-        const blackElo = getElo(getSide())?.black || null
+        const whiteElo = getElo(getSide())?.white || null;
+        const blackElo = getElo(getSide())?.black || null;
 
         if (config.stat && statObj) {
           let historyMessage = message.data;
-          const result = await analyzer.update(historyMessage, {whiteElo : whiteElo , blackElo : blackElo});
-          // console.log(result)
-          statObj.update(
-            result.white.accuracy,
-            result.white.elo,
-            result.black.accuracy,
-            result.black.elo,
-            getSide(),
-          );
+          const result = await analyzer.update(historyMessage, {
+            whiteElo: whiteElo,
+            blackElo: blackElo,
+          });
+          if (result) {
+            statObj.update(
+              result.white.accuracy,
+              result.white.elo,
+              result.black.accuracy,
+              result.black.elo,
+              getSide(),
+            );
+          }
         }
       }
     });
