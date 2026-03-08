@@ -7639,13 +7639,20 @@ const startCheat = () => {
         const whiteElo = getElo(getSide())?.white || null;
         const blackElo = getElo(getSide())?.black || null;
 
-        lichessFenHistory = message.data;
-        const lastMove = message.move;
 
-        chess2.load(lichessFenHistory.at(-1));
-        chess2.move(lastMove, { sloppy: true });
-        lichessFenHistory.push(chess2.fen());
-        lichessFenHistory = removeLastRepetitions(lichessFenHistory);
+        let TO = "";
+
+        const startPos = message.data[0];
+        chess2.load(startPos)
+        lichessFenHistory = []
+        lichessFenHistory.push(chess2.fen())
+        document.querySelectorAll("kwdb").forEach((e)=>{
+          const moveRet = chess2.move(e.innerText, { sloppy: true });
+          TO = moveRet.to;
+          lichessFenHistory.push(chess2.fen())
+          
+        })
+
 
         if (config.moveClassification) {
           if (lichessFenHistory.at(-2) && lichessFenHistory.at(-1)) {
