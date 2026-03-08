@@ -6289,6 +6289,7 @@ let keyMove = {
   to: "e4",
 };
 
+
 function createSimpleAccuracyDisplay(
   initialWhiteAcc = 0,
   initialWhiteElo = 0,
@@ -6313,6 +6314,7 @@ function createSimpleAccuracyDisplay(
         gap: 4px;
         cursor: grab;
         user-select: none;
+        touch-action: none;
       }
 
       #acc-widget.dragging {
@@ -6323,6 +6325,13 @@ function createSimpleAccuracyDisplay(
       .acc-row {
         display: flex;
         align-items: center;
+      }
+
+      .acc-card,
+      .acc-segment,
+      .acc-label,
+      .acc-value,
+      .acc-side-badge {
         pointer-events: none;
       }
 
@@ -6330,7 +6339,7 @@ function createSimpleAccuracyDisplay(
       .acc-side-badge {
         writing-mode: vertical-rl;
         text-orientation: mixed;
-        font-family: 'DM Mono', monospace;
+        font-family: ui-monospace, 'Courier New', Courier, monospace;
         font-size: 6px;
         font-weight: 500;
         letter-spacing: 0.18em;
@@ -6415,7 +6424,7 @@ function createSimpleAccuracyDisplay(
 
       /* ── Label ── */
       .acc-label {
-        font-family: 'DM Sans', 'DM Mono', sans-serif;
+        font-family: ui-sans-serif, system-ui, sans-serif;
         font-size: 9px;
         font-weight: 600;
         text-transform: uppercase;
@@ -6427,7 +6436,7 @@ function createSimpleAccuracyDisplay(
 
       /* ── Value ── */
       .acc-value {
-        font-family: 'DM Mono', 'Courier New', monospace;
+        font-family: ui-monospace, 'Courier New', Courier, monospace;
         font-size: 22px;
         font-weight: 500;
         letter-spacing: -0.04em;
@@ -6499,12 +6508,13 @@ function createSimpleAccuracyDisplay(
     }
   }
 
-  // ─── Drag ─────────────────────────────────────────────────────────────────
+  // ─── Drag (mouse + touch) ─────────────────────────────────────────────────
 
   let isDragging = false;
   let offsetX = 0,
     offsetY = 0;
 
+  // Mouse
   widget.addEventListener("mousedown", (e) => {
     isDragging = true;
     widget.classList.add("dragging");
@@ -6520,6 +6530,33 @@ function createSimpleAccuracyDisplay(
   });
 
   document.addEventListener("mouseup", () => {
+    if (!isDragging) return;
+    isDragging = false;
+    widget.classList.remove("dragging");
+    chrome.storage.local.set({
+      accWidgetPos: { left: widget.style.left, top: widget.style.top },
+    });
+  });
+
+  // Touch
+  widget.addEventListener("touchstart", (e) => {
+    const touch = e.touches[0];
+    isDragging = true;
+    widget.classList.add("dragging");
+    offsetX = touch.clientX - widget.getBoundingClientRect().left;
+    offsetY = touch.clientY - widget.getBoundingClientRect().top;
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener("touchmove", (e) => {
+    if (!isDragging) return;
+    const touch = e.touches[0];
+    widget.style.left = `${touch.clientX - offsetX}px`;
+    widget.style.top = `${touch.clientY - offsetY}px`;
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener("touchend", () => {
     if (!isDragging) return;
     isDragging = false;
     widget.classList.remove("dragging");
@@ -6553,6 +6590,7 @@ function createSimpleAccuracyDisplay(
   update(initialWhiteAcc, initialWhiteElo, initialBlackAcc, initialBlackElo);
   return { update };
 }
+
 
 const startCheat = () => {
   if (window.location.host === "www.chess.com") {
