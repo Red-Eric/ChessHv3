@@ -1702,6 +1702,9 @@ let Chess = function (fen) {
   };
 };
 
+
+
+
 function getStartFEN(fen) {
   const board = fen.split(" ")[0];
   const rows = board.split("/");
@@ -1713,6 +1716,36 @@ function getStartFEN(fen) {
 }
 
 const game = Chess();
+
+
+function pgnToFenArray(pgn) {
+
+  const fenTag = pgn.match(/\[FEN\s+"([^"]+)"\]/);
+  const initialFen = fenTag ? fenTag[1] : undefined;
+
+  game.reset();
+  if (initialFen) game.load(initialFen);
+
+  const success = game.load_pgn(pgn);
+  if (!success) {
+    throw new Error("PGN invalide");
+  }
+
+  const moves = game.history({ verbose: true });
+
+  game.reset();
+  if (initialFen) game.load(initialFen);
+
+  const fenArray = [game.fen()];
+
+  for (let move of moves) {
+    game.move(move);
+    fenArray.push(game.fen());
+  }
+
+  return fenArray;
+}
+
 
 let popupTabs = [];
 
@@ -1999,15 +2032,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                   if (movesHistory.length > 0) {
                     game.load(movesHistory[0].fen);
 
-                    fenhistory.push(game.fen());
-
                     for (let i = 1; i < movesHistory.length; i++) {
                       const move = movesHistory[i].san || movesHistory[i].uci;
                       if (!move) continue;
 
                       const result = game.move(move, { sloppy: true });
-
-                      fenhistory.push(game.fen());
 
                       if (!result)
                         console.error(
@@ -2018,8 +2047,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         );
                     }
 
-                    // game.move(lastMove, { sloppy: true });
-                    fenhistory.push(game.fen());
+                    game.move(lastMove, { sloppy: true });
                     game.header(
                       "Variant",
                       "Chess960",
@@ -2029,23 +2057,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                       movesHistory[0].fen,
                     );
 
+
+                    // console.clear()
+                    fenhistory = pgnToFenArray(game.pgn())
+                    // console.log(fenhistory)
+                    // console.log(game.pgn())
+
                     chrome.tabs.query({}, (tabs) => {
                       for (const tab of tabs) {
                         if (tab.url && tab.url.includes("lichess")) {
                           chrome.tabs.sendMessage(tab.id, {
                             type: "history",
-                            data: fenhistory,
-                            move : lastMove
+                            data: fenhistory
                           });
                         }
                       }
                     });
 
-                    // console.clear()
-                    // console.log(fenhistory)
-
-                    // const pgn = game.pgn();
-                    // console.log(pgn);
+                    
                   }
                 }
 

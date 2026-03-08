@@ -4,6 +4,7 @@ const apiExpiration =
 const apiExpiration2 =
   "https://api.timezonedb.com/v2.1/list-time-zone?key=SWQMUAF4FWUB&format=json&country=FR";
 
+let squareTo = "";
 const BOOKS = [
   "rn1qkbnr/ppp2ppp/8/3p4/5p2/6PB/PPPPP2P/RNBQK2R",
   "rnbqkbnr/pppppppp/8/8/8/7N/PPPPPPPP/RNBQKB1R",
@@ -3407,19 +3408,6 @@ const BOOKS = [
   "r1bq1rk1/pppnn1bp/3p2p1/3Ppp2/2P1P1P1/2N2P2/PP2B2P/R1BQNRK1",
   "r1bq1rk1/pppnn1bp/3p2p1/3Ppp2/2P1P3/2N2P2/PP2B1PP/R1BQNRK1",
 ];
-
-function removeLastRepetitions(arr) {
-  if (arr.length === 0) return arr;
-
-  const last = arr[arr.length - 1];
-  let i = arr.length - 1;
-
-  while (i >= 0 && arr[i] === last) {
-    i--;
-  }
-
-  return arr.slice(0, i + 2);
-}
 
 let lastClassification = null;
 let moveIndex_ = 999;
@@ -7638,21 +7626,7 @@ const startCheat = () => {
       if (message.type === "history") {
         const whiteElo = getElo(getSide())?.white || null;
         const blackElo = getElo(getSide())?.black || null;
-
-
-        let TO = "";
-
-        const startPos = message.data[0];
-        chess2.load(startPos)
-        lichessFenHistory = []
-        lichessFenHistory.push(chess2.fen())
-        document.querySelectorAll("kwdb").forEach((e)=>{
-          const moveRet = chess2.move(e.innerText, { sloppy: true });
-          TO = moveRet.to;
-          lichessFenHistory.push(chess2.fen())
-          
-        })
-
+        lichessFenHistory = message.data;
 
         if (config.moveClassification) {
           if (lichessFenHistory.at(-2) && lichessFenHistory.at(-1)) {
@@ -7661,19 +7635,21 @@ const startCheat = () => {
               lichessFenHistory.at(-1),
             );
 
-            if (move) {
-              const from = move.from;
-              const to = move.to;
+            const from = move.from;
+            const to = move.to;
 
-              if (lastClassification) {
-                const classification = lastClassification.classification;
-                clearHint()
-                const svg = classificationSVG[classification];
-                    if (svg) {
-                      placeSVGOnBoard(getSide(), to, svg);
-                    }
+            if (lastClassification) {
+              const moveIndexFromClassification = lastClassification.moveIndex;
+              const classification = lastClassification.classification;
 
+              console.clear();
+              console.log(classification);
 
+              const svg = classificationSVG[classification];
+              if (svg) {
+                clearHint();
+
+                placeSVGOnBoard(getSide(), to, svg);
               }
             }
           }
@@ -7684,7 +7660,6 @@ const startCheat = () => {
             whiteElo: whiteElo,
             blackElo: blackElo,
           });
-
           if (result) {
             lastClassification = result.moves.at(-1);
             statObj.update(
@@ -8191,6 +8166,36 @@ const startCheat = () => {
         const whiteElo = getElo(getSide())?.white || null;
         const blackElo = getElo(getSide())?.black || null;
 
+        let fenHistory = message.data
+
+        if (config.moveClassification) {
+          if (fenHistory.at(-2) && fenHistory.at(-1)) {
+            const move = getMoveFromFEN(
+              fenHistory.at(-2),
+              fenHistory.at(-1),
+            );
+
+            const from = move.from;
+            const to = move.to;
+
+            if (lastClassification) {
+              const moveIndexFromClassification = lastClassification.moveIndex;
+              const classification = lastClassification.classification;
+
+              console.clear();
+              console.log(classification);
+
+              const svg = classificationSVG[classification];
+              if (svg) {
+                clearHint();
+
+                placeSVGOnBoard(getSide(), to, svg);
+              }
+            }
+          }
+        }
+
+
         if (config.stat && statObj) {
           let historyMessage = message.data;
           const result = await analyzer.update(historyMessage, {
@@ -8198,6 +8203,7 @@ const startCheat = () => {
             blackElo: blackElo,
           });
           if (result) {
+            lastClassification = result.moves.at(-1);
             statObj.update(
               result.white.accuracy,
               result.white.elo,
