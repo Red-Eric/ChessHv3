@@ -8,27 +8,30 @@
 }
 
 :root {
-  --olive-vivid:   #7a9a6b;
-  --olive-mid:     #5c7a4e;
-  --olive-dark:    #3a5432;
-  --olive-glow:    rgba(122, 154, 107, 0.15);
-  --olive-border:  rgba(122, 154, 107, 0.25);
+  /* Chess.com greens */
+  --olive-vivid:   #4a7c1f;
+  --olive-mid:     #5a8a30;
+  --olive-dark:    #3a5e1e;
+  --olive-glow:    rgba(74, 124, 31, 0.15);
+  --olive-border:  rgba(74, 124, 31, 0.30);
 
-  --bg-deep:   #0f110e;
-  --bg-panel:  #151810;
-  --bg-card:   #1a1e14;
-  --bg-hover:  #1e2318;
+  /* Light backgrounds */
+  --bg-deep:   #f4f1ec;
+  --bg-panel:  #faf8f5;
+  --bg-card:   #ffffff;
+  --bg-hover:  #eeeae3;
 
-  --border-soft:   rgba(122, 154, 107, 0.10);
-  --border-strong: rgba(122, 154, 107, 0.22);
+  --border-soft:   rgba(74, 124, 31, 0.12);
+  --border-strong: rgba(74, 124, 31, 0.28);
 
-  --grey-fish:  #b8bdb0;
-  --grey-scale: #8a9082;
-  --grey-shadow:#4a5245;
+  /* Neutral tones */
+  --grey-fish:  #1a1714;
+  --grey-scale: #5a5248;
+  --grey-shadow:#c8c0b4;
 
-  --text-main:  #c8ccbf;
-  --text-soft:  #6e7a64;
-  --text-dim:   #3e4a38;
+  --text-main:  #2e2a24;
+  --text-soft:  #7a7060;
+  --text-dim:   #b0a898;
 
   --font-mono: 'Space Mono', monospace;
   --font-body: 'DM Sans', sans-serif;
@@ -41,8 +44,8 @@ body {
   min-height: 100vh;
   font-family: var(--font-body);
   background-image:
-    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(60,84,50,0.18) 0%, transparent 65%),
-    radial-gradient(ellipse 40% 40% at 80% 80%, rgba(42,58,36,0.12) 0%, transparent 60%);
+    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(74, 124, 31, 0.08) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 40% at 80% 80%, rgba(90, 138, 48, 0.06) 0%, transparent 60%);
 }
 
 /* ================= TABS ================= */
@@ -89,10 +92,10 @@ body {
 }
 
 .tab.active {
-  color: var(--bg-deep);
+  color: #ffffff;
   background: var(--olive-vivid);
   border-color: var(--olive-mid);
-  box-shadow: 0 0 18px rgba(122,154,107,0.35), 0 0 50px rgba(122,154,107,0.1);
+  box-shadow: 0 0 18px rgba(74,124,31,0.30), 0 0 50px rgba(74,124,31,0.08);
 }
 
 /* ================= PANELS ================= */
@@ -106,9 +109,9 @@ body {
   border: 1px solid var(--border-soft);
   border-top: none;
   box-shadow:
-    0 0 0 1px rgba(122,154,107,0.04) inset,
-    0 24px 70px rgba(0,0,0,0.7),
-    0 0 80px rgba(60,84,50,0.06);
+    0 0 0 1px rgba(74,124,31,0.04) inset,
+    0 24px 70px rgba(0,0,0,0.10),
+    0 0 80px rgba(74,124,31,0.04);
 }
 
 .panel.active {
@@ -131,13 +134,13 @@ h1 {
   letter-spacing: 3.5px;
   text-transform: uppercase;
   color: var(--grey-fish);
-  text-shadow: 0 0 24px rgba(184,189,176,0.2);
+  text-shadow: 0 0 24px rgba(30,26,20,0.10);
 }
 
 h1::before {
   content: '⟡ ';
   color: var(--olive-vivid);
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
 h2 {
@@ -229,14 +232,14 @@ p {
   background: var(--grey-fish);
   border: 2px solid var(--bg-deep);
   cursor: pointer;
-  box-shadow: 0 0 8px rgba(184,189,176,0.35);
+  box-shadow: 0 0 8px rgba(30,26,20,0.20);
   transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
 }
 
 .setting input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.25);
   background: var(--olive-vivid);
-  box-shadow: 0 0 14px rgba(122,154,107,0.65);
+  box-shadow: 0 0 14px rgba(74,124,31,0.50);
 }
 
 /* ================= SELECT ================= */
@@ -347,7 +350,7 @@ p {
 }
 
 .toggle input:checked + .slider {
-  background: rgba(122,154,107,0.18);
+  background: rgba(74,124,31,0.15);
   border-color: var(--olive-vivid);
   box-shadow: 0 0 10px var(--olive-glow);
 }
@@ -355,7 +358,7 @@ p {
 .toggle input:checked + .slider::before {
   transform: translateX(22px);
   background: var(--olive-vivid);
-  box-shadow: 0 0 8px rgba(122,154,107,0.55);
+  box-shadow: 0 0 8px rgba(74,124,31,0.45);
 }
 
 /* ================= CHESSBOARD ================= */
@@ -363,7 +366,7 @@ p {
   margin: 28px auto;
   border-radius: 12px;
   border: 1px solid var(--border-strong);
-  box-shadow: 0 0 40px rgba(60,84,50,0.2), 0 0 2px var(--olive-mid);
+  box-shadow: 0 0 40px rgba(74,124,31,0.12), 0 0 2px var(--olive-mid);
   overflow: hidden;
 }
 
@@ -396,13 +399,13 @@ select:focus {
   letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--grey-fish);
-  text-shadow: 0 0 24px rgba(184,189,176,0.2);
+  text-shadow: 0 0 24px rgba(30,26,20,0.10);
 }
 
 .panel-title::before {
   content: '⟡ ';
   color: var(--olive-vivid);
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
 .load-textarea,
@@ -456,14 +459,14 @@ select:focus {
   text-transform: uppercase;
   border-radius: 8px;
   border: 1px solid var(--olive-mid);
-  background: rgba(122,154,107,0.12);
+  background: rgba(74,124,31,0.10);
   color: var(--olive-vivid);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .btn:hover {
-  background: rgba(122,154,107,0.22);
+  background: rgba(74,124,31,0.18);
   border-color: var(--olive-vivid);
   box-shadow: 0 0 14px var(--olive-glow);
   color: var(--grey-fish);
@@ -488,14 +491,14 @@ select:focus {
 
 .load-feedback.success {
   color: var(--olive-vivid);
-  background: rgba(122,154,107,0.10);
+  background: rgba(74,124,31,0.08);
   border: 1px solid var(--olive-border);
 }
 
 .load-feedback.error {
-  color: #e74c3c;
-  background: rgba(231,76,60,0.08);
-  border: 1px solid rgba(231,76,60,0.25);
+  color: #c0392b;
+  background: rgba(192,57,43,0.06);
+  border: 1px solid rgba(192,57,43,0.22);
 }
 
 .load-hint {

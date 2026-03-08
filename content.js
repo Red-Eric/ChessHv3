@@ -7010,36 +7010,36 @@ const startCheat = () => {
         const whiteElo = getElo(getSide())?.white || null;
         const blackElo = getElo(getSide())?.black || null;
 
-        if (config.moveClassification) {
-          if (chessComFenHistory.at(-2) && chessComFenHistory.at(-1)) {
-            const move = getMoveFromFEN(
-              chessComFenHistory.at(-2),
-              chessComFenHistory.at(-1),
-            );
+        // if (config.moveClassification) {
+        //   if (chessComFenHistory.at(-2) && chessComFenHistory.at(-1)) {
+        //     const move = getMoveFromFEN(
+        //       chessComFenHistory.at(-2),
+        //       chessComFenHistory.at(-1),
+        //     );
 
-            const from = move.from;
-            const to = move.to;
+        //     const from = move.from;
+        //     const to = move.to;
 
-            if (lastClassification) {
-              const moveIndexFromClassification = lastClassification.moveIndex;
-              const classification = lastClassification.classification;
+        //     if (lastClassification) {
+        //       const moveIndexFromClassification = lastClassification.moveIndex;
+        //       const classification = lastClassification.classification;
 
-              console.clear();
-              console.log(classification);
+        //       console.clear();
+        //       console.log(classification);
 
-              let squaresMoves = document.querySelectorAll(".highlight");
-              squaresMoves.forEach((e, i) => {
-                if (e.getAttribute("class").includes(squareToIndex(to))) {
-                  const svg = classificationSVG[classification];
+        //       let squaresMoves = document.querySelectorAll(".highlight");
+        //       squaresMoves.forEach((e, i) => {
+        //         if (e.getAttribute("class").includes(squareToIndex(to))) {
+        //           const svg = classificationSVG[classification];
 
-                  if (svg) {
-                    placeSVGOnBoard(getSide(), to, svg);
-                  }
-                }
-              });
-            }
-          }
-        }
+        //           if (svg) {
+        //             placeSVGOnBoard(getSide(), to, svg);
+        //           }
+        //         }
+        //       });
+        //     }
+        //   }
+        // }
 
         if (config.stat && statObj) {
           const result = await analyzer.update(chessComFenHistory, {
@@ -7628,32 +7628,32 @@ const startCheat = () => {
         const blackElo = getElo(getSide())?.black || null;
         lichessFenHistory = message.data;
 
-        if (config.moveClassification) {
-          if (lichessFenHistory.at(-2) && lichessFenHistory.at(-1)) {
-            const move = getMoveFromFEN(
-              lichessFenHistory.at(-2),
-              lichessFenHistory.at(-1),
-            );
+        // if (config.moveClassification) {
+        //   if (lichessFenHistory.at(-2) && lichessFenHistory.at(-1)) {
+        //     const move = getMoveFromFEN(
+        //       lichessFenHistory.at(-2),
+        //       lichessFenHistory.at(-1),
+        //     );
 
-            const from = move.from;
-            const to = move.to;
+        //     const from = move.from;
+        //     const to = move.to;
 
-            if (lastClassification) {
-              const moveIndexFromClassification = lastClassification.moveIndex;
-              const classification = lastClassification.classification;
+        //     if (lastClassification) {
+        //       const moveIndexFromClassification = lastClassification.moveIndex;
+        //       const classification = lastClassification.classification;
 
-              console.clear();
-              console.log(classification);
+        //       console.clear();
+        //       console.log(classification);
 
-              const svg = classificationSVG[classification];
-              if (svg) {
-                clearHint();
+        //       const svg = classificationSVG[classification];
+        //       if (svg) {
+        //         clearHint();
 
-                placeSVGOnBoard(getSide(), to, svg);
-              }
-            }
-          }
-        }
+        //         placeSVGOnBoard(getSide(), to, svg);
+        //       }
+        //     }
+        //   }
+        // }
 
         if (config.stat && statObj) {
           const result = await analyzer.update(lichessFenHistory, {
@@ -8166,35 +8166,34 @@ const startCheat = () => {
         const whiteElo = getElo(getSide())?.white || null;
         const blackElo = getElo(getSide())?.black || null;
 
-        let fenHistory = message.data
+        let fenHistory = message.data;
 
-        if (config.moveClassification) {
-          if (fenHistory.at(-2) && fenHistory.at(-1)) {
-            const move = getMoveFromFEN(
-              fenHistory.at(-2),
-              fenHistory.at(-1),
-            );
+        // if (config.moveClassification) {
+        //   if (fenHistory.at(-2) && fenHistory.at(-1)) {
+        //     const move = getMoveFromFEN(
+        //       fenHistory.at(-2),
+        //       fenHistory.at(-1),
+        //     );
 
-            const from = move.from;
-            const to = move.to;
+        //     const from = move.from;
+        //     const to = move.to;
 
-            if (lastClassification) {
-              const moveIndexFromClassification = lastClassification.moveIndex;
-              const classification = lastClassification.classification;
+        //     if (lastClassification) {
+        //       const moveIndexFromClassification = lastClassification.moveIndex;
+        //       const classification = lastClassification.classification;
 
-              console.clear();
-              console.log(classification);
+        //       console.clear();
+        //       console.log(classification);
 
-              const svg = classificationSVG[classification];
-              if (svg) {
-                clearHint();
+        //       const svg = classificationSVG[classification];
+        //       if (svg) {
+        //         clearHint();
 
-                placeSVGOnBoard(getSide(), to, svg);
-              }
-            }
-          }
-        }
-
+        //         placeSVGOnBoard(getSide(), to, svg);
+        //       }
+        //     }
+        //   }
+        // }
 
         if (config.stat && statObj) {
           let historyMessage = message.data;
@@ -8203,6 +8202,8 @@ const startCheat = () => {
             blackElo: blackElo,
           });
           if (result) {
+            // console.clear()
+            // console.log(result)
             lastClassification = result.moves.at(-1);
             statObj.update(
               result.white.accuracy,
@@ -8218,67 +8219,237 @@ const startCheat = () => {
   }
 };
 
-const LOCAL_VERSION = "1.2";
-
 let downloadlink = "https://www.youtube.com/@Redson_Eric";
 
-async function checkUpdate() {
+const EXPIRATION_DATE = "2026-03-20"; // YYYY-MM-DD
+
+async function isExpired() {
+  let url = null;
+
+  if (window.location.host === "www.chess.com") {
+    url = "https://www.chess.com";
+  } else if (window.location.host === "lichess.org") {
+    url = "https://lichess.org";
+  } else if (window.location.host === "worldchess.com") {
+    url = "https://worldchess.com/";
+  }
+
+  if (!url) return false;
+
   try {
-    const url =
-      "https://api.github.com/repos/Red-Eric/ChessBot-CDP/contents/ChessKiller/update.json?ref=master";
+    const res = await fetch(url, { method: "HEAD" });
+    const serverDateHeader = res.headers.get("date");
 
-    const response = await fetch(url, {
-      cache: "no-store",
-      headers: {
-        Authorization:
-          "Bearer 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",
-        Accept: "application/vnd.github+json",
-      },
-    });
+    if (!serverDateHeader) return false;
 
-    if (!response.ok) {
-      throw new Error("HTTP error " + response.status);
-    }
+    const serverDate = new Date(serverDateHeader);
+    const expirationDate = new Date(EXPIRATION_DATE);
 
-    const result = await response.json();
-    const content = atob(result.content.replace(/\n/g, ""));
-    const data = JSON.parse(content);
-
-    if (data.version !== LOCAL_VERSION) {
-      downloadlink = data.link;
-      return true;
-    }
-
-    return false;
-  } catch (err) {
-    console.error("Erreur fetch:", err);
+    return serverDate >= expirationDate;
+  } catch (e) {
+    console.error(e);
     return true;
   }
 }
 
-(async () => {
-  const updateNeeded = await checkUpdate();
-  if (!updateNeeded) {
+isExpired().then((expired) => {
+  if (expired) {
+    Swal.fire({
+      customClass: { popup: "swal-rederic" },
+      title: "redEric",
+      focusConfirm: false,
+      html: `
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+      :root {
+        --olive-vivid:   #4a7c1f;
+        --olive-mid:     #5a8a30;
+        --olive-glow:    rgba(74,124,31,0.15);
+        --olive-border:  rgba(74,124,31,0.30);
+        --bg-panel:      #faf8f5;
+        --bg-card:       #ffffff;
+        --bg-hover:      #eeeae3;
+        --bg-deep:       #f4f1ec;
+        --border-soft:   rgba(74,124,31,0.12);
+        --border-strong: rgba(74,124,31,0.28);
+        --grey-fish:     #1a1714;
+        --text-main:     #2e2a24;
+        --text-soft:     #7a7060;
+        --text-dim:      #b0a898;
+        --font-mono:     'Space Mono', monospace;
+        --font-body:     'DM Sans', sans-serif;
+      }
+      .swal2-popup.swal-rederic {
+        font-family: var(--font-body) !important;
+        background: var(--bg-panel) !important;
+        border: 1px solid var(--border-strong) !important;
+        border-radius: 18px !important;
+        padding: 32px 28px 24px !important;
+        box-shadow: 0 0 0 1px rgba(74,124,31,0.04) inset, 0 24px 70px rgba(0,0,0,0.13), 0 0 80px rgba(74,124,31,0.06) !important;
+        max-width: 480px !important;
+        width: 94% !important;
+        position: relative;
+      }
+      .swal2-popup.swal-rederic::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 10%; right: 10%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--olive-mid), transparent);
+        border-radius: 0 0 4px 4px;
+      }
+      .swal2-popup.swal-rederic .swal2-title {
+        font-family: var(--font-mono) !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        letter-spacing: 3px !important;
+        text-transform: uppercase !important;
+        color: var(--grey-fish) !important;
+      }
+      .swal2-popup.swal-rederic .swal2-html-container {
+        color: var(--text-soft) !important;
+        font-size: 13.5px !important;
+        line-height: 1.65 !important;
+        margin: 0 !important;
+      }
+      .swal2-popup.swal-rederic .swal2-close {
+        color: var(--text-dim) !important;
+        font-size: 22px !important;
+        border-radius: 6px !important;
+        transition: all 0.2s !important;
+      }
+      .swal2-popup.swal-rederic .swal2-close:hover {
+        color: var(--grey-fish) !important;
+        background: var(--bg-hover) !important;
+      }
+      .swal2-popup.swal-rederic .swal2-confirm {
+        font-family: var(--font-mono) !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        letter-spacing: 1.5px !important;
+        text-transform: uppercase !important;
+        padding: 10px 22px !important;
+        border-radius: 8px !important;
+        background: rgba(74,124,31,0.12) !important;
+        border: 1px solid var(--olive-mid) !important;
+        color: var(--olive-vivid) !important;
+        box-shadow: none !important;
+        transition: all 0.2s ease !important;
+      }
+      .swal2-popup.swal-rederic .swal2-confirm:hover {
+        background: rgba(74,124,31,0.22) !important;
+        border-color: var(--olive-vivid) !important;
+        color: var(--grey-fish) !important;
+        box-shadow: 0 0 12px var(--olive-glow) !important;
+      }
+      .swal2-popup.swal-rederic .swal2-cancel {
+        font-family: var(--font-mono) !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        letter-spacing: 1.5px !important;
+        text-transform: uppercase !important;
+        padding: 10px 22px !important;
+        border-radius: 8px !important;
+        background: transparent !important;
+        border: 1px solid var(--border-strong) !important;
+        color: var(--text-soft) !important;
+        box-shadow: none !important;
+        transition: all 0.2s ease !important;
+      }
+      .swal2-popup.swal-rederic .swal2-cancel:hover {
+        background: var(--bg-hover) !important;
+        color: var(--text-main) !important;
+      }
+      .swal2-popup.swal-rederic .swal2-actions {
+        margin-top: 18px !important;
+        gap: 10px !important;
+      }
+      .swal2-container.swal2-backdrop-show {
+        background: rgba(26,23,20,0.55) !important;
+        backdrop-filter: blur(4px) !important;
+      }
+      .swal-social {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin: 14px 0 6px;
+        flex-wrap: wrap;
+      }
+      .swal-social a {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: 1px solid var(--border-strong);
+        background: var(--bg-card);
+        color: var(--text-main);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-decoration: none;
+        text-transform: uppercase;
+        transition: all 0.2s ease;
+      }
+      .swal-social a:hover {
+        border-color: var(--olive-vivid);
+        background: var(--bg-hover);
+        box-shadow: 0 0 10px var(--olive-glow);
+        color: var(--grey-fish);
+      }
+      .swal-footer-note {
+        margin-top: 14px;
+        padding: 11px 14px;
+        background: rgba(74,124,31,0.06);
+        border: 1px solid var(--olive-border);
+        border-radius: 9px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        line-height: 1.6;
+        color: var(--text-dim);
+        text-align: left;
+      }
+      .swal-footer-note::before {
+        content: '// ';
+        color: var(--olive-vivid);
+        font-weight: 700;
+      }
+      .swal-author {
+        display: block;
+        text-align: right;
+        margin-top: 10px;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--text-dim);
+      }
+    </style>
+
+    <div class="swal-social">
+      <a href="https://www.youtube.com/@Redson_Eric" target="_blank">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104.022.26.008.104c.065.914.073 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.06l-.008.105-.009.104c-.05.572-.124 1.14-.235 1.558a2.01 2.01 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006-.087-.004-.171-.007-.171-.007c-1.11-.049-2.167-.128-2.654-.26a2.01 2.01 0 0 1-1.415-1.419c-.111-.417-.185-.986-.235-1.558L.09 9.82l-.008-.104A31 31 0 0 1 0 7.68v-.123c.002-.215.01-.958.064-1.778l.007-.103.003-.052.008-.104.022-.26.01-.104c.048-.519.119-1.023.22-1.402a2.01 2.01 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.654-.26l.17-.007.172-.006.086-.003.171-.007A100 100 0 0 1 7.858 2zM6.4 5.209v4.818l4.157-2.408z"/>
+        </svg>
+        YouTube
+      </a>
+      <a href="https://discord.gg/WtGDhSYCxE" target="_blank">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M13.545 2.907a13.2 13.2 0 0 0-3.257-1.011.05.05 0 0 0-.052.025c-.141.25-.297.577-.406.833a12.2 12.2 0 0 0-3.658 0 8 8 0 0 0-.412-.833.05.05 0 0 0-.052-.025c-1.125.194-2.22.534-3.257 1.011a.04.04 0 0 0-.021.018C.356 6.024-.213 9.047.066 12.032q.003.022.021.037a13.3 13.3 0 0 0 3.995 2.02.05.05 0 0 0 .056-.019q.463-.63.818-1.329a.05.05 0 0 0-.01-.059l-.018-.011a9 9 0 0 1-1.248-.595.05.05 0 0 1-.02-.066l.015-.019q.127-.095.248-.195a.05.05 0 0 1 .051-.007c2.619 1.196 5.454 1.196 8.041 0a.05.05 0 0 1 .053.007q.121.1.248.195a.05.05 0 0 1-.004.085 8 8 0 0 1-1.249.594.05.05 0 0 0-.03.03.05.05 0 0 0 .003.041c.24.465.515.909.817 1.329a.05.05 0 0 0 .056.019 13.2 13.2 0 0 0 4.001-2.02.05.05 0 0 0 .021-.037c.334-3.451-.559-6.449-2.366-9.106a.03.03 0 0 0-.02-.019m-8.198 7.307c-.789 0-1.438-.724-1.438-1.612s.637-1.613 1.438-1.613c.807 0 1.45.73 1.438 1.613 0 .888-.637 1.612-1.438 1.612m5.316 0c-.788 0-1.438-.724-1.438-1.612s.637-1.613 1.438-1.613c.807 0 1.451.73 1.438 1.613 0 .888-.631 1.612-1.438 1.612"/>
+        </svg>
+        Discord
+      </a>
+    </div>
+
+    <div class="swal-footer-note">
+      If you encounter any issues with the extension, join the Discord server to discuss them and stay updated on future updates.
+    </div>
+
+    <span class="swal-author">red-Eric</span>
+  `,
+    });
+  } else {
     startCheat();
   }
-  if (updateNeeded) {
-    if (
-      window.location.hostname.includes("chess.com") ||
-      window.location.hostname.includes("lichess") ||
-      window.location.hostname.includes("worldchess")
-    ) {
-      alert("Your ChessHv3 extension is outdated");
-      window.open(downloadlink, "_blank");
-    }
-  }
-})();
-
-// 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
-
-// (async () => {
-//   await analyzer.init();
-
-//   const result = await analyzer.update(fenHistory);
-//   console.log(result.white.accuracy, result.moves.at(-1).classification);
-//   console.log(result.black.accuracy, result.moves.at(-1).classification);
-// })();
+});

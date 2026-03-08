@@ -189,15 +189,18 @@
           Automatically plays the best move for you.
         </div>
 
-        <div class="setting">
-          <span id="moveClassificationLabel">Display move classification (OFF)</span>
+        <div class="setting" style="display: none;">
+          <span id="moveClassificationLabel"
+            >Display move classification (OFF)</span
+          >
           <label class="toggle">
             <input type="checkbox" id="moveClassification" />
             <span class="slider"></span>
           </label>
         </div>
-        <div class="setting-help">
-          Show the classification of moves (Blunder, Best, Excellent, Inaccuracy).
+        <div class="setting-help" hidden>
+          Show the classification of moves (Blunder, Best, Excellent,
+          Inaccuracy).
         </div>
 
         <div class="setting">
@@ -246,17 +249,40 @@
     <!-- ================= STREAM ================= -->
     <div class="panel" id="stream">
       <div id="board1" style="width: 600px"></div>
-      <p>
+      <p hidden>
         Launch your game and it will appear here automatically. Disable Show
         Eval Bar and enable Hide Arrows for best results.
+      </p>
+      <p>
+        NOT Work yet (I m fixing it later)
       </p>
     </div>
 
     <!-- ================= LOAD SETTINGS ================= -->
     <div class="panel" id="load">
       <p class="panel-title">Load Settings</p>
-      <p class="load-hint">Paste a previously exported JSON config below and click Load.</p>
-      <textarea class="load-textarea" id="loadInput" placeholder='{ "elo": 2000, "lines": 3, ... }'></textarea>
+      <p class="load-hint">
+        Paste a previously exported JSON config below and click Load.
+      </p>
+      <textarea
+        class="load-textarea"
+        id="loadInput"
+        placeholder='{
+          "elo": 3500,
+          "lines": 5,
+          "colors": ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
+          "depth": 10,
+          "delay": 100,
+          "style": "Default",
+          "autoMove": false,
+          "moveClassification": false,
+          "stat": false,
+          "winningMove": false,
+          "showEval": false,
+          "onlyShowEval": false,
+          "key": " ",
+        }'
+      ></textarea>
       <div class="action-row">
         <button class="btn" id="loadBtn">Load Config</button>
         <span class="load-feedback" id="loadFeedback"></span>
@@ -266,7 +292,9 @@
     <!-- ================= EXPORT ================= -->
     <div class="panel" id="export">
       <p class="panel-title">Export Settings</p>
-      <p class="load-hint">Click Export to generate your current config as JSON.</p>
+      <p class="load-hint">
+        Click Export to generate your current config as JSON.
+      </p>
       <pre class="export-output" id="exportOutput"></pre>
       <div class="action-row">
         <button class="btn" id="exportBtn">Export Config</button>
