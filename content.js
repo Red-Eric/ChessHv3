@@ -3408,6 +3408,19 @@ const BOOKS = [
   "r1bq1rk1/pppnn1bp/3p2p1/3Ppp2/2P1P3/2N2P2/PP2B1PP/R1BQNRK1",
 ];
 
+function removeLastRepetitions(arr) {
+  if (arr.length === 0) return arr;
+
+  const last = arr[arr.length - 1];
+  let i = arr.length - 1;
+
+  while (i >= 0 && arr[i] === last) {
+    i--;
+  }
+
+  return arr.slice(0, i + 2);
+}
+
 let lastClassification = null;
 let moveIndex_ = 999;
 
@@ -5325,7 +5338,10 @@ function placeSVGOnBoard(side, square, svgCode) {
   const board =
     document.querySelector("wc-chess-board") ||
     document.querySelector("cg-board");
-  if (!board) return;
+  if (!board) {
+    console.log("no board");
+    return;
+  }
 
   const rect = board.getBoundingClientRect();
   const boardSize = rect.width;
@@ -5756,7 +5772,6 @@ class ChessAnalyzer {
       }
     });
   }
-
 
   _classifyMoves(positions) {
     const positionsWP = positions.map((p) => this._getPositionWinPercentage(p));
@@ -7021,8 +7036,8 @@ const startCheat = () => {
               const moveIndexFromClassification = lastClassification.moveIndex;
               const classification = lastClassification.classification;
 
-              console.clear()
-              console.log(classification)
+              console.clear();
+              console.log(classification);
 
               let squaresMoves = document.querySelectorAll(".highlight");
               squaresMoves.forEach((e, i) => {
@@ -7104,6 +7119,8 @@ const startCheat = () => {
     let evalObj = null;
     let statObj = null;
     let lichessFenHistory = [];
+    let lastMove = "a1a8";
+    let arraysHighlight = [];
 
     function getElo(side) {
       const ratings = document.querySelectorAll("rating");
@@ -7549,6 +7566,7 @@ const startCheat = () => {
 
         if (event.source !== window) return;
         if (event.data && event.data.type === "FEN_RESPONSE") {
+          arraysHighlight = event.data.lasts;
           if (event.data.fen !== fen_) {
             clearHighlightSquares();
             if (
@@ -7621,14 +7639,47 @@ const startCheat = () => {
         const whiteElo = getElo(getSide())?.white || null;
         const blackElo = getElo(getSide())?.black || null;
 
+        lichessFenHistory = message.data;
+        const lastMove = message.move;
+
+        chess2.load(lichessFenHistory.at(-1));
+        chess2.move(lastMove, { sloppy: true });
+        lichessFenHistory.push(chess2.fen());
+        lichessFenHistory = removeLastRepetitions(lichessFenHistory);
+
+        if (config.moveClassification) {
+          if (lichessFenHistory.at(-2) && lichessFenHistory.at(-1)) {
+            const move = getMoveFromFEN(
+              lichessFenHistory.at(-2),
+              lichessFenHistory.at(-1),
+            );
+
+            if (move) {
+              const from = move.from;
+              const to = move.to;
+
+              if (lastClassification) {
+                const classification = lastClassification.classification;
+                clearHint()
+                const svg = classificationSVG[classification];
+                    if (svg) {
+                      placeSVGOnBoard(getSide(), to, svg);
+                    }
+
+
+              }
+            }
+          }
+        }
+
         if (config.stat && statObj) {
-          lichessFenHistory = message.data;
           const result = await analyzer.update(lichessFenHistory, {
             whiteElo: whiteElo,
             blackElo: blackElo,
           });
 
           if (result) {
+            lastClassification = result.moves.at(-1);
             statObj.update(
               result.white.accuracy,
               result.white.elo,

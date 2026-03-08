@@ -1702,7 +1702,6 @@ let Chess = function (fen) {
   };
 };
 
-
 const chess = new Chess();
 
 function getStartFEN(fen) {
@@ -1753,36 +1752,25 @@ if (window.location.host === "www.chess.com") {
     }
 
     window.addEventListener("message", (event) => {
-
       if (event.source !== window) return;
       if (event.data?.type === "GET_FEN") {
         const game = getGameObject();
-        let fenHistory = []
+        let fenHistory = [];
         if (game) {
-          
           const fenInit = game.getHistoryFENs(1)[0];
           const startFen = getStartFEN(fenInit);
           chess.load(startFen);
-          fenHistory.push(chess.fen())
-          chess.header(
-            "Variant",
-            "Chess960",
-            "SetUp",
-            "1",
-            "FEN",
-            startFen,
-          );
+          fenHistory.push(chess.fen());
+          chess.header("Variant", "Chess960", "SetUp", "1", "FEN", startFen);
           const moves = game.getHistorySANs();
           moves.forEach((e, i) => {
             chess.move(e);
-            fenHistory.push(chess.fen())
+            fenHistory.push(chess.fen());
           });
 
           // console.clear()
 
           // console.log(fenHistory)
-
-    
         }
         const fen =
           game?.getFEN() ||
@@ -1790,7 +1778,7 @@ if (window.location.host === "www.chess.com") {
         const side_ = game?.getPlayingAs?.() || 1;
         const isGameOver = game?.isGameOver?.() || false;
         window.postMessage(
-          { type: "FEN_RESPONSE", fen, side_, isGameOver,  fenHistory},
+          { type: "FEN_RESPONSE", fen, side_, isGameOver, fenHistory },
           "*",
         );
       }
@@ -1933,12 +1921,27 @@ if (window.location.host === "lichess.org") {
     return fen;
   }
 
+  function getArrayMoves() {
+    const squares = document.querySelectorAll("square.last-move");
+    let arrays = [];
+    squares.forEach((e, i) => {
+      if (e.style.visibility === "visible") {
+        arrays.push(e.cgKey);
+      }
+    });
+    // console.log(arrays)
+    return arrays;
+  }
+
   (function () {
     window.addEventListener("message", (event) => {
       if (event.source !== window) return;
 
       if (event.data?.type === "FEN") {
-        window.postMessage({ type: "FEN_RESPONSE", fen: getFen() }, "*");
+        window.postMessage(
+          { type: "FEN_RESPONSE", fen: getFen(), lasts: getArrayMoves() },
+          "*",
+        );
       }
       if (event.data?.type === "MOVE") {
         const { uci, moveDelay } = event.data;
@@ -1950,6 +1953,4 @@ if (window.location.host === "lichess.org") {
   })();
 }
 
-
 ///////////////
-

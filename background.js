@@ -1992,8 +1992,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                   );
 
                   const { e, t, n } = evalRes2.result.value;
-                  // e from , t to
-
                   const lastMove = e + t;
 
                   const movesHistory = evalRes.result?.value || [];
@@ -2020,7 +2018,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         );
                     }
 
-                    game.move(lastMove, { sloppy: true });
+                    // game.move(lastMove, { sloppy: true });
                     fenhistory.push(game.fen());
                     game.header(
                       "Variant",
@@ -2037,6 +2035,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                           chrome.tabs.sendMessage(tab.id, {
                             type: "history",
                             data: fenhistory,
+                            move : lastMove
                           });
                         }
                       }
