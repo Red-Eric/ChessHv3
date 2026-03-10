@@ -2892,7 +2892,7 @@ const startCheat = () => {
           config.lines,
           config.depth,
           config.style,
-          config.elo + 700,
+          config.elo,
         );
       }
     });
@@ -3370,7 +3370,7 @@ const startCheat = () => {
           config.lines,
           config.depth,
           config.style,
-          config.elo + 700,
+          config.elo,
         );
       }
     });
@@ -3910,7 +3910,7 @@ const startCheat = () => {
           config.lines,
           config.depth,
           config.style,
-          config.elo + 700,
+          config.elo,
         );
       }
     });
