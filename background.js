@@ -308,7 +308,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     },
                   );
 
-                  expression = "({ e, t, n })";
+                  expression = "({ e, t })";
 
                   const evalRes2 = await chrome.debugger.sendCommand(
                     source,
