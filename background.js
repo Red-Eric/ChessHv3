@@ -233,8 +233,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           let BREAK_SEARCH = "";
 
           if (host === "lichess.org") {
-            TARGET = "this.onMove=(e,t,n)=>{n||this.enpassant(e,t)";
-            BREAK_SEARCH = "n||";
+            TARGET = "this.onMove=(e,t,s)=>{s||this.enpassant(e,t)";
+          BREAK_SEARCH = "s||";
           }
 
           if (host === "worldchess.com") {
