@@ -182,6 +182,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 });
 
+
+// Stockage global des listeners par tabId
+const activeListeners = {};
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (!sender.tab || !sender.tab.id) return;
   const tabId = sender.tab.id;
@@ -215,12 +219,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         BREAK_SEARCH = "this.clearAll";
       }
 
-      // État partagé
       let breakpointId = null;
-      let debuggerEventListener = null;
-      let scriptParsedListener = null;
 
-      // Fonction qui pose le breakpoint sur un script donné
       async function trySetBreakpoint(url) {
         try {
           const res = await fetch(url);
@@ -254,7 +254,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return false;
       }
 
-      // Détache proprement avant de re-attacher
+      // ✅ Retire les anciens listeners de ce tabId avant d'en créer de nouveaux
+      if (activeListeners[tabId]) {
+        chrome.debugger.onEvent.removeListener(activeListeners[tabId].scriptParsed);
+        chrome.debugger.onEvent.removeListener(activeListeners[tabId].debuggerEvent);
+        delete activeListeners[tabId];
+        console.log("Anciens listeners retirés pour tab", tabId);
+      }
+
       chrome.debugger.detach({ tabId }, () => {
         chrome.debugger.attach({ tabId }, "1.3", async () => {
           if (chrome.runtime.lastError) {
@@ -267,7 +274,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
           await chrome.debugger.sendCommand({ tabId }, "Debugger.enable");
 
-          // Pose le breakpoint sur les scripts déjà chargés
           let urls = [];
           try {
             const results = await chrome.scripting.executeScript({
@@ -290,26 +296,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
           if (!found) console.log("Script cible non trouvé au chargement initial");
 
-          // ✅ RE-POSE LE BREAKPOINT automatiquement quand un script est (re)chargé
-          scriptParsedListener = async (source, method, params) => {
+          const scriptParsedListener = async (source, method, params) => {
             if (source.tabId !== tabId) return;
             if (method !== "Debugger.scriptParsed") return;
             if (!params.url) return;
 
-            // On tente de poser le breakpoint sur ce nouveau script
             const newBp = await trySetBreakpoint(params.url);
             if (newBp) {
               console.log("Breakpoint re-posé après navigation sur :", params.url);
             }
           };
 
-          // ✅ LISTENER UNIQUE pour les pauses (évite l'accumulation)
-          debuggerEventListener = async (source, method, params) => {
+          const debuggerEventListener = async (source, method, params) => {
             if (source.tabId !== tabId) return;
-
-            // Délégue scriptParsed
-            await scriptParsedListener(source, method, params);
-
             if (method !== "Debugger.paused") return;
 
             if (
@@ -427,7 +426,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             }
           };
 
-          // Un seul listener global, proprement stocké
+          // ✅ Stocke les listeners pour pouvoir les retirer plus tard
+          activeListeners[tabId] = {
+            scriptParsed: scriptParsedListener,
+            debuggerEvent: debuggerEventListener,
+          };
+
+          chrome.debugger.onEvent.addListener(scriptParsedListener);
           chrome.debugger.onEvent.addListener(debuggerEventListener);
 
           sendResponse({ success: true });
@@ -439,6 +444,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.type === "DETACH_DEBUGGER") {
+    // ✅ Retire aussi les listeners au detach
+    if (activeListeners[tabId]) {
+      chrome.debugger.onEvent.removeListener(activeListeners[tabId].scriptParsed);
+      chrome.debugger.onEvent.removeListener(activeListeners[tabId].debuggerEvent);
+      delete activeListeners[tabId];
+    }
+
     chrome.debugger.detach({ tabId }, () => {
       if (chrome.runtime.lastError) {
         sendResponse({
@@ -455,6 +467,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 });
+
 
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   if (message.type !== "DRAG_MOVE") return;
