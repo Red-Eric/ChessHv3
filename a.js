@@ -58,14 +58,16 @@ if (window.location.host === "www.chess.com") {
         if (game) {
           const fenInit = game.getHistoryFENs(1)[0];
           const startFen = getStartFEN(fenInit);
-          chess.load(startFen);
-          fenHistory.push(chess.fen());
-          chess.header("Variant", "Chess960", "SetUp", "1", "FEN", startFen);
-          const moves = game.getHistorySANs();
-          moves.forEach((e, i) => {
-            chess.move(e);
-            fenHistory.push(chess.fen());
-          });
+          fenHistory = game.getHistoryFENs(1)
+          fenHistory.unshift(startFen)
+          // chess.load(startFen);
+          // fenHistory.push(chess.fen());
+          // chess.header("Variant", "Chess960", "SetUp", "1", "FEN", startFen);
+          // const moves = game.getHistorySANs();
+          // moves.forEach((e, i) => {
+          //   chess.move(e);
+          //   fenHistory.push(chess.fen());
+          // });
 
           // console.clear()
 
