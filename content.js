@@ -1861,22 +1861,24 @@ class komodo {
         if (typeof line !== "string") return;
 
         /* ---------- BOOK MOVES ---------- */
-        if (line.startsWith("info book move")) {
-          const p = line.split(" ");
-          if (p.length > 4) {
-            const move = p[4];
-            if (move.length >= 4 && !seenMoves.has(move)) {
-              results.push({
-                from: move.slice(0, 2),
-                to: move.slice(2, 4),
-                eval: "book",
-                fen: fen,
-                side: side,
-              });
-              seenMoves.add(move);
-            }
+        if (line.startsWith("bestmove")) {
+          this.worker.removeEventListener("message", onMessage);
+          const parts = line.trim().split(" ");
+          const bestMove = parts[1];
+          const ponderIndex = parts.indexOf("ponder");
+          if (
+            ponderIndex !== -1 &&
+            (!parts[ponderIndex + 1] || parts[ponderIndex + 1] === "")
+          ) {
+            results.push({
+              from: bestMove.slice(0, 2),
+              to: bestMove.slice(2, 4),
+              eval: "book",
+              fen: fen,
+              side: side,
+            });
+            return resolve(results);
           }
-          return;
         }
 
         /* ---------- INFO LINES ---------- */
