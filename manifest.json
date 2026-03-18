@@ -61,7 +61,8 @@
         "lib/engine.js",
         "lib/engine.wasm",
         "lib/stockfish.js",
-        "lib/stockfish.wasm"
+        "lib/stockfish.wasm",
+        "book/book.bin"
       ],
       "matches": [
         "<all_urls>"

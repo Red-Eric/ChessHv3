@@ -1841,11 +1841,6 @@ class komodo {
   }
 
   async getMovesByFen(fen, side) {
-    // await this.restartWorker();
-    // if (this.multipv > 10) {
-    //   await this.restartWorker();
-    // }
-
     this.worker.postMessage(`setoption name Personality value ${this.style}`);
     this.worker.postMessage(`setoption name UCI Elo value ${this.elo}`);
     this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
@@ -1956,122 +1951,6 @@ class komodo {
 
       this.worker.postMessage(`stop`);
       this.worker.postMessage(`position fen ${fen}`);
-      this.worker.postMessage(`go depth ${this.depth}`);
-    });
-  }
-
-  async getMovesByUCI(uciString, side, fen) {
-    // if (this.multipv > 10) {
-    //   await this.restartWorker();
-    // }
-
-    const results = [];
-    const seenMoves = new Set();
-    const infoLines = [];
-    let lastDepth = 0;
-    const sideToMove =
-      uciString.split(" moves ")[1].trim().split(/\s+/).length % 2 === 0
-        ? "w"
-        : "b";
-
-    return new Promise((resolve) => {
-      const onMessage = (event) => {
-        const line = event.data;
-        if (debugEngine) {
-          console.log(line);
-        }
-        if (typeof line !== "string") return;
-
-        /* ---------- BOOK MOVES ---------- */
-        if (line.startsWith("info book move")) {
-          const p = line.split(" ");
-          if (p.length > 4) {
-            const move = p[4];
-            if (move.length >= 4 && !seenMoves.has(move)) {
-              results.push({
-                from: move.slice(0, 2),
-                to: move.slice(2, 4),
-                eval: "book",
-                side: side,
-                fen: fen,
-              });
-              seenMoves.add(move);
-            }
-          }
-          return;
-        }
-
-        /* ---------- INFO LINES ---------- */
-        if (line.startsWith("info")) {
-          infoLines.push(line);
-
-          const parts = line.split(" ");
-          const depthIndex = parts.indexOf("depth");
-          if (depthIndex !== -1 && depthIndex + 1 < parts.length) {
-            const d = parseInt(parts[depthIndex + 1], 10);
-            if (!isNaN(d)) lastDepth = d;
-          }
-          return;
-        }
-
-        /* ---------- END ---------- */
-        if (line.startsWith("bestmove")) {
-          this.worker.removeEventListener("message", onMessage);
-
-          for (const infoLine of infoLines) {
-            if (!infoLine.includes("multipv") || !infoLine.includes(" pv "))
-              continue;
-            if (!infoLine.includes(`depth ${lastDepth} `)) continue;
-
-            const parts = infoLine.split(" ");
-
-            const mpvIndex = parts.indexOf("multipv");
-            const mpv = mpvIndex !== -1 ? parseInt(parts[mpvIndex + 1], 10) : 1;
-            if (mpv > this.multipv) continue;
-
-            /* ---------- SCORE ---------- */
-            let evalScore = null;
-            const scoreIndex = parts.indexOf("score");
-            if (scoreIndex !== -1 && scoreIndex + 2 < parts.length) {
-              const type = parts[scoreIndex + 1];
-              let value = parseInt(parts[scoreIndex + 2], 10);
-
-              if (!isNaN(value)) {
-                if (sideToMove === "b") value = -value;
-
-                if (type === "cp") {
-                  const v = (value / 100).toFixed(2);
-                  evalScore = value >= 0 ? `+${v}` : `${v}`;
-                } else if (type === "mate") {
-                  evalScore = `#${value}`;
-                }
-              }
-            }
-
-            /* ---------- MOVE ---------- */
-            const pvIndex = parts.indexOf("pv");
-            if (pvIndex !== -1 && pvIndex + 1 < parts.length) {
-              const move = parts[pvIndex + 1];
-              if (move.length >= 4 && !seenMoves.has(move)) {
-                results.push({
-                  from: move.slice(0, 2),
-                  to: move.slice(2, 4),
-                  eval: evalScore,
-                  side: side,
-                  fen: fen,
-                });
-                seenMoves.add(move);
-              }
-            }
-          }
-
-          resolve(results);
-        }
-      };
-
-      this.worker.addEventListener("message", onMessage);
-      this.worker.postMessage(`stop`);
-      this.worker.postMessage(`${uciString}`);
       this.worker.postMessage(`go depth ${this.depth}`);
     });
   }
