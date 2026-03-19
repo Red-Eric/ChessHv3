@@ -1862,24 +1862,26 @@ class komodo {
 
         /* ---------- BOOK MOVES ---------- */
         if (line.startsWith("bestmove")) {
-          this.worker.removeEventListener("message", onMessage);
-          const parts = line.trim().split(" ");
-          const bestMove = parts[1];
-          const ponderIndex = parts.indexOf("ponder");
-          if (
-            ponderIndex !== -1 &&
-            (!parts[ponderIndex + 1] || parts[ponderIndex + 1] === "")
-          ) {
+          const parts = line.split(" ");
+
+          if (line.split("ponder")[1] === " ") {
+            const from = line.split(" ")[1].slice(0, 2);
+            const to = line.split(" ")[1].slice(2);
             results.push({
-              from: bestMove.slice(0, 2),
-              to: bestMove.slice(2, 4),
+              from: from,
+              to: to,
               eval: "book",
               fen: fen,
               side: side,
             });
-            return resolve(results);
+
+            this.worker.removeEventListener("message", onMessage);
+            resolve(results);
+            return;
           }
         }
+
+        // ❌ Sinon comportement normal (analyse engine)
 
         /* ---------- INFO LINES ---------- */
         if (line.startsWith("info")) {
@@ -2554,69 +2556,85 @@ const startCheat = () => {
         svg.appendChild(line);
 
         if (score !== undefined) {
-          const group = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "g",
-          );
-
-          const text = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "text",
-          );
-
-          text.setAttribute("x", to.x + squareSize);
-          text.setAttribute("y", to.y);
-          text.setAttribute("font-size", "9");
-          text.setAttribute("font-weight", "bold");
-          text.setAttribute("text-anchor", "middle");
-          text.setAttribute("dominant-baseline", "middle");
-          text.setAttribute("fill", color);
-
-          let isNegative = false;
-          let displayScore = score;
-
-          const hasHash = score.startsWith("#");
-          let raw = hasHash ? score.slice(1) : score;
-
-          if (raw.startsWith("-")) {
-            isNegative = true;
-            raw = raw.slice(1);
-          } else if (raw.startsWith("+")) {
-            raw = raw.slice(1);
-          }
-
-          displayScore = hasHash ? "#" + raw : raw;
-          text.textContent = displayScore;
-
-          group.appendChild(text);
-          svg.appendChild(group);
-
-          requestAnimationFrame(() => {
-            const bbox = text.getBBox();
-
-            const paddingX = 2;
-            const paddingY = 2;
-
-            const rect = document.createElementNS(
+          if (score === "book") {
+            const foreignObject = document.createElementNS(
               "http://www.w3.org/2000/svg",
-              "rect",
+              "foreignObject",
+            );
+            foreignObject.setAttribute("x", to.x + squareSize - 12);
+            foreignObject.setAttribute("y", to.y - 12);
+            foreignObject.setAttribute("width", "24");
+            foreignObject.setAttribute("height", "24");
+
+            const div = document.createElement("div");
+            div.innerHTML = bookSVG;
+            foreignObject.appendChild(div);
+            svg.appendChild(foreignObject);
+          } else {
+            const group = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "g",
             );
 
-            rect.setAttribute("x", bbox.x - paddingX);
-            rect.setAttribute("y", bbox.y - paddingY);
-            rect.setAttribute("width", bbox.width + paddingX * 2);
-            rect.setAttribute("height", bbox.height + paddingY * 2);
+            const text = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "text",
+            );
 
-            rect.setAttribute("rx", "8");
-            rect.setAttribute("ry", "8");
+            text.setAttribute("x", to.x + squareSize);
+            text.setAttribute("y", to.y);
+            text.setAttribute("font-size", "9");
+            text.setAttribute("font-weight", "bold");
+            text.setAttribute("text-anchor", "middle");
+            text.setAttribute("dominant-baseline", "middle");
+            text.setAttribute("fill", color);
 
-            rect.setAttribute("fill", isNegative ? "#312e2b" : "#ffffff");
-            rect.setAttribute("fill-opacity", "0.85");
-            rect.setAttribute("stroke", isNegative ? "#000000" : "#cccccc");
-            rect.setAttribute("stroke-width", "1");
+            let isNegative = false;
+            let displayScore = score;
 
-            group.insertBefore(rect, text);
-          });
+            const hasHash = score.startsWith("#");
+            let raw = hasHash ? score.slice(1) : score;
+
+            if (raw.startsWith("-")) {
+              isNegative = true;
+              raw = raw.slice(1);
+            } else if (raw.startsWith("+")) {
+              raw = raw.slice(1);
+            }
+
+            displayScore = hasHash ? "#" + raw : raw;
+            text.textContent = displayScore;
+
+            group.appendChild(text);
+            svg.appendChild(group);
+
+            requestAnimationFrame(() => {
+              const bbox = text.getBBox();
+
+              const paddingX = 2;
+              const paddingY = 2;
+
+              const rect = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "rect",
+              );
+
+              rect.setAttribute("x", bbox.x - paddingX);
+              rect.setAttribute("y", bbox.y - paddingY);
+              rect.setAttribute("width", bbox.width + paddingX * 2);
+              rect.setAttribute("height", bbox.height + paddingY * 2);
+
+              rect.setAttribute("rx", "8");
+              rect.setAttribute("ry", "8");
+
+              rect.setAttribute("fill", isNegative ? "#312e2b" : "#ffffff");
+              rect.setAttribute("fill-opacity", "0.85");
+              rect.setAttribute("stroke", isNegative ? "#000000" : "#cccccc");
+              rect.setAttribute("stroke-width", "1");
+
+              group.insertBefore(rect, text);
+            });
+          }
         }
 
         parent.appendChild(svg);
@@ -3483,69 +3501,85 @@ const startCheat = () => {
         svg.appendChild(line);
 
         if (score !== undefined) {
-          const group = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "g",
-          );
-
-          const text = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "text",
-          );
-
-          text.setAttribute("x", to.x + squareSize);
-          text.setAttribute("y", to.y);
-          text.setAttribute("font-size", "9");
-          text.setAttribute("font-weight", "bold");
-          text.setAttribute("text-anchor", "middle");
-          text.setAttribute("dominant-baseline", "middle");
-          text.setAttribute("fill", color);
-
-          let isNegative = false;
-          let displayScore = score;
-
-          const hasHash = score.startsWith("#");
-          let raw = hasHash ? score.slice(1) : score;
-
-          if (raw.startsWith("-")) {
-            isNegative = true;
-            raw = raw.slice(1);
-          } else if (raw.startsWith("+")) {
-            raw = raw.slice(1);
-          }
-
-          displayScore = hasHash ? "#" + raw : raw;
-          text.textContent = displayScore;
-
-          group.appendChild(text);
-          svg.appendChild(group);
-
-          requestAnimationFrame(() => {
-            const bbox = text.getBBox();
-
-            const paddingX = 2;
-            const paddingY = 2;
-
-            const rect = document.createElementNS(
+          if (score === "book") {
+            const foreignObject = document.createElementNS(
               "http://www.w3.org/2000/svg",
-              "rect",
+              "foreignObject",
+            );
+            foreignObject.setAttribute("x", to.x + squareSize - 12);
+            foreignObject.setAttribute("y", to.y - 12);
+            foreignObject.setAttribute("width", "24");
+            foreignObject.setAttribute("height", "24");
+
+            const div = document.createElement("div");
+            div.innerHTML = bookSVG;
+            foreignObject.appendChild(div);
+            svg.appendChild(foreignObject);
+          } else {
+            const group = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "g",
             );
 
-            rect.setAttribute("x", bbox.x - paddingX);
-            rect.setAttribute("y", bbox.y - paddingY);
-            rect.setAttribute("width", bbox.width + paddingX * 2);
-            rect.setAttribute("height", bbox.height + paddingY * 2);
+            const text = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "text",
+            );
 
-            rect.setAttribute("rx", "8");
-            rect.setAttribute("ry", "8");
+            text.setAttribute("x", to.x + squareSize);
+            text.setAttribute("y", to.y);
+            text.setAttribute("font-size", "9");
+            text.setAttribute("font-weight", "bold");
+            text.setAttribute("text-anchor", "middle");
+            text.setAttribute("dominant-baseline", "middle");
+            text.setAttribute("fill", color);
 
-            rect.setAttribute("fill", isNegative ? "#312e2b" : "#ffffff");
-            rect.setAttribute("fill-opacity", "0.85");
-            rect.setAttribute("stroke", isNegative ? "#000000" : "#cccccc");
-            rect.setAttribute("stroke-width", "1");
+            let isNegative = false;
+            let displayScore = score;
 
-            group.insertBefore(rect, text);
-          });
+            const hasHash = score.startsWith("#");
+            let raw = hasHash ? score.slice(1) : score;
+
+            if (raw.startsWith("-")) {
+              isNegative = true;
+              raw = raw.slice(1);
+            } else if (raw.startsWith("+")) {
+              raw = raw.slice(1);
+            }
+
+            displayScore = hasHash ? "#" + raw : raw;
+            text.textContent = displayScore;
+
+            group.appendChild(text);
+            svg.appendChild(group);
+
+            requestAnimationFrame(() => {
+              const bbox = text.getBBox();
+
+              const paddingX = 2;
+              const paddingY = 2;
+
+              const rect = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "rect",
+              );
+
+              rect.setAttribute("x", bbox.x - paddingX);
+              rect.setAttribute("y", bbox.y - paddingY);
+              rect.setAttribute("width", bbox.width + paddingX * 2);
+              rect.setAttribute("height", bbox.height + paddingY * 2);
+
+              rect.setAttribute("rx", "8");
+              rect.setAttribute("ry", "8");
+
+              rect.setAttribute("fill", isNegative ? "#312e2b" : "#ffffff");
+              rect.setAttribute("fill-opacity", "0.85");
+              rect.setAttribute("stroke", isNegative ? "#000000" : "#cccccc");
+              rect.setAttribute("stroke-width", "1");
+
+              group.insertBefore(rect, text);
+            });
+          }
         }
 
         parent.appendChild(svg);
