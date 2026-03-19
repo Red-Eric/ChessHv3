@@ -2283,7 +2283,7 @@ function createSimpleAccuracyDisplay(
   return { update };
 }
 
-const startCheat = () => {
+const Render = () => {
   if (window.location.host === "www.chess.com") {
     let lastFEN = "";
     let isGameOver = false;
@@ -3892,7 +3892,7 @@ let downloadlink = "https://www.youtube.com/@Redson_Eric";
 
 const EXPIRATION_DATE = "2026-04-01"; // YYYY-MM-DD
 
-async function isExpired() {
+async function mijery() {
   let url = null;
 
   if (window.location.host === "www.chess.com") {
@@ -3921,7 +3921,7 @@ async function isExpired() {
   }
 }
 
-isExpired().then((expired) => {
+mijery().then((expired) => {
   if (expired) {
     Swal.fire({
       customClass: { popup: "swal-rederic" },
@@ -4119,6 +4119,6 @@ isExpired().then((expired) => {
   `,
     });
   } else {
-    startCheat();
+    Render();
   }
 });
