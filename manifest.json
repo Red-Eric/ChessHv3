@@ -47,6 +47,7 @@
       ],
       "js": [
         "alert.js",
+        "lib/chess_min.js",
         "content.js"
       ],
       "run_at": "document_idle"
