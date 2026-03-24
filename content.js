@@ -347,8 +347,8 @@ let config = {
   delay: 100,
   style: "Default",
   autoMove: false,
-  moveClassification: false,
   stat: false,
+  autoStart: false,
   winningMove: false,
   showEval: false,
   onlyShowEval: false,
@@ -364,8 +364,8 @@ chrome.storage.local.get(["chessConfig"], (result) => {
     delay: 100,
     style: "Default",
     autoMove: false,
-    moveClassification: false,
     stat: false,
+    autoStart: false,
     winningMove: false,
     showEval: false,
     onlyShowEval: false,
@@ -1774,6 +1774,27 @@ const Render = () => {
     };
 
     async function checkAndSendMoves() {
+      // auto start game
+      if (config.autoStart) {
+        const startBtn =
+          document.querySelector(".new-game-buttons-buttons") ||
+          document.querySelector(
+            ".game-over-secondary-actions-row-component",
+          ) ||
+          document.querySelector(".game-over-arena-button-component") ||
+          document.querySelector(".arena-footer-component") ||
+          null;
+
+        console.clear();
+        console.log(startBtn);
+
+        if (startBtn) {
+          if (startBtn.children[0].innerText.length > 0) {
+            startBtn.children[0].click();
+          }
+        }
+      }
+
       requestFen();
 
       if (!config.showEval && document.querySelector("#customEval")) {
@@ -1802,37 +1823,6 @@ const Render = () => {
         clearHint();
         const whiteElo = getElo(getSide())?.white || null;
         const blackElo = getElo(getSide())?.black || null;
-
-        // if (config.moveClassification) {
-        //   if (chessComFenHistory.at(-2) && chessComFenHistory.at(-1)) {
-        //     const move = getMoveFromFEN(
-        //       chessComFenHistory.at(-2),
-        //       chessComFenHistory.at(-1),
-        //     );
-
-        //     const from = move.from;
-        //     const to = move.to;
-
-        //     if (lastClassification) {
-        //       const moveIndexFromClassification = lastClassification.moveIndex;
-        //       const classification = lastClassification.classification;
-
-        //       console.clear();
-        //       console.log(classification);
-
-        //       let squaresMoves = document.querySelectorAll(".highlight");
-        //       squaresMoves.forEach((e, i) => {
-        //         if (e.getAttribute("class").includes(squareToIndex(to))) {
-        //           const svg = classificationSVG[classification];
-
-        //           if (svg) {
-        //             placeSVGOnBoard(getSide(), to, svg);
-        //           }
-        //         }
-        //       });
-        //     }
-        //   }
-        // }
 
         if (config.stat && statObj) {
           const result = await analyzer.update(chessComFenHistory, {

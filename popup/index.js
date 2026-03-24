@@ -25,8 +25,8 @@ const defaultChessConfig = {
   delay: 100,
   style: "Default",
   autoMove: false,
-  moveClassification: false,
   stat: false,
+  autoStart : false,
   winningMove: false,
   showEval: false,
   onlyShowEval: false,
@@ -71,7 +71,7 @@ function updateChessUI() {
   el("style").value = chessConfig.style;
   el("key").value = chessConfig.key;
 
-  ["autoMove", "moveClassification", "stat", "winningMove", "showEval", "onlyShowEval"].forEach(
+  ["autoMove", "stat", "winningMove","autoStart", "showEval", "onlyShowEval"].forEach(
     (k) => (el(k).checked = chessConfig[k]),
   );
 
@@ -82,12 +82,12 @@ function updateChessUI() {
 
   el("autoMoveLabel").textContent =
     `Auto Move (${chessConfig.autoMove ? "ON" : "OFF"})`;
-  el("moveClassificationLabel").textContent =
-    `Display move classification (${chessConfig.moveClassification ? "ON" : "OFF"})`;
+  el("autoStartLabel").textContent =
+    `Auto Start Game (${chessConfig.autoStart ? "ON" : "OFF"})`;
   el("statLabel").textContent =
     `Display accuracy and Elo estimation (${chessConfig.stat ? "ON" : "OFF"})`;
   el("winningMoveLabel").textContent =
-    `Only Winning Move (${chessConfig.winningMove ? "ON" : "OFF"})`;
+    `Only Moves That Gain Material (${chessConfig.winningMove ? "ON" : "OFF"})`;
   el("showEvalLabel").textContent =
     `Show Eval Bar (${chessConfig.showEval ? "ON" : "OFF"})`;
   el("onlyShowEvalLabel").textContent =
@@ -115,7 +115,7 @@ loadChessConfig(updateChessUI);
   };
 });
 
-["autoMove", "moveClassification", "stat", "winningMove", "showEval", "onlyShowEval"].forEach((k) => {
+["autoMove", "stat", "winningMove","autoStart", "showEval", "onlyShowEval"].forEach((k) => {
   el(k).onchange = (e) => {
     chessConfig[k] = e.target.checked;
     updateChessUI();
@@ -186,4 +186,58 @@ el("copyBtn").onclick = () => {
     setTimeout(() => (btn.textContent = original), 1500);
   });
 };
+
+
+//// Board
+
+let config = {
+  position : "start"
+}
+
+let board = Chessboard('board1', config)
+
+function updateEval(scoreStr, color = 'white') {
+  const top    = document.getElementById('evalTop');
+  const bottom = document.getElementById('evalBottom');
+  const text   = document.getElementById('evalScore');
+
+  if (!top || !bottom || !text) return;
+
+  let score = 0;
+  let mate  = false;
+  let percent = 50;
+
+  if (scoreStr) {
+    scoreStr = scoreStr.trim();
+    if (scoreStr.startsWith('#')) {
+      mate = true;
+      score = parseFloat(scoreStr.slice(1).replace('+', '')) || 0;
+    } else {
+      score = parseFloat(scoreStr.replace('+', '')) || 0;
+    }
+  }
+
+  if (mate) {
+    const sign = score > 0 ? '+' : '-';
+    text.textContent = '#' + sign + Math.abs(score);
+    percent = ((score > 0 && color === 'white') || (score < 0 && color === 'black')) ? 100 : 0;
+  } else {
+    const sign = score > 0 ? '+' : '';
+    text.textContent = sign + score.toFixed(1);
+    const s = color === 'black' ? -score : score;
+    percent = s >= 7 ? 90 : s <= -7 ? 10 : 50 + (s / 7) * 40;
+  }
+
+  if (color === 'white') {
+    top.style.background    = '#312e2b';
+    bottom.style.background = '#ffffff';
+  } else {
+    top.style.background    = '#ffffff';
+    bottom.style.background = '#312e2b';
+  }
+
+  top.style.height    = (100 - percent) + '%';
+  bottom.style.height = percent + '%';
+}
+
 

@@ -189,18 +189,15 @@
           Automatically plays the best move for you.
         </div>
 
-        <div class="setting" style="display: none;">
-          <span id="moveClassificationLabel"
-            >Display move classification (OFF)</span
-          >
+        <div class="setting">
+          <span id="autoStartLabel">Auto Start Game (OFF)</span>
           <label class="toggle">
-            <input type="checkbox" id="moveClassification" />
+            <input type="checkbox" id="autoStart" />
             <span class="slider"></span>
           </label>
         </div>
-        <div class="setting-help" hidden>
-          Show the classification of moves (Blunder, Best, Excellent,
-          Inaccuracy).
+        <div class="setting-help">
+          Automatically plays the best move for you.
         </div>
 
         <div class="setting">
@@ -215,15 +212,14 @@
         </div>
 
         <div class="setting">
-          <span id="winningMoveLabel">Only Winning Move (OFF)</span>
+          <span id="winningMoveLabel">Only Moves That Gain Material (OFF)</span>
           <label class="toggle">
             <input type="checkbox" id="winningMove" />
             <span class="slider"></span>
           </label>
         </div>
         <div class="setting-help">
-          Shows only moves that keep a winning advantage (moves that gain +2
-          material points or more).
+          Shows only moves that keep a strong advantage (at least +2 material).
         </div>
 
         <div class="setting">
@@ -247,16 +243,95 @@
     </div>
 
     <!-- ================= STREAM ================= -->
-    <div class="panel" id="stream">
-      <div id="board1" style="width: 600px"></div>
-      <p hidden>
-        Launch your game and it will appear here automatically. Disable Show
-        Eval Bar and enable Hide Arrows for best results.
-      </p>
-      <p>
-        NOT Work yet (I m fixing it later)
-      </p>
-    </div>
+    <!-- Wrapper flex autour du board -->
+    <!doctype html>
+    <html lang="fr">
+      <head>
+        <meta charset="UTF-8" />
+        <title>Échiquier + Barre évaluation</title>
+      </head>
+      <body>
+        <div id="stream">
+          <div
+            id="eval-wrapper"
+            style="
+              display: flex;
+              align-items: stretch;
+              justify-content: center;
+              margin: 28px auto;
+              width: fit-content;
+            "
+          >
+            <!-- Barre d'évaluation -->
+            <div
+              id="customEval"
+              style="
+                width: 28px;
+                background: #eee;
+                margin-right: 10px;
+                position: relative;
+                border: 1px solid #aaa;
+                border-radius: 4px;
+                overflow: hidden;
+                flex-shrink: 0;
+              "
+            >
+              <div
+                id="evalTop"
+                style="
+                  width: 100%;
+                  position: absolute;
+                  top: 0;
+                  background: #312e2b;
+                  height: 50%;
+                  transition: height 0.3s ease;
+                "
+              ></div>
+              <div
+                id="evalBottom"
+                style="
+                  width: 100%;
+                  position: absolute;
+                  bottom: 0;
+                  background: #ffffff;
+                  height: 50%;
+                  transition: height 0.3s ease;
+                  border-top: 1px solid #ccc;
+                "
+              ></div>
+              <div
+                id="evalScore"
+                style="
+                  position: absolute;
+                  bottom: 4px;
+                  left: 50%;
+                  transform: translateX(-50%);
+                  color: #e74c3c;
+                  font-weight: bold;
+                  font-size: 10px;
+                  pointer-events: none;
+                  white-space: nowrap;
+                  font-family: monospace;
+                "
+              >
+                0.0
+              </div>
+            </div>
+
+            <!-- Board -->
+            <div
+              id="board1"
+              style="
+                width: 600px;
+                height: 600px;
+                background: #ccc;
+                border: 1px solid #999;
+              "
+            ></div>
+          </div>
+        </div>
+      </body>
+    </html>
 
     <!-- ================= LOAD SETTINGS ================= -->
     <div class="panel" id="load">
