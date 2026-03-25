@@ -77,7 +77,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       for (let tabId of popupTabs) {
         chrome.tabs.sendMessage(tabId, {
           type: "TO_POPUP",
-          data: message.data,
+          data: message?.data,
+          fen : message?.fen
         });
       }
       break;

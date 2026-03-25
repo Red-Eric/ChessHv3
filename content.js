@@ -1840,8 +1840,7 @@ const Render = () => {
 
         // fen
         lastFEN = fen_;
-          chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
-        
+        chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
 
         clearHighlightSquares();
 
@@ -2271,7 +2270,7 @@ const Render = () => {
 
     /////////////////////////////////////////////   calculation /////////////////////////////////////////////
     function inject() {
-      window.addEventListener("message",(event) => {
+      window.addEventListener("message", (event) => {
         if (config.stat && !document.querySelector("#acc-widget")) {
           statObj = createSimpleAccuracyDisplay(
             100,
@@ -2292,10 +2291,7 @@ const Render = () => {
           arraysHighlight = event.data.lasts;
           if (event.data.fen !== fen_) {
             fen_ = event.data.fen;
-          chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
-
-
-
+            chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
 
             clearHighlightSquares();
 
@@ -2846,7 +2842,7 @@ const Render = () => {
       if (fen_ && fen_ !== currentFen) {
         // console.log(fen_)
         currentFen = fen_;
-          chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
+        chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
 
         clearHighlightSquares();
 
@@ -2856,7 +2852,6 @@ const Render = () => {
         }
 
         engine.getMovesByFen(fen_, getSide()).then((moves) => {
-          
           keyMove.from = moves[0].from;
           keyMove.to = moves[0].to;
           chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
