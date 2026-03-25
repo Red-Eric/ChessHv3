@@ -195,6 +195,7 @@ let config = {
 }
 
 let board = Chessboard('board1', config)
+board.orientation("black")
 
 function updateEval(scoreStr, color = 'white') {
   const top    = document.getElementById('evalTop');
@@ -239,5 +240,6 @@ function updateEval(scoreStr, color = 'white') {
   top.style.height    = (100 - percent) + '%';
   bottom.style.height = percent + '%';
 }
+
 
 

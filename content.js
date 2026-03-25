@@ -1785,9 +1785,6 @@ const Render = () => {
           document.querySelector(".arena-footer-component") ||
           null;
 
-        console.clear();
-        console.log(startBtn);
-
         if (startBtn) {
           if (startBtn.children[0].innerText.length > 0) {
             startBtn.children[0].click();
@@ -1841,8 +1838,10 @@ const Render = () => {
           }
         }
 
-        //
+        // fen
         lastFEN = fen_;
+          chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
+        
 
         clearHighlightSquares();
 
@@ -2272,7 +2271,7 @@ const Render = () => {
 
     /////////////////////////////////////////////   calculation /////////////////////////////////////////////
     function inject() {
-      window.addEventListener("message", (event) => {
+      window.addEventListener("message",(event) => {
         if (config.stat && !document.querySelector("#acc-widget")) {
           statObj = createSimpleAccuracyDisplay(
             100,
@@ -2293,6 +2292,11 @@ const Render = () => {
           arraysHighlight = event.data.lasts;
           if (event.data.fen !== fen_) {
             fen_ = event.data.fen;
+          chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
+
+
+
+
             clearHighlightSquares();
 
             engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
@@ -2359,33 +2363,6 @@ const Render = () => {
         const whiteElo = getElo(getSide())?.white || null;
         const blackElo = getElo(getSide())?.black || null;
         lichessFenHistory = message.data;
-
-        // if (config.moveClassification) {
-        //   if (lichessFenHistory.at(-2) && lichessFenHistory.at(-1)) {
-        //     const move = getMoveFromFEN(
-        //       lichessFenHistory.at(-2),
-        //       lichessFenHistory.at(-1),
-        //     );
-
-        //     const from = move.from;
-        //     const to = move.to;
-
-        //     if (lastClassification) {
-        //       const moveIndexFromClassification = lastClassification.moveIndex;
-        //       const classification = lastClassification.classification;
-
-        //       console.clear();
-        //       console.log(classification);
-
-        //       const svg = classificationSVG[classification];
-        //       if (svg) {
-        //         clearHint();
-
-        //         placeSVGOnBoard(getSide(), to, svg);
-        //       }
-        //     }
-        //   }
-        // }
 
         if (config.stat && statObj) {
           const result = await analyzer.update(lichessFenHistory, {
@@ -2845,7 +2822,7 @@ const Render = () => {
       }
     };
 
-    setInterval(() => {
+    setInterval(async () => {
       // eval bar
 
       if (config.stat && !document.querySelector("#acc-widget")) {
@@ -2869,6 +2846,8 @@ const Render = () => {
       if (fen_ && fen_ !== currentFen) {
         // console.log(fen_)
         currentFen = fen_;
+          chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
+
         clearHighlightSquares();
 
         if (!config.showEval && document.querySelector("#customEval")) {
@@ -2876,7 +2855,8 @@ const Render = () => {
           evalObj = null;
         }
 
-        engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
+        engine.getMovesByFen(fen_, getSide()).then((moves) => {
+          
           keyMove.from = moves[0].from;
           keyMove.to = moves[0].to;
           chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
@@ -2916,33 +2896,6 @@ const Render = () => {
         const blackElo = getElo(getSide())?.black || null;
 
         let fenHistory = message.data;
-
-        // if (config.moveClassification) {
-        //   if (fenHistory.at(-2) && fenHistory.at(-1)) {
-        //     const move = getMoveFromFEN(
-        //       fenHistory.at(-2),
-        //       fenHistory.at(-1),
-        //     );
-
-        //     const from = move.from;
-        //     const to = move.to;
-
-        //     if (lastClassification) {
-        //       const moveIndexFromClassification = lastClassification.moveIndex;
-        //       const classification = lastClassification.classification;
-
-        //       console.clear();
-        //       console.log(classification);
-
-        //       const svg = classificationSVG[classification];
-        //       if (svg) {
-        //         clearHint();
-
-        //         placeSVGOnBoard(getSide(), to, svg);
-        //       }
-        //     }
-        //   }
-        // }
 
         if (config.stat && statObj) {
           let historyMessage = message.data;
@@ -3001,8 +2954,8 @@ async function mijery() {
   }
 }
 
-mijery().then((expired) => {
-  if (expired) {
+mijery().then((e) => {
+  if (e) {
     Swal.fire({
       customClass: { popup: "swal-rederic" },
       title: "ChessHv3 Info",
