@@ -571,6 +571,13 @@ select:focus {
   line-height: 1.55;
 }
 
+.panel {
+  display: none;
+}
+.panel.active {
+  display: block;
+}
+
 /* ================= RESPONSIVE ================= */
 
 /* Tablet — 768px */
@@ -725,6 +732,8 @@ select:focus {
     border-radius: 8px;
   }
 }
+
+
 
 /* Very small screens — 360px */
 @media (max-width: 360px) {

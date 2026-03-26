@@ -19,7 +19,7 @@ var bookSVG = `<svg xmlns="http://www.w3.org/2000/svg" class="" width="24" heigh
 document.querySelectorAll(".tab").forEach((tab) => {
   tab.onclick = () => {
     document
-      .querySelectorAll(".tab, .panel")
+      .querySelectorAll(".tab, .panel, #stream")
       .forEach((e) => e.classList.remove("active"));
     tab.classList.add("active");
     document.getElementById(tab.dataset.panel).classList.add("active");
