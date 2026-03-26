@@ -2407,6 +2407,15 @@ const Render = () => {
         }
       }
 
+      if(config.autoStart){
+        const startNewGameBtn = document.querySelector(".fbt.new-opponent") || null
+        if(startNewGameBtn){
+          startNewGameBtn.click()
+          startNewGameBtn.remove()
+
+        }
+      }
+
       requestFen();
     }, interval);
 
@@ -2903,6 +2912,16 @@ const Render = () => {
         const boardContainer = document.querySelector("cg-board");
         if (boardContainer) {
           evalObj = createEvalBar("0.0", getSide());
+        }
+      }
+
+
+      if(config.autoStart){
+        const startBtn = document.querySelector("#newGame")
+        if(startBtn && startBtn.children[0]){
+          if(startBtn.children[0].innerText.length >= 1){
+            startBtn.click();
+          }
         }
       }
 
