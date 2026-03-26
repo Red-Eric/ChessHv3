@@ -8,14 +8,12 @@
 }
 
 :root {
-  /* Chess.com greens */
   --olive-vivid:   #4a7c1f;
   --olive-mid:     #5a8a30;
   --olive-dark:    #3a5e1e;
   --olive-glow:    rgba(74, 124, 31, 0.15);
   --olive-border:  rgba(74, 124, 31, 0.30);
 
-  /* Light backgrounds */
   --bg-deep:   #f4f1ec;
   --bg-panel:  #faf8f5;
   --bg-card:   #ffffff;
@@ -24,7 +22,6 @@
   --border-soft:   rgba(74, 124, 31, 0.12);
   --border-strong: rgba(74, 124, 31, 0.28);
 
-  /* Neutral tones */
   --grey-fish:  #1a1714;
   --grey-scale: #5a5248;
   --grey-shadow:#c8c0b4;
@@ -165,7 +162,7 @@ p {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 6px;
+  margin-bottom: 3px;
   padding: 13px 18px;
   background: var(--bg-card);
   border-radius: 10px;
@@ -206,11 +203,18 @@ p {
 
 /* ================= HELP TEXT ================= */
 .setting-help {
-  margin: 0 4px 14px 22px;
-  font-size: 12px;
-  line-height: 1.55;
+  margin: 0 4px 10px 18px;
+  padding: 4px 10px;
+  font-size: 11px;
+  line-height: 1.5;
   color: var(--text-dim);
   font-family: var(--font-mono);
+  border-left: 2px solid var(--border-soft);
+}
+
+.setting-help .tip {
+  color: #e74c3c;
+  font-weight: 700;
 }
 
 /* ================= RANGE SLIDERS ================= */
@@ -361,11 +365,69 @@ p {
   box-shadow: 0 0 8px rgba(74,124,31,0.45);
 }
 
+/* ================= STREAM PANEL ================= */
+#stream {
+  /* inherits .panel styles via class */
+}
+
+#eval-wrapper {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  margin: 8px auto 0;
+  width: fit-content;
+}
+
+#customEval {
+  width: 28px;
+  background: #eee;
+  margin-right: 10px;
+  position: relative;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+#evalTop {
+  width: 100%;
+  position: absolute;
+  top: 0;
+  background: #312e2b;
+  height: 50%;
+  transition: height 0.3s ease;
+}
+
+#evalBottom {
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  background: #ffffff;
+  height: 50%;
+  transition: height 0.3s ease;
+  border-top: 1px solid #ccc;
+}
+
+#evalScore {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #e74c3c;
+  font-weight: bold;
+  font-size: 10px;
+  pointer-events: none;
+  white-space: nowrap;
+  font-family: monospace;
+}
+
 /* ================= CHESSBOARD ================= */
 #board1 {
-  margin: 28px auto;
-  border-radius: 12px;
+  width: 600px;
+  height: 600px;
+  background: #ccc;
   border: 1px solid var(--border-strong);
+  border-radius: 12px;
   box-shadow: 0 0 40px rgba(74,124,31,0.12), 0 0 2px var(--olive-mid);
   overflow: hidden;
 }
@@ -522,9 +584,7 @@ select:focus {
     scrollbar-width: none;
   }
 
-  .tabs::-webkit-scrollbar {
-    display: none;
-  }
+  .tabs::-webkit-scrollbar { display: none; }
 
   .tab {
     padding: 10px 20px;
@@ -551,13 +611,9 @@ select:focus {
     padding: 12px 14px;
   }
 
-  .setting input[type="range"] {
-    width: 50%;
-  }
+  .setting input[type="range"] { width: 50%; }
 
-  .color-row {
-    gap: 8px;
-  }
+  .color-row { gap: 8px; }
 
   .color-item input[type="color"] {
     width: 40px;
@@ -565,15 +621,20 @@ select:focus {
   }
 
   #board1 {
-    margin: 20px auto;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    margin: 0 auto;
+  }
+
+  #eval-wrapper {
+    width: 100%;
   }
 }
 
 /* Mobile — 480px */
 @media (max-width: 480px) {
-  .tabs {
-    padding: 12px 8px 0;
-  }
+  .tabs { padding: 12px 8px 0; }
 
   .tab {
     padding: 9px 14px;
@@ -598,16 +659,13 @@ select:focus {
     padding: 12px 12px;
   }
 
-  /* Label takes full width, control below */
   .setting label,
   .setting > span:first-child {
     width: 100%;
     white-space: normal;
   }
 
-  .setting input[type="range"] {
-    width: 100%;
-  }
+  .setting input[type="range"] { width: 100%; }
 
   .setting select {
     width: 100%;
@@ -625,18 +683,14 @@ select:focus {
     gap: 10px;
   }
 
-  .color-item {
-    flex: 0 0 calc(33.33% - 8px);
-  }
+  .color-item { flex: 0 0 calc(33.33% - 8px); }
 
   .color-item input[type="color"] {
     width: 36px;
     height: 36px;
   }
 
-  .color-item span {
-    font-size: 10px;
-  }
+  .color-item span { font-size: 10px; }
 
   .setting-help {
     font-size: 11px;
@@ -654,9 +708,7 @@ select:focus {
     padding: 12px 16px;
   }
 
-  .load-feedback {
-    width: 100%;
-  }
+  .load-feedback { width: 100%; }
 
   .panel-title {
     font-size: 12px;
@@ -670,7 +722,6 @@ select:focus {
   }
 
   #board1 {
-    margin: 16px auto;
     border-radius: 8px;
   }
 }
@@ -687,7 +738,5 @@ select:focus {
     padding: 14px 10px;
   }
 
-  .color-item {
-    flex: 0 0 calc(50% - 6px);
-  }
+  .color-item { flex: 0 0 calc(50% - 6px); }
 }
