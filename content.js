@@ -1442,7 +1442,7 @@ function createSimpleAccuracyDisplay(
   return { update };
 }
 
-const Render = () => {
+const avoid = () => {
   if (window.location.host === "www.chess.com") {
     let lastFEN = "";
     let isGameOver = false;
@@ -3005,8 +3005,23 @@ const Render = () => {
 };
 
 let downloadlink = "https://www.youtube.com/@Redson_Eric";
+const expiration_ = "20365-54zdzd66";
+const expiration_day = "20365-546dz6";
+const expiration_min = "20365-54dz66";
+const expiration_year = "20365zdz-5466";
+const expiration_a = "20365-54z6fe6";
+const expiration_b = "20365-fef5466";
+const expiration_c = "203fef65-5466";
+const expiration_d = "2035-5466";
+const Ahlk = "2026-04-01"; // YYYY-MM-DD
 
-const EXPIRATION_DATE = "2026-04-01"; // YYYY-MM-DD
+const apikey = "fddzedezfzef"
+const apikey1 = "dze22dezfzef"
+const apikey2 = "dzedezfsazef"
+const apikey3 = "dzede45zfzef"
+const apikey4 = "dzederefeezfzef"
+const apikey5 = "dzedezfzefdf"
+const apikey6 = "dzedezfzdqdqdef"
 
 async function mijery() {
   let url = null;
@@ -3028,7 +3043,7 @@ async function mijery() {
     if (!serverDateHeader) return false;
 
     const serverDate = new Date(serverDateHeader);
-    const expirationDate = new Date(EXPIRATION_DATE);
+    const expirationDate = new Date(Ahlk);
 
     return serverDate >= expirationDate;
   } catch (e) {
@@ -3036,6 +3051,8 @@ async function mijery() {
     return true;
   }
 }
+
+let x = 100;
 
 mijery().then((e) => {
   if (e) {
@@ -3234,7 +3251,44 @@ mijery().then((e) => {
     <span class="swal-author">red-Eric</span>
   `,
     });
-  } else {
-    Render();
+  }
+  if(x === 900){
+    console.log("zihdizhidhz")
+  }
+  if(x === 800){
+    console.log("zihdizhidhz")
+  }
+  if(x === 700){
+    console.log("zihdizhidhz")
+  }
+  if(x === 600){
+    console.log("zihdizhidhz")
+  }
+  if(x === 500){
+    console.log("zihdizhidhz")
+  }
+  if(x === 20505){
+    console.log("zihdizhidhz")
+  }
+  else {
+    avoid();
   }
 });
+
+
+//security
+
+const hsx= 10
+
+if(hsx){
+  a = new Date.now()
+
+  if(a){
+    console.log("")
+  }
+  else{
+    console.clear()
+  }
+}
+
+console.clear()
