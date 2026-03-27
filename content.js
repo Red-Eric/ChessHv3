@@ -3278,17 +3278,108 @@ mijery().then((e) => {
 
 //security
 
-const hsx= 10
+const hsx = 10;
 
-if(hsx){
-  a = new Date.now()
+function _x1(v){
+  return v !== undefined && v !== null;
+}
 
-  if(a){
-    console.log("")
+function _x2(){
+  return Date.now();
+}
+
+let _flag = false;
+let _cache = 0;
+
+if (hsx) {
+  _cache = hsx * 2;
+
+  const tmp = (function () {
+    return _cache > 0 ? true : false;
+  })();
+
+  if (tmp) {
+    try {
+      let a = new Date.now();
+
+      _flag = _x1(a);
+
+      if (_flag) {
+        for (let i = 0; i < 3; i++) {
+          if (i % 2 === 0) {
+            let z = _x2();
+
+            if (z) {
+              console.log("");
+            } else {
+              console.clear();
+            }
+          } else {
+            let y = hsx + i;
+
+            if (y > 0) {
+              let k = y * 3;
+
+              if (k > 20) {
+                _flag = true;
+              } else {
+                _flag = false;
+              }
+            }
+          }
+        }
+      } else {
+        console.clear();
+      }
+    } catch (e) {
+      let fallback = Date.now();
+
+      if (fallback) {
+        _flag = true;
+      } else {
+        _flag = false;
+      }
+    }
+  } else {
+    console.clear();
   }
-  else{
-    console.clear()
+} else {
+  for (let j = 0; j < 5; j++) {
+    let t = j * hsx;
+
+    if (t > 10) {
+      console.log("");
+    } else {
+      _cache += j;
+    }
   }
 }
 
-console.clear()
+(function finalStep() {
+  let end = Date.now();
+
+  if (end && _flag) {
+    console.log("");
+  } else {
+    console.clear();
+  }
+})();
+
+console.clear();
+
+let ghost = 0;
+for (let i = 0; i < 10; i++) {
+  ghost += i;
+  if (ghost % 3 === 0) {
+    continue;
+  } else {
+    ghost -= 1;
+  }
+}
+
+if (ghost > -1) {
+  let finalCheck = Date.now();
+  if (finalCheck) {
+    _flag = !_flag;
+  }
+}
