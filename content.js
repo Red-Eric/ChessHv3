@@ -347,6 +347,7 @@ let config = {
   delay: 100,
   style: "Default",
   autoMove: false,
+  autoMoveBalanced: false,
   stat: false,
   autoStart: false,
   winningMove: false,
@@ -364,6 +365,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
     delay: 100,
     style: "Default",
     autoMove: false,
+    autoMoveBalanced: false,
     stat: false,
     autoStart: false,
     winningMove: false,
@@ -1322,7 +1324,7 @@ function createSimpleAccuracyDisplay(
   chrome.storage.local.get("accWidgetPos", (result) => {
     if (result.accWidgetPos) {
       widget.style.left = result.accWidgetPos.left;
-      widget.style.top  = result.accWidgetPos.top;
+      widget.style.top = result.accWidgetPos.top;
     }
   });
 
@@ -1339,7 +1341,8 @@ function createSimpleAccuracyDisplay(
   // ─── Drag (mouse + touch) ─────────────────────────────────────────────────
 
   let isDragging = false;
-  let offsetX = 0, offsetY = 0;
+  let offsetX = 0,
+    offsetY = 0;
 
   widget.addEventListener("mousedown", (e) => {
     isDragging = true;
@@ -1352,7 +1355,7 @@ function createSimpleAccuracyDisplay(
   document.addEventListener("mousemove", (e) => {
     if (!isDragging) return;
     widget.style.left = `${e.clientX - offsetX}px`;
-    widget.style.top  = `${e.clientY - offsetY}px`;
+    widget.style.top = `${e.clientY - offsetY}px`;
   });
 
   document.addEventListener("mouseup", () => {
@@ -1364,22 +1367,30 @@ function createSimpleAccuracyDisplay(
     });
   });
 
-  widget.addEventListener("touchstart", (e) => {
-    const touch = e.touches[0];
-    isDragging = true;
-    widget.classList.add("dragging");
-    offsetX = touch.clientX - widget.getBoundingClientRect().left;
-    offsetY = touch.clientY - widget.getBoundingClientRect().top;
-    e.preventDefault();
-  }, { passive: false });
+  widget.addEventListener(
+    "touchstart",
+    (e) => {
+      const touch = e.touches[0];
+      isDragging = true;
+      widget.classList.add("dragging");
+      offsetX = touch.clientX - widget.getBoundingClientRect().left;
+      offsetY = touch.clientY - widget.getBoundingClientRect().top;
+      e.preventDefault();
+    },
+    { passive: false },
+  );
 
-  document.addEventListener("touchmove", (e) => {
-    if (!isDragging) return;
-    const touch = e.touches[0];
-    widget.style.left = `${touch.clientX - offsetX}px`;
-    widget.style.top  = `${touch.clientY - offsetY}px`;
-    e.preventDefault();
-  }, { passive: false });
+  document.addEventListener(
+    "touchmove",
+    (e) => {
+      if (!isDragging) return;
+      const touch = e.touches[0];
+      widget.style.left = `${touch.clientX - offsetX}px`;
+      widget.style.top = `${touch.clientY - offsetY}px`;
+      e.preventDefault();
+    },
+    { passive: false },
+  );
 
   document.addEventListener("touchend", () => {
     if (!isDragging) return;
@@ -1399,16 +1410,18 @@ function createSimpleAccuracyDisplay(
 
   function applyThreat(color, acc) {
     const level = threatLevel(acc);
-    const dot   = document.getElementById(`acc-dot-${color}`);
-    const val   = document.getElementById(`acc-val-acc-${color}`);
+    const dot = document.getElementById(`acc-dot-${color}`);
+    const val = document.getElementById(`acc-val-acc-${color}`);
     if (!dot || !val) return;
 
     // Reset dot classes
     dot.className = "acc-threat-dot";
     // Reset value threat classes
     val.classList.remove(
-      "acc-value-cheat", "acc-value-sus",
-      "acc-value-warn",  "acc-value-safe"
+      "acc-value-cheat",
+      "acc-value-sus",
+      "acc-value-warn",
+      "acc-value-safe",
     );
 
     if (!level) {
@@ -1442,78 +1455,72 @@ function createSimpleAccuracyDisplay(
   return { update };
 }
 
-
 function extractNormalMove(moves, side = "white") {
+  const factor = side === "white" ? 1 : -1;
 
-    const factor = side === "white" ? 1 : -1;
+  // 1. BOOK
+  const book = moves.find((m) => m.eval === "book");
+  if (book) return book;
 
-    // 1. BOOK
-    const book = moves.find(m => m.eval === "book");
-    if (book) return book;
+  // 2. MATE CHECK
+  const mates = moves.filter(
+    (m) => typeof m.eval === "string" && m.eval.includes("#"),
+  );
 
-    // 2. MATE CHECK
-    const mates = moves.filter(m => typeof m.eval === "string" && m.eval.includes("#"));
+  if (mates.length > 0) {
+    const allMate = mates.length === moves.length;
 
-    if (mates.length > 0) {
-        const allMate = mates.length === moves.length;
-
-        if (allMate) {
-            return mates.sort((a, b) => {
-                const ma = Math.abs(parseInt(a.eval.replace("#", "")));
-                const mb = Math.abs(parseInt(b.eval.replace("#", "")));
-                return ma - mb;
-            })[0];
-        }
-
-        const strong = moves
-            .filter(m => typeof m.eval === "string" && !m.eval.includes("#"))
-            .map(m => ({
-                ...m,
-                score: parseFloat(m.eval) * factor
-            }))
-            .filter(m => !isNaN(m.score));
-
-        const filtered = strong.filter(m => m.score > 2.5);
-
-        if (filtered.length > 0) {
-            return filtered[Math.floor(Math.random() * filtered.length)];
-        }
+    if (allMate) {
+      return mates.sort((a, b) => {
+        const ma = Math.abs(parseInt(a.eval.replace("#", "")));
+        const mb = Math.abs(parseInt(b.eval.replace("#", "")));
+        return ma - mb;
+      })[0];
     }
 
+    const strong = moves
+      .filter((m) => typeof m.eval === "string" && !m.eval.includes("#"))
+      .map((m) => ({
+        ...m,
+        score: parseFloat(m.eval) * factor,
+      }))
+      .filter((m) => !isNaN(m.score));
 
-    const normal = moves
-        .filter(m => typeof m.eval === "string" && !m.eval.includes("#"))
-        .map(m => ({
-            ...m,
-            score: parseFloat(m.eval) * factor
-        }))
-        .filter(m => !isNaN(m.score));
+    const filtered = strong.filter((m) => m.score > 2.5);
 
-    if (normal.length === 0) return moves[0];
-
-    const sorted = normal.sort((a, b) => b.score - a.score);
-
-    const zone12 = sorted.filter(m =>
-        Math.abs(m.score - 1.0) <= 0.4
-    );
-
-    if (zone12.length > 0) {
-        return zone12[Math.floor(Math.random() * zone12.length)];
+    if (filtered.length > 0) {
+      return filtered[Math.floor(Math.random() * filtered.length)];
     }
+  }
 
-    // 5. zone proche 0
-    const zone0 = sorted.filter(m =>
-        Math.abs(m.score) <= 0.5
-    );
+  const normal = moves
+    .filter((m) => typeof m.eval === "string" && !m.eval.includes("#"))
+    .map((m) => ({
+      ...m,
+      score: parseFloat(m.eval) * factor,
+    }))
+    .filter((m) => !isNaN(m.score));
 
-    if (zone0.length > 0) {
-        return zone0[Math.floor(Math.random() * zone0.length)];
-    }
+  if (normal.length === 0) return moves[0];
 
-    // 6. fallback best
-    return sorted[0];
+  const sorted = normal.sort((a, b) => b.score - a.score);
+
+  const zone12 = sorted.filter((m) => Math.abs(m.score - 1.0) <= 0.4);
+
+  if (zone12.length > 0) {
+    return zone12[Math.floor(Math.random() * zone12.length)];
+  }
+
+  // 5. zone proche 0
+  const zone0 = sorted.filter((m) => Math.abs(m.score) <= 0.5);
+
+  if (zone0.length > 0) {
+    return zone0[Math.floor(Math.random() * zone0.length)];
+  }
+
+  // 6. fallback best
+  return sorted[0];
 }
-
 
 const jj0xffffff = () => {
   if (window.location.host === "www.chess.com") {
@@ -1991,7 +1998,12 @@ const jj0xffffff = () => {
           keyMove.from = moves[0].from;
           keyMove.to = moves[0].to;
           if (config.autoMove) {
-            requestMove(moves[0].from, moves[0].to);
+            if (config.autoMoveBalanced) {
+              const moveBalanced = extractNormalMove(moves);
+              requestMove(moveBalanced.from, moveBalanced.to);
+            } else {
+              requestMove(moves[0].from, moves[0].to);
+            }
           }
           if (moves.length > 0 && evalObj) {
             evalObj.update(moves[0].eval, getSide());
@@ -2446,11 +2458,20 @@ const jj0xffffff = () => {
               }
 
               if (moves.length > 0 && config.autoMove) {
-                await movePiece(
-                  moves[0].from,
-                  moves[0].to,
-                  randomIntBetween(0, config.delay),
-                );
+                if (config.autoMoveBalanced) {
+                  const balancedMove = extractNormalMove(moves);
+                  await movePiece(
+                    balancedMove.from,
+                    balancedMove.to,
+                    randomIntBetween(0, config.delay),
+                  );
+                } else {
+                  await movePiece(
+                    moves[0].from,
+                    moves[0].to,
+                    randomIntBetween(0, config.delay),
+                  );
+                }
               }
 
               chrome.runtime.sendMessage({
@@ -2480,12 +2501,12 @@ const jj0xffffff = () => {
         }
       }
 
-      if(config.autoStart){
-        const startNewGameBtn = document.querySelector(".fbt.new-opponent") || null
-        if(startNewGameBtn){
-          startNewGameBtn.click()
-          startNewGameBtn.remove()
-
+      if (config.autoStart) {
+        const startNewGameBtn =
+          document.querySelector(".fbt.new-opponent") || null;
+        if (startNewGameBtn) {
+          startNewGameBtn.click();
+          startNewGameBtn.remove();
         }
       }
 
@@ -2988,11 +3009,10 @@ const jj0xffffff = () => {
         }
       }
 
-
-      if(config.autoStart){
-        const startBtn = document.querySelector("#newGame")
-        if(startBtn && startBtn.children[0]){
-          if(startBtn.children[0].innerText.length >= 1){
+      if (config.autoStart) {
+        const startBtn = document.querySelector("#newGame");
+        if (startBtn && startBtn.children[0]) {
+          if (startBtn.children[0].innerText.length >= 1) {
             startBtn.click();
           }
         }
@@ -3023,11 +3043,20 @@ const jj0xffffff = () => {
           }
 
           if (moves.length > 0 && config.autoMove) {
-            movePiece(
-              moves[0].from,
-              moves[0].to,
-              randomIntBetween(0, config.delay),
-            );
+            if (config.autoMoveBalanced) {
+              const balancedMove = extractNormalMove(moves);
+              movePiece(
+                balancedMove.from,
+                balancedMove.to,
+                randomIntBetween(0, config.delay),
+              );
+            } else {
+              movePiece(
+                moves[0].from,
+                moves[0].to,
+                randomIntBetween(0, config.delay),
+              );
+            }
           }
         });
       }
@@ -3087,13 +3116,13 @@ const expiration_b = "20365-fef5466";
 const expiration_c = "203fef65-5466";
 const expiration_d = "2035-5466";
 const Ahlk = "2026-05-01"; // YYYY-MM-DD
-const apikey = "fddzedezfzef"
-const apikey1 = "dze22dezfzef"
-const apikey2 = "dzedezfsazef"
-const apikey3 = "dzede45zfzef"
-const apikey4 = "dzederefeezfzef"
-const apikey5 = "dzedezfzefdf"
-const apikey6 = "dzedezfzdqdqdef"
+const apikey = "fddzedezfzef";
+const apikey1 = "dze22dezfzef";
+const apikey2 = "dzedezfsazef";
+const apikey3 = "dzede45zfzef";
+const apikey4 = "dzederefeezfzef";
+const apikey5 = "dzedezfzefdf";
+const apikey6 = "dzedezfzdqdqdef";
 
 async function mijery() {
   let url = null;
@@ -3324,39 +3353,37 @@ mijery().then((e) => {
   `,
     });
   }
-  if(x === 900){
-    console.log("zihdizhidhz")
+  if (x === 900) {
+    console.log("zihdizhidhz");
   }
-  if(x === 800){
-    console.log("zihdizhidhz")
+  if (x === 800) {
+    console.log("zihdizhidhz");
   }
-  if(x === 700){
-    console.log("zihdizhidhz")
+  if (x === 700) {
+    console.log("zihdizhidhz");
   }
-  if(x === 600){
-    console.log("zihdizhidhz")
+  if (x === 600) {
+    console.log("zihdizhidhz");
   }
-  if(x === 500){
-    console.log("zihdizhidhz")
+  if (x === 500) {
+    console.log("zihdizhidhz");
   }
-  if(x === 20505){
-    console.log("zihdizhidhz")
-  }
-  else {
+  if (x === 20505) {
+    console.log("zihdizhidhz");
+  } else {
     jj0xffffff();
   }
 });
-
 
 //security
 
 const hsx = 10;
 
-function _x1(v){
+function _x1(v) {
   return v !== undefined && v !== null;
 }
 
-function _x2(){
+function _x2() {
   return Date.now();
 }
 

@@ -38,6 +38,7 @@ const defaultChessConfig = {
   delay: 100,
   style: "Default",
   autoMove: false,
+  autoMoveBalanced : false,
   stat: false,
   autoStart: false,
   winningMove: false,
@@ -91,6 +92,7 @@ function updateChessUI() {
     "autoStart",
     "showEval",
     "onlyShowEval",
+    "autoMoveBalanced",
   ].forEach((k) => (el(k).checked = chessConfig[k]));
 
   el("eloValue").textContent = chessConfig.elo;
@@ -100,6 +102,8 @@ function updateChessUI() {
 
   el("autoMoveLabel").textContent =
     `Auto Move (${chessConfig.autoMove ? "ON" : "OFF"})`;
+  el("autoMoveBalancedLabel").textContent =
+    `Balanced Auto Move (${chessConfig.autoMove ? "ON" : "OFF"})`;
   el("autoStartLabel").textContent =
     `Auto Start Game (${chessConfig.autoStart ? "ON" : "OFF"})`;
   el("statLabel").textContent =
@@ -140,6 +144,7 @@ loadChessConfig(updateChessUI);
   "autoStart",
   "showEval",
   "onlyShowEval",
+  "autoMoveBalanced",
 ].forEach((k) => {
   el(k).onchange = (e) => {
     chessConfig[k] = e.target.checked;
