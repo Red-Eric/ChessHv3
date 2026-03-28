@@ -1952,7 +1952,7 @@ const jj0xffffff = () => {
     window.onkeyup = (e) => {
       if (e.key === config.key) {
         if (config.autoMoveBalanced) {
-          const balancedMove = extractNormalMove(keyMove);
+          const balancedMove = extractNormalMove(keyMove, getSide());
           requestMove(balancedMove.from, balancedMove.to, "q", true);
         } else {
           requestMove(keyMove[0].from, keyMove[0].to, "q", true);
@@ -2037,7 +2037,7 @@ const jj0xffffff = () => {
 
           if (config.autoMove) {
             if (config.autoMoveBalanced) {
-              const moveBalanced = extractNormalMove(moves);
+              const moveBalanced = extractNormalMove(moves, getSide());
               requestMove(moveBalanced.from, moveBalanced.to);
             } else {
               requestMove(moves[0].from, moves[0].to);
@@ -2457,7 +2457,7 @@ const jj0xffffff = () => {
     window.onkeyup = async (e) => {
       if (e.key === config.key) {
         if (config.autoMoveBalanced) {
-          const balancedMove = extractNormalMove(keyMove);
+          const balancedMove = extractNormalMove(keyMove, getSide());
           await movePiece(balancedMove.from, balancedMove.to, 0);
         } else {
           await movePiece(keyMove[0].from, keyMove[0].to, 0);
@@ -2501,7 +2501,7 @@ const jj0xffffff = () => {
 
               if (moves.length > 0 && config.autoMove) {
                 if (config.autoMoveBalanced) {
-                  const balancedMove = extractNormalMove(moves);
+                  const balancedMove = extractNormalMove(moves, getSide());
                   await movePiece(
                     balancedMove.from,
                     balancedMove.to,
@@ -3029,7 +3029,7 @@ const jj0xffffff = () => {
     window.onkeyup = async (e) => {
       if (e.key === config.key) {
         if (config.autoMoveBalanced) {
-          const balancedMove = extractNormalMove(keyMove);
+          const balancedMove = extractNormalMove(keyMove, getSide());
           movePiece(balancedMove.from, balancedMove.to, 0);
         } else {
           movePiece(keyMove[0].from, keyMove[0].to, 0);
@@ -3090,7 +3090,7 @@ const jj0xffffff = () => {
 
           if (moves.length > 0 && config.autoMove) {
             if (config.autoMoveBalanced) {
-              const balancedMove = extractNormalMove(moves);
+              const balancedMove = extractNormalMove(moves, getSide());
               movePiece(
                 balancedMove.from,
                 balancedMove.to,
