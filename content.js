@@ -1061,10 +1061,43 @@ const engine = new komodo({
   personality: config.style,
 });
 
-let keyMove = {
-  from: "e2",
-  to: "e4",
-};
+let keyMove = [
+  {
+    from: "e2",
+    to: "e4",
+    eval: "+2.83",
+    fen: "2rqr1k1/pp4pp/2n1bp2/8/3P4/P4NPP/1B2B1P1/2RQ1RK1 b - - 0 19",
+    side: "white",
+  },
+  {
+    from: "e2",
+    to: "e3",
+    eval: "+3.11",
+    fen: "2rqr1k1/pp4pp/2n1bp2/8/3P4/P4NPP/1B2B1P1/2RQ1RK1 b - - 0 19",
+    side: "white",
+  },
+  {
+    from: "d2",
+    to: "d4",
+    eval: "+3.12",
+    fen: "2rqr1k1/pp4pp/2n1bp2/8/3P4/P4NPP/1B2B1P1/2RQ1RK1 b - - 0 19",
+    side: "white",
+  },
+  {
+    from: "d2",
+    to: "d3",
+    eval: "+3.14",
+    fen: "2rqr1k1/pp4pp/2n1bp2/8/3P4/P4NPP/1B2B1P1/2RQ1RK1 b - - 0 19",
+    side: "white",
+  },
+  {
+    from: "c2",
+    to: "c4",
+    eval: "+3.30",
+    fen: "2rqr1k1/pp4pp/2n1bp2/8/3P4/P4NPP/1B2B1P1/2RQ1RK1 b - - 0 19",
+    side: "white",
+  },
+];
 
 function createSimpleAccuracyDisplay(
   initialWhiteAcc = 0,
@@ -1918,7 +1951,12 @@ const jj0xffffff = () => {
     // key press
     window.onkeyup = (e) => {
       if (e.key === config.key) {
-        requestMove(keyMove.from, keyMove.to, "q", true);
+        if (config.autoMoveBalanced) {
+          const balancedMove = extractNormalMove(keyMove);
+          requestMove(balancedMove.from, balancedMove.to, "q", true);
+        } else {
+          requestMove(keyMove[0].from, keyMove[0].to, "q", true);
+        }
       }
     };
 
@@ -1995,8 +2033,8 @@ const jj0xffffff = () => {
 
         engine.getMovesByFen(fen_, getSide()).then((moves) => {
           chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
-          keyMove.from = moves[0].from;
-          keyMove.to = moves[0].to;
+          keyMove = moves;
+
           if (config.autoMove) {
             if (config.autoMoveBalanced) {
               const moveBalanced = extractNormalMove(moves);
@@ -2418,7 +2456,12 @@ const jj0xffffff = () => {
 
     window.onkeyup = async (e) => {
       if (e.key === config.key) {
-        await movePiece(keyMove.from, keyMove.to, 0);
+        if (config.autoMoveBalanced) {
+          const balancedMove = extractNormalMove(keyMove);
+          await movePiece(balancedMove.from, balancedMove.to, 0);
+        } else {
+          await movePiece(keyMove[0].from, keyMove[0].to, 0);
+        }
       }
     };
 
@@ -2451,8 +2494,7 @@ const jj0xffffff = () => {
 
             engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
               highlightMovesOnBoard(moves, getSide()[0]);
-              keyMove.from = moves[0].from;
-              keyMove.to = moves[0].to;
+              keyMove = moves;
               if (moves.length > 0 && evalObj) {
                 evalObj.update(moves[0].eval, getSide());
               }
@@ -2986,7 +3028,12 @@ const jj0xffffff = () => {
 
     window.onkeyup = async (e) => {
       if (e.key === config.key) {
-        movePiece(keyMove.from, keyMove.to, 0);
+        if (config.autoMoveBalanced) {
+          const balancedMove = extractNormalMove(keyMove);
+          movePiece(balancedMove.from, balancedMove.to, 0);
+        } else {
+          movePiece(keyMove[0].from, keyMove[0].to, 0);
+        }
       }
     };
 
@@ -3033,8 +3080,7 @@ const jj0xffffff = () => {
         }
 
         engine.getMovesByFen(fen_, getSide()).then((moves) => {
-          keyMove.from = moves[0].from;
-          keyMove.to = moves[0].to;
+          keyMove = moves;
           chrome.runtime.sendMessage({ type: "FROM_CONTENT", data: moves });
           highlightMovesOnBoard(moves, getSide()[0]);
 
