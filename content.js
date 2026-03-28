@@ -1442,7 +1442,80 @@ function createSimpleAccuracyDisplay(
   return { update };
 }
 
-const avoid = () => {
+
+function extractNormalMove(moves, side = "white") {
+
+    const factor = side === "white" ? 1 : -1;
+
+    // 1. BOOK
+    const book = moves.find(m => m.eval === "book");
+    if (book) return book;
+
+    // 2. MATE CHECK
+    const mates = moves.filter(m => typeof m.eval === "string" && m.eval.includes("#"));
+
+    if (mates.length > 0) {
+        const allMate = mates.length === moves.length;
+
+        if (allMate) {
+            return mates.sort((a, b) => {
+                const ma = Math.abs(parseInt(a.eval.replace("#", "")));
+                const mb = Math.abs(parseInt(b.eval.replace("#", "")));
+                return ma - mb;
+            })[0];
+        }
+
+        const strong = moves
+            .filter(m => typeof m.eval === "string" && !m.eval.includes("#"))
+            .map(m => ({
+                ...m,
+                score: parseFloat(m.eval) * factor
+            }))
+            .filter(m => !isNaN(m.score));
+
+        const filtered = strong.filter(m => m.score > 2.5);
+
+        if (filtered.length > 0) {
+            return filtered[Math.floor(Math.random() * filtered.length)];
+        }
+    }
+
+
+    const normal = moves
+        .filter(m => typeof m.eval === "string" && !m.eval.includes("#"))
+        .map(m => ({
+            ...m,
+            score: parseFloat(m.eval) * factor
+        }))
+        .filter(m => !isNaN(m.score));
+
+    if (normal.length === 0) return moves[0];
+
+    const sorted = normal.sort((a, b) => b.score - a.score);
+
+    const zone12 = sorted.filter(m =>
+        Math.abs(m.score - 1.0) <= 0.4
+    );
+
+    if (zone12.length > 0) {
+        return zone12[Math.floor(Math.random() * zone12.length)];
+    }
+
+    // 5. zone proche 0
+    const zone0 = sorted.filter(m =>
+        Math.abs(m.score) <= 0.5
+    );
+
+    if (zone0.length > 0) {
+        return zone0[Math.floor(Math.random() * zone0.length)];
+    }
+
+    // 6. fallback best
+    return sorted[0];
+}
+
+
+const jj0xffffff = () => {
   if (window.location.host === "www.chess.com") {
     let lastFEN = "";
     let isGameOver = false;
@@ -3013,8 +3086,7 @@ const expiration_a = "20365-54z6fe6";
 const expiration_b = "20365-fef5466";
 const expiration_c = "203fef65-5466";
 const expiration_d = "2035-5466";
-const Ahlk = "2026-04-01"; // YYYY-MM-DD
-
+const Ahlk = "2026-05-01"; // YYYY-MM-DD
 const apikey = "fddzedezfzef"
 const apikey1 = "dze22dezfzef"
 const apikey2 = "dzedezfsazef"
@@ -3271,7 +3343,7 @@ mijery().then((e) => {
     console.log("zihdizhidhz")
   }
   else {
-    avoid();
+    jj0xffffff();
   }
 });
 
