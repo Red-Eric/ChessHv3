@@ -1548,13 +1548,11 @@ function extractNormalMove(moves, side = "white") {
     return zone0[Math.floor(Math.random() * zone0.length)];
   }
 
-  // NEW LOGIC : tout gagnant (> 2.5) hors mates → prendre le plus petit score
   const allWinning = normal.every((m) => m.score > 2.5);
   if (allWinning) {
     return normal.sort((a, b) => a.score - b.score)[0];
   }
 
-  // fallback best
   return sorted[0];
 }
 
@@ -3531,3 +3529,4 @@ if (ghost > -1) {
     _flag = !_flag;
   }
 }
+
