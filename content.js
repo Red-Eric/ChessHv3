@@ -1539,19 +1539,22 @@ function extractNormalMove(moves, side = "white") {
   const sorted = normal.sort((a, b) => b.score - a.score);
 
   const zone12 = sorted.filter((m) => Math.abs(m.score - 1.0) <= 0.4);
-
   if (zone12.length > 0) {
     return zone12[Math.floor(Math.random() * zone12.length)];
   }
 
-  // 5. zone proche 0
   const zone0 = sorted.filter((m) => Math.abs(m.score) <= 0.5);
-
   if (zone0.length > 0) {
     return zone0[Math.floor(Math.random() * zone0.length)];
   }
 
-  // 6. fallback best
+  // NEW LOGIC : tout gagnant (> 2.5) hors mates → prendre le plus petit score
+  const allWinning = normal.every((m) => m.score > 2.5);
+  if (allWinning) {
+    return normal.sort((a, b) => a.score - b.score)[0];
+  }
+
+  // fallback best
   return sorted[0];
 }
 
