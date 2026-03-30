@@ -1,7 +1,7 @@
 const default_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 let squareTo = "";
 const BOOKS = [];
-
+let userName = null;
 let lastClassification = null;
 let moveIndex_ = 999;
 
@@ -8806,6 +8806,7 @@ const jj0xffffff = () => {
           fen_ = event.data.fen;
           side_index = event.data.side_;
           isGameOver = event.data.isGameOver;
+          userName = event.data.username
           chessComFenHistory = event.data.fenHistory;
         }
       });
@@ -10521,6 +10522,8 @@ mijery().then((e) => {
     jj0xffffff();
   }
 });
+
+
 
 //security
 

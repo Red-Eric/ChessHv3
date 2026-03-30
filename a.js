@@ -24,7 +24,7 @@ if (window.location.host === "www.chess.com") {
       return null;
     }
 
-    const defaultMoveDelay = 100;
+    const defaultMoveDelay = 10;
 
     function movePiece(
       from,
@@ -54,6 +54,7 @@ if (window.location.host === "www.chess.com") {
       if (event.source !== window) return;
       if (event.data?.type === "GET_FEN") {
         const game = getGameObject();
+        
         let fenHistory = [];
         if (game) {
           const fenInit = game.getHistoryFENs(1)[0];
@@ -67,8 +68,9 @@ if (window.location.host === "www.chess.com") {
           "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         const side_ = game?.getPlayingAs?.() || 1;
         const isGameOver = game?.isGameOver?.() || false;
+        const username = window?.context?.user?.username || null
         window.postMessage(
-          { type: "FEN_RESPONSE", fen, side_, isGameOver, fenHistory },
+          { type: "FEN_RESPONSE", fen, side_, isGameOver, fenHistory, username },
           "*",
         );
       }
