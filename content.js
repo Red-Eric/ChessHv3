@@ -7362,6 +7362,757 @@ const stockfishCode = `
 
   `;
 
+function classifySafety(avgAccuracy, win, lost, draw) {
+  const total = win + lost + draw;
+  const winRate = total > 0 ? (win / total) * 100 : 0;
+
+  if (avgAccuracy > 92 && winRate > 88) return "cheater";
+  if (avgAccuracy >= 85 && winRate >= 75) return "sus";
+  return "legit";
+}
+
+// ─── FETCH 10 DERNIÈRES PARTIES ──────────────────────────────────────────
+
+async function getLast10PGN(username) {
+  if (window.location.host === "www.chess.com") {
+    const archivesRes = await fetch(
+      `https://api.chess.com/pub/player/${username}/games/archives`,
+    );
+    const { archives } = await archivesRes.json();
+
+    const recentArchives = [...archives].reverse();
+    let allGames = [];
+
+    for (const url of recentArchives) {
+      const res = await fetch(url);
+      const data = await res.json();
+      allGames = allGames.concat(data.games);
+      if (allGames.length >= 10) break;
+    }
+
+    allGames.sort((a, b) => b.end_time - a.end_time);
+
+    return allGames.slice(0, 10).map((game) => ({
+      pgn: game.pgn,
+      white: game.white.username,
+      black: game.black.username,
+      whiteResult: game.white.result,
+      blackResult: game.black.result,
+      whiteElo: game.white.rating,
+      blackElo: game.black.rating,
+    }));
+  }
+
+  if (window.location.host === "lichess.org") {
+    const url = `https://lichess.org/api/games/user/${username}?max=10&moves=true&pgnInJson=true&sort=dateDesc`;
+
+    const res = await fetch(url, {
+      headers: { Accept: "application/x-ndjson" },
+    });
+
+    const text = await res.text();
+
+    return text
+      .trim()
+      .split("\n")
+      .filter(Boolean)
+      .map((line) => JSON.parse(line))
+      .slice(0, 10)
+      .map((game) => {
+        const pgn = game.pgn;
+
+        const getTag = (tag) => {
+          const m = pgn.match(new RegExp(`\\[${tag} "([^"]+)"\\]`));
+          return m ? m[1] : null;
+        };
+
+        const result = getTag("Result");
+
+        return {
+          pgn,
+          white: getTag("White"),
+          black: getTag("Black"),
+          whiteResult:
+            result === "1-0"
+              ? "win"
+              : result === "0-1"
+                ? "loss"
+                : result === "1/2-1/2"
+                  ? "draw"
+                  : null,
+          blackResult:
+            result === "0-1"
+              ? "win"
+              : result === "1-0"
+                ? "loss"
+                : result === "1/2-1/2"
+                  ? "draw"
+                  : null,
+          whiteElo: parseInt(getTag("WhiteElo")),
+          blackElo: parseInt(getTag("BlackElo")),
+        };
+      });
+  }
+}
+
+// ─── PGN → FEN HISTORY ───────────────────────────────────────────────────
+
+function pgnToFenHistory(pgn) {
+  try {
+    const chess = new Chess();
+    chess.load_pgn(pgn);
+    const history = chess.history({ verbose: true });
+
+    const fens = [];
+    const chess2 = new Chess();
+    fens.push(chess2.fen());
+
+    for (const move of history) {
+      chess2.move(move);
+      fens.push(chess2.fen());
+    }
+
+    return fens;
+  } catch (e) {
+    console.warn("PGN parse error:", e);
+    return [];
+  }
+}
+
+// ─── EXTRACT WIN/LOST/DRAW FOR USERNAME ─────────────────────────────────
+
+function extractResult(gameInfo, username) {
+  const uLower = username.toLowerCase();
+  const isWhite = gameInfo.white.toLowerCase() === uLower;
+  const result = isWhite ? gameInfo.whiteResult : gameInfo.blackResult;
+
+  if (result === "win") return "win";
+  if (
+    ["checkmated", "timeout", "resigned", "abandoned", "lose", "loss"].includes(
+      result,
+    )
+  )
+    return "lost";
+  return "draw";
+}
+
+// ─── DIALOG 1 : Confirmation ──────────────────────────────────────────────
+
+function showChessHv3Prompt(username) {
+  Swal.fire({
+    customClass: { popup: "swal-rederic" },
+    title: "ChessHv3 Check",
+    showCloseButton: true,
+    showCancelButton: true,
+    confirmButtonText: "Yes",
+    cancelButtonText: "No",
+    focusConfirm: false,
+    html: `
+      ${swalThemeCSS}
+      <div style="text-align:center; margin: 8px 0 4px;">
+        <div style="
+          width: 52px; height: 52px; border-radius: 50%;
+          background: rgba(74,124,31,0.10);
+          border: 1px solid rgba(74,124,31,0.30);
+          display: flex; align-items: center; justify-content: center;
+          margin: 0 auto 14px;
+          font-family: 'Space Mono', monospace;
+          font-size: 22px; font-weight: 700; color: #4a7c1f;
+        ">?</div>
+        <p style="font-size:14.5px; color:#7a7060; line-height:1.6; margin:0;">
+          Do you want to view your stats summary?
+        </p>
+        <p style="font-family:'Space Mono',monospace; font-size:11px; color:#b0a898; margin-top:6px;">
+          accuracy · win · lost · draw · safety
+        </p>
+      </div>
+    `,
+  }).then((result) => {
+    if (result.isConfirmed) {
+      runAnalysis(username);
+    }
+  });
+}
+
+function showLoadingDialog() {
+  Swal.fire({
+    customClass: { popup: "swal-rederic" },
+    title: "ChessHv3 Check",
+    showConfirmButton: false,
+    showCloseButton: false,
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    focusConfirm: false,
+    html: `
+      ${swalThemeCSS}
+      <div style="text-align:center; margin-bottom:6px;">
+        <p style="font-size:13px; color:#7a7060; margin:0 0 4px;">
+          Analyzing your last 10 games...
+        </p>
+      </div>
+      <div class="chv3-loading-wrap">
+        <div class="chv3-loading-label">
+          <span id="chv3-step">Fetching games</span>
+          <span id="chv3-pct">0%</span>
+        </div>
+        <div class="chv3-bar-track">
+          <div class="chv3-bar-fill" id="chv3-bar"></div>
+        </div>
+        <div class="chv3-game-label" id="chv3-game-label">—</div>
+      </div>
+      <span class="swal-author" style="margin-top:10px;">red-Eric</span>
+    `,
+  });
+}
+
+function updateLoadingBar(percent, stepLabel, gameLabel) {
+  const bar = document.getElementById("chv3-bar");
+  const pct = document.getElementById("chv3-pct");
+  const step = document.getElementById("chv3-step");
+  const glbl = document.getElementById("chv3-game-label");
+  if (bar) bar.style.width = percent + "%";
+  if (pct) pct.textContent = Math.round(percent) + "%";
+  if (step && stepLabel) step.textContent = stepLabel;
+  if (glbl && gameLabel) glbl.textContent = gameLabel;
+}
+
+function showStatsDialog({ accuracy, win, lost, draw, safety }) {
+  const badgeMap = {
+    legit: `<span class="safety-badge badge-legit"><span class="dot dot-legit"></span>Legit</span>`,
+    sus: `<span class="safety-badge badge-sus"><span class="dot dot-sus"></span>Sus</span>`,
+    cheater: `<span class="safety-badge badge-cheater"><span class="dot dot-cheater"></span>Cheater</span>`,
+  };
+
+  Swal.fire({
+    customClass: { popup: "swal-rederic" },
+    title: "ChessHv3 Check",
+    showCloseButton: true,
+    confirmButtonText: "Done",
+    focusConfirm: false,
+    html: `
+      ${swalThemeCSS}
+
+      <div class="stats-grid">
+        <div class="stat-card s-acc">
+          <span class="s-label">Avg. Accuracy</span>
+          <span class="s-value">${accuracy.toFixed(1)}%</span>
+        </div>
+        <div class="stat-card s-win">
+          <span class="s-label">Win</span>
+          <span class="s-value">${win}</span>
+        </div>
+        <div class="stat-card s-lost">
+          <span class="s-label">Lost</span>
+          <span class="s-value">${lost}</span>
+        </div>
+        <div class="stat-card s-draw">
+          <span class="s-label">Draw</span>
+          <span class="s-value">${draw}</span>
+        </div>
+      </div>
+
+      <div class="safety-row">
+        <div>
+          <span class="s-label">Safety rating</span>
+          <span style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:#7a7060;">
+            Account status
+          </span>
+        </div>
+        ${badgeMap[safety] ?? badgeMap.legit}
+      </div>
+
+      <div class="swal-footer-note">
+        Legit = clean player &nbsp;·&nbsp; Sus = suspicious activity &nbsp;·&nbsp; Cheater = engine use detected.
+      </div>
+      <span class="swal-author">red-Eric</span>
+    `,
+  });
+}
+
+async function runAnalysis(username) {
+  // Ouvre le dialog de chargement
+  showLoadingDialog();
+
+  try {
+    // ── Étape 1 : Fetch PGN ──────────────────────────────────────────
+    updateLoadingBar(5, "Fetching games...", "Connecting to API...");
+    const games = await getLast10PGN(username);
+    updateLoadingBar(15, "Games fetched", `${games.length} games found`);
+
+    // ── Étape 2 : Init engine ─────────────────────────────────────────
+    updateLoadingBar(18, "Starting engine", "Initializing Stockfish...");
+    const engine = new AnalyzeEngine({ depth: config.depth });
+    await engine.init();
+    updateLoadingBar(22, "Engine ready", "Stockfish is running");
+
+    // ── Étape 3 : Analyser chaque partie ─────────────────────────────
+    let totalWhiteAcc = 0;
+    let totalBlackAcc = 0;
+    let win = 0,
+      lost = 0,
+      draw = 0;
+    let accCount = 0;
+
+    const uLower = username.toLowerCase();
+
+    for (let i = 0; i < games.length; i++) {
+      const gameInfo = games[i];
+      const pct = 22 + (i / games.length) * 68;
+      updateLoadingBar(
+        pct,
+        `Analyzing game ${i + 1} / ${games.length}`,
+        `vs ${gameInfo.white.toLowerCase() === uLower ? gameInfo.black : gameInfo.white}`,
+      );
+
+      // Résultat W/L/D
+      const res = extractResult(gameInfo, username);
+      if (res === "win") win++;
+      else if (res === "lost") lost++;
+      else draw++;
+
+      // FEN history depuis PGN
+      const fenHistory = pgnToFenHistory(gameInfo.pgn);
+      if (fenHistory.length < 2) continue;
+
+      const isWhite = gameInfo.white.toLowerCase() === uLower;
+
+      try {
+        const result = await engine.update(fenHistory, {
+          whiteElo: gameInfo.whiteElo,
+          blackElo: gameInfo.blackElo,
+        });
+
+        if (result) {
+          const acc = isWhite ? result.white.accuracy : result.black.accuracy;
+          if (acc !== null && !isNaN(acc)) {
+            totalWhiteAcc += acc;
+            accCount++;
+          }
+        }
+      } catch (e) {
+        console.warn(`Game ${i + 1} analysis error:`, e);
+      }
+    }
+
+    updateLoadingBar(92, "Finishing up", "Computing final stats...");
+    engine.terminate();
+
+    // ── Étape 4 : Calculer les stats finales ─────────────────────────
+    const avgAccuracy = accCount > 0 ? totalWhiteAcc / accCount : 0;
+    const safety = classifySafety(avgAccuracy, win, lost, draw);
+
+    updateLoadingBar(100, "Done!", "Analysis complete");
+
+    // Petit délai pour que la barre atteigne 100% visuellement
+    await new Promise((r) => setTimeout(r, 600));
+
+    // ── Étape 5 : Afficher les résultats ─────────────────────────────
+    showStatsDialog({ accuracy: avgAccuracy, win, lost, draw, safety });
+  } catch (err) {
+    console.error("ChessHv3 analysis error:", err);
+    Swal.fire({
+      customClass: { popup: "swal-rederic" },
+      title: "ChessHv3 Check",
+      showCloseButton: true,
+      confirmButtonText: "Close",
+      html: `
+        ${swalThemeCSS}
+        <p style="font-family:'Space Mono',monospace;font-size:12px;color:#b84040;text-align:center;margin:10px 0;">
+          ⚠ Analysis failed.<br>
+          <span style="color:#b0a898;font-size:10px;">${err.message}</span>
+        </p>
+      `,
+    });
+  }
+}
+
+class AnalyzeEngine {
+  constructor({ depth = config.depth } = {}) {
+    this.depth = depth;
+    this.engine = null;
+    this._resolveEval = null;
+    this._currentLines = [];
+    this._cache = new Map();
+    this._queue = [];
+    this._running = false;
+  }
+
+  async init() {
+    this.engine = await this._createWorker();
+    await this._waitReady();
+  }
+
+  _createWorker() {
+    return new Promise((resolve, reject) => {
+      try {
+        const blob = new Blob([stockfishCode], {
+          type: "application/javascript",
+        });
+        const blobUrl = URL.createObjectURL(blob);
+        const worker = new Worker(blobUrl);
+        URL.revokeObjectURL(blobUrl);
+        resolve(worker);
+      } catch (e) {
+        reject(new Error("Failed to create Stockfish worker: " + e.message));
+      }
+    });
+  }
+
+  _waitReady() {
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(
+        () => reject(new Error("Stockfish readyok timeout")),
+        10000,
+      );
+      const originalOnMessage = this.engine.onmessage;
+      this.engine.onmessage = (e) => {
+        if (e.data === "readyok") {
+          clearTimeout(timeout);
+          this.engine.onmessage = (ev) => this._handleMessage(ev.data);
+          resolve();
+          return;
+        }
+        originalOnMessage?.(e);
+      };
+      this.engine.postMessage("uci");
+      this.engine.postMessage("ucinewgame");
+      this.engine.postMessage("isready");
+    });
+  }
+
+  terminate() {
+    this.engine?.terminate();
+    this.engine = null;
+  }
+
+  reset() {
+    this._cache.clear();
+    this._queue = [];
+    this._running = false;
+  }
+
+  async update(fenHistory, { whiteElo, blackElo, onProgress } = {}) {
+    if (fenHistory.length < 2) return;
+    const newFens = fenHistory.filter((fen) => !this._cache.has(fen));
+    if (newFens.length > 0) {
+      await this._enqueueAndWait(newFens, () => {
+        onProgress?.(this._cache.size / fenHistory.length);
+      });
+    }
+    const positions = fenHistory.map((fen) => this._cache.get(fen));
+    const withPlayed = this._attachPlayedMoves(positions, fenHistory);
+    const classified = this._classifyMoves(withPlayed);
+    const {
+      white: whiteAcc,
+      black: blackAcc,
+      movesAccuracy,
+    } = this._computeAccuracy(classified);
+    const eloEst = this._computeEstimatedElo(classified, whiteElo, blackElo);
+    const moves = classified.slice(1).map((pos, i) => ({
+      moveIndex: i + 1,
+      isWhite: i % 2 === 0,
+      moveNumber: Math.ceil((i + 1) / 2),
+      // classification: pos.moveClassification,
+      accuracy: movesAccuracy[i] ?? null,
+      winPercent: this._getPositionWinPercentage(pos),
+      cp: pos.lines[0]?.cp ?? null,
+      mate: pos.lines[0]?.mate ?? null,
+    }));
+    return {
+      white: {
+        accuracy: parseFloat(whiteAcc.toFixed(1)),
+        elo: eloEst?.white ?? null,
+        acpl: eloEst?.whiteCpl ?? null,
+      },
+      black: {
+        accuracy: parseFloat(blackAcc.toFixed(1)),
+        elo: eloEst?.black ?? null,
+        acpl: eloEst?.blackCpl ?? null,
+      },
+      moves,
+      cached: fenHistory.length - newFens.length,
+      computed: newFens.length,
+    };
+  }
+
+  _enqueueAndWait(fens, onEach) {
+    for (const fen of fens) {
+      if (!this._cache.has(fen) && !this._queue.includes(fen)) {
+        this._queue.push(fen);
+      }
+    }
+    if (this._running) return this._waitUntilCached(fens);
+    return this._drainQueue(onEach);
+  }
+
+  async _drainQueue(onEach) {
+    this._running = true;
+    while (this._queue.length > 0) {
+      const fen = this._queue.shift();
+      if (this._cache.has(fen)) continue;
+      const result = await this._evalPosition(fen);
+      this._cache.set(fen, result);
+      onEach?.(fen);
+    }
+    this._running = false;
+  }
+
+  _waitUntilCached(fens) {
+    return new Promise((resolve) => {
+      const check = () => {
+        if (fens.every((f) => this._cache.has(f))) resolve();
+        else setTimeout(check, 50);
+      };
+      check();
+    });
+  }
+
+  _handleMessage(msg) {
+    if (msg.startsWith("info") && msg.includes(" pv ")) {
+      const depthMatch = msg.match(/\bdepth (\d+)/);
+      const multiPvMatch = msg.match(/\bmultipv (\d+)/);
+      const cpMatch = msg.match(/\bscore cp (-?\d+)/);
+      const mateMatch = msg.match(/\bscore mate (-?\d+)/);
+      const pvMatch = msg.match(/ pv (.+)/);
+      if (!depthMatch || !multiPvMatch || !pvMatch) return;
+      const multiPv = parseInt(multiPvMatch[1]);
+      const pv = pvMatch[1].trim().split(" ");
+      const line = { pv, depth: parseInt(depthMatch[1]), multiPv };
+      if (cpMatch) line.cp = parseInt(cpMatch[1]);
+      if (mateMatch) line.mate = parseInt(mateMatch[1]);
+      this._currentLines[multiPv - 1] = line;
+    }
+    if (msg.startsWith("bestmove")) {
+      const bestMove = msg.split(" ")[1];
+      if (this._resolveEval) {
+        this._resolveEval({
+          lines: this._currentLines.filter(Boolean),
+          bestMove,
+        });
+        this._resolveEval = null;
+      }
+    }
+  }
+
+  _evalPosition(fen) {
+    return new Promise((resolve) => {
+      this._currentLines = [];
+      const whiteToPlay = fen.split(" ")[1] === "w";
+      this._resolveEval = (result) => {
+        if (!whiteToPlay) {
+          result.lines = result.lines.map((line) => ({
+            ...line,
+            cp: line.cp !== undefined ? -line.cp : line.cp,
+            mate: line.mate !== undefined ? -line.mate : line.mate,
+          }));
+        }
+        resolve(result);
+      };
+      this.engine.postMessage(`position fen ${fen}`);
+      this.engine.postMessage(`setoption name MultiPV value 2`);
+      this.engine.postMessage(`go depth ${this.depth}`);
+    });
+  }
+
+  _attachPlayedMoves(positions, fenHistory) {
+    const hasChessJs = typeof Chess !== "undefined";
+    return positions.map((pos, i) => {
+      if (i === 0) return { ...pos, playedWasBest: false };
+      const fenBase = fenHistory[i].split(" ")[0];
+      const isBook = typeof BOOKS !== "undefined" && BOOKS.includes(fenBase);
+      if (isBook) return { ...pos, playedWasBest: false, isBook: true };
+      const prevBestMove = positions[i - 1]?.bestMove;
+      if (!hasChessJs || !prevBestMove) return { ...pos, playedWasBest: false };
+      try {
+        const chess = new Chess(fenHistory[i - 1]);
+        chess.move({
+          from: prevBestMove.slice(0, 2),
+          to: prevBestMove.slice(2, 4),
+          promotion: prevBestMove[4] || undefined,
+        });
+        const fenAfterBest = chess.fen().split(" ").slice(0, 4).join(" ");
+        const actualFen = fenHistory[i].split(" ").slice(0, 4).join(" ");
+        return { ...pos, playedWasBest: fenAfterBest === actualFen };
+      } catch {
+        return { ...pos, playedWasBest: false };
+      }
+    });
+  }
+
+  _classifyMoves(positions) {
+    const positionsWP = positions.map((p) => this._getPositionWinPercentage(p));
+    return positions.map((pos, index) => {
+      if (index === 0) return { ...pos, moveClassification: null };
+      if (pos.isBook)
+        return { ...pos, moveClassification: MoveClassification.Book };
+      const prevPos = positions[index - 1];
+      const isWhite = index % 2 === 1;
+      const lastWP = positionsWP[index - 1];
+      const wp = positionsWP[index];
+      const isBestMove = pos.playedWasBest;
+      const wpLoss = (lastWP - wp) * (isWhite ? 1 : -1);
+      const altLine = prevPos.lines[1];
+      const altWP = altLine ? this._getLineWinPercentage(altLine) : undefined;
+      if (prevPos.lines.length === 1)
+        return { ...pos, moveClassification: MoveClassification.Forced };
+      if (isBestMove) {
+        if (altWP !== undefined) {
+          const gap = (wp - altWP) * (isWhite ? 1 : -1);
+          if (gap >= 10)
+            return { ...pos, moveClassification: MoveClassification.Brilliant };
+          if (gap >= 5)
+            return { ...pos, moveClassification: MoveClassification.Great };
+        }
+        return { ...pos, moveClassification: MoveClassification.Best };
+      }
+      if (wpLoss > 20)
+        return { ...pos, moveClassification: MoveClassification.Blunder };
+      if (wpLoss > 10) {
+        const isMiss =
+          altWP !== undefined ? (altWP - wp) * (isWhite ? 1 : -1) > 20 : false;
+        return {
+          ...pos,
+          moveClassification: isMiss
+            ? MoveClassification.Miss
+            : MoveClassification.Mistake,
+        };
+      }
+      if (wpLoss > 5)
+        return { ...pos, moveClassification: MoveClassification.Inaccuracy };
+      if (wpLoss <= 2)
+        return { ...pos, moveClassification: MoveClassification.Excellent };
+      return { ...pos, moveClassification: MoveClassification.Good };
+    });
+  }
+
+  _computeAccuracy(positions) {
+    const wp = positions.map((p) => this._getPositionWinPercentage(p));
+    const weights = this._getAccuracyWeights(wp);
+    const movesAccuracy = this._getMovesAccuracy(wp);
+    return {
+      white: this._getPlayerAccuracy(movesAccuracy, weights, "white"),
+      black: this._getPlayerAccuracy(movesAccuracy, weights, "black"),
+      movesAccuracy,
+    };
+  }
+
+  _getPlayerAccuracy(movesAccuracy, weights, player) {
+    const rem = player === "white" ? 0 : 1;
+    const accs = movesAccuracy.filter((_, i) => i % 2 === rem);
+    const wts = weights.filter((_, i) => i % 2 === rem);
+    if (accs.length === 0) return 100;
+    const wm = this._weightedMean(accs, wts);
+    const hm = this._harmonicMean(accs.map((a) => Math.max(a, 10)));
+    return (wm + hm) / 2;
+  }
+
+  _getAccuracyWeights(movesWP) {
+    const windowSize = this._clamp(Math.ceil(movesWP.length / 10), 2, 8);
+    const half = Math.round(windowSize / 2);
+    const windows = [];
+    for (let i = 1; i < movesWP.length; i++) {
+      const s = i - half,
+        e = i + half;
+      if (s < 0) windows.push(movesWP.slice(0, windowSize));
+      else if (e > movesWP.length) windows.push(movesWP.slice(-windowSize));
+      else windows.push(movesWP.slice(s, e));
+    }
+    return windows.map((w) => this._clamp(this._stdDev(w), 0.5, 12));
+  }
+
+  _getMovesAccuracy(movesWP) {
+    return movesWP.slice(1).map((wp, idx) => {
+      const last = movesWP[idx];
+      const isWhite = idx % 2 === 0;
+      const diff = isWhite ? Math.max(0, last - wp) : Math.max(0, wp - last);
+      const raw =
+        103.1668100711649 * Math.exp(-0.04354415386753951 * diff) -
+        3.166924740191411;
+      return Math.min(100, Math.max(0, raw + 1));
+    });
+  }
+
+  _computeEstimatedElo(positions, whiteElo, blackElo) {
+    if (positions.length < 2) return null;
+    let prevCp = this._getPositionCp(positions[0]);
+    let wLoss = 0,
+      bLoss = 0;
+    positions.slice(1).forEach((pos, i) => {
+      const cp = this._getPositionCp(pos);
+      if (i % 2 === 0) wLoss += cp > prevCp ? 0 : Math.min(prevCp - cp, 1000);
+      else bLoss += cp < prevCp ? 0 : Math.min(cp - prevCp, 1000);
+      prevCp = cp;
+    });
+    const n = positions.length - 1;
+    const whiteCpl = wLoss / Math.ceil(n / 2);
+    const blackCpl = bLoss / Math.floor(n / 2);
+    return {
+      white: Math.round(
+        this._eloFromRatingAndCpl(whiteCpl, whiteElo ?? blackElo),
+      ),
+      black: Math.round(
+        this._eloFromRatingAndCpl(blackCpl, blackElo ?? whiteElo),
+      ),
+      whiteCpl: Math.round(whiteCpl),
+      blackCpl: Math.round(blackCpl),
+    };
+  }
+
+  _eloFromAcpl(acpl) {
+    return 3100 * Math.exp(-0.01 * acpl);
+  }
+  _acplFromElo(elo) {
+    return -100 * Math.log(Math.min(elo, 3100) / 3100);
+  }
+  _eloFromRatingAndCpl(cpl, rating) {
+    const base = this._eloFromAcpl(cpl);
+    if (!rating) return base;
+    const diff = cpl - this._acplFromElo(rating);
+    if (diff === 0) return base;
+    return diff > 0
+      ? rating * Math.exp(-0.005 * diff)
+      : rating / Math.exp(0.005 * diff);
+  }
+
+  _getWinPercentageFromCp(cp) {
+    const c = this._clamp(cp, -1000, 1000);
+    return 50 + 50 * (2 / (1 + Math.exp(-0.00368208 * c)) - 1);
+  }
+  _getLineWinPercentage(line) {
+    if (line.cp !== undefined) return this._getWinPercentageFromCp(line.cp);
+    if (line.mate !== undefined) return line.mate > 0 ? 100 : 0;
+    throw new Error("No cp or mate in line");
+  }
+  _getPositionWinPercentage(pos) {
+    return this._getLineWinPercentage(pos.lines[0]);
+  }
+  _getPositionCp(pos) {
+    const l = pos.lines[0];
+    if (l.cp !== undefined) return this._clamp(l.cp, -1000, 1000);
+    if (l.mate !== undefined) return l.mate > 0 ? 1000 : -1000;
+    throw new Error("No cp or mate");
+  }
+
+  _clamp(n, min, max) {
+    return Math.min(max, Math.max(min, n));
+  }
+  _harmonicMean(arr) {
+    return arr.length / arr.reduce((s, v) => s + 1 / v, 0);
+  }
+  _weightedMean(arr, w) {
+    return (
+      arr.reduce((s, v, i) => s + v * w[i], 0) /
+      w.slice(0, arr.length).reduce((a, b) => a + b, 0)
+    );
+  }
+  _stdDev(arr) {
+    const m = arr.reduce((a, b) => a + b) / arr.length;
+    return Math.sqrt(
+      arr.map((x) => (x - m) ** 2).reduce((a, b) => a + b) / arr.length,
+    );
+  }
+}
+
 let debugEngine = false;
 
 function randomString(length) {
@@ -10889,763 +11640,3 @@ if (ghost > -1) {
 }
 
 ///////////////////: TEST
-
-function classifySafety(avgAccuracy, win, lost, draw) {
-  const total = win + lost + draw;
-  const winRate = total > 0 ? (win / total) * 100 : 0;
-
-  if (avgAccuracy > 92 && winRate > 88) return "cheater";
-  if (avgAccuracy >= 85 && winRate >= 75) return "sus";
-  return "legit";
-}
-
-// ─── FETCH 10 DERNIÈRES PARTIES ──────────────────────────────────────────
-
-async function getLast10PGN(username) {
-  if (window.location.host === "www.chess.com") {
-    const archivesRes = await fetch(
-      `https://api.chess.com/pub/player/${username}/games/archives`,
-    );
-    const { archives } = await archivesRes.json();
-
-    const recentArchives = [...archives].reverse();
-    let allGames = [];
-
-    for (const url of recentArchives) {
-      const res = await fetch(url);
-      const data = await res.json();
-      allGames = allGames.concat(data.games);
-      if (allGames.length >= 10) break;
-    }
-
-    allGames.sort((a, b) => b.end_time - a.end_time);
-
-    return allGames.slice(0, 10).map((game) => ({
-      pgn: game.pgn,
-      white: game.white.username,
-      black: game.black.username,
-      whiteResult: game.white.result,
-      blackResult: game.black.result,
-      whiteElo: game.white.rating,
-      blackElo: game.black.rating,
-    }));
-  }
-
-  if (window.location.host === "lichess.org") {
-    const url = `https://lichess.org/api/games/user/${username}?max=10&moves=true&pgnInJson=true&sort=dateDesc`;
-
-    const res = await fetch(url, {
-      headers: { Accept: "application/x-ndjson" },
-    });
-
-    const text = await res.text();
-
-    return text
-      .trim()
-      .split("\n")
-      .filter(Boolean)
-      .map((line) => JSON.parse(line))
-      .slice(0, 10)
-      .map((game) => {
-        const pgn = game.pgn;
-
-        const getTag = (tag) => {
-          const m = pgn.match(new RegExp(`\\[${tag} "([^"]+)"\\]`));
-          return m ? m[1] : null;
-        };
-
-        const result = getTag("Result");
-
-        return {
-          pgn,
-          white: getTag("White"),
-          black: getTag("Black"),
-          whiteResult:
-            result === "1-0"
-              ? "win"
-              : result === "0-1"
-                ? "loss"
-                : result === "1/2-1/2"
-                  ? "draw"
-                  : null,
-          blackResult:
-            result === "0-1"
-              ? "win"
-              : result === "1-0"
-                ? "loss"
-                : result === "1/2-1/2"
-                  ? "draw"
-                  : null,
-          whiteElo: parseInt(getTag("WhiteElo")),
-          blackElo: parseInt(getTag("BlackElo")),
-        };
-      });
-  }
-}
-
-// ─── PGN → FEN HISTORY ───────────────────────────────────────────────────
-
-function pgnToFenHistory(pgn) {
-  try {
-    const chess = new Chess();
-    chess.load_pgn(pgn);
-    const history = chess.history({ verbose: true });
-
-    const fens = [];
-    const chess2 = new Chess();
-    fens.push(chess2.fen());
-
-    for (const move of history) {
-      chess2.move(move);
-      fens.push(chess2.fen());
-    }
-
-    return fens;
-  } catch (e) {
-    console.warn("PGN parse error:", e);
-    return [];
-  }
-}
-
-// ─── EXTRACT WIN/LOST/DRAW FOR USERNAME ─────────────────────────────────
-
-function extractResult(gameInfo, username) {
-  const uLower = username.toLowerCase();
-  const isWhite = gameInfo.white.toLowerCase() === uLower;
-  const result = isWhite ? gameInfo.whiteResult : gameInfo.blackResult;
-
-  if (result === "win") return "win";
-  if (
-    ["checkmated", "timeout", "resigned", "abandoned", "lose", "loss"].includes(
-      result,
-    )
-  )
-    return "lost";
-  return "draw";
-}
-
-// ─── DIALOG 1 : Confirmation ──────────────────────────────────────────────
-
-function showChessHv3Prompt(username) {
-  Swal.fire({
-    customClass: { popup: "swal-rederic" },
-    title: "ChessHv3 Check",
-    showCloseButton: true,
-    showCancelButton: true,
-    confirmButtonText: "Yes",
-    cancelButtonText: "No",
-    focusConfirm: false,
-    html: `
-      ${swalThemeCSS}
-      <div style="text-align:center; margin: 8px 0 4px;">
-        <div style="
-          width: 52px; height: 52px; border-radius: 50%;
-          background: rgba(74,124,31,0.10);
-          border: 1px solid rgba(74,124,31,0.30);
-          display: flex; align-items: center; justify-content: center;
-          margin: 0 auto 14px;
-          font-family: 'Space Mono', monospace;
-          font-size: 22px; font-weight: 700; color: #4a7c1f;
-        ">?</div>
-        <p style="font-size:14.5px; color:#7a7060; line-height:1.6; margin:0;">
-          Do you want to view your stats summary?
-        </p>
-        <p style="font-family:'Space Mono',monospace; font-size:11px; color:#b0a898; margin-top:6px;">
-          accuracy · win · lost · draw · safety
-        </p>
-      </div>
-    `,
-  }).then((result) => {
-    if (result.isConfirmed) {
-      runAnalysis(username);
-    }
-  });
-}
-
-// ─── DIALOG 2 : Loading ───────────────────────────────────────────────────
-
-function showLoadingDialog() {
-  Swal.fire({
-    customClass: { popup: "swal-rederic" },
-    title: "ChessHv3 Check",
-    showConfirmButton: false,
-    showCloseButton: false,
-    allowOutsideClick: false,
-    allowEscapeKey: false,
-    focusConfirm: false,
-    html: `
-      ${swalThemeCSS}
-      <div style="text-align:center; margin-bottom:6px;">
-        <p style="font-size:13px; color:#7a7060; margin:0 0 4px;">
-          Analyzing your last 10 games...
-        </p>
-      </div>
-      <div class="chv3-loading-wrap">
-        <div class="chv3-loading-label">
-          <span id="chv3-step">Fetching games</span>
-          <span id="chv3-pct">0%</span>
-        </div>
-        <div class="chv3-bar-track">
-          <div class="chv3-bar-fill" id="chv3-bar"></div>
-        </div>
-        <div class="chv3-game-label" id="chv3-game-label">—</div>
-      </div>
-      <span class="swal-author" style="margin-top:10px;">red-Eric</span>
-    `,
-  });
-}
-
-function updateLoadingBar(percent, stepLabel, gameLabel) {
-  const bar = document.getElementById("chv3-bar");
-  const pct = document.getElementById("chv3-pct");
-  const step = document.getElementById("chv3-step");
-  const glbl = document.getElementById("chv3-game-label");
-  if (bar) bar.style.width = percent + "%";
-  if (pct) pct.textContent = Math.round(percent) + "%";
-  if (step && stepLabel) step.textContent = stepLabel;
-  if (glbl && gameLabel) glbl.textContent = gameLabel;
-}
-
-// ─── DIALOG 3 : Résultats ────────────────────────────────────────────────
-
-function showStatsDialog({ accuracy, win, lost, draw, safety }) {
-  const badgeMap = {
-    legit: `<span class="safety-badge badge-legit"><span class="dot dot-legit"></span>Legit</span>`,
-    sus: `<span class="safety-badge badge-sus"><span class="dot dot-sus"></span>Sus</span>`,
-    cheater: `<span class="safety-badge badge-cheater"><span class="dot dot-cheater"></span>Cheater</span>`,
-  };
-
-  Swal.fire({
-    customClass: { popup: "swal-rederic" },
-    title: "ChessHv3 Check",
-    showCloseButton: true,
-    confirmButtonText: "Done",
-    focusConfirm: false,
-    html: `
-      ${swalThemeCSS}
-
-      <div class="stats-grid">
-        <div class="stat-card s-acc">
-          <span class="s-label">Avg. Accuracy</span>
-          <span class="s-value">${accuracy.toFixed(1)}%</span>
-        </div>
-        <div class="stat-card s-win">
-          <span class="s-label">Win</span>
-          <span class="s-value">${win}</span>
-        </div>
-        <div class="stat-card s-lost">
-          <span class="s-label">Lost</span>
-          <span class="s-value">${lost}</span>
-        </div>
-        <div class="stat-card s-draw">
-          <span class="s-label">Draw</span>
-          <span class="s-value">${draw}</span>
-        </div>
-      </div>
-
-      <div class="safety-row">
-        <div>
-          <span class="s-label">Safety rating</span>
-          <span style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:#7a7060;">
-            Account status
-          </span>
-        </div>
-        ${badgeMap[safety] ?? badgeMap.legit}
-      </div>
-
-      <div class="swal-footer-note">
-        Legit = clean player &nbsp;·&nbsp; Sus = suspicious activity &nbsp;·&nbsp; Cheater = engine use detected.
-      </div>
-      <span class="swal-author">red-Eric</span>
-    `,
-  });
-}
-
-// ─── ORCHESTRATION PRINCIPALE ────────────────────────────────────────────
-
-async function runAnalysis(username) {
-  // Ouvre le dialog de chargement
-  showLoadingDialog();
-
-  try {
-    // ── Étape 1 : Fetch PGN ──────────────────────────────────────────
-    updateLoadingBar(5, "Fetching games...", "Connecting to API...");
-    const games = await getLast10PGN(username);
-    updateLoadingBar(15, "Games fetched", `${games.length} games found`);
-
-    // ── Étape 2 : Init engine ─────────────────────────────────────────
-    updateLoadingBar(18, "Starting engine", "Initializing Stockfish...");
-    const engine = new AnalyzeEngine({ depth: config.depth });
-    await engine.init();
-    updateLoadingBar(22, "Engine ready", "Stockfish is running");
-
-    // ── Étape 3 : Analyser chaque partie ─────────────────────────────
-    let totalWhiteAcc = 0;
-    let totalBlackAcc = 0;
-    let win = 0,
-      lost = 0,
-      draw = 0;
-    let accCount = 0;
-
-    const uLower = username.toLowerCase();
-
-    for (let i = 0; i < games.length; i++) {
-      const gameInfo = games[i];
-      const pct = 22 + (i / games.length) * 68;
-      updateLoadingBar(
-        pct,
-        `Analyzing game ${i + 1} / ${games.length}`,
-        `vs ${gameInfo.white.toLowerCase() === uLower ? gameInfo.black : gameInfo.white}`,
-      );
-
-      // Résultat W/L/D
-      const res = extractResult(gameInfo, username);
-      if (res === "win") win++;
-      else if (res === "lost") lost++;
-      else draw++;
-
-      // FEN history depuis PGN
-      const fenHistory = pgnToFenHistory(gameInfo.pgn);
-      if (fenHistory.length < 2) continue;
-
-      const isWhite = gameInfo.white.toLowerCase() === uLower;
-
-      try {
-        const result = await engine.update(fenHistory, {
-          whiteElo: gameInfo.whiteElo,
-          blackElo: gameInfo.blackElo,
-        });
-
-        if (result) {
-          const acc = isWhite ? result.white.accuracy : result.black.accuracy;
-          if (acc !== null && !isNaN(acc)) {
-            totalWhiteAcc += acc;
-            accCount++;
-          }
-        }
-      } catch (e) {
-        console.warn(`Game ${i + 1} analysis error:`, e);
-      }
-    }
-
-    updateLoadingBar(92, "Finishing up", "Computing final stats...");
-    engine.terminate();
-
-    // ── Étape 4 : Calculer les stats finales ─────────────────────────
-    const avgAccuracy = accCount > 0 ? totalWhiteAcc / accCount : 0;
-    const safety = classifySafety(avgAccuracy, win, lost, draw);
-
-    updateLoadingBar(100, "Done!", "Analysis complete");
-
-    // Petit délai pour que la barre atteigne 100% visuellement
-    await new Promise((r) => setTimeout(r, 600));
-
-    // ── Étape 5 : Afficher les résultats ─────────────────────────────
-    showStatsDialog({ accuracy: avgAccuracy, win, lost, draw, safety });
-  } catch (err) {
-    console.error("ChessHv3 analysis error:", err);
-    Swal.fire({
-      customClass: { popup: "swal-rederic" },
-      title: "ChessHv3 Check",
-      showCloseButton: true,
-      confirmButtonText: "Close",
-      html: `
-        ${swalThemeCSS}
-        <p style="font-family:'Space Mono',monospace;font-size:12px;color:#b84040;text-align:center;margin:10px 0;">
-          ⚠ Analysis failed.<br>
-          <span style="color:#b0a898;font-size:10px;">${err.message}</span>
-        </p>
-      `,
-    });
-  }
-}
-
-// const TARGET_USERNAME = "hello";
-// showChessHv3Prompt(TARGET_USERNAME);
-
-class AnalyzeEngine {
-  constructor({ depth = config.depth } = {}) {
-    this.depth = depth;
-    this.engine = null;
-    this._resolveEval = null;
-    this._currentLines = [];
-    this._cache = new Map();
-    this._queue = [];
-    this._running = false;
-  }
-
-  async init() {
-    this.engine = await this._createWorker();
-    await this._waitReady();
-  }
-
-  _createWorker() {
-    return new Promise((resolve, reject) => {
-      try {
-        const blob = new Blob([stockfishCode], {
-          type: "application/javascript",
-        });
-        const blobUrl = URL.createObjectURL(blob);
-        const worker = new Worker(blobUrl);
-        URL.revokeObjectURL(blobUrl);
-        resolve(worker);
-      } catch (e) {
-        reject(new Error("Failed to create Stockfish worker: " + e.message));
-      }
-    });
-  }
-
-  _waitReady() {
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(
-        () => reject(new Error("Stockfish readyok timeout")),
-        10000,
-      );
-      const originalOnMessage = this.engine.onmessage;
-      this.engine.onmessage = (e) => {
-        if (e.data === "readyok") {
-          clearTimeout(timeout);
-          this.engine.onmessage = (ev) => this._handleMessage(ev.data);
-          resolve();
-          return;
-        }
-        originalOnMessage?.(e);
-      };
-      this.engine.postMessage("uci");
-      this.engine.postMessage("ucinewgame");
-      this.engine.postMessage("isready");
-    });
-  }
-
-  terminate() {
-    this.engine?.terminate();
-    this.engine = null;
-  }
-
-  reset() {
-    this._cache.clear();
-    this._queue = [];
-    this._running = false;
-  }
-
-  async update(fenHistory, { whiteElo, blackElo, onProgress } = {}) {
-    if (fenHistory.length < 2) return;
-    const newFens = fenHistory.filter((fen) => !this._cache.has(fen));
-    if (newFens.length > 0) {
-      await this._enqueueAndWait(newFens, () => {
-        onProgress?.(this._cache.size / fenHistory.length);
-      });
-    }
-    const positions = fenHistory.map((fen) => this._cache.get(fen));
-    const withPlayed = this._attachPlayedMoves(positions, fenHistory);
-    const classified = this._classifyMoves(withPlayed);
-    const {
-      white: whiteAcc,
-      black: blackAcc,
-      movesAccuracy,
-    } = this._computeAccuracy(classified);
-    const eloEst = this._computeEstimatedElo(classified, whiteElo, blackElo);
-    const moves = classified.slice(1).map((pos, i) => ({
-      moveIndex: i + 1,
-      isWhite: i % 2 === 0,
-      moveNumber: Math.ceil((i + 1) / 2),
-      // classification: pos.moveClassification,
-      accuracy: movesAccuracy[i] ?? null,
-      winPercent: this._getPositionWinPercentage(pos),
-      cp: pos.lines[0]?.cp ?? null,
-      mate: pos.lines[0]?.mate ?? null,
-    }));
-    return {
-      white: {
-        accuracy: parseFloat(whiteAcc.toFixed(1)),
-        elo: eloEst?.white ?? null,
-        acpl: eloEst?.whiteCpl ?? null,
-      },
-      black: {
-        accuracy: parseFloat(blackAcc.toFixed(1)),
-        elo: eloEst?.black ?? null,
-        acpl: eloEst?.blackCpl ?? null,
-      },
-      moves,
-      cached: fenHistory.length - newFens.length,
-      computed: newFens.length,
-    };
-  }
-
-  _enqueueAndWait(fens, onEach) {
-    for (const fen of fens) {
-      if (!this._cache.has(fen) && !this._queue.includes(fen)) {
-        this._queue.push(fen);
-      }
-    }
-    if (this._running) return this._waitUntilCached(fens);
-    return this._drainQueue(onEach);
-  }
-
-  async _drainQueue(onEach) {
-    this._running = true;
-    while (this._queue.length > 0) {
-      const fen = this._queue.shift();
-      if (this._cache.has(fen)) continue;
-      const result = await this._evalPosition(fen);
-      this._cache.set(fen, result);
-      onEach?.(fen);
-    }
-    this._running = false;
-  }
-
-  _waitUntilCached(fens) {
-    return new Promise((resolve) => {
-      const check = () => {
-        if (fens.every((f) => this._cache.has(f))) resolve();
-        else setTimeout(check, 50);
-      };
-      check();
-    });
-  }
-
-  _handleMessage(msg) {
-    if (msg.startsWith("info") && msg.includes(" pv ")) {
-      const depthMatch = msg.match(/\bdepth (\d+)/);
-      const multiPvMatch = msg.match(/\bmultipv (\d+)/);
-      const cpMatch = msg.match(/\bscore cp (-?\d+)/);
-      const mateMatch = msg.match(/\bscore mate (-?\d+)/);
-      const pvMatch = msg.match(/ pv (.+)/);
-      if (!depthMatch || !multiPvMatch || !pvMatch) return;
-      const multiPv = parseInt(multiPvMatch[1]);
-      const pv = pvMatch[1].trim().split(" ");
-      const line = { pv, depth: parseInt(depthMatch[1]), multiPv };
-      if (cpMatch) line.cp = parseInt(cpMatch[1]);
-      if (mateMatch) line.mate = parseInt(mateMatch[1]);
-      this._currentLines[multiPv - 1] = line;
-    }
-    if (msg.startsWith("bestmove")) {
-      const bestMove = msg.split(" ")[1];
-      if (this._resolveEval) {
-        this._resolveEval({
-          lines: this._currentLines.filter(Boolean),
-          bestMove,
-        });
-        this._resolveEval = null;
-      }
-    }
-  }
-
-  _evalPosition(fen) {
-    return new Promise((resolve) => {
-      this._currentLines = [];
-      const whiteToPlay = fen.split(" ")[1] === "w";
-      this._resolveEval = (result) => {
-        if (!whiteToPlay) {
-          result.lines = result.lines.map((line) => ({
-            ...line,
-            cp: line.cp !== undefined ? -line.cp : line.cp,
-            mate: line.mate !== undefined ? -line.mate : line.mate,
-          }));
-        }
-        resolve(result);
-      };
-      this.engine.postMessage(`position fen ${fen}`);
-      this.engine.postMessage(`setoption name MultiPV value 2`);
-      this.engine.postMessage(`go depth ${this.depth}`);
-    });
-  }
-
-  _attachPlayedMoves(positions, fenHistory) {
-    const hasChessJs = typeof Chess !== "undefined";
-    return positions.map((pos, i) => {
-      if (i === 0) return { ...pos, playedWasBest: false };
-      const fenBase = fenHistory[i].split(" ")[0];
-      const isBook = typeof BOOKS !== "undefined" && BOOKS.includes(fenBase);
-      if (isBook) return { ...pos, playedWasBest: false, isBook: true };
-      const prevBestMove = positions[i - 1]?.bestMove;
-      if (!hasChessJs || !prevBestMove) return { ...pos, playedWasBest: false };
-      try {
-        const chess = new Chess(fenHistory[i - 1]);
-        chess.move({
-          from: prevBestMove.slice(0, 2),
-          to: prevBestMove.slice(2, 4),
-          promotion: prevBestMove[4] || undefined,
-        });
-        const fenAfterBest = chess.fen().split(" ").slice(0, 4).join(" ");
-        const actualFen = fenHistory[i].split(" ").slice(0, 4).join(" ");
-        return { ...pos, playedWasBest: fenAfterBest === actualFen };
-      } catch {
-        return { ...pos, playedWasBest: false };
-      }
-    });
-  }
-
-  _classifyMoves(positions) {
-    const positionsWP = positions.map((p) => this._getPositionWinPercentage(p));
-    return positions.map((pos, index) => {
-      if (index === 0) return { ...pos, moveClassification: null };
-      if (pos.isBook)
-        return { ...pos, moveClassification: MoveClassification.Book };
-      const prevPos = positions[index - 1];
-      const isWhite = index % 2 === 1;
-      const lastWP = positionsWP[index - 1];
-      const wp = positionsWP[index];
-      const isBestMove = pos.playedWasBest;
-      const wpLoss = (lastWP - wp) * (isWhite ? 1 : -1);
-      const altLine = prevPos.lines[1];
-      const altWP = altLine ? this._getLineWinPercentage(altLine) : undefined;
-      if (prevPos.lines.length === 1)
-        return { ...pos, moveClassification: MoveClassification.Forced };
-      if (isBestMove) {
-        if (altWP !== undefined) {
-          const gap = (wp - altWP) * (isWhite ? 1 : -1);
-          if (gap >= 10)
-            return { ...pos, moveClassification: MoveClassification.Brilliant };
-          if (gap >= 5)
-            return { ...pos, moveClassification: MoveClassification.Great };
-        }
-        return { ...pos, moveClassification: MoveClassification.Best };
-      }
-      if (wpLoss > 20)
-        return { ...pos, moveClassification: MoveClassification.Blunder };
-      if (wpLoss > 10) {
-        const isMiss =
-          altWP !== undefined ? (altWP - wp) * (isWhite ? 1 : -1) > 20 : false;
-        return {
-          ...pos,
-          moveClassification: isMiss
-            ? MoveClassification.Miss
-            : MoveClassification.Mistake,
-        };
-      }
-      if (wpLoss > 5)
-        return { ...pos, moveClassification: MoveClassification.Inaccuracy };
-      if (wpLoss <= 2)
-        return { ...pos, moveClassification: MoveClassification.Excellent };
-      return { ...pos, moveClassification: MoveClassification.Good };
-    });
-  }
-
-  _computeAccuracy(positions) {
-    const wp = positions.map((p) => this._getPositionWinPercentage(p));
-    const weights = this._getAccuracyWeights(wp);
-    const movesAccuracy = this._getMovesAccuracy(wp);
-    return {
-      white: this._getPlayerAccuracy(movesAccuracy, weights, "white"),
-      black: this._getPlayerAccuracy(movesAccuracy, weights, "black"),
-      movesAccuracy,
-    };
-  }
-
-  _getPlayerAccuracy(movesAccuracy, weights, player) {
-    const rem = player === "white" ? 0 : 1;
-    const accs = movesAccuracy.filter((_, i) => i % 2 === rem);
-    const wts = weights.filter((_, i) => i % 2 === rem);
-    if (accs.length === 0) return 100;
-    const wm = this._weightedMean(accs, wts);
-    const hm = this._harmonicMean(accs.map((a) => Math.max(a, 10)));
-    return (wm + hm) / 2;
-  }
-
-  _getAccuracyWeights(movesWP) {
-    const windowSize = this._clamp(Math.ceil(movesWP.length / 10), 2, 8);
-    const half = Math.round(windowSize / 2);
-    const windows = [];
-    for (let i = 1; i < movesWP.length; i++) {
-      const s = i - half,
-        e = i + half;
-      if (s < 0) windows.push(movesWP.slice(0, windowSize));
-      else if (e > movesWP.length) windows.push(movesWP.slice(-windowSize));
-      else windows.push(movesWP.slice(s, e));
-    }
-    return windows.map((w) => this._clamp(this._stdDev(w), 0.5, 12));
-  }
-
-  _getMovesAccuracy(movesWP) {
-    return movesWP.slice(1).map((wp, idx) => {
-      const last = movesWP[idx];
-      const isWhite = idx % 2 === 0;
-      const diff = isWhite ? Math.max(0, last - wp) : Math.max(0, wp - last);
-      const raw =
-        103.1668100711649 * Math.exp(-0.04354415386753951 * diff) -
-        3.166924740191411;
-      return Math.min(100, Math.max(0, raw + 1));
-    });
-  }
-
-  _computeEstimatedElo(positions, whiteElo, blackElo) {
-    if (positions.length < 2) return null;
-    let prevCp = this._getPositionCp(positions[0]);
-    let wLoss = 0,
-      bLoss = 0;
-    positions.slice(1).forEach((pos, i) => {
-      const cp = this._getPositionCp(pos);
-      if (i % 2 === 0) wLoss += cp > prevCp ? 0 : Math.min(prevCp - cp, 1000);
-      else bLoss += cp < prevCp ? 0 : Math.min(cp - prevCp, 1000);
-      prevCp = cp;
-    });
-    const n = positions.length - 1;
-    const whiteCpl = wLoss / Math.ceil(n / 2);
-    const blackCpl = bLoss / Math.floor(n / 2);
-    return {
-      white: Math.round(
-        this._eloFromRatingAndCpl(whiteCpl, whiteElo ?? blackElo),
-      ),
-      black: Math.round(
-        this._eloFromRatingAndCpl(blackCpl, blackElo ?? whiteElo),
-      ),
-      whiteCpl: Math.round(whiteCpl),
-      blackCpl: Math.round(blackCpl),
-    };
-  }
-
-  _eloFromAcpl(acpl) {
-    return 3100 * Math.exp(-0.01 * acpl);
-  }
-  _acplFromElo(elo) {
-    return -100 * Math.log(Math.min(elo, 3100) / 3100);
-  }
-  _eloFromRatingAndCpl(cpl, rating) {
-    const base = this._eloFromAcpl(cpl);
-    if (!rating) return base;
-    const diff = cpl - this._acplFromElo(rating);
-    if (diff === 0) return base;
-    return diff > 0
-      ? rating * Math.exp(-0.005 * diff)
-      : rating / Math.exp(0.005 * diff);
-  }
-
-  _getWinPercentageFromCp(cp) {
-    const c = this._clamp(cp, -1000, 1000);
-    return 50 + 50 * (2 / (1 + Math.exp(-0.00368208 * c)) - 1);
-  }
-  _getLineWinPercentage(line) {
-    if (line.cp !== undefined) return this._getWinPercentageFromCp(line.cp);
-    if (line.mate !== undefined) return line.mate > 0 ? 100 : 0;
-    throw new Error("No cp or mate in line");
-  }
-  _getPositionWinPercentage(pos) {
-    return this._getLineWinPercentage(pos.lines[0]);
-  }
-  _getPositionCp(pos) {
-    const l = pos.lines[0];
-    if (l.cp !== undefined) return this._clamp(l.cp, -1000, 1000);
-    if (l.mate !== undefined) return l.mate > 0 ? 1000 : -1000;
-    throw new Error("No cp or mate");
-  }
-
-  _clamp(n, min, max) {
-    return Math.min(max, Math.max(min, n));
-  }
-  _harmonicMean(arr) {
-    return arr.length / arr.reduce((s, v) => s + 1 / v, 0);
-  }
-  _weightedMean(arr, w) {
-    return (
-      arr.reduce((s, v, i) => s + v * w[i], 0) /
-      w.slice(0, arr.length).reduce((a, b) => a + b, 0)
-    );
-  }
-  _stdDev(arr) {
-    const m = arr.reduce((a, b) => a + b) / arr.length;
-    return Math.sqrt(
-      arr.map((x) => (x - m) ** 2).reduce((a, b) => a + b) / arr.length,
-    );
-  }
-}
