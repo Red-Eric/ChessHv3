@@ -7496,48 +7496,18 @@ function extractResult(gameInfo, username) {
   return "draw";
 }
 
-// ─── DIALOG 1 : Confirmation ──────────────────────────────────────────────
-
-// function showChessHv3Prompt(username) {
-//   Swal.fire({
-//     customClass: { popup: "swal-rederic" },
-//     title: "ChessHv3 Check",
-//     showCloseButton: true,
-//     showCancelButton: true,
-//     confirmButtonText: "Yes",
-//     cancelButtonText: "No",
-//     focusConfirm: false,
-//     html: `
-//       ${swalThemeCSS}
-//       <div style="text-align:center; margin: 8px 0 4px;">
-//         <div style="
-//           width: 52px; height: 52px; border-radius: 50%;
-//           background: rgba(74,124,31,0.10);
-//           border: 1px solid rgba(74,124,31,0.30);
-//           display: flex; align-items: center; justify-content: center;
-//           margin: 0 auto 14px;
-//           font-family: 'Space Mono', monospace;
-//           font-size: 22px; font-weight: 700; color: #4a7c1f;
-//         ">?</div>
-//         <p style="font-size:14.5px; color:#7a7060; line-height:1.6; margin:0;">
-//           Do you want to view your stats summary?
-//         </p>
-//         <p style="font-family:'Space Mono',monospace; font-size:11px; color:#b0a898; margin-top:6px;">
-//           accuracy · win · lost · draw · safety
-//         </p>
-//       </div>
-//     `,
-//   }).then((result) => {
-//     if (result.isConfirmed) {
-//       runAnalysis(username);
-//     }
-//   });
-// }
-
 
 async function showChessHv3Prompt(username) {
-  const isChessCom = window.location.host === "www.chess.com";
-  const isLichess  = window.location.host === "lichess.org";
+  const isChessCom   = window.location.host === "www.chess.com";
+  const isLichess    = window.location.host === "lichess.org";
+  const isWorldChess = window.location.host === "worldchess.com";
+
+  function getCookie(name) {
+    return document.cookie
+      .split("; ")
+      .find(row => row.startsWith(name + "="))
+      ?.split("=")[1];
+  }
 
   // ── Loading popup ──────────────────────────────────────────────
   Swal.fire({
@@ -7582,11 +7552,12 @@ async function showChessHv3Prompt(username) {
     if (lbl)   lbl.textContent = label;
   }
 
-  // ── Fetch ──────────────────────────────────────────────────────
   let stats = null;
+
   try {
     setBar(20, "Requesting player data…");
 
+    // ── Chess.com ────────────────────────────────────────────────
     if (isChessCom) {
       const statsRes = await fetch(`https://api.chess.com/pub/player/${username}/stats`);
       setBar(60, "Parsing records…");
@@ -7595,8 +7566,9 @@ async function showChessHv3Prompt(username) {
       function fmt(record) {
         const win = record?.win || 0, draw = record?.draw || 0, loss = record?.loss || 0;
         const total = win + draw + loss;
-        return { total, win, draw, loss,
-          winRate:  total ? (win  / total * 100).toFixed(1) : "0.0",
+        return {
+          total, win, draw, loss,
+          winRate: total ? (win / total * 100).toFixed(1) : "0.0",
           drawRate: total ? (draw / total * 100).toFixed(1) : "0.0",
           loseRate: total ? (loss / total * 100).toFixed(1) : "0.0",
         };
@@ -7606,7 +7578,7 @@ async function showChessHv3Prompt(username) {
       const blitz  = fmt(data.chess_blitz?.record);
       const bullet = fmt(data.chess_bullet?.record);
 
-      const totalWin  = rapid.win  + blitz.win  + bullet.win;
+      const totalWin  = rapid.win + blitz.win + bullet.win;
       const totalDraw = rapid.draw + blitz.draw + bullet.draw;
       const totalLoss = rapid.loss + blitz.loss + bullet.loss;
       const totalAll  = totalWin + totalDraw + totalLoss;
@@ -7614,34 +7586,88 @@ async function showChessHv3Prompt(username) {
       stats = {
         platform: "chess.com",
         total: {
-          total: totalAll, win: totalWin, draw: totalDraw, loss: totalLoss,
-          winRate:  totalAll ? (totalWin  / totalAll * 100).toFixed(1) : "0.0",
+          total: totalAll,
+          win: totalWin,
+          draw: totalDraw,
+          loss: totalLoss,
+          winRate: totalAll ? (totalWin / totalAll * 100).toFixed(1) : "0.0",
           drawRate: totalAll ? (totalDraw / totalAll * 100).toFixed(1) : "0.0",
           loseRate: totalAll ? (totalLoss / totalAll * 100).toFixed(1) : "0.0",
         },
       };
+    }
 
-    } else if (isLichess) {
+    // ── Lichess ─────────────────────────────────────────────────
+    else if (isLichess) {
       const res = await fetch(`https://lichess.org/api/user/${username}`);
       setBar(60, "Parsing records…");
       const data = await res.json();
+
       const win  = data.count?.win  || 0;
       const draw = data.count?.draw || 0;
       const loss = data.count?.loss || 0;
       const total = data.count?.all || (win + draw + loss);
+
       stats = {
         platform: "lichess",
         total: {
           total, win, draw, loss,
-          winRate:  total ? (win  / total * 100).toFixed(1) : "0.0",
+          winRate: total ? (win / total * 100).toFixed(1) : "0.0",
           drawRate: total ? (draw / total * 100).toFixed(1) : "0.0",
           loseRate: total ? (loss / total * 100).toFixed(1) : "0.0",
         },
       };
     }
 
+    // ── WorldChess ──────────────────────────────────────────────
+    else if (isWorldChess) {
+      const jwt = getCookie("jwt_master");
+      if (!jwt) throw new Error("JWT not found in cookies");
+
+      setBar(40, "Resolving player id…");
+
+      const meRes = await fetch(`https://api.worldchess.com/api/me/`, {
+        headers: { "Authorization": `JWT ${jwt}` }
+      });
+
+      const meData = await meRes.json();
+      const playerId = meData?.player?.player_id;
+      if (!playerId) throw new Error("Player ID not found");
+
+      setBar(70, "Parsing records…");
+
+      const statsRes = await fetch(`https://api.worldchess.com/api/gaming/players/${playerId}/stats/games-by-board-type`, {
+        headers: { "Authorization": `JWT ${jwt}` }
+      });
+
+      const data = await statsRes.json();
+
+      let totalWin = 0, totalDraw = 0, totalLoss = 0;
+
+      data.forEach(mode => {
+        totalWin  += mode.wins || 0;
+        totalLoss += mode.losses || 0;
+        totalDraw += mode.draws || 0;
+      });
+
+      const totalAll = totalWin + totalDraw + totalLoss;
+
+      stats = {
+        platform: "worldchess",
+        total: {
+          total: totalAll,
+          win: totalWin,
+          draw: totalDraw,
+          loss: totalLoss,
+          winRate: totalAll ? (totalWin / totalAll * 100).toFixed(1) : "0.0",
+          drawRate: totalAll ? (totalDraw / totalAll * 100).toFixed(1) : "0.0",
+          loseRate: totalAll ? (totalLoss / totalAll * 100).toFixed(1) : "0.0",
+        },
+      };
+    }
+
     setBar(90, "Building summary…");
-    await new Promise(r => setTimeout(r, 320));
+    await new Promise(r => setTimeout(r, 300));
     setBar(100, "Done.");
     await new Promise(r => setTimeout(r, 200));
 
@@ -7652,21 +7678,26 @@ async function showChessHv3Prompt(username) {
       showCloseButton: true,
       showConfirmButton: true,
       confirmButtonText: "Close",
-      html: `${swalThemeCSS}<p style="color:#b84040;font-family:'Space Mono',monospace;font-size:12px;">Failed to fetch stats.<br>${e.message}</p>`,
+      html: `${swalThemeCSS}
+        <p style="color:#b84040;font-family:'Space Mono',monospace;font-size:12px;">
+          Failed to fetch stats.<br>${e.message}
+        </p>`,
     });
     return;
   }
 
-  // ── Build stat block ───────────────────────────────────────────
+  // ── UI stats block (design conservé) ──────────────────────────
   function statBlock(label, s) {
     const wr = parseFloat(s.winRate);
     const wrColor = wr >= 50 && wr <= 60 ? "#3a7d1e" : wr > 60 ? "#b84040" : "#8a7040";
+
     return `
       <div style="margin-bottom:10px;">
         <div style="
           font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;
           text-transform:uppercase;color:#b0a898;text-align:left;margin-bottom:7px;
         ">${label}</div>
+
         <div class="stats-grid">
           <div class="stat-card s-win">
             <span class="s-label">Won</span>
@@ -7685,16 +7716,13 @@ async function showChessHv3Prompt(username) {
             <span class="s-value">${s.total}</span>
           </div>
         </div>
+
         <div style="display:flex;height:5px;border-radius:99px;overflow:hidden;margin-bottom:6px;gap:2px;">
-          <div style="flex:${s.winRate};background:#3a7d1e;border-radius:99px 0 0 99px;"></div>
+          <div style="flex:${s.winRate};background:#3a7d1e;"></div>
           <div style="flex:${s.drawRate};background:#8a7040;"></div>
-          <div style="flex:${s.loseRate};background:#b84040;border-radius:0 99px 99px 0;"></div>
+          <div style="flex:${s.loseRate};background:#b84040;"></div>
         </div>
-        <div style="display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:9px;color:#b0a898;margin-bottom:6px;">
-          <span style="color:#3a7d1e;">+${s.winRate}%</span>
-          <span style="color:#8a7040;">=${s.drawRate}%</span>
-          <span style="color:#b84040;">-${s.loseRate}%</span>
-        </div>
+
         <div style="
           font-family:'Space Mono',monospace;font-size:10px;
           color:${wrColor};
@@ -7703,18 +7731,21 @@ async function showChessHv3Prompt(username) {
           border-radius:6px;
           padding:5px 10px;
           text-align:center;
-          letter-spacing:0.5px;
         ">
-          win rate recommended to avoid ban: 50–60% &nbsp;·&nbsp; yours: <strong>${s.winRate}%</strong>
+          win rate recommended: 50–60% · yours: <strong>${s.winRate}%</strong>
         </div>
       </div>
     `;
   }
 
-  const platformLabel = stats.platform === "chess.com" ? "Σ Total (Chess.com)" : "Σ Total (Lichess)";
+  const platformLabel =
+    stats.platform === "chess.com" ? "Σ Total (Chess.com)" :
+    stats.platform === "lichess"   ? "Σ Total (Lichess)" :
+                                     "Σ Total (WorldChess)";
+
   const statsHTML = statBlock(platformLabel, stats.total);
 
-  // ── Confirmation popup with stats ──────────────────────────────
+  // ── Final popup ───────────────────────────────────────────────
   Swal.fire({
     customClass: { popup: "swal-rederic" },
     title: "ChessHv3 Check",
@@ -7722,20 +7753,16 @@ async function showChessHv3Prompt(username) {
     showCancelButton: true,
     confirmButtonText: "Yes",
     cancelButtonText: "No",
-    focusConfirm: false,
     html: `
       ${swalThemeCSS}
-      <div style="text-align:left; margin:4px 0;">
+      <div style="text-align:left;">
         ${statsHTML}
         <div style="
           font-family:'Space Mono',monospace;font-size:11px;color:#b0a898;
-          text-align:center;margin-top:4px;margin-bottom:2px;
+          text-align:center;margin-top:4px;
         ">
           Do you want to run the full analysis of your last 10 games?
         </div>
-        <p style="font-family:'Space Mono',monospace;font-size:10px;color:#b0a898;text-align:center;margin:4px 0 0;">
-          AVG accuracy · safety · engine detection
-        </p>
       </div>
     `,
   }).then((result) => {
