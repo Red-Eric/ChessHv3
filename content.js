@@ -262,6 +262,13 @@ const swalThemeCSS = `
     }
   </style>
 `;
+
+
+const bookPath = chrome.runtime.getURL("book/book.bin")
+const wasmkomodoPath = chrome.runtime.getURL("lib/engine.wasm")
+const wasmStockfishPath = chrome.runtime.getURL("lib/stockfish.wasm")
+
+
 const komodoCode = `
     var Module = typeof Module != "undefined" ? Module : {};
     var KOMODO_TEP = (function () {
@@ -634,7 +641,7 @@ const komodoCode = `
       return filename.startsWith(dataURIPrefix);
     }
     var wasmBinaryFile =
-      "chrome-extension://mhpmdjmaabinekdjggmdhjgjjnjelnmj/lib/engine.wasm";
+      "${wasmkomodoPath}";
     // wasmBinaryFile = Module.wasmBinaryFile || "explanation-engine.wasm";
     // if (!isDataURI(wasmBinaryFile)) {
     //   wasmBinaryFile = Module.wasmBinaryFile || locateFile(wasmBinaryFile);
@@ -5696,17 +5703,17 @@ const komodoCode = `
           }
 
           // ✅ URL dynamique — fonctionne peu importe l'ID de l'extension
-          var bookUrl = "chrome-extension://mhpmdjmaabinekdjggmdhjgjjnjelnmj/book/book.bin";
+          var bookUrl = "${bookPath}";
           if (
             typeof chrome !== "undefined" &&
             chrome.runtime &&
             chrome.runtime.getURL
           ) {
-            bookUrl = "chrome-extension://mhpmdjmaabinekdjggmdhjgjjnjelnmj/book/book.bin"
+            bookUrl = "${bookPath}"
           } else {
             // Fallback : construire depuis self.location (si worker)
             bookUrl =
-              "chrome-extension://mhpmdjmaabinekdjggmdhjgjjnjelnmj/book/book.bin";
+              "${bookPath}";
           }
 
         //   console.log("Chargement book depuis:", bookUrl);
@@ -6867,7 +6874,7 @@ const stockfishCode = `
               return (
                 a || (!k && !f) || "function" != typeof fetch
                   ? Promise.resolve().then(ie)
-                  : fetch('${chrome.runtime.getURL("lib/stockfish.wasm")}', { credentials: "same-origin" })
+                  : fetch("${wasmStockfishPath}", { credentials: "same-origin" })
                       .then(function (e) {
                         if (e.ok) return e.arrayBuffer();
                         throw "failed to load wasm binary file at '" + w + "'";
@@ -6903,7 +6910,7 @@ const stockfishCode = `
             oe() ||
             "function" != typeof fetch
               ? r(t)
-              : fetch('${chrome.runtime.getURL("lib/stockfish.wasm")}', { credentials: "same-origin" }).then(function (e) {
+              : fetch("${wasmStockfishPath}", { credentials: "same-origin" }).then(function (e) {
                   return WebAssembly.instantiateStreaming(e, o).then(
                     t,
                     function (e) {
