@@ -3,6 +3,7 @@ let lastFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 let hookedSite = false;
 const chess = new Chess();
 
+window.isGameOver = false
 function getStartFEN(fen) {
   const board = fen.split(" ")[0];
   const rows = board.split("/");
@@ -166,40 +167,17 @@ if (window.location.host === "lichess.org") {
       site.sound.move = function (x) {
         if (x && x.fen) {
           sideToMove = x.ply % 2 === 0 ? "w" : "b";
-
-          if (
-            sideToMove === "b" &&
-            (x.san === "O-O" || x.san === "O-O-O" || x.san.includes("K"))
-          ) {
-            castling = castling.replaceAll("KQ", "");
+          
+          if(x.status?.name === "draw" || x.status?.name === "mate"){
+            window.isGameOver = true
           }
-
-          if (sideToMove === "b" && x.uci.includes("a1")) {
-            castling = castling.replaceAll("Q", "");
-          }
-          if (sideToMove === "b" && x.uci.includes("h1")) {
-            castling = castling.replaceAll("K", "");
-          }
-          if (
-            sideToMove === "w" &&
-            (x.san === "O-O" || x.san === "O-O-O" || x.san.includes("K"))
-          ) {
-            castling = castling.replaceAll("kq", "");
-          }
-
-          if (sideToMove === "w" && x.uci.includes("a8")) {
-            castling = castling.replaceAll("q", "");
-          }
-          if (sideToMove === "w" && x.uci.includes("h8")) {
-            castling = castling.replaceAll("k", "");
-          }
-
-          if (castling === "") {
-            castling = "-";
+          else{
+            window.isGameOver = false
           }
 
           window.lastFEN = `${x.fen} ${sideToMove} - - 0 1`;
         }
+
         return _move.call(this, x);
       };
     }
@@ -231,7 +209,7 @@ if (window.location.host === "lichess.org") {
 
       if (event.data?.type === "FEN") {
         window.postMessage(
-          { type: "FEN_RESPONSE", fen: getFen(), lasts: getArrayMoves() },
+          { type: "FEN_RESPONSE", fen: getFen(), lasts: getArrayMoves(), isGameOver : window.isGameOver },
           "*",
         );
       }

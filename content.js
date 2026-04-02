@@ -4,6 +4,7 @@ const BOOKS = [];
 let userName = null;
 let lastClassification = null;
 let moveIndex_ = 999;
+let isGameOverFlag = true;
 
 const MoveClassification = {
   Brilliant: "brilliant",
@@ -8352,9 +8353,6 @@ class AnalyzeEngine {
   }
 }
 
-
-showChessHv3Prompt("hello")
-
 let debugEngine = false;
 
 function randomString(length) {
@@ -9894,7 +9892,7 @@ function extractNormalMove(moves, side = "white") {
 const jj0xffffff = () => {
   if (window.location.host === "www.chess.com") {
     let lastFEN = "";
-    let isGameOver = false;
+
     let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     let side_index = 1;
     let evalObj = null;
@@ -10040,9 +10038,15 @@ const jj0xffffff = () => {
         if (event.data && event.data.type === "FEN_RESPONSE") {
           fen_ = event.data.fen;
           side_index = event.data.side_;
-          isGameOver = event.data.isGameOver;
           userName = event.data.username;
           chessComFenHistory = event.data.fenHistory;
+          const isGameOver = event.data.isGameOver;
+          if(isGameOver && userName){
+            if(isGameOverFlag){
+              isGameOverFlag = false;
+              showChessHv3Prompt(userName)
+            }
+          }
         }
       });
     }
@@ -10829,6 +10833,17 @@ const jj0xffffff = () => {
         if (event.data && event.data.type === "FEN_RESPONSE") {
           arraysHighlight = event.data.lasts;
           if (event.data.fen !== fen_) {
+
+
+            
+
+            if(event.data.isGameOver){
+              if(userName && isGameOverFlag){
+                isGameOverFlag = false;
+                showChessHv3Prompt(userName)
+              }
+            }
+
             fen_ = event.data.fen;
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
 
@@ -10876,6 +10891,13 @@ const jj0xffffff = () => {
     inject();
 
     setInterval(() => {
+
+
+      if(document.querySelector("#user_tag")){
+        userName = document.querySelector("#user_tag").innerText
+      }
+
+
       if (!config.showEval && document.querySelector("#customEval")) {
         document.querySelector("#customEval").remove();
         // customEval = null;
