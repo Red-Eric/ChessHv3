@@ -22,7 +22,6 @@ const MoveClassification = {
 
 let lastUrl = window.location.pathname
 
-
 const swalThemeCSS = `
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap');
@@ -130,7 +129,6 @@ const swalThemeCSS = `
       backdrop-filter: blur(4px) !important;
     }
 
-    /* ── Loading bar ── */
     .chv3-loading-wrap {
       margin: 18px 0 8px;
     }
@@ -166,7 +164,6 @@ const swalThemeCSS = `
       text-align: left;
     }
 
-    /* ── Stats cards ── */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -200,7 +197,6 @@ const swalThemeCSS = `
     .stat-card.s-draw .s-value { color: #8a7040; }
     .stat-card.s-acc  .s-value { color: #4a7c1f; }
 
-    /* ── Safety row ── */
     .safety-row {
       background: var(--bg-card);
       border: 1px solid var(--border-strong);
@@ -240,7 +236,6 @@ const swalThemeCSS = `
     .dot-sus     { background: #b84040; }
     .dot-cheater { background: #888; }
 
-    /* ── Footer note ── */
     .swal-footer-note {
       padding: 11px 14px;
       background: rgba(74,124,31,0.06);
@@ -270,7 +265,6 @@ const bookPath = chrome.runtime.getURL("book/book.bin");
 const wasmkomodoPath = chrome.runtime.getURL("lib/dragon3.3.wasm");
 const wasmStockfishPath = chrome.runtime.getURL("lib/stockfish.wasm");
 const wasmTorchPath = chrome.runtime.getURL("lib/torch.wasm");
-
 
 const torchCode = `var Module = typeof Module != "undefined" ? Module : {};
 var KOMODO_TEP = function() {
@@ -643,7 +637,7 @@ var KOMODO_TEP = function() {
                         return filename.startsWith("file://")
                 }
                 var wasmBinaryFile = "${wasmTorchPath}";
-                
+
                 function getBinary(file) {
                         try {
                                 if (file == wasmBinaryFile && wasmBinary) {
@@ -13120,8 +13114,6 @@ const stockfishCode = `
 
   `;
 
-
-
 function classifySafety(avgAccuracy, win, lost, draw) {
   const total = win + lost + draw;
   const winRate = total > 0 ? (win / total) * 100 : 0;
@@ -15067,7 +15059,6 @@ class komodo {
         //console.log(line);
         if (typeof line !== "string") return;
 
-        /* ---------- BOOK MOVES ---------- */
         if (line.startsWith("bestmove")) {
           const parts = line.split(" ");
 
@@ -15090,7 +15081,6 @@ class komodo {
 
         // ❌ Sinon comportement normal (analyse engine)
 
-        /* ---------- INFO LINES ---------- */
         if (line.startsWith("info")) {
           infoLines.push(line);
 
@@ -15103,7 +15093,6 @@ class komodo {
           return;
         }
 
-        /* ---------- END ---------- */
         if (line.startsWith("bestmove")) {
           this.worker.removeEventListener("message", onMessage);
 
@@ -15118,7 +15107,6 @@ class komodo {
             const mpv = mpvIndex !== -1 ? parseInt(parts[mpvIndex + 1], 10) : 1;
             if (mpv > this.multipv) continue;
 
-            /* ---------- SCORE ---------- */
             let evalScore = null;
             const scoreIndex = parts.indexOf("score");
             if (scoreIndex !== -1 && scoreIndex + 2 < parts.length) {
@@ -15137,7 +15125,6 @@ class komodo {
               }
             }
 
-            /* ---------- MOVE ---------- */
             const pvIndex = parts.indexOf("pv");
             if (pvIndex !== -1 && pvIndex + 1 < parts.length) {
               const move = parts[pvIndex + 1];
@@ -15166,6 +15153,148 @@ class komodo {
     });
   }
 }
+
+class Torch {
+  constructor({ depth = config.depth, multipv = config.lines }) {
+    this.depth = depth;
+    this.multipv = multipv;
+    this.ready = this.init();
+  }
+
+  async init() {
+    this.worker = await createWorker();
+    this.worker.postMessage("uci");
+    this.setOptions();
+  }
+
+  hardStop() {
+    if (this.worker) {
+      this.worker.terminate();
+      this.worker = null;
+    }
+  }
+
+  async restartWorker() {
+    this.hardStop();
+    this.worker = await createWorker();
+    this.worker.postMessage("uci");
+    this.setOptions();
+  }
+
+  setOptions() {
+    this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
+  }
+
+  updateConfig(lines, depth) {
+    this.depth = depth;
+    this.multipv = lines;
+    this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
+  }
+
+  async getMovesByFen(fen, side) {
+    await this.ready;
+    this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
+
+    const results = [];
+    const seenMoves = new Set();
+    const infoLines = [];
+    const sideToMove = fen.split(" ")[1];
+
+    return new Promise((resolve) => {
+      const onMessage = (event) => {
+        const line = event.data;
+        if (typeof line !== "string") return;
+
+        // 🔥 récupération des infos
+        if (line.startsWith("info")) {
+          infoLines.push(line);
+          return;
+        }
+
+        if (line.startsWith("bestmove")) {
+          this.worker.removeEventListener("message", onMessage);
+
+          // 🔥 best ligne par multipv
+          const bestByMultipv = new Map();
+
+          for (const infoLine of infoLines) {
+            if (!infoLine.includes("multipv") || !infoLine.includes(" pv "))
+              continue;
+
+            const parts = infoLine.split(" ");
+
+            const mpvIndex = parts.indexOf("multipv");
+            const depthIndex = parts.indexOf("depth");
+
+            if (mpvIndex === -1 || depthIndex === -1) continue;
+
+            const mpv = parseInt(parts[mpvIndex + 1], 10);
+            const depth = parseInt(parts[depthIndex + 1], 10);
+
+            if (mpv > this.multipv) continue;
+
+            const prev = bestByMultipv.get(mpv);
+
+            if (!prev || depth > prev.depth) {
+              bestByMultipv.set(mpv, { line: infoLine, depth });
+            }
+          }
+
+          // 🔥 extraction finale
+          for (const { line: infoLine } of bestByMultipv.values()) {
+            const parts = infoLine.split(" ");
+
+            let evalScore = null;
+            const scoreIndex = parts.indexOf("score");
+
+            if (scoreIndex !== -1 && scoreIndex + 2 < parts.length) {
+              const type = parts[scoreIndex + 1];
+              let value = parseInt(parts[scoreIndex + 2], 10);
+
+              if (!isNaN(value)) {
+                if (type === "cp") {
+                  if (sideToMove === "b") value = -value;
+                  const v = (value / 100).toFixed(2);
+                  evalScore = value >= 0 ? `+${v}` : `${v}`;
+                } else if (type === "mate") {
+                  if (sideToMove === "b") value = -value;
+                  evalScore = value > 0 ? `#${value}` : `#-${Math.abs(value)}`;
+                }
+              }
+            }
+
+            const pvIndex = parts.indexOf("pv");
+
+            if (pvIndex !== -1 && pvIndex + 1 < parts.length) {
+              const move = parts[pvIndex + 1];
+
+              if (move.length >= 4 && !seenMoves.has(move)) {
+                results.push({
+                  from: move.slice(0, 2),
+                  to: move.slice(2, 4),
+                  eval: evalScore,
+                  fen: fen,
+                  side: side,
+                });
+
+                seenMoves.add(move);
+              }
+            }
+          }
+
+          resolve(results);
+        }
+      };
+
+      this.worker.addEventListener("message", onMessage);
+
+      this.worker.postMessage(`stop`);
+      this.worker.postMessage(`position fen ${fen}`);
+      this.worker.postMessage(`go depth ${this.depth}`);
+    });
+  }
+}
+
 
 const engine = new komodo({
   elo: config.elo,
@@ -15263,7 +15392,6 @@ function createSimpleAccuracyDisplay(
         pointer-events: none;
       }
 
-      /* ── You marker ── */
       .acc-side-badge {
         writing-mode: vertical-rl;
         text-orientation: mixed;
@@ -15285,7 +15413,6 @@ function createSimpleAccuracyDisplay(
       .acc-side-badge-you-white { background: #1a1a18; color: #c8c8c4; }
       .acc-side-badge-you-black { background: #f2f2ee; color: #666; }
 
-      /* ── Card ── */
       .acc-card {
         width: 210px;
         display: grid;
@@ -15310,7 +15437,6 @@ function createSimpleAccuracyDisplay(
       .acc-card-active-white { outline: 1.5px solid #b8b8b2; }
       .acc-card-active-black { outline: 1.5px solid rgba(255,255,255,0.16); }
 
-      /* ── Segments ── */
       .acc-segment {
         padding: 10px 12px;
         display: flex;
@@ -15326,7 +15452,6 @@ function createSimpleAccuracyDisplay(
       .acc-card-white .acc-segment:first-child { border-right-color: #ddddd8; }
       .acc-card-black .acc-segment:first-child { border-right-color: rgba(255,255,255,0.05); }
 
-      /* ── Label ── */
       .acc-label {
         font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
         font-size: 9px;
@@ -15338,7 +15463,6 @@ function createSimpleAccuracyDisplay(
       .acc-card-white .acc-label { color: #8a8a84; }
       .acc-card-black .acc-label { color: #4a4a46; }
 
-      /* ── Value ── */
       .acc-value {
         font-family: 'DM Mono', ui-monospace, 'Courier New', monospace;
         font-size: 21px;
@@ -15350,12 +15474,10 @@ function createSimpleAccuracyDisplay(
       .acc-card-white .acc-value { color: #111110; }
       .acc-card-black .acc-value { color: #e8e8e6; }
 
-      /* Dim inactive */
       .acc-card-inactive .acc-value  { opacity: 0.38; }
       .acc-card-inactive .acc-label  { opacity: 0.45; }
       .acc-card-inactive .acc-threat-dot { opacity: 0.3; }
 
-      /* ── Threat dot ── */
       .acc-threat-dot {
         display: inline-block;
         width: 7px;
@@ -15368,38 +15490,31 @@ function createSimpleAccuracyDisplay(
         transition: background 0.35s ease, box-shadow 0.35s ease;
       }
 
-      /* ── Threat colors ── */
-      /* Safe — green */
       .acc-threat-safe {
         background: #22c55e;
         box-shadow: 0 0 5px rgba(34,197,94,0.55);
       }
 
-      /* Warning — yellow */
       .acc-threat-warn {
         background: #eab308;
         box-shadow: 0 0 5px rgba(234,179,8,0.55);
       }
 
-      /* Suspicious — orange */
       .acc-threat-sus {
         background: #f97316;
         box-shadow: 0 0 5px rgba(249,115,22,0.55);
       }
 
-      /* Cheat — red */
       .acc-threat-cheat {
         background: #ef4444;
         box-shadow: 0 0 6px rgba(239,68,68,0.7);
       }
 
-      /* dot hidden when no value yet */
       .acc-threat-hidden {
         background: transparent;
         box-shadow: none;
       }
 
-      /* Value color overrides when active card */
       .acc-card-active-white .acc-value-cheat { color: #dc2626; }
       .acc-card-active-white .acc-value-sus   { color: #ea6c08; }
       .acc-card-active-white .acc-value-warn  { color: #ca8f00; }
@@ -15410,7 +15525,6 @@ function createSimpleAccuracyDisplay(
       .acc-card-active-black .acc-value-warn  { color: #fbbf24; }
       .acc-card-active-black .acc-value-safe  { color: #4ade80; }
 
-      /* ── Label row (label + dot side by side) ── */
       .acc-label-row {
         display: flex;
         align-items: center;
@@ -16085,7 +16199,6 @@ const jj0xffffff = () => {
 
     async function checkAndSendMoves() {
 
-
       // fix refresh page
 
       if(lastUrl !== window.location.pathname){
@@ -16665,7 +16778,7 @@ const jj0xffffff = () => {
         if (event.source !== window) return;
         if (event.data && event.data.type === "FEN_RESPONSE") {
           arraysHighlight = event.data.lasts;
-          
+
           let fenTemp = event.data.fen
           if(lichessFenHistory.length >0){
             fenTemp = lichessFenHistory.at(-1)
