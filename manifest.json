@@ -58,10 +58,9 @@
         "a.js",
         "b.js",
         "lib/chess_min.js",
-        "lib/engine.js",
-        "lib/engine.wasm",
-        "lib/stockfish.js",
+        "lib/dragon3.3.wasm",
         "lib/stockfish.wasm",
+        "lib/torch.wasm",
         "book/book.bin",
         "book/*"
       ],
