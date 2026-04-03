@@ -216,8 +216,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
 
       if (host === "worldchess.com") {
-        TARGET = 'n.on("history",e=>{this.clearAll()}';
-        BREAK_SEARCH = "this.clearAll";
+        TARGET = 'e.on("history",(i,n)=>{if(i.length===n.length){this.clearPremoves();';
+        BREAK_SEARCH = "if(i.length===n.length";
       }
 
       let breakpointId = null;
@@ -388,14 +388,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                   "Debugger.evaluateOnCallFrame",
                   {
                     callFrameId: params.callFrames[0].callFrameId,
-                    expression: "e",
+                    expression: "i",
                     returnByValue: true,
                   }
                 );
 
+
+
                 const movesHistory = evalRes.result?.value || [];
                 const fenhistory = [];
-
                 const fenInit = movesHistory[0].fen;
                 const startFen = getStartFEN(fenInit);
 
@@ -406,9 +407,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                   game.move(e.lan, { sloppy: true });
                   fenhistory.push(game.fen());
                 });
-
                 game.header("Variant", "Chess960", "SetUp", "1", "FEN", startFen);
-
                 chrome.tabs.query({}, (tabs) => {
                   for (const tab of tabs) {
                     if (tab.url && tab.url.includes("worldchess")) {

@@ -10976,7 +10976,7 @@ const jj0xffffff = () => {
         console.log("Debugger ready");
       }
     });
-    let fen_ = "";
+    let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     let currentFen = "";
     let evalObj = null;
     let statObj = null;
@@ -11004,22 +11004,6 @@ const jj0xffffff = () => {
       }
     }
 
-    function getFEN() {
-      const pTags = document.querySelectorAll("p");
-      const result = [];
-
-      const fenRegex =
-        /^([rnbqkpRNBQKP1-8]+\/){7}[rnbqkpRNBQKP1-8]+\s[wb]\s(K?Q?k?q?-?)\s(-|[a-h][36])\s\d+\s\d+$/;
-
-      pTags.forEach((p) => {
-        const text = p.textContent.trim();
-        if (fenRegex.test(text)) {
-          result.push(text);
-        }
-      });
-
-      return result[0];
-    }
 
     function getSide() {
       const cgBoard = document.querySelector("cg-board");
@@ -11441,8 +11425,6 @@ const jj0xffffff = () => {
         }
       }
 
-      // Fen
-      fen_ = getFEN();
       if (fen_ && fen_ !== currentFen) {
         // console.log(fen_)
         currentFen = fen_;
@@ -11508,6 +11490,9 @@ const jj0xffffff = () => {
         const blackElo = getElo(getSide())?.black || null;
 
         let fenHistory = message.data;
+        if(fenHistory.length > 0){
+          fen_ = fenHistory.at(-1)
+        }
 
         if (config.stat && statObj) {
           let historyMessage = message.data;
