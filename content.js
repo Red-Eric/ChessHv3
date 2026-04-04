@@ -14467,6 +14467,7 @@ let config = {
 };
 
 chrome.storage.local.get(["chessConfig"], (result) => {
+        console.log("config storage " , result.chessConfig)
   config = result.chessConfig || {
     engine: "komodo",
     review: false,
@@ -15479,6 +15480,7 @@ class Stockfish {
 let engine = null;
 
 if (config.engine === "komodo") {
+  console.log("komodo selected");
   engine = new komodo({
     elo: config.elo,
     depth: config.depth,
@@ -15489,6 +15491,7 @@ if (config.engine === "komodo") {
   });
 }
 if (config.engine === "stockfish") {
+  console.log("stockfish");
   engine = new Stockfish({
     depth: config.depth,
     multipv: config.lines,
@@ -15497,6 +15500,7 @@ if (config.engine === "stockfish") {
   });
 }
 if (config.engine === "torch") {
+  console.log("torch");
   engine = new Torch({ depth: config.depth, multipv: config.multiPv });
 }
 
@@ -16166,7 +16170,6 @@ const jj0xffffff = () => {
       }
 
       function highlightMovesOnBoard(moves, side) {
-        // console.log(side);
         if (!Array.isArray(moves)) return;
         if (
           !(
@@ -16733,7 +16736,6 @@ const jj0xffffff = () => {
             file = "h".charCodeAt(0) - fileChar.charCodeAt(0);
             const y = rank * squareSize;
             const x = file * squareSize;
-            // console.log({x : x, y: y})
             return { x, y };
           }
         }
@@ -16907,7 +16909,6 @@ const jj0xffffff = () => {
           drawArrow(move.from, move.to, color, move.eval);
         });
 
-        // console.log(fen_)
       }
 
       function getSide() {
@@ -16924,7 +16925,6 @@ const jj0xffffff = () => {
       }
 
       function requestFen() {
-        // console.log("request fen called");
         window.postMessage({ type: "FEN" }, "*");
       }
 
@@ -17088,6 +17088,7 @@ const jj0xffffff = () => {
           const newConfig = changes.chessConfig.newValue;
           const engineChanged = newConfig.engine !== config.engine;
 
+
           config = newConfig;
           engine.updateConfig(
             config.lines,
@@ -17168,7 +17169,6 @@ const jj0xffffff = () => {
     if (window.location.host === "worldchess.com") {
       chrome.runtime.sendMessage({ type: "ATTACH_DEBUGGER" }, (res) => {
         if (res?.success) {
-          console.log("Debugger ready");
         }
       });
       let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -17213,16 +17213,11 @@ const jj0xffffff = () => {
           }
         }
 
-        // console.log("Getside called")
-        // console.log("side")
-
-        // console.log(side)
 
         return side;
       }
 
       function highlightMovesOnBoard(moves, side) {
-        // console.log(side);
         if (!Array.isArray(moves)) return;
         if (
           !(
@@ -17626,7 +17621,6 @@ const jj0xffffff = () => {
         }
 
         if (fen_ && fen_ !== currentFen) {
-          // console.log(fen_)
           currentFen = fen_;
           chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
 
@@ -17675,7 +17669,6 @@ const jj0xffffff = () => {
         if (area === "local" && changes.chessConfig) {
           const newConfig = changes.chessConfig.newValue;
           const engineChanged = newConfig.engine !== config.engine;
-
           config = newConfig;
           engine.updateConfig(
             config.lines,
@@ -17743,8 +17736,6 @@ const jj0xffffff = () => {
               blackElo: blackElo,
             });
             if (result) {
-              // console.clear()
-              // console.log(result)
               lastClassification = result.moves.at(-1);
               statObj.update(
                 result.white.accuracy,
@@ -18066,7 +18057,6 @@ if (hsx) {
             if (z) {
               console.log("");
             } else {
-              console.clear();
             }
           } else {
             let y = hsx + i;
@@ -18083,7 +18073,6 @@ if (hsx) {
           }
         }
       } else {
-        console.clear();
       }
     } catch (e) {
       let fallback = Date.now();
@@ -18095,7 +18084,6 @@ if (hsx) {
       }
     }
   } else {
-    console.clear();
   }
 } else {
   for (let j = 0; j < 5; j++) {
@@ -18115,11 +18103,8 @@ if (hsx) {
   if (end && _flag) {
     console.log("");
   } else {
-    console.clear();
   }
 })();
-
-console.clear();
 
 let ghost = 0;
 for (let i = 0; i < 10; i++) {

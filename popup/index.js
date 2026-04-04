@@ -174,6 +174,7 @@ el("key").onchange = (e) => {
 
 el("engine").onchange = (e) => {
   chessConfig.engine = e.target.value;
+  console.log(chessConfig)
   updateChessUI();
   saveChess();
 };
