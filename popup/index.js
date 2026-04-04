@@ -31,6 +31,8 @@ const el = (id) => document.getElementById(id);
 /* ================= CHESS.COM ================= */
 
 const defaultChessConfig = {
+  engine : "komodo",
+  review : false,
   elo: 3500,
   lines: 5,
   colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
@@ -84,12 +86,14 @@ function updateChessUI() {
   );
   el("style").value = chessConfig.style;
   el("key").value = chessConfig.key;
+  el("engine").value = chessConfig.engine;
 
   [
     "autoMove",
     "stat",
     "winningMove",
     "autoStart",
+    "review",
     "showEval",
     "onlyShowEval",
     "autoMoveBalanced",
@@ -106,6 +110,8 @@ function updateChessUI() {
     `Balanced Auto Move (${chessConfig.autoMove ? "ON" : "OFF"})`;
   el("autoStartLabel").textContent =
     `Auto Start Game (${chessConfig.autoStart ? "ON" : "OFF"})`;
+  el("reviewLabel").textContent =
+    `ChessHv3 Check (${chessConfig.review ? "ON" : "OFF"})`;
   el("statLabel").textContent =
     `Display accuracy and Elo estimation (${chessConfig.stat ? "ON" : "OFF"})`;
   el("winningMoveLabel").textContent =
@@ -142,6 +148,7 @@ loadChessConfig(updateChessUI);
   "stat",
   "winningMove",
   "autoStart",
+  "review",
   "showEval",
   "onlyShowEval",
   "autoMoveBalanced",
@@ -161,6 +168,12 @@ el("style").onchange = (e) => {
 
 el("key").onchange = (e) => {
   chessConfig.key = e.target.value;
+  updateChessUI();
+  saveChess();
+};
+
+el("engine").onchange = (e) => {
+  chessConfig.engine = e.target.value;
   updateChessUI();
   saveChess();
 };

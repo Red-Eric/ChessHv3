@@ -23,6 +23,19 @@
         <h1>ChessHv3 - Settings</h1>
 
         <div class="setting">
+          <label>Engine</label>
+          <select id="engine">
+            <option selected value="komodo">Komodo 3.3 (Elo, Book , Personnality)</option>
+            <option value="stockfish">Stockfish 18 (3650 Elo)</option>
+            <option value="torch">Torch (3630 Elo)</option>
+          </select>
+        </div>
+        <div class="setting-help">
+          Choose which chess engine to run for analysis and gameplay.
+        </div>
+
+
+        <div class="setting">
           <label>ELO : <span id="eloValue">3500</span></label>
           <input
             type="range"
@@ -221,7 +234,18 @@
           </label>
         </div>
         <div class="setting-help">
-          Automatically plays the best move for you.
+          Automatically start a new game after finishing the current one.
+        </div>
+
+        <div class="setting">
+          <span id="reviewLabel">ChessHv3 Check (OFF)</span>
+          <label class="toggle">
+            <input type="checkbox" id="review" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-help">
+          View statistics for all your games and analyze your last 10 games once your current game is finished.
         </div>
 
         <div class="setting">
