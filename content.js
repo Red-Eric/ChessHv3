@@ -14972,15 +14972,6 @@ const analyzer = new ChessAnalyzer({ depth: config.depth });
   await analyzer.init();
 })();
 
-async function createWorkerStockfish() {
-  const url = `${chrome.runtime.getURL("lib/stockfish.js")}`;
-  const blob = new Blob([`importScripts("${url}");`], {
-    type: "application/javascript",
-  });
-  const blobUrl = URL.createObjectURL(blob);
-
-  return new Worker(blobUrl);
-}
 
 class komodo {
   constructor({
@@ -15289,6 +15280,166 @@ class Torch {
       this.worker.addEventListener("message", onMessage);
 
       this.worker.postMessage(`stop`);
+      this.worker.postMessage(`position fen ${fen}`);
+      this.worker.postMessage(`go depth ${this.depth}`);
+    });
+  }
+}
+
+class Stockfish {
+  constructor({
+    depth = config.depth,
+    multipv = config.lines,
+    threads = 1,
+    hash = 16,
+  }) {
+    this.depth = depth;
+    this.multipv = multipv;
+    this.threads = threads;
+    this.hash = hash;
+
+    this.ready = this.init();
+  }
+
+  async init() {
+    this.worker = await createWorker();
+
+    return new Promise((resolve) => {
+      const onMessage = (e) => {
+        if (e.data === "uciok") {
+          this.worker.removeEventListener("message", onMessage);
+          this.setOptions();
+          resolve();
+        }
+      };
+
+      this.worker.addEventListener("message", onMessage);
+      this.worker.postMessage("uci");
+    });
+  }
+
+  hardStop() {
+    if (this.worker) {
+      this.worker.terminate();
+      this.worker = null;
+    }
+  }
+
+  async restartWorker() {
+    this.hardStop();
+    this.ready = this.init();
+    await this.ready;
+  }
+
+  setOptions() {
+    this.worker.postMessage(`setoption name Threads value ${this.threads}`);
+    this.worker.postMessage(`setoption name Hash value ${this.hash}`);
+    this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
+  }
+
+  updateConfig(lines, depth) {
+    this.depth = depth;
+    this.multipv = lines;
+
+    this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
+  }
+
+  async getMovesByFen(fen, side) {
+    await this.ready;
+
+    this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
+
+    const infoLines = [];
+    let lastDepth = 0;
+    const sideToMove = fen.split(" ")[1];
+
+    return new Promise((resolve) => {
+      const onMessage = (event) => {
+        const line = event.data;
+        if (typeof line !== "string") return;
+
+        // Stocke les infos
+        if (line.startsWith("info")) {
+          infoLines.push(line);
+
+          const parts = line.split(" ");
+          const depthIndex = parts.indexOf("depth");
+
+          if (depthIndex !== -1 && depthIndex + 1 < parts.length) {
+            const d = parseInt(parts[depthIndex + 1], 10);
+            if (!isNaN(d)) lastDepth = d;
+          }
+
+          return;
+        }
+
+        // Fin calcul
+        if (line.startsWith("bestmove")) {
+          this.worker.removeEventListener("message", onMessage);
+
+          const bestByMultipv = new Map();
+
+          for (const infoLine of infoLines) {
+            if (!infoLine.includes("multipv") || !infoLine.includes(" pv "))
+              continue;
+
+            if (!infoLine.includes(`depth ${lastDepth} `)) continue;
+
+            const parts = infoLine.split(" ");
+
+            const mpvIndex = parts.indexOf("multipv");
+            const mpv =
+              mpvIndex !== -1 ? parseInt(parts[mpvIndex + 1], 10) : 1;
+
+            if (mpv > this.multipv) continue;
+
+            let evalScore = null;
+
+            const scoreIndex = parts.indexOf("score");
+            if (scoreIndex !== -1 && scoreIndex + 2 < parts.length) {
+              const type = parts[scoreIndex + 1];
+              let value = parseInt(parts[scoreIndex + 2], 10);
+
+              if (!isNaN(value)) {
+                if (sideToMove === "b") value = -value;
+
+                if (type === "cp") {
+                  const v = (value / 100).toFixed(2);
+                  evalScore = value >= 0 ? `+${v}` : `${v}`;
+                } else if (type === "mate") {
+                  evalScore = `#${value}`;
+                }
+              }
+            }
+
+            const pvIndex = parts.indexOf("pv");
+            if (pvIndex !== -1 && pvIndex + 1 < parts.length) {
+              const move = parts[pvIndex + 1];
+
+              if (move.length >= 4) {
+                // overwrite → garde la dernière version
+                bestByMultipv.set(mpv, {
+                  from: move.slice(0, 2),
+                  to: move.slice(2, 4),
+                  eval: evalScore,
+                  fen: fen,
+                  side: side,
+                });
+              }
+            }
+          }
+
+          const results = Array.from(bestByMultipv.entries())
+            .sort((a, b) => a[0] - b[0])
+            .map(([, v]) => v);
+
+          resolve(results);
+        }
+      };
+
+      this.worker.addEventListener("message", onMessage);
+
+      this.worker.postMessage("stop");
       this.worker.postMessage(`position fen ${fen}`);
       this.worker.postMessage(`go depth ${this.depth}`);
     });
@@ -17900,3 +18051,6 @@ if (ghost > -1) {
     _flag = !_flag;
   }
 }
+
+
+
