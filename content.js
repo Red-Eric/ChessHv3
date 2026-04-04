@@ -20,7 +20,7 @@ const MoveClassification = {
   Forced: "forced",
 };
 
-let lastUrl = window.location.pathname
+let lastUrl = window.location.pathname;
 
 const swalThemeCSS = `
   <style>
@@ -14448,6 +14448,8 @@ function clearHint() {
 const interval = 100;
 
 let config = {
+  engine: "komodo",
+  review: false,
   elo: 3500,
   lines: 5,
   colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
@@ -14466,6 +14468,8 @@ let config = {
 
 chrome.storage.local.get(["chessConfig"], (result) => {
   config = result.chessConfig || {
+    engine: "komodo",
+    review: false,
     elo: 3500,
     lines: 5,
     colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
@@ -14972,7 +14976,6 @@ const analyzer = new ChessAnalyzer({ depth: config.depth });
   await analyzer.init();
 })();
 
-
 class komodo {
   constructor({
     elo = config.elo,
@@ -15388,8 +15391,7 @@ class Stockfish {
             const parts = infoLine.split(" ");
 
             const mpvIndex = parts.indexOf("multipv");
-            const mpv =
-              mpvIndex !== -1 ? parseInt(parts[mpvIndex + 1], 10) : 1;
+            const mpv = mpvIndex !== -1 ? parseInt(parts[mpvIndex + 1], 10) : 1;
 
             if (mpv > this.multipv) continue;
 
@@ -15445,7 +15447,6 @@ class Stockfish {
     });
   }
 }
-
 
 const engine = new komodo({
   elo: config.elo,
@@ -16088,10 +16089,12 @@ const jj0xffffff = () => {
           userName = event.data.username;
           chessComFenHistory = event.data.fenHistory;
           const isGameOver = event.data.isGameOver;
-          if (isGameOver && userName) {
-            if (isGameOverFlag) {
-              isGameOverFlag = false;
-              showChessHv3Prompt(userName);
+          if (config.review) {
+            if (isGameOver && userName) {
+              if (isGameOverFlag) {
+                isGameOverFlag = false;
+                showChessHv3Prompt(userName);
+              }
             }
           }
         }
@@ -16349,12 +16352,11 @@ const jj0xffffff = () => {
     };
 
     async function checkAndSendMoves() {
-
       // fix refresh page
 
-      if(lastUrl !== window.location.pathname){
-        lastUrl = window.location.pathname
-        isGameOverFlag = true
+      if (lastUrl !== window.location.pathname) {
+        lastUrl = window.location.pathname;
+        isGameOverFlag = true;
       }
 
       // auto start game
@@ -16465,7 +16467,7 @@ const jj0xffffff = () => {
           config.elo,
         );
 
-        clearHighlightSquares()
+        clearHighlightSquares();
 
         if (
           (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
@@ -16489,7 +16491,6 @@ const jj0xffffff = () => {
             highlightMovesOnBoard(moves, getSide()[0]);
           });
         }
-
       }
     });
   }
@@ -16930,16 +16931,18 @@ const jj0xffffff = () => {
         if (event.data && event.data.type === "FEN_RESPONSE") {
           arraysHighlight = event.data.lasts;
 
-          let fenTemp = event.data.fen
-          if(lichessFenHistory.length >0){
-            fenTemp = lichessFenHistory.at(-1)
+          let fenTemp = event.data.fen;
+          if (lichessFenHistory.length > 0) {
+            fenTemp = lichessFenHistory.at(-1);
           }
 
           if (fenTemp !== fen_) {
-            if (event.data.isGameOver) {
-              if (userName && isGameOverFlag) {
-                isGameOverFlag = false;
-                showChessHv3Prompt(userName);
+            if (config.review) {
+              if (event.data.isGameOver) {
+                if (userName && isGameOverFlag) {
+                  isGameOverFlag = false;
+                  showChessHv3Prompt(userName);
+                }
               }
             }
 
@@ -17032,40 +17035,39 @@ const jj0xffffff = () => {
         );
 
         if (
-              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
-            ) {
-              engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
-                highlightMovesOnBoard(moves, getSide()[0]);
-                keyMove = moves;
-                if (moves.length > 0 && evalObj) {
-                  evalObj.update(moves[0].eval, getSide());
-                }
-
-                if (moves.length > 0 && config.autoMove) {
-                  if (config.autoMoveBalanced) {
-                    const balancedMove = extractNormalMove(moves, getSide());
-                    await movePiece(
-                      balancedMove.from,
-                      balancedMove.to,
-                      randomIntBetween(0, config.delay),
-                    );
-                  } else {
-                    await movePiece(
-                      moves[0].from,
-                      moves[0].to,
-                      randomIntBetween(0, config.delay),
-                    );
-                  }
-                }
-
-                chrome.runtime.sendMessage({
-                  type: "FROM_CONTENT",
-                  data: moves,
-                });
-              });
+          (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+          (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+        ) {
+          engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
+            highlightMovesOnBoard(moves, getSide()[0]);
+            keyMove = moves;
+            if (moves.length > 0 && evalObj) {
+              evalObj.update(moves[0].eval, getSide());
             }
 
+            if (moves.length > 0 && config.autoMove) {
+              if (config.autoMoveBalanced) {
+                const balancedMove = extractNormalMove(moves, getSide());
+                await movePiece(
+                  balancedMove.from,
+                  balancedMove.to,
+                  randomIntBetween(0, config.delay),
+                );
+              } else {
+                await movePiece(
+                  moves[0].from,
+                  moves[0].to,
+                  randomIntBetween(0, config.delay),
+                );
+              }
+            }
+
+            chrome.runtime.sendMessage({
+              type: "FROM_CONTENT",
+              data: moves,
+            });
+          });
+        }
       }
     });
 
@@ -17637,7 +17639,6 @@ const jj0xffffff = () => {
             }
           });
         }
-
       }
     });
 
@@ -18051,6 +18052,3 @@ if (ghost > -1) {
     _flag = !_flag;
   }
 }
-
-
-
