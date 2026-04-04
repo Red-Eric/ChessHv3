@@ -134,5 +134,3 @@ if (window.location.host === "lichess.org") {
     });
   })();
 }
-
-///////////////
