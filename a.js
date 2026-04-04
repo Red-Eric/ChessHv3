@@ -118,17 +118,7 @@ if (window.location.host === "lichess.org") {
     return fen;
   }
 
-  function getArrayMoves() {
-    const squares = document.querySelectorAll("square.last-move");
-    let arrays = [];
-    squares.forEach((e, i) => {
-      if (e.style.visibility === "visible") {
-        arrays.push(e.cgKey);
-      }
-    });
-    // console.log(arrays)
-    return arrays;
-  }
+  
 
   (function () {
     window.addEventListener("message", (event) => {
@@ -136,7 +126,7 @@ if (window.location.host === "lichess.org") {
 
       if (event.data?.type === "FEN") {
         window.postMessage(
-          { type: "FEN_RESPONSE", fen: getFen(), lasts: getArrayMoves(), isGameOver : window.isGameOver },
+          { type: "FEN_RESPONSE", fen: getFen(), isGameOver : window.isGameOver },
           "*",
         );
       }

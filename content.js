@@ -16574,8 +16574,6 @@ const jj0xffffff = () => {
       let evalObj = null;
       let statObj = null;
       let lichessFenHistory = [];
-      let lastMove = "a1a8";
-      let arraysHighlight = [];
 
       function getElo(side) {
         const ratings = document.querySelectorAll("rating");
@@ -16995,7 +16993,6 @@ const jj0xffffff = () => {
 
           if (event.source !== window) return;
           if (event.data && event.data.type === "FEN_RESPONSE") {
-            arraysHighlight = event.data.lasts;
 
             let fenTemp = event.data.fen;
             if (lichessFenHistory.length > 0) {
@@ -17003,14 +17000,7 @@ const jj0xffffff = () => {
             }
 
             if (fenTemp !== fen_) {
-              if (config.review) {
-                if (document.querySelector("good") && document.querySelector("bad")) {
-                  if (userName && isGameOverFlag) {
-                    isGameOverFlag = false;
-                    showChessHv3Prompt(userName);
-                  }
-                }
-              }
+              
 
               fen_ = fenTemp;
               chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
@@ -17076,6 +17066,15 @@ const jj0xffffff = () => {
             // customEval = document.querySelector("#customEval");
           }
         }
+
+        if (config.review) {
+                if ((document.querySelector("good") && document.querySelector("bad"))) {
+                  if (userName && isGameOverFlag) {
+                    isGameOverFlag = false;
+                    showChessHv3Prompt(userName);
+                  }
+                }
+              }
 
         if (config.autoStart) {
           const startNewGameBtn =
