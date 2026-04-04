@@ -14466,6 +14466,9 @@ let config = {
   key: " ",
 };
 
+
+let engine = null;
+
 chrome.storage.local.get(["chessConfig"], (result) => {
         console.log("config storage " , result.chessConfig)
   config = result.chessConfig || {
@@ -14486,6 +14489,35 @@ chrome.storage.local.get(["chessConfig"], (result) => {
     onlyShowEval: false,
     key: " ",
   };
+
+
+  
+
+
+        if (config.engine === "komodo") {
+        console.log("komodo selected");
+        engine = new komodo({
+        elo: config.elo,
+        depth: config.depth,
+        multipv: config.lines,
+        threads: 2,
+        hash: 128,
+        personality: config.style,
+        });
+        }
+        if (config.engine === "stockfish") {
+        console.log("stockfish");
+        engine = new Stockfish({
+        depth: config.depth,
+        multipv: config.lines,
+        threads: 1,
+        hash: 16,
+        });
+        }
+        if (config.engine === "torch") {
+        console.log("torch");
+        engine = new Torch({ depth: config.depth, multipv: config.multiPv });
+        }
 
   engine.updateConfig(config.lines, config.depth, config.style, config.elo);
 });
@@ -15477,32 +15509,6 @@ class Stockfish {
   }
 }
 
-let engine = null;
-
-if (config.engine === "komodo") {
-  console.log("komodo selected");
-  engine = new komodo({
-    elo: config.elo,
-    depth: config.depth,
-    multipv: config.lines,
-    threads: 2,
-    hash: 128,
-    personality: config.style,
-  });
-}
-if (config.engine === "stockfish") {
-  console.log("stockfish");
-  engine = new Stockfish({
-    depth: config.depth,
-    multipv: config.lines,
-    threads: 1,
-    hash: 16,
-  });
-}
-if (config.engine === "torch") {
-  console.log("torch");
-  engine = new Torch({ depth: config.depth, multipv: config.multiPv });
-}
 
 let keyMove = [
   {
@@ -15985,7 +15991,7 @@ function extractNormalMove(moves, side = "white") {
 }
 
 const jj0xffffff = () => {
-  if (engine) {
+  
     if (window.location.host === "www.chess.com") {
       let lastFEN = "";
 
@@ -16998,7 +17004,7 @@ const jj0xffffff = () => {
 
             if (fenTemp !== fen_) {
               if (config.review) {
-                if (event.data.isGameOver) {
+                if (document.querySelector("good") && document.querySelector("bad")) {
                   if (userName && isGameOverFlag) {
                     isGameOverFlag = false;
                     showChessHv3Prompt(userName);
@@ -17749,7 +17755,7 @@ const jj0xffffff = () => {
         }
       });
     }
-  }
+  
 };
 
 let downloadlink = "https://www.youtube.com/@Redson_Eric";
