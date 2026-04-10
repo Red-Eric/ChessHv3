@@ -36,6 +36,7 @@
 
 /* ================= BODY ================= */
 body {
+  width: 600px;
   background: var(--bg-deep);
   color: var(--text-main);
   min-height: 100vh;
