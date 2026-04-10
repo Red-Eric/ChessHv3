@@ -104,49 +104,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-let popupWindowId = null;
 
-chrome.action.onClicked.addListener(() => {
-  if (popupWindowId) {
-    chrome.windows.update(popupWindowId, { focused: true });
-    return;
-  }
 
-  chrome.windows.create(
-    {
-      url: "popup/index.html",
-      type: "popup",
-      state: "fullscreen",
-    },
-    (newWindow) => {
-      popupWindowId = newWindow.id;
-
-      const tab = newWindow.tabs?.[0];
-      if (tab?.id) {
-        const tabId = tab.id;
-        if (!popupTabs.includes(tabId)) popupTabs.push(tabId);
-
-        if (currentConfig)
-          chrome.tabs.sendMessage(tabId, {
-            type: "config",
-            config: currentConfig,
-          });
-        if (currentConfig2)
-          chrome.tabs.sendMessage(tabId, {
-            type: "config2",
-            config: currentConfig2,
-          });
-      }
-
-      chrome.windows.onRemoved.addListener((id) => {
-        if (id === popupWindowId) {
-          popupWindowId = null;
-          popupTabs = [];
-        }
-      });
-    },
-  );
-});
 
 chrome.runtime.onMessage.addListener(async (msg, sender, sendResponse) => {
   if (msg.action) {

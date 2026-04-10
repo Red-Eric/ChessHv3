@@ -12,7 +12,6 @@
   <body>
     <div class="tabs">
       <div class="tab active" data-panel="chess">Settings</div>
-      <div class="tab" data-panel="stream">Stream</div>
       <div class="tab" data-panel="load">Load</div>
       <div class="tab" data-panel="export">Export</div>
     </div>
@@ -312,88 +311,6 @@
       </div>
     </div>
 
-    <!-- ================= STREAM ================= -->
-    <!-- Wrapper flex autour du board -->
-
-    <div class="panel" id="stream">
-      <div
-        id="eval-wrapper"
-        style="
-          display: flex;
-          align-items: stretch;
-          justify-content: center;
-          margin: 28px auto;
-          width: fit-content;
-        "
-      >
-        <!-- Barre d'évaluation -->
-        <div
-          id="customEval"
-          style="
-            width: 28px;
-            background: #eee;
-            margin-right: 10px;
-            position: relative;
-            border: 1px solid #aaa;
-            border-radius: 4px;
-            overflow: hidden;
-            flex-shrink: 0;
-          "
-        >
-          <div
-            id="evalTop"
-            style="
-              width: 100%;
-              position: absolute;
-              top: 0;
-              background: #312e2b;
-              height: 50%;
-              transition: height 0.3s ease;
-            "
-          ></div>
-          <div
-            id="evalBottom"
-            style="
-              width: 100%;
-              position: absolute;
-              bottom: 0;
-              background: #ffffff;
-              height: 50%;
-              transition: height 0.3s ease;
-              border-top: 1px solid #ccc;
-            "
-          ></div>
-          <div
-            id="evalScore"
-            style="
-              position: absolute;
-              bottom: 4px;
-              left: 50%;
-              transform: translateX(-50%);
-              color: #e74c3c;
-              font-weight: bold;
-              font-size: 10px;
-              pointer-events: none;
-              white-space: nowrap;
-              font-family: monospace;
-            "
-          >
-            0.0
-          </div>
-        </div>
-
-        <!-- Board -->
-        <div
-          id="board1"
-          style="
-            width: 600px;
-            height: 600px;
-            background: #ccc;
-            border: 1px solid #999;
-          "
-        ></div>
-      </div>
-    </div>
 
     <!-- ================= LOAD SETTINGS ================= -->
     <div class="panel" id="load">
