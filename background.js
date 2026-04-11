@@ -53,75 +53,6 @@ function sendConfigToSite(type, config, urlPattern) {
   });
 }
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  switch (message.type) {
-    case "config":
-      currentConfig = message.config;
-
-      sendConfigToSite("config", currentConfig, "*://*.chess.com/*");
-      sendConfigToSite("config", currentConfig, "*://*.lichess.org/*");
-      sendConfigToSite("config", currentConfig, "*://*.worldchess.com/*");
-      sendConfigToSite("config", currentConfig, "*://worldchess.com/*");
-      sendConfigToSite("config", currentConfig, "*://worldchess.com/game/*");
-      sendConfigToSite("config", currentConfig, "*://*.worldchess.com/game/*");
-
-      for (let tabId of popupTabs) {
-        chrome.tabs.sendMessage(tabId, {
-          type: "config",
-          config: currentConfig,
-        });
-      }
-      break;
-
-    case "FROM_CONTENT":
-      for (let tabId of popupTabs) {
-        chrome.tabs.sendMessage(tabId, {
-          type: "TO_POPUP",
-          data: message?.data,
-          fen : message?.fen
-        });
-      }
-      break;
-
-    case "popupReady":
-      if (sender.tab?.id) {
-        if (!popupTabs.includes(sender.tab.id)) popupTabs.push(sender.tab.id);
-
-        if (currentConfig) {
-          chrome.tabs.sendMessage(sender.tab.id, {
-            type: "config",
-            config: currentConfig,
-          });
-        }
-        if (currentConfig2) {
-          chrome.tabs.sendMessage(sender.tab.id, {
-            type: "config2",
-            config: currentConfig2,
-          });
-        }
-      }
-      break;
-  }
-});
-
-
-
-
-chrome.runtime.onMessage.addListener(async (msg, sender, sendResponse) => {
-  if (msg.action) {
-    const offscreen = await chrome.offscreen.hasDocument();
-    if (!offscreen) {
-      await chrome.offscreen.createDocument({
-        url: "offscreen.html",
-        reasons: ["WORKERS"],
-        justification: "Test",
-      });
-    }
-
-    chrome.runtime.sendMessage({ ...msg, target: "offscreen" });
-  }
-});
-
 function sendMovesToSite(type, moves, urlPattern) {
   chrome.tabs.query({ url: urlPattern }, (tabs) => {
     for (let tab of tabs) {
@@ -129,19 +60,6 @@ function sendMovesToSite(type, moves, urlPattern) {
     }
   });
 }
-
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg.type === "returnContent") {
-    sendMovesToSite("returnContent", msg.moves, "*://*.chess.com/*");
-    sendMovesToSite("returnContent", msg.moves, "*://*.lichess.org/*");
-    sendMovesToSite("returnContent", msg.moves, "*://*.worldchess.com/*");
-    sendMovesToSite("returnContent", msg.moves, "*://worldchess.com/*");
-    sendMovesToSite("returnContent", msg.moves, "*://worldchess.com/game/*");
-    sendMovesToSite("returnContent", msg.moves, "*://*.worldchess.com/game/*");
-    sendMovesToSite("returnContent", msg.moves, "*://*.chess.com/*");
-  }
-});
-
 
 // Stockage global des listeners par tabId
 const activeListeners = {};
@@ -205,11 +123,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
           if (bpRes && bpRes.breakpointId) {
             breakpointId = bpRes.breakpointId;
-            console.log("Breakpoint posé dans :", url, bpRes);
+            // console.log("Breakpoint posé dans :", url, bpRes);
             return true;
           }
         } catch (e) {
-          console.log("Impossible de lire :", url, e);
+          // console.log("Impossible de lire :", url, e);
         }
         return false;
       }
@@ -219,7 +137,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         chrome.debugger.onEvent.removeListener(activeListeners[tabId].scriptParsed);
         chrome.debugger.onEvent.removeListener(activeListeners[tabId].debuggerEvent);
         delete activeListeners[tabId];
-        console.log("Anciens listeners retirés pour tab", tabId);
+        // console.log("Anciens listeners retirés pour tab", tabId);
       }
 
       chrome.debugger.detach({ tabId }, () => {
@@ -254,7 +172,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             }
           }
 
-          if (!found) console.log("Script cible non trouvé au chargement initial");
+          if (!found) console.log("");
 
           const scriptParsedListener = async (source, method, params) => {
             if (source.tabId !== tabId) return;
@@ -263,7 +181,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
             const newBp = await trySetBreakpoint(params.url);
             if (newBp) {
-              console.log("Breakpoint re-posé après navigation sur :", params.url);
+              // console.log("Breakpoint re-posé après navigation sur :", params.url);
             }
           };
 
@@ -419,7 +337,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return;
       }
 
-      console.log("Debugger detached from tab", tabId);
+      // console.log("Debugger detached from tab", tabId);
       sendResponse({ success: true });
     });
 
