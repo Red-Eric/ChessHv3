@@ -188,6 +188,12 @@ el("engine").onchange = (e) => {
   saveChess();
 };
 
+document.querySelector("#stream").onclick = ()=>{
+  chrome.runtime.sendMessage(
+  { type: "stream" }
+);
+}
+
 const allColorInputs = document.querySelectorAll('input[type="color"]');
 allColorInputs.forEach((input, index) => {
   input.addEventListener("input", (e) => {
