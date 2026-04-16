@@ -24,34 +24,39 @@
         <div class="setting">
           <label>Engine</label>
           <select id="engine">
-            <option selected value="komodo">Komodo 3.3 (Elo, Book , Style)</option>
-            <option value="stockfish">Stockfish 18 Dont support Elo, book , style (Crash sometime I ll fix it later)</option>
-            <option value="torch">Torch Dont support ELo , style , book</option>
+            <option selected value="komodo">
+              Komodo 3.3
+            </option>
+            <option value="stockfish">
+              Stockfish 18
+            </option>
+            <option value="torch">Torch</option>
           </select>
         </div>
         <div class="setting-help">
           Choose which chess engine to run for analysis and gameplay.
         </div>
 
-
-        <div class="setting">
-          <label>ELO : <span id="eloValue">3500</span></label>
-          <input
-            type="range"
-            id="elo"
-            min="100"
-            max="3500"
-            step="10"
-            value="3500"
-          />
-        </div>
-        <div class="setting-help">
-          ELO defines the engine strength. Higher values make the engine play
-          stronger.
-          <span style="color: #e74c3c; font-weight: 700">
-            Recommended: max ELO with Display accuracy and Elo estimation
-            (ON).</span
-          >
+        <div id="container-elo">
+          <div class="setting">
+            <label>ELO : <span id="eloValue">3500</span></label>
+            <input
+              type="range"
+              id="elo"
+              min="100"
+              max="3500"
+              step="10"
+              value="3500"
+            />
+          </div>
+          <div class="setting-help">
+            ELO defines the engine strength. Higher values make the engine play
+            stronger.
+            <span style="color: #e74c3c; font-weight: 700">
+              Recommended: max ELO with Display accuracy and Elo estimation
+              (ON).</span
+            >
+          </div>
         </div>
 
         <div class="setting">
@@ -127,21 +132,23 @@
           is randomly selected between 0 ms and the chosen value.
         </div>
 
-        <div class="setting">
-          <label>Style</label>
-          <select id="style">
-            <option selected>Default</option>
-            <option>Aggressive</option>
-            <option>Defensive</option>
-            <option>Active</option>
-            <option>Positional</option>
-            <option>Endgame</option>
-            <option>Beginner</option>
-            <option>Human</option>
-          </select>
-        </div>
-        <div class="setting-help">
-          Defines the preferred playstyle of the engine.
+        <div id="container-style">
+          <div class="setting">
+            <label>Style</label>
+            <select id="style">
+              <option selected>Default</option>
+              <option>Aggressive</option>
+              <option>Defensive</option>
+              <option>Active</option>
+              <option>Positional</option>
+              <option>Endgame</option>
+              <option>Beginner</option>
+              <option>Human</option>
+            </select>
+          </div>
+          <div class="setting-help">
+            Defines the preferred playstyle of the engine.
+          </div>
         </div>
 
         <div class="setting">
@@ -244,7 +251,8 @@
           </label>
         </div>
         <div class="setting-help">
-          View statistics for all your games and analyze your last 10 games once your current game is finished.
+          View statistics for all your games and analyze your last 10 games once
+          your current game is finished.
         </div>
 
         <div class="setting">
@@ -310,7 +318,6 @@
         <div class="setting-help">Hides move suggestions.</div>
       </div>
     </div>
-
 
     <!-- ================= LOAD SETTINGS ================= -->
     <div class="panel" id="load">
