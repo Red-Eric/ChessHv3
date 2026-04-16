@@ -6386,10 +6386,6 @@ const komodoCode = `
     }
     var wasmBinaryFile =
       "${wasmkomodoPath}";
-    // wasmBinaryFile = Module.wasmBinaryFile || "explanation-engine.wasm";
-    // if (!isDataURI(wasmBinaryFile)) {
-    //   wasmBinaryFile = Module.wasmBinaryFile || locateFile(wasmBinaryFile);
-    // }
     function getBinary(file) {
       try {
         if (file == wasmBinaryFile && wasmBinary) {
@@ -11424,7 +11420,7 @@ const komodoCode = `
 
             try {
               Module.FS.createDataFile("/", fileName, data, true, true, true);
-            //   console.log(fileName + " monté ✅");
+            
             } catch (e) {
               console.warn("createDataFile:", e);
             }
@@ -11442,11 +11438,9 @@ const komodoCode = `
               ["setoption name OwnBook value true"],
             );
 
-            // console.log("Book actif: " + fileName + " ✅");
             if (callback) callback();
           }
 
-          // ✅ URL dynamique — fonctionne peu importe l'ID de l'extension
           var bookUrl = "${bookPath}";
           if (
             typeof chrome !== "undefined" &&
@@ -11455,13 +11449,10 @@ const komodoCode = `
           ) {
             bookUrl = "${bookPath}"
           } else {
-            // Fallback : construire depuis self.location (si worker)
             bookUrl =
               "${bookPath}";
           }
-
-        //   console.log("Chargement book depuis:", bookUrl);
-
+              
           fetch(bookUrl)
             .then(function (r) {
               if (!r.ok) throw new Error("HTTP " + r.status);
@@ -11496,9 +11487,8 @@ const komodoCode = `
           ["setoption name OwnBook value false"],
         );
 
-        // ✅ Chargement automatique du book
         loadBook(function () {
-        //   console.log("Book prêt au démarrage ✅");
+        //   console.log("Book prêt au démarrage");
         });
 
         if (onKomodoTepInitialized) onKomodoTepInitialized();
@@ -16460,6 +16450,12 @@ const jj0xffffff = () => {
           });
           if (result) {
             lastClassification = result.moves.at(-1);
+            chrome.runtime.sendMessage({ type: "FROM_CONTENT", result: {
+                whiteAccuracy : result.white.accuracy,
+                whiteElo : result.white.elo,
+                blackAccuracy : result.black.accuracy,
+                blackElo : result.black.elo,
+            } });
             statObj.update(
               result.white.accuracy,
               result.white.elo,
@@ -17139,6 +17135,12 @@ const jj0xffffff = () => {
           });
           if (result) {
             lastClassification = result.moves.at(-1);
+            chrome.runtime.sendMessage({ type: "FROM_CONTENT", result: {
+                whiteAccuracy : result.white.accuracy,
+                whiteElo : result.white.elo,
+                blackAccuracy : result.black.accuracy,
+                blackElo : result.black.elo,
+            } });
             statObj.update(
               result.white.accuracy,
               result.white.elo,
@@ -17716,6 +17718,12 @@ const jj0xffffff = () => {
           });
           if (result) {
             lastClassification = result.moves.at(-1);
+            chrome.runtime.sendMessage({ type: "FROM_CONTENT", result: {
+                whiteAccuracy : result.white.accuracy,
+                whiteElo : result.white.elo,
+                blackAccuracy : result.black.accuracy,
+                blackElo : result.black.elo,
+            } });
             statObj.update(
               result.white.accuracy,
               result.white.elo,

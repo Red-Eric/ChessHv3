@@ -53,7 +53,6 @@ if (window.location.host === "www.chess.com") {
       if (event.source !== window) return;
       if (event.data?.type === "GET_FEN") {
         const game = getGameObject();
-        
         let fenHistory = [];
         if (game) {
           const fenInit = game.getHistoryFENs(1)[0];

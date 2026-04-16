@@ -403,3 +403,10 @@ function sendMouseEvent(tabId, params) {
     );
   });
 }
+
+
+// chrome.windows.create({
+//     url: chrome.runtime.getURL("dist/index.html"),
+//     type: "popup",
+//     state: "maximized"
+// });

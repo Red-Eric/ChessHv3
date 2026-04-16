@@ -63,6 +63,7 @@
         "lib/dragon3.3.wasm",
         "lib/stockfish.wasm",
         "lib/torch.wasm",
+        "dist/index.html",
         "book/book.bin",
         "book/*"
       ],
