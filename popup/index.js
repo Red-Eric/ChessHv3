@@ -107,7 +107,7 @@ function updateChessUI() {
   el("autoMoveLabel").textContent =
     `Auto Move (${chessConfig.autoMove ? "ON" : "OFF"})`;
   el("autoMoveBalancedLabel").textContent =
-    `Balanced Auto Move (${chessConfig.autoMove ? "ON" : "OFF"})`;
+    `Balanced Auto Move (${chessConfig.autoMoveBalanced ? "ON" : "OFF"})`;
   el("autoStartLabel").textContent =
     `Auto Start Game (${chessConfig.autoStart ? "ON" : "OFF"})`;
   el("reviewLabel").textContent =
@@ -119,7 +119,7 @@ function updateChessUI() {
   el("showEvalLabel").textContent =
     `Show Eval Bar (${chessConfig.showEval ? "ON" : "OFF"})`;
   el("onlyShowEvalLabel").textContent =
-    `Hide Arrows (${chessConfig.onlyShowEval ? "ON" : "OFF"})`;
+    `Hide Arrows and Accuracy Panel(${chessConfig.onlyShowEval ? "ON" : "OFF"})`;
 
   console.clear();
   console.log(chessConfig);
