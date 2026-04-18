@@ -2,19 +2,6 @@ document.addEventListener("DOMContentLoaded", () => {
   chrome?.runtime?.sendMessage({ type: "popupReady" });
 });
 
-var bookSVG = `<svg xmlns="http://www.w3.org/2000/svg" class="" width="24" height="24" viewBox="0 0 18 19">
-      <g id="book">
-    <path class="icon-shadow" opacity="0.3" d="M9,.5a9,9,0,1,0,9,9A9,9,0,0,0,9,.5Z"></path>
-    <path class="icon-background" fill="#D5A47D" d="M9,0a9,9,0,1,0,9,9A9,9,0,0,0,9,0Z"></path>
-    <g>
-      <path class="icon-component-shadow" opacity="0.3" isolation="isolate" d="M8.45,5.9c-1-.75-2.51-1.09-4.83-1.09H2.54v8.71H3.62a8.16,8.16,0,0,1,4.83,1.17Z"></path>
-      <path class="icon-component-shadow" opacity="0.3" isolation="isolate" d="M9.54,14.69a8.14,8.14,0,0,1,4.84-1.17h1.08V4.81H14.38c-2.31,0-3.81.34-4.84,1.09Z"></path>
-      <path class="icon-component" fill="#fff" d="M8.45,5.4c-1-.75-2.51-1.09-4.83-1.09H3V13h.58a8.09,8.09,0,0,1,4.83,1.17Z"></path>
-      <path class="icon-component" fill="#fff" d="M9.54,14.19A8.14,8.14,0,0,1,14.38,13H15V4.31h-.58c-2.31,0-3.81.34-4.84,1.09Z"></path>
-    </g>
-  </g>
-    </svg>`;
-
 /* ================= TABS ================= */
 document.querySelectorAll(".tab").forEach((tab) => {
   tab.onclick = () => {
@@ -33,6 +20,7 @@ const el = (id) => document.getElementById(id);
 const defaultChessConfig = {
   review: false,
   elo: 3500,
+  coach: 999,
   lines: 5,
   colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
   depth: 10,
@@ -84,6 +72,7 @@ function updateChessUI() {
     (k) => (el(k).value = chessConfig[k]),
   );
   el("style").value = chessConfig.style;
+  el("coach").value = chessConfig.coach;
   el("key").value = chessConfig.key;
 
   [
@@ -160,6 +149,12 @@ loadChessConfig(updateChessUI);
 
 el("style").onchange = (e) => {
   chessConfig.style = e.target.value;
+  updateChessUI();
+  saveChess();
+};
+
+el("coach").onchange = (e) => {
+  chessConfig.coach = parseInt(e.target.value);
   updateChessUI();
   saveChess();
 };

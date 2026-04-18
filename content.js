@@ -5,6 +5,20 @@ let userName = null;
 let lastClassification = null;
 let moveIndex_ = 999;
 let isGameOverFlag = true;
+const language = [
+  { lang: "en_US", link: "en-US", name: "English" },
+  { lang: "fr_FR", link: "fr-FR", name: "Français" },
+  { lang: "es_ES", link: "es-ES", name: "Español" },
+  { lang: "ar_SA", link: "ar-SA", name: "عربي" },
+  { lang: "ru_RU", link: "ru-RU", name: "Русский" },
+  { lang: "pt_PT", link: "pt-PT", name: "Português" },
+  { lang: "de_DE", link: "de-DE", name: "Deutsch" },
+  { lang: "it_IT", link: "it-IT", name: "Italiano" },
+  { lang: "tr_TR", link: "tr-TR", name: "Türkçe" },
+  { lang: "pl_PL", link: "pl-PL", name: "Polski" },
+  { lang: "ko_KR", link: "ko-KR", name: "한국어" },
+  { lang: "id_ID", link: "id-ID", name: "Indonesia" },
+];
 
 const MoveClassification = {
   Brilliant: "brilliant",
@@ -1274,6 +1288,12 @@ class AnalyzeEngine {
   }
 }
 
+
+
+
+
+
+
 let debugEngine = false;
 
 function randomString(length) {
@@ -1597,6 +1617,7 @@ const interval = 100;
 let config = {
   review: false,
   elo: 3500,
+  coach: 999,
   lines: 5,
   colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
   depth: 10,
@@ -1612,27 +1633,26 @@ let config = {
   key: " ",
 };
 
-
-
 chrome.storage.local.get(["chessConfig"], (result) => {
   console.log("config storage ", result.chessConfig);
   config = result.chessConfig || {
-    review: false,
-    elo: 3500,
-    lines: 5,
-    colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
-    depth: 10,
-    delay: 100,
-    style: "Default",
-    autoMove: false,
-    autoMoveBalanced: false,
-    stat: false,
-    autoStart: false,
-    winningMove: false,
-    showEval: false,
-    onlyShowEval: false,
-    key: " ",
-  };
+  review: false,
+  elo: 3500,
+  coach: 999,
+  lines: 5,
+  colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
+  depth: 10,
+  delay: 100,
+  style: "Default",
+  autoMove: false,
+  autoMoveBalanced: false,
+  stat: false,
+  autoStart: false,
+  winningMove: false,
+  showEval: false,
+  onlyShowEval: false,
+  key: " ",
+};
 
   engine.updateConfig(config.lines, config.depth, config.style, config.elo);
 });
@@ -2303,7 +2323,6 @@ class komodo {
   }
 }
 
-
 const engine = new komodo({
   elo: config.elo,
   depth: config.depth,
@@ -2792,6 +2811,89 @@ function extractNormalMove(moves, side = "white") {
 
   return sorted[0];
 }
+
+
+class CoachEngine {
+  constructor() {
+    this.engine = null;
+  }
+
+  async init() {
+    const url = chrome.runtime.getURL("lib/torch.js");
+
+    const blob = new Blob([`importScripts("${url}");`], {
+      type: "application/javascript",
+    });
+
+    const blobUrl = URL.createObjectURL(blob);
+    this.engine = new Worker(blobUrl);
+
+    this.engine.onmessage = (e) => {
+      let raw = e.data;
+      let cleanRaw = raw;
+
+      if (typeof cleanRaw === "string" && cleanRaw.startsWith("json ")) {
+        cleanRaw = cleanRaw.slice(5).trim();
+      }
+
+      try {
+        const data = JSON.parse(cleanRaw);
+        const audioUrlHash = data?.sentences?.[0]?.audioUrlHash;
+
+        if (!audioUrlHash) return;
+
+        const urlAudio = `https://text-and-audio.chess.com/prod/released/David_coach/${language[parseInt(config.coach)].link}/${audioUrlHash}.mp3`;
+        console.log(urlAudio)
+      } catch (err) {}
+    };
+
+    this.setup();
+  }
+
+  setup() {
+    this.send("setoption name UseDeclarativePositionCommand value true");
+    this.send("setoption name BlackElo value 3200");
+    this.send("setoption name WhiteElo value 3200");
+    this.send("setoption name HandleContinuations value true");
+    this.send(`setoption name HandleContinuationsDepth value ${config.depth}`);
+    this.send("setoption name UserColor value white");
+    this.send("setoption name Language value fr_FR");
+    this.send("setoption name ServeCommandV2 value true");
+    this.send("setoption name SpeechV3 value true");
+    this.send("setoption name UCI_Chess960 value false");
+    this.send("setoption name UseRatingRanges value true");
+  }
+
+  send(cmd) {
+    if (this.engine) {
+      this.engine.postMessage(cmd);
+    }
+  }
+
+  getChat(movesString, side = "white") {
+    if (!this.engine) {
+      throw new Error("Engine non initialisé");
+    }
+
+    this.send(`setoption name Language value ${language[parseInt(config.coach)].lang}`);
+
+    this.send(`setoption name UserColor value ${side}`);
+    this.send(`setoption name HandleContinuationsDepth value ${config.depth}`);
+    this.send(movesString);
+    this.send("fetch coachchat");
+  }
+
+  terminate() {
+    if (this.engine) {
+      this.engine.terminate();
+      this.engine = null;
+    }
+  }
+}
+
+// const coach = new CoachEngine();
+// coach.init();
+
 
 const jj0xffffff = () => {
   if (window.location.host === "www.chess.com") {
