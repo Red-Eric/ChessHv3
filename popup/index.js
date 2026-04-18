@@ -31,7 +31,6 @@ const el = (id) => document.getElementById(id);
 /* ================= CHESS.COM ================= */
 
 const defaultChessConfig = {
-  engine: "komodo",
   review: false,
   elo: 3500,
   lines: 5,
@@ -86,7 +85,6 @@ function updateChessUI() {
   );
   el("style").value = chessConfig.style;
   el("key").value = chessConfig.key;
-  el("engine").value = chessConfig.engine;
 
   [
     "autoMove",
@@ -172,21 +170,7 @@ el("key").onchange = (e) => {
   saveChess();
 };
 
-el("engine").onchange = (e) => {
-  chessConfig.engine = e.target.value;
-  const engine_ = e.target.value;
 
-  if (engine_ === "komodo") {
-    document.getElementById("container-style").style.display = "";
-    document.getElementById("container-elo").style.display = "";
-  } else {
-    document.getElementById("container-style").style.display = "none";
-    document.getElementById("container-elo").style.display = "none";
-  }
-
-  updateChessUI();
-  saveChess();
-};
 
 document.querySelector("#stream").onclick = ()=>{
   chrome.runtime.sendMessage(
