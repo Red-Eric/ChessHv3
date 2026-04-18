@@ -1,6 +1,17 @@
 let lastFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 let hookedSite = false;
 
+function exportUciWithFen(history) {
+  if (!history || history.length === 0) return "";
+  const startFen = history[0].beforeFen;
+  const moves = history
+    .map(m => m.from + m.to + (m.promotion || ""))
+    .join(" ");
+
+  return `position fen ${startFen} moves ${moves}`;
+}
+
+
 window.isGameOver = false
 function getStartFEN(fen) {
   const board = fen.split(" ")[0];
@@ -54,12 +65,13 @@ if (window.location.host === "www.chess.com") {
       if (event.data?.type === "GET_FEN") {
         const game = getGameObject();
         let fenHistory = [];
+        let uciHistory = null
         if (game) {
           const fenInit = game.getHistoryFENs(1)[0];
           const startFen = getStartFEN(fenInit);
           fenHistory = game.getHistoryFENs(1)
           fenHistory.unshift(startFen)
-          
+          uciHistory = exportUciWithFen(game.getCurrentFullLine())
         }
         const fen =
           game?.getFEN() ||
@@ -68,7 +80,7 @@ if (window.location.host === "www.chess.com") {
         const isGameOver = game?.isGameOver?.() || false;
         const username = window?.context?.user?.username || null
         window.postMessage(
-          { type: "FEN_RESPONSE", fen, side_, isGameOver, fenHistory, username },
+          { type: "FEN_RESPONSE", fen, side_, isGameOver, fenHistory, username, uciHistory },
           "*",
         );
       }

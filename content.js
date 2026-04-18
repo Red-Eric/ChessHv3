@@ -5,6 +5,7 @@ let userName = null;
 let lastClassification = null;
 let moveIndex_ = 999;
 let isGameOverFlag = true;
+const chessComAudio = new Audio()
 const language = [
   { lang: "en_US", link: "en-US", name: "English" },
   { lang: "fr_FR", link: "fr-FR", name: "Français" },
@@ -2843,7 +2844,9 @@ class CoachEngine {
         if (!audioUrlHash) return;
 
         const urlAudio = `https://text-and-audio.chess.com/prod/released/David_coach/${language[parseInt(config.coach)].link}/${audioUrlHash}.mp3`;
-        console.log(urlAudio)
+        // console.log(urlAudio)
+        chessComAudio.src = urlAudio
+        chessComAudio.play()
       } catch (err) {}
     };
 
@@ -2891,14 +2894,14 @@ class CoachEngine {
   }
 }
 
-// const coach = new CoachEngine();
-// coach.init();
+const coach = new CoachEngine();
+coach.init();
 
 
 const jj0xffffff = () => {
   if (window.location.host === "www.chess.com") {
     let lastFEN = "";
-
+    let uciHistory = "";
     let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     let side_index = 1;
     let evalObj = null;
@@ -3043,6 +3046,7 @@ const jj0xffffff = () => {
         if (event.source !== window) return;
         if (event.data && event.data.type === "FEN_RESPONSE") {
           fen_ = event.data.fen;
+          uciHistory = event.data.uciHistory
           side_index = event.data.side_;
           userName = event.data.username;
           chessComFenHistory = event.data.fenHistory;
@@ -3357,8 +3361,14 @@ const jj0xffffff = () => {
         document.querySelector("#acc-widget").remove();
       }
 
+      
+
       if (lastFEN !== fen_) {
         //accuracy
+        chessComAudio.pause()
+        if(uciHistory){
+          coach.getChat(uciHistory, getSide())
+        }
         clearHint();
         const whiteElo = getElo(getSide())?.white || null;
         const blackElo = getElo(getSide())?.black || null;
