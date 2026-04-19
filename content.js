@@ -244,7 +244,8 @@ let lastClassification = null;
 let moveIndex_ = 999;
 let isGameOverFlag = true;
 const chessComAudio = new Audio();
-let lastFenForAnalyzis = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+let lastFenForAnalyzis =
+  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 const coachs = [
   {
@@ -542,7 +543,6 @@ const coachs = [
   },
 ];
 
-
 const MoveClassification = {
   Brilliant: "brilliant",
   Great: "greatFind",
@@ -558,8 +558,6 @@ const MoveClassification = {
 };
 
 let lastUrl = window.location.pathname;
-
-
 
 function classifySafety(avgAccuracy, win, lost, draw) {
   const total = win + lost + draw;
@@ -1816,6 +1814,39 @@ function placeSVGOnBoard(side, square, svgCode) {
     svg.style.left = -box.width / 2 + "px";
     svg.style.top = -box.height / 2 + "px";
   });
+
+  if (window.location.host === "www.chess.com") {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svgCode, "image/svg+xml");
+
+    const bg = doc.querySelector(".icon-background");
+    if (!bg) return;
+
+    const color = bg.getAttribute("fill");
+    if (!color) return;
+
+    document.querySelectorAll('.highlight[class*="square-"]').forEach((el) => {
+      el.style.backgroundColor = color;
+      el.style.opacity = "0.5";
+    });
+  }
+
+  if (window.location.host === "lichess.org") {
+    const el = document.querySelector(".last-move");
+    if (!el) return;
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svgCode, "image/svg+xml");
+
+    const bg = doc.querySelector(".icon-background");
+    if (!bg) return;
+
+    const color = bg.getAttribute("fill");
+    if (!color) return;
+
+    el.style.backgroundColor = color;
+    el.style.opacity = "0.5";
+  }
 }
 
 // placeSVGOnBoard("white", "e2", blunderSVG)
@@ -1947,7 +1978,6 @@ async function createWorkerKomodo() {
   return new Worker(blobUrl);
 }
 
-
 async function createWorkerTorch() {
   const url = `${chrome.runtime.getURL("lib/torch.js")}`;
   const blob = new Blob([`importScripts("${url}");`], {
@@ -1957,7 +1987,6 @@ async function createWorkerTorch() {
 
   return new Worker(blobUrl);
 }
-
 
 class ChessAnalyzer {
   constructor({ depth = config.depth } = {}) {
@@ -3104,7 +3133,6 @@ function extractNormalMove(moves, side = "white") {
   return sorted[0];
 }
 
-
 class CoachEngine {
   constructor() {
     this.worker = null;
@@ -3175,7 +3203,7 @@ class CoachEngine {
           const classificationName = last.classificationName;
           const fen = last.fen;
           const audioUrlHash = last?.playedMove?.speech?.[0]?.audioUrlHash;
-          const moveLan = last?.playedMove?.moveLan
+          const moveLan = last?.playedMove?.moveLan;
           if (!audioUrlHash) return;
 
           const urlAudio = `${coachs[config.coach].link}${audioUrlHash}.mp3`;
@@ -3186,16 +3214,17 @@ class CoachEngine {
             classificationName,
             fen,
             urlAudio,
-            moveLan
+            moveLan,
           });
-
         } catch (err) {}
       };
 
       this.worker.addEventListener("message", onMessage);
 
       this.send(`setoption name UserColor value ${side}`);
-      this.send(`setoption name HandleContinuationsDepth value ${config.depth}`);
+      this.send(
+        `setoption name HandleContinuationsDepth value ${config.depth}`,
+      );
       this.send(`setoption name Language value ${coachs[config.coach].lang}`);
       this.send(coachs[config.coach].cmd);
 
@@ -3678,28 +3707,28 @@ const jj0xffffff = () => {
         chessComAudio.pause();
         if (uciHistory) {
           if (
-            !((getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
-            (getSide()[0] === "b" && fen_.split(" ")[1] === "b"))
+            !(
+              (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+              (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
+            )
           ) {
             // coach.getChat(uciHistory, getSide());
           }
           // coach.getChat(uciHistory, getSide());
 
-          coach.getChat(uciHistory , getSide()).then(result =>{
-            console.log(result)
-            
-            if(lastFEN === result.fen){
-              chessComAudio.src = result.urlAudio
-              chessComAudio.play()
+          coach.getChat(uciHistory, getSide()).then((result) => {
+            console.log(result);
+
+            if (lastFEN === result.fen) {
+              chessComAudio.src = result.urlAudio;
+              chessComAudio.play();
               /////////////
 
-              const classification_ = result.classificationName
+              const classification_ = result.classificationName;
               const svg = classificationSVG[classification_];
-              placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg)
+              placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
             }
-
-          })
-          
+          });
         }
         const whiteElo = getElo(getSide())?.white || null;
         const blackElo = getElo(getSide())?.black || null;
@@ -4379,6 +4408,33 @@ const jj0xffffff = () => {
         const whiteElo = getElo(getSide())?.white || null;
         const blackElo = getElo(getSide())?.black || null;
         lichessFenHistory = message.data;
+        let uciH_ = message.uci
+        let last = message.last
+
+
+        if(uciH_.slice(uciH_.length-4) === last){
+          uciH_ = uciH_
+        }else{
+          uciH_ = uciH_ + " " + last
+        }
+
+        clearHint()
+
+        console.clear()
+
+        console.log(uciH_)
+
+
+        coach.getChat(uciH_, getSide()).then((result) => {
+            console.log(result);
+
+
+              const classification_ = result.classificationName;
+              const svg = classificationSVG[classification_];
+              placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
+            
+          });
+
 
         if (config.stat && statObj) {
           const result = await analyzer.update(lichessFenHistory, {

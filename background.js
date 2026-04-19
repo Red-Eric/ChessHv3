@@ -1140,6 +1140,33 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 const movesHistory = evalRes.result?.value || [];
                 let fenhistory = [];
 
+                let uciHistory = `position fen ${movesHistory[0]?.fen ?? ""} moves`;
+
+                uciHistory +=
+                  " " +
+                  movesHistory
+                    .map((m, i) => {
+                      const san = m?.san;
+                      const uci = m?.uci;
+
+                      // correction roque
+                      if (san === "O-O") {
+                        return m.ply % 2 === 1 ? "e1g1" : "e8g8";
+                      }
+
+                      if (san === "O-O-O") {
+                        return m.ply % 2 === 1 ? "e1c1" : "e8c8";
+                      }
+
+                      // fallback sécurité si UCI faux
+                      if (uci === "e1h1") return "e1g1";
+                      if (uci === "e8h8") return "e8g8";
+
+                      return uci;
+                    })
+                    .filter(Boolean)
+                    .join(" ");
+
                 if (movesHistory.length > 0) {
                   game.load(movesHistory[0].fen);
 
@@ -1174,6 +1201,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         chrome.tabs.sendMessage(tab.id, {
                           type: "history",
                           data: fenhistory,
+                          uci: uciHistory,
+                          last: lastMove,
                         });
                       }
                     }
@@ -1343,4 +1372,3 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
   }
 });
-
