@@ -1,5 +1,243 @@
 const default_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 let squareTo = "";
+const swalThemeCSS = `
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+    :root {
+      --olive-vivid:   #4a7c1f;
+      --olive-mid:     #5a8a30;
+      --olive-border:  rgba(74,124,31,0.30);
+      --bg-panel:      #faf8f5;
+      --bg-card:       #ffffff;
+      --bg-hover:      #eeeae3;
+      --border-strong: rgba(74,124,31,0.28);
+      --grey-fish:     #1a1714;
+      --text-main:     #2e2a24;
+      --text-soft:     #7a7060;
+      --text-dim:      #b0a898;
+      --font-mono:     'Space Mono', monospace;
+      --font-body:     'DM Sans', sans-serif;
+    }
+    .swal2-popup.swal-rederic {
+      font-family: var(--font-body) !important;
+      background: var(--bg-panel) !important;
+      border: 1px solid var(--border-strong) !important;
+      border-radius: 18px !important;
+      padding: 32px 28px 24px !important;
+      box-shadow: 0 0 0 1px rgba(74,124,31,0.04) inset, 0 24px 70px rgba(0,0,0,0.13) !important;
+      max-width: 460px !important;
+      width: 94% !important;
+      position: relative;
+    }
+    .swal2-popup.swal-rederic::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 10%; right: 10%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--olive-mid), transparent);
+      border-radius: 0 0 4px 4px;
+    }
+    .swal2-popup.swal-rederic .swal2-title {
+      font-family: var(--font-mono) !important;
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      letter-spacing: 3px !important;
+      text-transform: uppercase !important;
+      color: var(--grey-fish) !important;
+    }
+    .swal2-popup.swal-rederic .swal2-html-container {
+      color: var(--text-soft) !important;
+      font-size: 13.5px !important;
+      line-height: 1.65 !important;
+      margin: 0 !important;
+    }
+    .swal2-popup.swal-rederic .swal2-close {
+      color: var(--text-dim) !important;
+      font-size: 22px !important;
+      border-radius: 6px !important;
+      transition: all 0.2s !important;
+    }
+    .swal2-popup.swal-rederic .swal2-close:hover {
+      color: var(--grey-fish) !important;
+      background: var(--bg-hover) !important;
+    }
+    .swal2-popup.swal-rederic .swal2-confirm {
+      font-family: var(--font-mono) !important;
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      letter-spacing: 1.5px !important;
+      text-transform: uppercase !important;
+      padding: 10px 26px !important;
+      border-radius: 8px !important;
+      background: rgba(74,124,31,0.12) !important;
+      border: 1px solid var(--olive-mid) !important;
+      color: var(--olive-vivid) !important;
+      box-shadow: none !important;
+      transition: all 0.2s ease !important;
+    }
+    .swal2-popup.swal-rederic .swal2-confirm:hover {
+      background: rgba(74,124,31,0.22) !important;
+      border-color: var(--olive-vivid) !important;
+      color: var(--grey-fish) !important;
+    }
+    .swal2-popup.swal-rederic .swal2-cancel {
+      font-family: var(--font-mono) !important;
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      letter-spacing: 1.5px !important;
+      text-transform: uppercase !important;
+      padding: 10px 26px !important;
+      border-radius: 8px !important;
+      background: transparent !important;
+      border: 1px solid var(--border-strong) !important;
+      color: var(--text-soft) !important;
+      box-shadow: none !important;
+      transition: all 0.2s ease !important;
+    }
+    .swal2-popup.swal-rederic .swal2-cancel:hover {
+      background: var(--bg-hover) !important;
+      color: var(--text-main) !important;
+    }
+    .swal2-popup.swal-rederic .swal2-actions {
+      margin-top: 18px !important;
+      gap: 10px !important;
+    }
+    .swal2-container.swal2-backdrop-show {
+      background: rgba(26,23,20,0.55) !important;
+      backdrop-filter: blur(4px) !important;
+    }
+
+    .chv3-loading-wrap {
+      margin: 18px 0 8px;
+    }
+    .chv3-loading-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .chv3-bar-track {
+      width: 100%;
+      height: 6px;
+      background: rgba(74,124,31,0.12);
+      border-radius: 99px;
+      overflow: hidden;
+      border: 1px solid var(--olive-border);
+    }
+    .chv3-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--olive-mid);
+      border-radius: 99px;
+      transition: width 0.35s ease;
+    }
+    .chv3-game-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-top: 7px;
+      min-height: 14px;
+      text-align: left;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-radius: 10px;
+      padding: 13px 10px;
+      text-align: center;
+    }
+    .stat-card .s-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      display: block;
+      margin-bottom: 5px;
+    }
+    .stat-card .s-value {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--grey-fish);
+    }
+    .stat-card.s-win  .s-value { color: #3a7d1e; }
+    .stat-card.s-lost .s-value { color: #b84040; }
+    .stat-card.s-draw .s-value { color: #8a7040; }
+    .stat-card.s-acc  .s-value { color: #4a7c1f; }
+
+    .safety-row {
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-radius: 10px;
+      padding: 13px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .safety-row .s-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      display: block;
+      margin-bottom: 4px;
+    }
+    .safety-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 5px 11px;
+      border-radius: 6px;
+    }
+    .badge-legit   { background: rgba(58,125,30,0.13);  color: #3a7d1e; border: 1px solid rgba(58,125,30,0.3); }
+    .badge-sus     { background: rgba(186,64,64,0.10);  color: #b84040; border: 1px solid rgba(186,64,64,0.3); }
+    .badge-cheater { background: rgba(60,60,60,0.10);   color: #2e2a24; border: 1px solid rgba(60,60,60,0.25); }
+    .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+    .dot-legit   { background: #3a7d1e; }
+    .dot-sus     { background: #b84040; }
+    .dot-cheater { background: #888; }
+
+    .swal-footer-note {
+      padding: 11px 14px;
+      background: rgba(74,124,31,0.06);
+      border: 1px solid var(--olive-border);
+      border-radius: 9px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.6;
+      color: var(--text-dim);
+      text-align: left;
+      margin-bottom: 14px;
+    }
+    .swal-footer-note::before { content: '// '; color: var(--olive-vivid); font-weight: 700; }
+    .swal-author {
+      display: block;
+      text-align: right;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+  </style>
+`;
 const BOOKS = [];
 let userName = null;
 let lastClassification = null;
@@ -305,25 +543,9 @@ const coachs = [
 ];
 
 
-
-const language = [
-  { lang: "en_US", link: "en-US", name: "English" },
-  { lang: "fr_FR", link: "fr-FR", name: "Français" },
-  { lang: "es_ES", link: "es-ES", name: "Español" },
-  { lang: "ar_SA", link: "ar-SA", name: "عربي" },
-  { lang: "ru_RU", link: "ru-RU", name: "Русский" },
-  { lang: "pt_PT", link: "pt-PT", name: "Português" },
-  { lang: "de_DE", link: "de-DE", name: "Deutsch" },
-  { lang: "it_IT", link: "it-IT", name: "Italiano" },
-  { lang: "tr_TR", link: "tr-TR", name: "Türkçe" },
-  { lang: "pl_PL", link: "pl-PL", name: "Polski" },
-  { lang: "ko_KR", link: "ko-KR", name: "한국어" },
-  { lang: "id_ID", link: "id-ID", name: "Indonesia" },
-];
-
 const MoveClassification = {
   Brilliant: "brilliant",
-  Great: "great",
+  Great: "greatFind",
   Best: "best",
   Excellent: "excellent",
   Good: "good",
@@ -337,244 +559,7 @@ const MoveClassification = {
 
 let lastUrl = window.location.pathname;
 
-const swalThemeCSS = `
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap');
-    :root {
-      --olive-vivid:   #4a7c1f;
-      --olive-mid:     #5a8a30;
-      --olive-border:  rgba(74,124,31,0.30);
-      --bg-panel:      #faf8f5;
-      --bg-card:       #ffffff;
-      --bg-hover:      #eeeae3;
-      --border-strong: rgba(74,124,31,0.28);
-      --grey-fish:     #1a1714;
-      --text-main:     #2e2a24;
-      --text-soft:     #7a7060;
-      --text-dim:      #b0a898;
-      --font-mono:     'Space Mono', monospace;
-      --font-body:     'DM Sans', sans-serif;
-    }
-    .swal2-popup.swal-rederic {
-      font-family: var(--font-body) !important;
-      background: var(--bg-panel) !important;
-      border: 1px solid var(--border-strong) !important;
-      border-radius: 18px !important;
-      padding: 32px 28px 24px !important;
-      box-shadow: 0 0 0 1px rgba(74,124,31,0.04) inset, 0 24px 70px rgba(0,0,0,0.13) !important;
-      max-width: 460px !important;
-      width: 94% !important;
-      position: relative;
-    }
-    .swal2-popup.swal-rederic::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 10%; right: 10%;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--olive-mid), transparent);
-      border-radius: 0 0 4px 4px;
-    }
-    .swal2-popup.swal-rederic .swal2-title {
-      font-family: var(--font-mono) !important;
-      font-size: 13px !important;
-      font-weight: 700 !important;
-      letter-spacing: 3px !important;
-      text-transform: uppercase !important;
-      color: var(--grey-fish) !important;
-    }
-    .swal2-popup.swal-rederic .swal2-html-container {
-      color: var(--text-soft) !important;
-      font-size: 13.5px !important;
-      line-height: 1.65 !important;
-      margin: 0 !important;
-    }
-    .swal2-popup.swal-rederic .swal2-close {
-      color: var(--text-dim) !important;
-      font-size: 22px !important;
-      border-radius: 6px !important;
-      transition: all 0.2s !important;
-    }
-    .swal2-popup.swal-rederic .swal2-close:hover {
-      color: var(--grey-fish) !important;
-      background: var(--bg-hover) !important;
-    }
-    .swal2-popup.swal-rederic .swal2-confirm {
-      font-family: var(--font-mono) !important;
-      font-size: 11px !important;
-      font-weight: 700 !important;
-      letter-spacing: 1.5px !important;
-      text-transform: uppercase !important;
-      padding: 10px 26px !important;
-      border-radius: 8px !important;
-      background: rgba(74,124,31,0.12) !important;
-      border: 1px solid var(--olive-mid) !important;
-      color: var(--olive-vivid) !important;
-      box-shadow: none !important;
-      transition: all 0.2s ease !important;
-    }
-    .swal2-popup.swal-rederic .swal2-confirm:hover {
-      background: rgba(74,124,31,0.22) !important;
-      border-color: var(--olive-vivid) !important;
-      color: var(--grey-fish) !important;
-    }
-    .swal2-popup.swal-rederic .swal2-cancel {
-      font-family: var(--font-mono) !important;
-      font-size: 11px !important;
-      font-weight: 700 !important;
-      letter-spacing: 1.5px !important;
-      text-transform: uppercase !important;
-      padding: 10px 26px !important;
-      border-radius: 8px !important;
-      background: transparent !important;
-      border: 1px solid var(--border-strong) !important;
-      color: var(--text-soft) !important;
-      box-shadow: none !important;
-      transition: all 0.2s ease !important;
-    }
-    .swal2-popup.swal-rederic .swal2-cancel:hover {
-      background: var(--bg-hover) !important;
-      color: var(--text-main) !important;
-    }
-    .swal2-popup.swal-rederic .swal2-actions {
-      margin-top: 18px !important;
-      gap: 10px !important;
-    }
-    .swal2-container.swal2-backdrop-show {
-      background: rgba(26,23,20,0.55) !important;
-      backdrop-filter: blur(4px) !important;
-    }
 
-    .chv3-loading-wrap {
-      margin: 18px 0 8px;
-    }
-    .chv3-loading-label {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--text-dim);
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 8px;
-    }
-    .chv3-bar-track {
-      width: 100%;
-      height: 6px;
-      background: rgba(74,124,31,0.12);
-      border-radius: 99px;
-      overflow: hidden;
-      border: 1px solid var(--olive-border);
-    }
-    .chv3-bar-fill {
-      height: 100%;
-      width: 0%;
-      background: var(--olive-mid);
-      border-radius: 99px;
-      transition: width 0.35s ease;
-    }
-    .chv3-game-label {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--text-dim);
-      margin-top: 7px;
-      min-height: 14px;
-      text-align: left;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-    .stat-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-strong);
-      border-radius: 10px;
-      padding: 13px 10px;
-      text-align: center;
-    }
-    .stat-card .s-label {
-      font-family: var(--font-mono);
-      font-size: 9px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      display: block;
-      margin-bottom: 5px;
-    }
-    .stat-card .s-value {
-      font-family: var(--font-mono);
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--grey-fish);
-    }
-    .stat-card.s-win  .s-value { color: #3a7d1e; }
-    .stat-card.s-lost .s-value { color: #b84040; }
-    .stat-card.s-draw .s-value { color: #8a7040; }
-    .stat-card.s-acc  .s-value { color: #4a7c1f; }
-
-    .safety-row {
-      background: var(--bg-card);
-      border: 1px solid var(--border-strong);
-      border-radius: 10px;
-      padding: 13px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 14px;
-    }
-    .safety-row .s-label {
-      font-family: var(--font-mono);
-      font-size: 9px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      display: block;
-      margin-bottom: 4px;
-    }
-    .safety-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      padding: 5px 11px;
-      border-radius: 6px;
-    }
-    .badge-legit   { background: rgba(58,125,30,0.13);  color: #3a7d1e; border: 1px solid rgba(58,125,30,0.3); }
-    .badge-sus     { background: rgba(186,64,64,0.10);  color: #b84040; border: 1px solid rgba(186,64,64,0.3); }
-    .badge-cheater { background: rgba(60,60,60,0.10);   color: #2e2a24; border: 1px solid rgba(60,60,60,0.25); }
-    .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
-    .dot-legit   { background: #3a7d1e; }
-    .dot-sus     { background: #b84040; }
-    .dot-cheater { background: #888; }
-
-    .swal-footer-note {
-      padding: 11px 14px;
-      background: rgba(74,124,31,0.06);
-      border: 1px solid var(--olive-border);
-      border-radius: 9px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      line-height: 1.6;
-      color: var(--text-dim);
-      text-align: left;
-      margin-bottom: 14px;
-    }
-    .swal-footer-note::before { content: '// '; color: var(--olive-vivid); font-weight: 700; }
-    .swal-author {
-      display: block;
-      text-align: right;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--text-dim);
-    }
-  </style>
-`;
 
 function classifySafety(avgAccuracy, win, lost, draw) {
   const total = win + lost + draw;
@@ -1605,7 +1590,7 @@ function randomString(length) {
 }
 
 let url = window.location.href;
-const classMoveClassification = "keokodd";
+const classMoveClassification = "hint-svg";
 const BrillantSVG = `<svg xmlns="http://www.w3.org/2000/svg" class="${classMoveClassification}" width="24" height="24" viewBox="0 0 18 19">
       <g id="Brilliant">
     <path class="icon-shadow" opacity="0.3" d="M9,.5a9,9,0,1,0,9,9A9,9,0,0,0,9,.5Z"></path>
@@ -3118,86 +3103,7 @@ function extractNormalMove(moves, side = "white") {
 
   return sorted[0];
 }
-/*
-class CoachEngine {
-  constructor() {
-    this.engine = null;
-  }
 
-  async init() {
-    const url = chrome.runtime.getURL("lib/torch.js");
-
-    const blob = new Blob([`importScripts("${url}");`], {
-      type: "application/javascript",
-    });
-
-    const blobUrl = URL.createObjectURL(blob);
-    this.engine = new Worker(blobUrl);
-
-    this.engine.onmessage = (e) => {
-      let raw = e.data;
-      let cleanRaw = raw;
-
-      if (typeof cleanRaw === "string" && cleanRaw.startsWith("json ")) {
-        cleanRaw = cleanRaw.slice(5).trim();
-      }
-
-      try {
-        const data = JSON.parse(cleanRaw);
-        const classificationName = data?.positions[data?.positions?.length-1]?.classificationName
-        lastFenForAnalyzis = data?.positions[data?.positions?.length-1]?.fen
-        const audioUrlHash = data?.positions[data?.positions?.length-1]?.playedMove?.speech[0]?.audioUrlHash
-
-
-        if (!audioUrlHash) return;
-
-        const urlAudio = `${coachs[config.coach].link}${audioUrlHash}.mp3`
-        
-      } catch (err) {}
-    };
-
-    this.setup();
-  }
-
-  setup() {
-    this.send("setoption name UseDeclarativePositionCommand value true");
-    this.send("setoption name BlackElo value 3200");
-    this.send("setoption name WhiteElo value 3200");
-    this.send("setoption name HandleContinuations value true");
-    this.send(`setoption name HandleContinuationsDepth value ${config.depth}`);
-    this.send("setoption name UserColor value white");
-    this.send("setoption name BotChatPrioritizePlayerMove value true");
-    this.send("setoption name SerializeSpeechDetails value true");
-    this.send("setoption name AllowBoardEventsWithoutSpeech value true");
-    this.send("setoption name Language value fr_FR");
-    this.send("setoption name ServeCommandV2 value true");
-    this.send("setoption name SpeechV3 value true");
-    this.send("setoption name UCI_Chess960 value false");
-    this.send("setoption name UseRatingRanges value true");
-  }
-
-  send(cmd) {
-    if (this.engine) {
-      this.engine.postMessage(cmd);
-    }
-  }
-
-  getChat(movesString, side = "white") {
-    if(config.coach === 999){
-      return null;
-    }
-    if (!this.engine) {
-      throw new Error("Engine non initialisé");
-    }
-    this.send(`setoption name UserColor value ${side}`);
-    this.send(`setoption name HandleContinuationsDepth value ${config.depth}`);
-    this.send(`setoption name Language value ${coachs[config.coach].lang}`)
-    this.send(coachs[config.coach].cmd)
-
-    this.send(movesString);
-    this.send("fetch analysis");
-  }
-}*/
 
 class CoachEngine {
   constructor() {
@@ -3269,7 +3175,7 @@ class CoachEngine {
           const classificationName = last.classificationName;
           const fen = last.fen;
           const audioUrlHash = last?.playedMove?.speech?.[0]?.audioUrlHash;
-
+          const moveLan = last?.playedMove?.moveLan
           if (!audioUrlHash) return;
 
           const urlAudio = `${coachs[config.coach].link}${audioUrlHash}.mp3`;
@@ -3280,6 +3186,7 @@ class CoachEngine {
             classificationName,
             fen,
             urlAudio,
+            moveLan
           });
 
         } catch (err) {}
@@ -3765,7 +3672,10 @@ const jj0xffffff = () => {
 
       if (lastFEN !== fen_) {
         //accuracy
-        // chessComAudio.pause();
+        clearHint();
+        lastFEN = fen_;
+
+        chessComAudio.pause();
         if (uciHistory) {
           if (
             !((getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
@@ -3777,10 +3687,20 @@ const jj0xffffff = () => {
 
           coach.getChat(uciHistory , getSide()).then(result =>{
             console.log(result)
+            
+            if(lastFEN === result.fen){
+              chessComAudio.src = result.urlAudio
+              chessComAudio.play()
+              /////////////
+
+              const classification_ = result.classificationName
+              const svg = classificationSVG[classification_];
+              placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg)
+            }
+
           })
           
         }
-        clearHint();
         const whiteElo = getElo(getSide())?.white || null;
         const blackElo = getElo(getSide())?.black || null;
 
@@ -3811,7 +3731,6 @@ const jj0xffffff = () => {
         }
 
         // fen
-        lastFEN = fen_;
         chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
 
         clearHighlightSquares();
