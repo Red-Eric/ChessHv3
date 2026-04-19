@@ -5,7 +5,7 @@ let userName = null;
 let lastClassification = null;
 let moveIndex_ = 999;
 let isGameOverFlag = true;
-const chessComAudio = new Audio()
+const chessComAudio = new Audio();
 const language = [
   { lang: "en_US", link: "en-US", name: "English" },
   { lang: "fr_FR", link: "fr-FR", name: "Français" },
@@ -1289,12 +1289,6 @@ class AnalyzeEngine {
   }
 }
 
-
-
-
-
-
-
 let debugEngine = false;
 
 function randomString(length) {
@@ -1637,23 +1631,23 @@ let config = {
 chrome.storage.local.get(["chessConfig"], (result) => {
   console.log("config storage ", result.chessConfig);
   config = result.chessConfig || {
-  review: false,
-  elo: 3500,
-  coach: 999,
-  lines: 5,
-  colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
-  depth: 10,
-  delay: 100,
-  style: "Default",
-  autoMove: false,
-  autoMoveBalanced: false,
-  stat: false,
-  autoStart: false,
-  winningMove: false,
-  showEval: false,
-  onlyShowEval: false,
-  key: " ",
-};
+    review: false,
+    elo: 3500,
+    coach: 999,
+    lines: 5,
+    colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
+    depth: 10,
+    delay: 100,
+    style: "Default",
+    autoMove: false,
+    autoMoveBalanced: false,
+    stat: false,
+    autoStart: false,
+    winningMove: false,
+    showEval: false,
+    onlyShowEval: false,
+    key: " ",
+  };
 
   engine.updateConfig(config.lines, config.depth, config.style, config.elo);
 });
@@ -2813,7 +2807,6 @@ function extractNormalMove(moves, side = "white") {
   return sorted[0];
 }
 
-
 class CoachEngine {
   constructor() {
     this.engine = null;
@@ -2839,14 +2832,20 @@ class CoachEngine {
 
       try {
         const data = JSON.parse(cleanRaw);
-        const audioUrlHash = data?.sentences?.[0]?.audioUrlHash;
+        const classificationName = data?.positions[data?.positions?.length-1]?.classificationName
+        // const audioUrlHash = data?.sentences?.[0]?.audioUrlHash;
+        const audioUrlHash = data?.positions[data?.positions?.length-1]?.playedMove?.speech[0]?.audioUrlHash
+
+        console.clear()
+        console.log(audioUrlHash)
+        console.log(classificationName)
 
         if (!audioUrlHash) return;
 
         const urlAudio = `https://text-and-audio.chess.com/prod/released/David_coach/${language[parseInt(config.coach)].link}/${audioUrlHash}.mp3`;
         // console.log(urlAudio)
-        chessComAudio.src = urlAudio
-        chessComAudio.play()
+        chessComAudio.src = urlAudio;
+        chessComAudio.play();
       } catch (err) {}
     };
 
@@ -2860,6 +2859,9 @@ class CoachEngine {
     this.send("setoption name HandleContinuations value true");
     this.send(`setoption name HandleContinuationsDepth value ${config.depth}`);
     this.send("setoption name UserColor value white");
+    this.send("setoption name BotChatPrioritizePlayerMove value true");
+    this.send("setoption name SerializeSpeechDetails value true");
+    this.send("setoption name AllowBoardEventsWithoutSpeech value true");
     this.send("setoption name Language value fr_FR");
     this.send("setoption name ServeCommandV2 value true");
     this.send("setoption name SpeechV3 value true");
@@ -2878,12 +2880,15 @@ class CoachEngine {
       throw new Error("Engine non initialisé");
     }
 
-    this.send(`setoption name Language value ${language[parseInt(config.coach)].lang}`);
+    this.send(
+      `setoption name Language value ${language[parseInt(config.coach)].lang}`,
+    );
 
     this.send(`setoption name UserColor value ${side}`);
     this.send(`setoption name HandleContinuationsDepth value ${config.depth}`);
     this.send(movesString);
-    this.send("fetch coachchat");
+    // this.send("fetch coachchat");
+    this.send("fetch analysis");
   }
 
   terminate() {
@@ -2896,7 +2901,6 @@ class CoachEngine {
 
 const coach = new CoachEngine();
 coach.init();
-
 
 const jj0xffffff = () => {
   if (window.location.host === "www.chess.com") {
@@ -3046,7 +3050,7 @@ const jj0xffffff = () => {
         if (event.source !== window) return;
         if (event.data && event.data.type === "FEN_RESPONSE") {
           fen_ = event.data.fen;
-          uciHistory = event.data.uciHistory
+          uciHistory = event.data.uciHistory;
           side_index = event.data.side_;
           userName = event.data.username;
           chessComFenHistory = event.data.fenHistory;
@@ -3361,13 +3365,16 @@ const jj0xffffff = () => {
         document.querySelector("#acc-widget").remove();
       }
 
-      
-
       if (lastFEN !== fen_) {
         //accuracy
-        chessComAudio.pause()
-        if(uciHistory){
-          coach.getChat(uciHistory, getSide())
+        // chessComAudio.pause();
+        if (uciHistory) {
+          if (
+            !((getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
+            (getSide()[0] === "b" && fen_.split(" ")[1] === "b"))
+          ) {
+            coach.getChat(uciHistory, getSide());
+          }
         }
         clearHint();
         const whiteElo = getElo(getSide())?.white || null;
