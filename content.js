@@ -3536,18 +3536,21 @@ class CoachEngine {
 
         if (typeof cleanRaw === "string" && cleanRaw.startsWith("json ")) {
           cleanRaw = cleanRaw.slice(5).trim();
-        }else{
-          console.clear()
-          console.log(raw)
+        } else {
+          console.clear();
+          console.log(raw);
         }
 
         try {
           const data = JSON.parse(cleanRaw);
           const last = data?.positions?.[data.positions.length - 1];
-          const CAPS = data?.CAPS
+          const whiteAccuracy = data?.CAPS.white.all;
+          const blackAccuracy = data?.CAPS.black.all;
+          const blackElo = data?.reportCard.black.effectiveElo;
+          const whiteElo = data?.reportCard.white.effectiveElo;
           stat_0_white = data?.tallies?.white;
           stat_0_black = data?.tallies?.black;
-          
+
           if (!last) return;
 
           const classificationName = last.classificationName;
@@ -3565,6 +3568,10 @@ class CoachEngine {
             fen,
             urlAudio,
             moveLan,
+            whiteAccuracy,
+            whiteElo,
+            blackAccuracy,
+            blackElo,
           });
         } catch (err) {}
       };
@@ -4081,8 +4088,6 @@ const jj0xffffff = () => {
               // console.log(result);
 
               if (lastFEN === result.fen) {
-                /////////////
-
                 if (config.speach) {
                   chessComAudio.src = result.urlAudio;
                   chessComAudio.play();
@@ -4090,9 +4095,26 @@ const jj0xffffff = () => {
 
                 if (statObj) {
                   statObj.update({
+                    side: getSide(),
+                    whiteAcc: result.whiteAccuracy,
+                    blackAcc: result.blackAccuracy,
+
+                    whiteElo: result.whiteElo,
+                    blackElo: result.blackElo,
+
                     statW: stat_0_white,
                     statB: stat_0_black,
                     displayMode: 2,
+                  });
+
+                  chrome.runtime.sendMessage({
+                    type: "FROM_CONTENT",
+                    result: {
+                      whiteAccuracy: result.whiteAccuracy,
+                      whiteElo: result.whiteElo,
+                      blackAccuracy: result.blackAccuracy,
+                      blackElo: result.blackElo,
+                    },
                   });
                 }
 
@@ -4112,33 +4134,6 @@ const jj0xffffff = () => {
         }
         const whiteElo = getElo(getSide())?.white || null;
         const blackElo = getElo(getSide())?.black || null;
-
-        if (config.stat && statObj) {
-          const result = await analyzer.update(chessComFenHistory, {
-            whiteElo: whiteElo,
-            blackElo: blackElo,
-          });
-          if (result) {
-            lastClassification = result.moves.at(-1);
-            chrome.runtime.sendMessage({
-              type: "FROM_CONTENT",
-              result: {
-                whiteAccuracy: result.white.accuracy,
-                whiteElo: result.white.elo,
-                blackAccuracy: result.black.accuracy,
-                blackElo: result.black.elo,
-              },
-            });
-            statObj.update({
-              whiteAcc: result.white.accuracy,
-              whiteElo: result.white.elo,
-              blackAcc: result.black.accuracy,
-              blackElo: result.black.elo,
-              side: getSide(),
-              displayMode: 2,
-            });
-          }
-        }
 
         // fen
         chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
