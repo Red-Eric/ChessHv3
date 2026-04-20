@@ -77,7 +77,7 @@
               <option value="45">Nadia Polski</option>
               <option value="46">Nadia 한국어</option>
               <option value="47">Nadia Indonesia</option>
-              
+
               <option value="48">Levy English</option>
               <option value="49">Magnus English</option>
               <option value="50">Hikaru English</option>
@@ -91,6 +91,41 @@
             </select>
           </div>
           <div class="setting-help">Choose the language for the coach.</div>
+        </div>
+
+        <div id="coach-container">
+          <div class="setting">
+            <label>Coach Depth : <span id="depth2Value">10</span></label>
+            <input
+              type="range"
+              id="depth2"
+              min="1"
+              max="15"
+              step="1"
+              value="10"
+            />
+          </div>
+          <div class="setting-help">Depth value for the coach Engine</div>
+
+          <div class="setting">
+            <span id="moveClassificationStartLabel"
+              >MoveClassification (OFF)</span
+            >
+            <label class="toggle">
+              <input type="checkbox" id="moveClassification" />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="setting-help">Show Move MoveClassification</div>
+
+          <div class="setting">
+            <span id="speachStartLabel">Coach voice (OFF)</span>
+            <label class="toggle">
+              <input type="checkbox" id="speach" />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="setting-help">Coach explains your move</div>
         </div>
 
         <div id="container-elo">
@@ -375,8 +410,16 @@
         </div>
         <div class="setting-help">Hides move suggestions.</div>
       </div>
-      <div style="display: flex; justify-content: center; align-items: center">
+      <div
+        style="
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 12px;
+        "
+      >
         <button class="btn" id="stream">Open Stream Window</button>
+        <button class="btn" id="reset">Reset</button>
       </div>
     </div>
 

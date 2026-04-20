@@ -24,11 +24,14 @@ const defaultChessConfig = {
   lines: 5,
   colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
   depth: 10,
+  depth2: 10,
   delay: 100,
   style: "Default",
   autoMove: false,
+  speach : false,
   autoMoveBalanced: false,
   stat: false,
+  moveClassification: false,
   autoStart: false,
   winningMove: false,
   showEval: false,
@@ -46,6 +49,12 @@ function loadChessConfig(callback) {
       chessConfig = { ...defaultChessConfig, ...savedConfig };
     } else {
       chessConfig = { ...defaultChessConfig };
+    }
+
+    if (chessConfig.coach === 999) {
+      el("coach-container").style.display = "none";
+    } else {
+      el("coach-container").style.display = "";
     }
 
     updateChessUI();
@@ -68,7 +77,7 @@ function hideExtraColorInputs(lines) {
 }
 
 function updateChessUI() {
-  ["elo", "lines", "depth", "delay"].forEach(
+  ["elo", "lines", "depth", "delay", "depth2"].forEach(
     (k) => (el(k).value = chessConfig[k]),
   );
   el("style").value = chessConfig.style;
@@ -84,12 +93,15 @@ function updateChessUI() {
     "showEval",
     "onlyShowEval",
     "autoMoveBalanced",
+    "moveClassification",
+    "speach"
   ].forEach((k) => (el(k).checked = chessConfig[k]));
 
   el("eloValue").textContent = chessConfig.elo;
   el("linesValue").textContent = chessConfig.lines;
   el("depthValue").textContent = chessConfig.depth;
   el("delayValue").textContent = chessConfig.delay;
+  el("depth2Value").textContent = chessConfig.depth2;
 
   el("autoMoveLabel").textContent =
     `Auto Move (${chessConfig.autoMove ? "ON" : "OFF"})`;
@@ -97,6 +109,13 @@ function updateChessUI() {
     `Balanced Auto Move (${chessConfig.autoMoveBalanced ? "ON" : "OFF"})`;
   el("autoStartLabel").textContent =
     `Auto Start Game (${chessConfig.autoStart ? "ON" : "OFF"})`;
+
+  el("moveClassificationStartLabel").textContent =
+    `MoveClassification (${chessConfig.moveClassification ? "ON" : "OFF"})`;
+  
+    el("speachStartLabel").textContent =
+    `Coach voice  (${chessConfig.speach ? "ON" : "OFF"})`;
+
   el("reviewLabel").textContent =
     `ChessHv3 Check (${chessConfig.review ? "ON" : "OFF"})`;
   el("statLabel").textContent =
@@ -122,7 +141,7 @@ function saveChess() {
 loadChessConfig(updateChessUI);
 
 /* ================= INPUT HANDLERS ================= */
-["elo", "lines", "depth", "delay"].forEach((k) => {
+["elo", "lines", "depth", "delay", "depth2"].forEach((k) => {
   el(k).oninput = (e) => {
     chessConfig[k] = +e.target.value;
     updateChessUI();
@@ -139,6 +158,8 @@ loadChessConfig(updateChessUI);
   "showEval",
   "onlyShowEval",
   "autoMoveBalanced",
+  "moveClassification",
+  "speach"
 ].forEach((k) => {
   el(k).onchange = (e) => {
     chessConfig[k] = e.target.checked;
@@ -155,6 +176,11 @@ el("style").onchange = (e) => {
 
 el("coach").onchange = (e) => {
   chessConfig.coach = parseInt(e.target.value);
+  if (chessConfig.coach === 999) {
+    el("coach-container").style.display = "none";
+  } else {
+    el("coach-container").style.display = "";
+  }
   updateChessUI();
   saveChess();
 };
@@ -165,13 +191,9 @@ el("key").onchange = (e) => {
   saveChess();
 };
 
-
-
-document.querySelector("#stream").onclick = ()=>{
-  chrome.runtime.sendMessage(
-  { type: "stream" }
-);
-}
+document.querySelector("#stream").onclick = () => {
+  chrome.runtime.sendMessage({ type: "stream" });
+};
 
 const allColorInputs = document.querySelectorAll('input[type="color"]');
 allColorInputs.forEach((input, index) => {
@@ -205,6 +227,11 @@ el("loadBtn").onclick = () => {
     feedback.textContent = "✗ Invalid JSON. Please check your config.";
     feedback.className = "load-feedback error";
   }
+};
+
+el("reset").onclick = async () => {
+  await chrome.storage.local.clear();
+  location.reload();
 };
 
 /* ================= EXPORT TAB ================= */
