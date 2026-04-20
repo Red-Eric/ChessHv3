@@ -3536,15 +3536,18 @@ class CoachEngine {
 
         if (typeof cleanRaw === "string" && cleanRaw.startsWith("json ")) {
           cleanRaw = cleanRaw.slice(5).trim();
+        }else{
+          console.clear()
+          console.log(raw)
         }
 
         try {
           const data = JSON.parse(cleanRaw);
           const last = data?.positions?.[data.positions.length - 1];
+          const CAPS = data?.CAPS
           stat_0_white = data?.tallies?.white;
           stat_0_black = data?.tallies?.black;
-          console.log(stat_0_white);
-          console.log(stat_0_white);
+          
           if (!last) return;
 
           const classificationName = last.classificationName;
