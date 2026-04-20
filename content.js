@@ -1751,6 +1751,21 @@ const classificationSVG = {
   [MoveClassification.Mistake]: mistakeSVG,
 };
 
+const classificationColor = {
+  [MoveClassification.Best]: "#81B64C",
+  [MoveClassification.Excellent]: "#81B64C",
+  [MoveClassification.Good]: "#95B776",
+  [MoveClassification.Great]: "#749BBF",
+  [MoveClassification.Brilliant]: "#26C2A3",
+  [MoveClassification.Book]: "#D5A47D",
+  [MoveClassification.Forced]: "#96AF8B",
+
+  [MoveClassification.Inaccuracy]: "#F7C631",
+  [MoveClassification.Mistake]: "#FFA459",
+  [MoveClassification.Blunder]: "#FA412D",
+  [MoveClassification.Miss]: "#FF7769",
+};
+
 const chess2 = new Chess();
 
 function getMoveFromFEN(fenBefore, fenAfter) {
@@ -1767,7 +1782,7 @@ function getMoveFromFEN(fenBefore, fenAfter) {
   return null;
 }
 
-function placeSVGOnBoard(side, square, svgCode) {
+function placeSVGOnBoard(side, square, svgCode, color) {
   const board =
     document.querySelector("wc-chess-board") ||
     document.querySelector("cg-board");
@@ -1816,15 +1831,7 @@ function placeSVGOnBoard(side, square, svgCode) {
   });
 
   if (window.location.host === "www.chess.com") {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(svgCode, "image/svg+xml");
-
-    const bg = doc.querySelector(".icon-background");
-    if (!bg) return;
-
-    const color = bg.getAttribute("fill");
-    if (!color) return;
-
+  
     document.querySelectorAll('.highlight[class*="square-"]').forEach((el) => {
       el.style.backgroundColor = color;
       el.style.opacity = "0.5";
@@ -1832,20 +1839,12 @@ function placeSVGOnBoard(side, square, svgCode) {
   }
 
   if (window.location.host === "lichess.org") {
-    const el = document.querySelector(".last-move");
-    if (!el) return;
+    const elements = document.querySelectorAll(".last-move");
 
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(svgCode, "image/svg+xml");
-
-    const bg = doc.querySelector(".icon-background");
-    if (!bg) return;
-
-    const color = bg.getAttribute("fill");
-    if (!color) return;
-
-    el.style.backgroundColor = color;
-    el.style.opacity = "0.5";
+elements.forEach(el => {
+  el.style.backgroundColor = color;
+  el.style.opacity = "0.5";
+});
   }
 }
 
@@ -3729,7 +3728,8 @@ const jj0xffffff = () => {
 
               const classification_ = result.classificationName;
               const svg = classificationSVG[classification_];
-              placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
+              const colorSvg = classificationColor[classification_]
+              placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg, colorSvg);
             }
           });
         }
@@ -4425,11 +4425,12 @@ const jj0xffffff = () => {
 
 
         coach.getChat(uciH_, getSide()).then((result) => {
-            console.log(result);
+            // console.log(result);
 
 
               const classification_ = result.classificationName;
               const svg = classificationSVG[classification_];
+              const colorSvg = classificationColor[classification_];
               placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
             
           });
