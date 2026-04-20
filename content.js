@@ -3175,11 +3175,12 @@ class CoachEngine {
     this.send("setoption name Language value fr_FR");
     this.send("setoption name ServeCommandV2 value true");
     this.send("setoption name SpeechV3 value true");
+    this.send("setoption name ClassificationV3 value true");
     this.send("setoption name UCI_Chess960 value false");
     this.send("setoption name UseRatingRanges value true");
   }
 
-  async getChat(movesString, side = "white") {
+  async getChat(movesString, side = "white", whiteElo = 3200 , blackElo = 3200) {
     if (config.coach === 999) return null;
 
     await this.ready;
@@ -3224,8 +3225,12 @@ class CoachEngine {
       this.send(
         `setoption name HandleContinuationsDepth value ${config.depth}`,
       );
+      this.send(`setoption name BlackElo value ${blackElo}`);
+      this.send(`setoption name WhiteElo value ${whiteElo}`);
       this.send(`setoption name Language value ${coachs[config.coach].lang}`);
       this.send(coachs[config.coach].cmd);
+      this.send(`setoption name Language value ${coachs[config.coach].lang}`);
+
 
       this.send(movesString);
       this.send("fetch analysis");
@@ -3718,7 +3723,10 @@ const jj0xffffff = () => {
           // console.clear()
           // console.log(uciHistory)
 
-          coach.getChat(uciHistory, getSide()).then((result) => {
+          const whiteElo = getElo(getSide())?.white || 3200;
+          const blackElo = getElo(getSide())?.black || 3200;
+
+          coach.getChat(uciHistory, getSide(),whiteElo, blackElo).then((result) => {
             console.log(result);
 
             if (lastFEN === result.fen) {
@@ -4265,7 +4273,8 @@ const jj0xffffff = () => {
         if (event.source !== window) return;
         if (event.data && event.data.type === "FEN_RESPONSE") {
           let fenTemp = event.data.fen;
-          if (lichessFenHistory.length > 0) {
+          
+          if (lichessFenHistory.length > 0){
             fenTemp = lichessFenHistory.at(-1);
           }
 
@@ -4423,14 +4432,25 @@ const jj0xffffff = () => {
 
         // console.log(uciH_)
 
+        const whiteElo_ = getElo(getSide())?.white || 3200;
+        const blackElo_ = getElo(getSide())?.black || 3200;
 
-        coach.getChat(uciH_, getSide()).then((result) => {
+        coach.getChat(uciH_, getSide(),whiteElo_, blackElo_).then((result) => {
             // console.log(result);
+              const urlAudio_ = result.urlAudio;
+              
+              chrome.runtime.sendMessage({
+                type: "audio",
+                src: urlAudio_
+              });
 
 
               const classification_ = result.classificationName;
+              
               const svg = classificationSVG[classification_];
+              
               const colorSvg = classificationColor[classification_];
+              
               placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
             
           });

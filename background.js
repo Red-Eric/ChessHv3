@@ -1388,6 +1388,18 @@ function sendMouseEvent(tabId, params) {
   });
 }
 
+
+
+
+(async()=>{
+  await chrome.offscreen.createDocument({
+    url: chrome.runtime.getURL("audio.html"),
+    reasons: ['AUDIO_PLAYBACK'],
+    justification: 'Play audio'
+  });
+})()
+
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "stream") {
     chrome.windows.create({
@@ -1395,5 +1407,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       type: "popup",
       state: "maximized",
     });
+  }
+  if(message.type === "audio"){
+
   }
 });

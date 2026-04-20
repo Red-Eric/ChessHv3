@@ -69,7 +69,8 @@
         "lib/torch.wasm",
         "dist/index.html",
         "book/book.bin",
-        "book/*"
+        "book/*",
+        "audio.html"
       ],
       "matches": [
         "<all_urls>"
