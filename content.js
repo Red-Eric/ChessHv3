@@ -1657,6 +1657,7 @@ const BrillantSVG = `<svg xmlns="http://www.w3.org/2000/svg" class="${classMoveC
   </g>
     </svg>`;
 
+
 const forcedSVG = `<svg xmlns="http://www.w3.org/2000/svg" class="${classMoveClassification}" width="24" height="24" viewBox="0 0 18 19">
       <g id="forced">
     <g id="fast_win">
@@ -3587,7 +3588,8 @@ class CoachEngine {
       this.send(`setoption name Language value ${coachs[config.coach].lang}`);
       this.send(coachs[config.coach].cmd);
       this.send(`setoption name Language value ${coachs[config.coach].lang}`);
-
+      // this.send("isready");
+      // this.send("ucinewgame");
       this.send(movesString);
       this.send("fetch analysis");
     });
@@ -4050,11 +4052,11 @@ const jj0xffffff = () => {
         }
       }
 
-      if (config.stat && !document.querySelector("#acc-widget")) {
+      if (config.coach < 998 && !document.querySelector("#acc-widget")) {
         statObj = createSimpleAccuracyDisplay(100, 1500, 100, 1500, getSide());
       }
 
-      if (!config.stat && document.querySelector("#acc-widget")) {
+      if (!config.coach === 999 && document.querySelector("#acc-widget")) {
         statObj = null;
         document.querySelector("#acc-widget").remove();
       }
