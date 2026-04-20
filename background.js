@@ -949,6 +949,50 @@ function pgnToFenArray(pgn) {
   return fenArray;
 }
 
+function pgnToUciString(pgn) {
+  const fenTag = pgn.match(/\[FEN\s+"([^"]+)"\]/);
+  const startFen = fenTag ? fenTag[1] : null;
+
+  const game = new Chess();
+
+  if (startFen) {
+    game.load(startFen);
+  } else {
+    game.reset();
+  }
+
+  const success = game.load_pgn(pgn);
+  if (!success) {
+    throw new Error("PGN invalide");
+  }
+
+  const moves = game.history({ verbose: true });
+
+  const uciMoves = moves.map(m => {
+    // roque
+    if (m.flags.includes("k")) {
+      return m.color === "w" ? "e1g1" : "e8g8";
+    }
+    if (m.flags.includes("q")) {
+      return m.color === "w" ? "e1c1" : "e8c8";
+    }
+
+    // promotion
+    if (m.promotion) {
+      return `${m.from}${m.to}${m.promotion}`;
+    }
+
+    // normal + en passant inclus automatiquement
+    return `${m.from}${m.to}`;
+  });
+
+  const positionPart = startFen
+    ? `position fen ${startFen}`
+    : `position startpos`;
+
+  return `${positionPart} moves ${uciMoves.join(" ")}`;
+}
+
 let popupTabs = [];
 
 function sendConfigToSite(type, config, urlPattern) {
@@ -1142,30 +1186,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
                 let uciHistory = `position fen ${movesHistory[0]?.fen ?? ""} moves`;
 
-                uciHistory +=
-                  " " +
-                  movesHistory
-                    .map((m, i) => {
-                      const san = m?.san;
-                      const uci = m?.uci;
-
-                      // correction roque
-                      if (san === "O-O") {
-                        return m.ply % 2 === 1 ? "e1g1" : "e8g8";
-                      }
-
-                      if (san === "O-O-O") {
-                        return m.ply % 2 === 1 ? "e1c1" : "e8c8";
-                      }
-
-                      // fallback sécurité si UCI faux
-                      if (uci === "e1h1") return "e1g1";
-                      if (uci === "e8h8") return "e8g8";
-
-                      return uci;
-                    })
-                    .filter(Boolean)
-                    .join(" ");
+                
 
                 if (movesHistory.length > 0) {
                   game.load(movesHistory[0].fen);
@@ -1194,6 +1215,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                   );
 
                   fenhistory = pgnToFenArray(game.pgn());
+                  uciHistory = pgnToUciString(game.pgn());
+
+                
+
 
                   chrome.tabs.query({}, (tabs) => {
                     for (const tab of tabs) {

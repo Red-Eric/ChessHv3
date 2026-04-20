@@ -3716,6 +3716,9 @@ const jj0xffffff = () => {
           }
           // coach.getChat(uciHistory, getSide());
 
+          // console.clear()
+          // console.log(uciHistory)
+
           coach.getChat(uciHistory, getSide()).then((result) => {
             console.log(result);
 
@@ -4412,17 +4415,13 @@ const jj0xffffff = () => {
         let last = message.last
 
 
-        if(uciH_.slice(uciH_.length-4) === last){
-          uciH_ = uciH_
-        }else{
-          uciH_ = uciH_ + " " + last
-        }
+        
 
         clearHint()
 
-        console.clear()
+        // console.clear()
 
-        console.log(uciH_)
+        // console.log(uciH_)
 
 
         coach.getChat(uciH_, getSide()).then((result) => {
