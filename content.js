@@ -240,6 +240,24 @@ const swalThemeCSS = `
   </style>
 `;
 
+const audioLichess = new Audio()
+
+
+function playAudio(url) {
+  chrome.runtime.sendMessage({ type: 'FETCH_AUDIO', url }, ({ buffer, error }) => {
+    if (error) return console.error('Audio fetch failed:', error);
+
+    const blob = new Blob([new Uint8Array(buffer)], { type: 'audio/mp3' });
+    const blobUrl = URL.createObjectURL(blob);
+
+    audioLichess.pause()
+
+    audioLichess.src = blobUrl;
+    audioLichess.play();
+  });
+}
+
+
 let stat_0_white = {
   best: 0,
   blunder: 0,
@@ -3502,10 +3520,7 @@ const jj0xffffff = () => {
           const urlAudio_ = result.urlAudio;
 
           if (config.speach) {
-            chrome.runtime.sendMessage({
-              type: "audio",
-              src: urlAudio_,
-            });
+            playAudio(result.urlAudio)
           }
 
           if (statObj) {
@@ -4091,8 +4106,59 @@ const jj0xffffff = () => {
 
     chrome.runtime.onMessage.addListener(async (message, sender) => {
       if (message.type === "history") {
+        clearHint()
         const whiteElo = getElo(getSide())?.white || null;
         const blackElo = getElo(getSide())?.black || null;
+        
+        const whiteElo_ = getElo(getSide())?.white || 3200;
+        const blackElo_ = getElo(getSide())?.black || 3200;
+        
+        const uci__ = message.uci
+
+        coach.getChat(uci__, getSide(), whiteElo, blackElo)
+            .then((result) => {
+                if (config.speach) {
+                  chessComAudio.src = result.urlAudio;
+                  chessComAudio.play();
+                }
+
+                if (statObj) {
+                  statObj.update({
+                    side: getSide(),
+                    whiteAcc: result.whiteAccuracy,
+                    blackAcc: result.blackAccuracy,
+
+                    whiteElo: result.whiteElo,
+                    blackElo: result.blackElo,
+
+                    statW: stat_0_white,
+                    statB: stat_0_black,
+                    displayMode: 2,
+                  });
+
+                  chrome.runtime.sendMessage({
+                    type: "FROM_CONTENT",
+                    result: {
+                      whiteAccuracy: result.whiteAccuracy,
+                      whiteElo: result.whiteElo,
+                      blackAccuracy: result.blackAccuracy,
+                      blackElo: result.blackElo,
+                    },
+                  });
+                }
+
+                if (config.moveClassification) {
+                  const classification_ = result.classificationName;
+                  const svg = classificationSVG[classification_];
+                  placeSVGOnBoard(
+                    getSide(),
+                    result.moveLan.slice(2),
+                    svg
+                  );
+                }
+              
+            });
+
 
         let fenHistory = message.data;
         if (fenHistory.length > 0) {

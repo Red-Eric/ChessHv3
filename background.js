@@ -1073,16 +1073,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
           if (bpRes && bpRes.breakpointId) {
             breakpointId = bpRes.breakpointId;
-            // console.log("Breakpoint posé dans :", url, bpRes);
             return true;
           }
         } catch (e) {
-          // console.log("Impossible de lire :", url, e);
         }
         return false;
       }
 
-      // ✅ Retire les anciens listeners de ce tabId avant d'en créer de nouveaux
       if (activeListeners[tabId]) {
         chrome.debugger.onEvent.removeListener(
           activeListeners[tabId].scriptParsed,
@@ -1091,7 +1088,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           activeListeners[tabId].debuggerEvent,
         );
         delete activeListeners[tabId];
-        // console.log("Anciens listeners retirés pour tab", tabId);
       }
 
       chrome.debugger.detach({ tabId }, () => {
@@ -1135,7 +1131,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
             const newBp = await trySetBreakpoint(params.url);
             if (newBp) {
-              // console.log("Breakpoint re-posé après navigation sur :", params.url);
             }
           };
 
@@ -1266,12 +1261,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                   "FEN",
                   startFen,
                 );
+
+                let uciHistory = pgnToUciString(game.pgn())
+
                 chrome.tabs.query({}, (tabs) => {
                   for (const tab of tabs) {
                     if (tab.url && tab.url.includes("worldchess")) {
                       chrome.tabs.sendMessage(tab.id, {
                         type: "history",
                         data: fenhistory,
+                        uci : uciHistory
                       });
                     }
                   }
@@ -1389,17 +1388,6 @@ function sendMouseEvent(tabId, params) {
 }
 
 
-
-
-// (async()=>{
-//   await chrome.offscreen.createDocument({
-//     url: chrome.runtime.getURL("audio.html"),
-//     reasons: ['AUDIO_PLAYBACK'],
-//     justification: 'Play audio'
-//   });
-// })()
-
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "stream") {
     chrome.windows.create({
@@ -1408,7 +1396,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       state: "maximized",
     });
   }
-  if(message.type === "audio"){
+  
+});
 
+
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg.type === 'FETCH_AUDIO') {
+    fetch(msg.url)
+      .then(r => r.arrayBuffer())
+      .then(buffer => {
+        sendResponse({ buffer: Array.from(new Uint8Array(buffer)) });
+      })
+      .catch(err => sendResponse({ error: err.message }));
+    return true;
   }
 });
