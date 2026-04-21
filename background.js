@@ -1283,7 +1283,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             }
           };
 
-          // ✅ Stocke les listeners pour pouvoir les retirer plus tard
           activeListeners[tabId] = {
             scriptParsed: scriptParsedListener,
             debuggerEvent: debuggerEventListener,
@@ -1301,7 +1300,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.type === "DETACH_DEBUGGER") {
-    // ✅ Retire aussi les listeners au detach
     if (activeListeners[tabId]) {
       chrome.debugger.onEvent.removeListener(
         activeListeners[tabId].scriptParsed,

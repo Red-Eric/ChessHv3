@@ -27,7 +27,7 @@ const coachData = {
   "Vishy":  { pic: "https://assets-coaches.chess.com/image/coachvishy.png" },
   "Tania":  { pic: "https://assets-coaches.chess.com/image/coachtania.png" },
   "Danny":  { pic: "https://assets-coaches.chess.com/image/coachdanny.png" },
-  "Botez":  { pic: "https://assets-coaches.chess.com/image/coachbotez.png" },
+  "Botez":  { pic: "https://assets-coaches.chess.com/image/coachbotezsisters-icon.png" },
   "Ben":    { pic: "https://assets-coaches.chess.com/image/coachben.png" },
 };
 
@@ -113,10 +113,9 @@ const defaultChessConfig = {
   key: " ",
 };
 
-const audio = new Audio();
 
 const infoCoach = [
-  { name: "David", pictureUrl: "https://assets-coaches.chess.com/image/coachdavid.png", audioUrl: "https://text-and-audio.chess.com/prod/released/David_coach/en-FR/6547b8d0c97cd470556c1cab780d520750e1474f9566199395fd640507931de8.mp3" },
+  { name: "David", pictureUrl: "https://assets-coaches.chess.com/image/coachdavid.png", audioUrl: "https://text-and-audio.chess.com/prod/released/David_coach/en-US/6547b8d0c97cd470556c1cab780d520750e1474f9566199395fd640507931de8.mp3" },
   { name: "David", pictureUrl: "https://assets-coaches.chess.com/image/coachdavid.png", audioUrl: "https://text-and-audio.chess.com/prod/released/David_coach/en-US/1cb21b7c928dc9a9f07fa11cc233be4b9ae88c5b9152a07415c23ee8d5bb4a8a.mp3" },
   { name: "David", pictureUrl: "https://assets-coaches.chess.com/image/coachdavid.png", audioUrl: "https://text-and-audio.chess.com/prod/released/David_coach/en-US/13e432e30b5beb3b5489608781c1bdc968fc6dbe28aebe4bd0db78c1fae43a54.mp3" },
   { name: "David", pictureUrl: "https://assets-coaches.chess.com/image/coachdavid.png", audioUrl: "https://text-and-audio.chess.com/prod/released/David_coach/en-US/cfc736c0df6ab8438427e5df841f849800a16690668fce360a5aeda99a50860d.mp3" },
@@ -229,15 +228,12 @@ el("style").onchange = (e) => {
 
 el("coach").onchange = (e) => {
   chessConfig.coach = parseInt(e.target.value);
-  audio.pause();
+  
 
   if (chessConfig.coach === 999) {
     el("coach-container").style.display = "none";
   } else {
-    if (infoCoach[chessConfig.coach]) {
-      audio.src = infoCoach[chessConfig.coach].audioUrl;
-      audio.play();
-    }
+    
     el("coach-container").style.display = "";
   }
   updateChessUI();
