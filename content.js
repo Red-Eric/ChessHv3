@@ -2693,6 +2693,9 @@ const jj0xffffff = () => {
       });
     }
 
+
+      
+
     function squareToIndex(square) {
       const file = square.charCodeAt(0) - 96; // a=1 ... h=8
       const rank = parseInt(square[1], 10); // 1..8
