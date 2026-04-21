@@ -18,7 +18,6 @@ const el = (id) => document.getElementById(id);
 /* ================= CHESS.COM ================= */
 
 const defaultChessConfig = {
-  review: false,
   elo: 3500,
   coach: 999,
   lines: 5,
@@ -87,7 +86,6 @@ function updateChessUI() {
     "autoMove",
     "winningMove",
     "autoStart",
-    "review",
     "showEval",
     "onlyShowEval",
     "autoMoveBalanced",
@@ -114,8 +112,7 @@ function updateChessUI() {
     el("speachStartLabel").textContent =
     `Coach voice  (${chessConfig.speach ? "ON" : "OFF"})`;
 
-  el("reviewLabel").textContent =
-    `ChessHv3 Check (${chessConfig.review ? "ON" : "OFF"})`;
+
   
   el("winningMoveLabel").textContent =
     `Only Moves That Gain Material (${chessConfig.winningMove ? "ON" : "OFF"})`;
@@ -150,7 +147,6 @@ loadChessConfig(updateChessUI);
   "autoMove",
   "winningMove",
   "autoStart",
-  "review",
   "showEval",
   "onlyShowEval",
   "autoMoveBalanced",
