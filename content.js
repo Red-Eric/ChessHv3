@@ -3282,6 +3282,7 @@ const jj0xffffff = () => {
       window.postMessage({ type: "FEN" }, "*");
     }
 
+
     async function movePiece(from, to, delay) {
       const fromSquare = from;
       const toSquare = to;
@@ -3347,6 +3348,8 @@ const jj0xffffff = () => {
 
           if (lichessFenHistory.length > 0) {
             fenTemp = lichessFenHistory.at(-1);
+            window.postMessage({ type: "stop" }, "*");
+
           }
 
           if (fenTemp !== fen_) {
