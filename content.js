@@ -1171,67 +1171,64 @@ function placeSVGOnBoard(side, square, svgCode) {
 
   requestAnimationFrame(() => {
     const box = svg.getBBox();
-    svg.style.left = -box.width / 2 + "px";
-    svg.style.top = -box.height / 2 + "px";
+    const svgW = box.width;
+    const svgH = box.height;
+    svg.style.left = -svgW / 2 + "px";
+    svg.style.top  = -svgH / 2 + "px";
 
-    const toRgba = (color, alpha) => {
-      const match = color.match(/[\d.]+/g);
-      if (match && match.length >= 3) {
-        return `rgba(${match[0]}, ${match[1]}, ${match[2]}, ${alpha})`;
-      }
-      return color;
-    };
+    const isBrilliant = detectedColor?.toLowerCase() === "#26c2a3";
+    const isGreatFind = detectedColor?.toLowerCase() === "#749bbf";
+    const isBlunder   = detectedColor?.toLowerCase() === "#fa412d";
 
-    const computedColor = (() => {
-      const tmp = document.createElement("div");
-      tmp.style.color = detectedColor;
-      tmp.style.display = "none";
-      document.body.appendChild(tmp);
-      const resolved = getComputedStyle(tmp).color;
-      document.body.removeChild(tmp);
-      return resolved;
-    })();
-
-    const frames = [
-      {
-        boxShadow: `
-          0 0 0 0px   ${toRgba(computedColor, 0.9)},
-          0 0 0 0px   ${toRgba(computedColor, 0.6)},
-          0 0 0 0px   ${toRgba(computedColor, 0.3)}
-        `,
-        transform: "scale(1)",
-      },
-      {
-        boxShadow: `
-          0 0 0 6px   ${toRgba(computedColor, 0.7)},
-          0 0 0 12px  ${toRgba(computedColor, 0.4)},
-          0 0 0 20px  ${toRgba(computedColor, 0.15)}
-        `,
-        transform: "scale(1.08)",
-      },
-      {
-        boxShadow: `
-          0 0 0 18px  ${toRgba(computedColor, 0.3)},
-          0 0 0 35px  ${toRgba(computedColor, 0.15)},
-          0 0 0 55px  ${toRgba(computedColor, 0.05)}
-        `,
-        transform: "scale(1.05)",
-      },
-      {
-        boxShadow: `
-          0 0 0 30px  ${toRgba(computedColor, 0)},
-          0 0 0 55px  ${toRgba(computedColor, 0)},
-          0 0 0 80px  ${toRgba(computedColor, 0)}
-        `,
-        transform: "scale(1)",
-      },
-    ];
-
-    svg.animate(frames, { duration: 900, easing: "ease-out", fill: "forwards" })
-      .addEventListener("finish", () => {
-        svg.style.boxShadow = "";
-        svg.style.transform = "";
+    // ─── BRILLIANT : double pulse inversé ────────────────────────────────────
+    if (isBrilliant) {
+      svg.animate([
+        { transform: "scale(1)",    offset: 0 },
+        { transform: "scale(1.45)", offset: 0.35, easing: "ease-out" },
+        { transform: "scale(0.82)", offset: 0.65, easing: "ease-in-out" },
+        { transform: "scale(1.1)",  offset: 0.82, easing: "ease-out" },
+        { transform: "scale(1)",    offset: 1 },
+      ], {
+        duration: 700,
+        easing: "ease-in",
+        fill: "forwards",
       });
+    }
+
+    // ─── GREAT FIND : respiration douce ──────────────────────────────────────
+    if (isGreatFind) {
+      svg.animate([
+        { transform: "scale(1)",    offset: 0 },
+        { transform: "scale(1.1)",  offset: 0.2, easing: "ease-in-out" },
+        { transform: "scale(1)",    offset: 0.4, easing: "ease-in-out" },
+        { transform: "scale(1.08)", offset: 0.6, easing: "ease-in-out" },
+        { transform: "scale(1)",    offset: 0.8, easing: "ease-in-out" },
+        { transform: "scale(1.05)", offset: 0.9, easing: "ease-in-out" },
+        { transform: "scale(1)",    offset: 1 },
+      ], {
+        duration: 2800,
+        easing: "ease-in-out",
+        fill: "forwards",
+      });
+    }
+
+    // ─── BLUNDER : chute / bâtiment qui tombe ────────────────────────────────
+    if (isBlunder) {
+      svg.style.transformOrigin = "bottom center";
+
+      svg.animate([
+        { transform: "rotate(0deg)",  offset: 0 },
+        { transform: "rotate(3deg)",  offset: 0.3,  easing: "ease-in" },
+        { transform: "rotate(7deg)",  offset: 0.6,  easing: "ease-in" },
+        { transform: "rotate(12deg)", offset: 0.8,  easing: "ease-out" },
+        { transform: "rotate(15deg)", offset: 0.92, easing: "ease-out" },
+        { transform: "rotate(16deg)", offset: 1 },
+      ], {
+        duration: 1200,
+        easing: "ease-in",
+        fill: "forwards",
+      });
+    }
   });
 
   if (window.location.host === "www.chess.com") {
