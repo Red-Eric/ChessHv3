@@ -30,7 +30,6 @@ const defaultChessConfig = {
   autoMove: false,
   speach : false,
   autoMoveBalanced: false,
-  stat: false,
   moveClassification: false,
   autoStart: false,
   winningMove: false,
@@ -86,7 +85,6 @@ function updateChessUI() {
 
   [
     "autoMove",
-    "stat",
     "winningMove",
     "autoStart",
     "review",
@@ -118,8 +116,7 @@ function updateChessUI() {
 
   el("reviewLabel").textContent =
     `ChessHv3 Check (${chessConfig.review ? "ON" : "OFF"})`;
-  el("statLabel").textContent =
-    `Display accuracy and Elo estimation (${chessConfig.stat ? "ON" : "OFF"})`;
+  
   el("winningMoveLabel").textContent =
     `Only Moves That Gain Material (${chessConfig.winningMove ? "ON" : "OFF"})`;
   el("showEvalLabel").textContent =
@@ -151,7 +148,6 @@ loadChessConfig(updateChessUI);
 
 [
   "autoMove",
-  "stat",
   "winningMove",
   "autoStart",
   "review",

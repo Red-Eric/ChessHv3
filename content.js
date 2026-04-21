@@ -1657,7 +1657,6 @@ const BrillantSVG = `<svg xmlns="http://www.w3.org/2000/svg" class="${classMoveC
   </g>
     </svg>`;
 
-
 const forcedSVG = `<svg xmlns="http://www.w3.org/2000/svg" class="${classMoveClassification}" width="24" height="24" viewBox="0 0 18 19">
       <g id="forced">
     <g id="fast_win">
@@ -2140,7 +2139,6 @@ let config = {
   autoMove: false,
   speach: false,
   autoMoveBalanced: false,
-  stat: false,
   moveClassification: false,
   autoStart: false,
   winningMove: false,
@@ -2196,483 +2194,6 @@ async function createWorkerTorch() {
   return new Worker(blobUrl);
 }
 
-class ChessAnalyzer {
-  constructor({ depth = config.depth } = {}) {
-    this.depth = depth;
-
-    this.engine = null;
-    this._resolveEval = null;
-    this._currentLines = [];
-
-    // Cache FEN → { lines, bestMove }
-    this._cache = new Map();
-
-    // Queue interne
-    this._queue = [];
-    this._running = false;
-  }
-
-  // ─── Init ─────────────────────────────────────────────────────────────
-  async init() {
-    this.engine = await this._createWorker();
-    await this._waitReady();
-  }
-
-  _createWorker() {
-    return new Promise((resolve, reject) => {
-      try {
-        const url = `${chrome.runtime.getURL("lib/stockfish.js")}`;
-        const blob = new Blob([`importScripts("${url}");`], {
-          type: "application/javascript",
-        });
-        const blobUrl = URL.createObjectURL(blob);
-        const worker = new Worker(blobUrl);
-        URL.revokeObjectURL(blobUrl);
-        resolve(worker);
-      } catch (e) {
-        reject(new Error("Failed to create Stockfish worker: " + e.message));
-      }
-    });
-  }
-
-  _waitReady() {
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(
-        () => reject(new Error("Stockfish readyok timeout")),
-        10000,
-      );
-
-      const originalOnMessage = this.engine.onmessage;
-
-      this.engine.onmessage = (e) => {
-        if (e.data === "readyok") {
-          clearTimeout(timeout);
-          this.engine.onmessage = (ev) => this._handleMessage(ev.data);
-          resolve();
-          return;
-        }
-        originalOnMessage?.(e);
-      };
-
-      this.engine.postMessage("uci");
-      this.engine.postMessage("ucinewgame");
-      this.engine.postMessage("isready");
-    });
-  }
-
-  terminate() {
-    this.engine?.terminate();
-    this.engine = null;
-  }
-
-  reset() {
-    this._cache.clear();
-    this._queue = [];
-    this._running = false;
-  }
-
-  async update(fenHistory, { whiteElo, blackElo, onProgress } = {}) {
-    if (fenHistory.length < 2) return;
-
-    const newFens = fenHistory.filter((fen) => !this._cache.has(fen));
-
-    if (newFens.length > 0) {
-      await this._enqueueAndWait(newFens, () => {
-        onProgress?.(this._cache.size / fenHistory.length);
-      });
-    }
-
-    const positions = fenHistory.map((fen) => this._cache.get(fen));
-    const withPlayed = this._attachPlayedMoves(positions, fenHistory);
-
-    const classified = this._classifyMoves(withPlayed);
-
-    const {
-      white: whiteAcc,
-      black: blackAcc,
-      movesAccuracy,
-    } = this._computeAccuracy(classified);
-
-    const eloEst = this._computeEstimatedElo(classified, whiteElo, blackElo);
-
-    const moves = classified.slice(1).map((pos, i) => ({
-      moveIndex: i + 1,
-      isWhite: i % 2 === 0,
-      moveNumber: Math.ceil((i + 1) / 2),
-      classification: pos.moveClassification,
-      accuracy: movesAccuracy[i] ?? null,
-      winPercent: this._getPositionWinPercentage(pos),
-      cp: pos.lines[0]?.cp ?? null,
-      mate: pos.lines[0]?.mate ?? null,
-    }));
-
-    return {
-      white: {
-        accuracy: parseFloat(whiteAcc.toFixed(1)),
-        elo: eloEst?.white ?? null,
-        acpl: eloEst?.whiteCpl ?? null,
-      },
-      black: {
-        accuracy: parseFloat(blackAcc.toFixed(1)),
-        elo: eloEst?.black ?? null,
-        acpl: eloEst?.blackCpl ?? null,
-      },
-      moves,
-      cached: fenHistory.length - newFens.length,
-      computed: newFens.length,
-    };
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // QUEUE
-  // ═══════════════════════════════════════════════════════════════════════
-
-  _enqueueAndWait(fens, onEach) {
-    for (const fen of fens) {
-      if (!this._cache.has(fen) && !this._queue.includes(fen)) {
-        this._queue.push(fen);
-      }
-    }
-
-    if (this._running) {
-      return this._waitUntilCached(fens);
-    }
-
-    return this._drainQueue(onEach);
-  }
-
-  async _drainQueue(onEach) {
-    this._running = true;
-    while (this._queue.length > 0) {
-      const fen = this._queue.shift();
-      if (this._cache.has(fen)) continue;
-
-      const result = await this._evalPosition(fen);
-      this._cache.set(fen, result);
-      onEach?.(fen);
-    }
-    this._running = false;
-  }
-
-  _waitUntilCached(fens) {
-    return new Promise((resolve) => {
-      const check = () => {
-        if (fens.every((f) => this._cache.has(f))) resolve();
-        else setTimeout(check, 50);
-      };
-      check();
-    });
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // STOCKFISH WRAPPER
-  // ═══════════════════════════════════════════════════════════════════════
-
-  _handleMessage(msg) {
-    if (msg.startsWith("info") && msg.includes(" pv ")) {
-      const depthMatch = msg.match(/\bdepth (\d+)/);
-      const multiPvMatch = msg.match(/\bmultipv (\d+)/);
-      const cpMatch = msg.match(/\bscore cp (-?\d+)/);
-      const mateMatch = msg.match(/\bscore mate (-?\d+)/);
-      const pvMatch = msg.match(/ pv (.+)/);
-      if (!depthMatch || !multiPvMatch || !pvMatch) return;
-
-      const multiPv = parseInt(multiPvMatch[1]);
-      const pv = pvMatch[1].trim().split(" ");
-      const line = { pv, depth: parseInt(depthMatch[1]), multiPv };
-      if (cpMatch) line.cp = parseInt(cpMatch[1]);
-      if (mateMatch) line.mate = parseInt(mateMatch[1]);
-      this._currentLines[multiPv - 1] = line;
-    }
-
-    if (msg.startsWith("bestmove")) {
-      const bestMove = msg.split(" ")[1];
-      if (this._resolveEval) {
-        this._resolveEval({
-          lines: this._currentLines.filter(Boolean),
-          bestMove,
-        });
-        this._resolveEval = null;
-      }
-    }
-  }
-
-  _evalPosition(fen) {
-    return new Promise((resolve) => {
-      this._currentLines = [];
-      const whiteToPlay = fen.split(" ")[1] === "w";
-
-      this._resolveEval = (result) => {
-        if (!whiteToPlay) {
-          result.lines = result.lines.map((line) => ({
-            ...line,
-            cp: line.cp !== undefined ? -line.cp : line.cp,
-            mate: line.mate !== undefined ? -line.mate : line.mate,
-          }));
-        }
-        resolve(result);
-      };
-
-      this.engine.postMessage(`position fen ${fen}`);
-      this.engine.postMessage(`setoption name MultiPV value 2`);
-      this.engine.postMessage(`go depth ${config.depth}`);
-    });
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // DÉTECTION DU COUP JOUÉ
-  // ═══════════════════════════════════════════════════════════════════════
-
-  _attachPlayedMoves(positions, fenHistory) {
-    const hasChessJs = typeof Chess !== "undefined";
-
-    return positions.map((pos, i) => {
-      if (i === 0) return { ...pos, playedWasBest: false };
-
-      // ── Book move detection ──────────────────────────────────────────
-      // const fenBase = fenHistory[i].split(" ").slice(0, 4).join(" ");
-      // const isBook = BOOKS.some(
-      //   (b) => b.split(" ").slice(0, 4).join(" ") === fenBase,
-      // );
-      // if (isBook) return { ...pos, playedWasBest: false, isBook: true };
-
-      const fenBase = fenHistory[i].split(" ")[0]; // seulement le board
-
-      const isBook = BOOKS.includes(fenBase);
-
-      if (isBook) {
-        return { ...pos, playedWasBest: false, isBook: true };
-      }
-      // ────────────────────────────────────────────────────────────────
-
-      const prevBestMove = positions[i - 1]?.bestMove;
-      if (!hasChessJs || !prevBestMove) return { ...pos, playedWasBest: false };
-
-      try {
-        const chess = new Chess(fenHistory[i - 1]);
-        chess.move({
-          from: prevBestMove.slice(0, 2),
-          to: prevBestMove.slice(2, 4),
-          promotion: prevBestMove[4] || undefined,
-        });
-        const fenAfterBest = chess.fen().split(" ").slice(0, 4).join(" ");
-        const actualFen = fenHistory[i].split(" ").slice(0, 4).join(" ");
-        return { ...pos, playedWasBest: fenAfterBest === actualFen };
-      } catch {
-        return { ...pos, playedWasBest: false };
-      }
-    });
-  }
-
-  _classifyMoves(positions) {
-    const positionsWP = positions.map((p) => this._getPositionWinPercentage(p));
-
-    return positions.map((pos, index) => {
-      if (index === 0) return { ...pos, moveClassification: null };
-
-      // ── Book move ────────────────────────────────────────────────────
-      if (pos.isBook)
-        return { ...pos, moveClassification: MoveClassification.Book };
-      // ────────────────────────────────────────────────────────────────
-
-      const prevPos = positions[index - 1];
-      const isWhite = index % 2 === 1;
-      const lastWP = positionsWP[index - 1];
-      const wp = positionsWP[index];
-      const isBestMove = pos.playedWasBest;
-      const wpLoss = (lastWP - wp) * (isWhite ? 1 : -1);
-
-      const altLine = prevPos.lines[1];
-      const altWP = altLine ? this._getLineWinPercentage(altLine) : undefined;
-
-      if (prevPos.lines.length === 1)
-        return { ...pos, moveClassification: MoveClassification.Forced };
-
-      if (isBestMove) {
-        if (altWP !== undefined) {
-          const gap = (wp - altWP) * (isWhite ? 1 : -1);
-          if (gap >= 10)
-            return { ...pos, moveClassification: MoveClassification.Brilliant };
-          if (gap >= 5)
-            return { ...pos, moveClassification: MoveClassification.Great };
-        }
-        return { ...pos, moveClassification: MoveClassification.Best };
-      }
-
-      if (wpLoss > 20)
-        return { ...pos, moveClassification: MoveClassification.Blunder };
-
-      if (wpLoss > 10) {
-        const isMiss =
-          altWP !== undefined ? (altWP - wp) * (isWhite ? 1 : -1) > 20 : false;
-        return {
-          ...pos,
-          moveClassification: isMiss
-            ? MoveClassification.Miss
-            : MoveClassification.Mistake,
-        };
-      }
-
-      if (wpLoss > 5)
-        return { ...pos, moveClassification: MoveClassification.Inaccuracy };
-      if (wpLoss <= 2)
-        return { ...pos, moveClassification: MoveClassification.Excellent };
-      return { ...pos, moveClassification: MoveClassification.Good };
-    });
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // ACCURACY
-  // ═══════════════════════════════════════════════════════════════════════
-
-  _computeAccuracy(positions) {
-    const wp = positions.map((p) => this._getPositionWinPercentage(p));
-    const weights = this._getAccuracyWeights(wp);
-    const movesAccuracy = this._getMovesAccuracy(wp);
-    return {
-      white: this._getPlayerAccuracy(movesAccuracy, weights, "white"),
-      black: this._getPlayerAccuracy(movesAccuracy, weights, "black"),
-      movesAccuracy,
-    };
-  }
-
-  _getPlayerAccuracy(movesAccuracy, weights, player) {
-    const rem = player === "white" ? 0 : 1;
-    const accs = movesAccuracy.filter((_, i) => i % 2 === rem);
-    const wts = weights.filter((_, i) => i % 2 === rem);
-    if (accs.length === 0) return 100;
-    const wm = this._weightedMean(accs, wts);
-    const hm = this._harmonicMean(accs.map((a) => Math.max(a, 10)));
-    return (wm + hm) / 2;
-  }
-
-  _getAccuracyWeights(movesWP) {
-    const windowSize = this._clamp(Math.ceil(movesWP.length / 10), 2, 8);
-    const half = Math.round(windowSize / 2);
-    const windows = [];
-    for (let i = 1; i < movesWP.length; i++) {
-      const s = i - half,
-        e = i + half;
-      if (s < 0) windows.push(movesWP.slice(0, windowSize));
-      else if (e > movesWP.length) windows.push(movesWP.slice(-windowSize));
-      else windows.push(movesWP.slice(s, e));
-    }
-    return windows.map((w) => this._clamp(this._stdDev(w), 0.5, 12));
-  }
-
-  _getMovesAccuracy(movesWP) {
-    return movesWP.slice(1).map((wp, idx) => {
-      const last = movesWP[idx];
-      const isWhite = idx % 2 === 0;
-      const diff = isWhite ? Math.max(0, last - wp) : Math.max(0, wp - last);
-      const raw =
-        103.1668100711649 * Math.exp(-0.04354415386753951 * diff) -
-        3.166924740191411;
-      return Math.min(100, Math.max(0, raw + 1));
-    });
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // ELO ESTIMATION
-  // ═══════════════════════════════════════════════════════════════════════
-
-  _computeEstimatedElo(positions, whiteElo, blackElo) {
-    if (positions.length < 2) return null;
-    let prevCp = this._getPositionCp(positions[0]);
-    let wLoss = 0,
-      bLoss = 0;
-
-    positions.slice(1).forEach((pos, i) => {
-      const cp = this._getPositionCp(pos);
-      if (i % 2 === 0) wLoss += cp > prevCp ? 0 : Math.min(prevCp - cp, 1000);
-      else bLoss += cp < prevCp ? 0 : Math.min(cp - prevCp, 1000);
-      prevCp = cp;
-    });
-
-    const n = positions.length - 1;
-    const whiteCpl = wLoss / Math.ceil(n / 2);
-    const blackCpl = bLoss / Math.floor(n / 2);
-
-    return {
-      white: Math.round(
-        this._eloFromRatingAndCpl(whiteCpl, whiteElo ?? blackElo),
-      ),
-      black: Math.round(
-        this._eloFromRatingAndCpl(blackCpl, blackElo ?? whiteElo),
-      ),
-      whiteCpl: Math.round(whiteCpl),
-      blackCpl: Math.round(blackCpl),
-    };
-  }
-
-  _eloFromAcpl(acpl) {
-    return 3100 * Math.exp(-0.01 * acpl);
-  }
-  _acplFromElo(elo) {
-    return -100 * Math.log(Math.min(elo, 3100) / 3100);
-  }
-  _eloFromRatingAndCpl(cpl, rating) {
-    const base = this._eloFromAcpl(cpl);
-    if (!rating) return base;
-    const diff = cpl - this._acplFromElo(rating);
-    if (diff === 0) return base;
-    return diff > 0
-      ? rating * Math.exp(-0.005 * diff)
-      : rating / Math.exp(0.005 * diff);
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // WIN% HELPERS
-  // ═══════════════════════════════════════════════════════════════════════
-
-  _getWinPercentageFromCp(cp) {
-    const c = this._clamp(cp, -1000, 1000);
-    return 50 + 50 * (2 / (1 + Math.exp(-0.00368208 * c)) - 1);
-  }
-  _getLineWinPercentage(line) {
-    if (line.cp !== undefined) return this._getWinPercentageFromCp(line.cp);
-    if (line.mate !== undefined) return line.mate > 0 ? 100 : 0;
-    throw new Error("No cp or mate in line");
-  }
-  _getPositionWinPercentage(pos) {
-    return this._getLineWinPercentage(pos.lines[0]);
-  }
-  _getPositionCp(pos) {
-    const l = pos.lines[0];
-    if (l.cp !== undefined) return this._clamp(l.cp, -1000, 1000);
-    if (l.mate !== undefined) return l.mate > 0 ? 1000 : -1000;
-    throw new Error("No cp or mate");
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // MATH UTILS
-  // ═══════════════════════════════════════════════════════════════════════
-
-  _clamp(n, min, max) {
-    return Math.min(max, Math.max(min, n));
-  }
-  _harmonicMean(arr) {
-    return arr.length / arr.reduce((s, v) => s + 1 / v, 0);
-  }
-  _weightedMean(arr, w) {
-    return (
-      arr.reduce((s, v, i) => s + v * w[i], 0) /
-      w.slice(0, arr.length).reduce((a, b) => a + b, 0)
-    );
-  }
-  _stdDev(arr) {
-    const m = arr.reduce((a, b) => a + b) / arr.length;
-    return Math.sqrt(
-      arr.map((x) => (x - m) ** 2).reduce((a, b) => a + b) / arr.length,
-    );
-  }
-}
-
-const analyzer = new ChessAnalyzer({ depth: config.depth });
-
-(async () => {
-  await analyzer.init();
-})();
 
 class komodo {
   constructor({
@@ -4056,7 +3577,7 @@ const jj0xffffff = () => {
         statObj = createSimpleAccuracyDisplay(100, 1500, 100, 1500, getSide());
       }
 
-      if (!config.coach === 999 && document.querySelector("#acc-widget")) {
+      if (config.coach === 999 && document.querySelector("#acc-widget")) {
         statObj = null;
         document.querySelector("#acc-widget").remove();
       }
@@ -4622,7 +4143,7 @@ const jj0xffffff = () => {
     /////////////////////////////////////////////   calculation /////////////////////////////////////////////
     function inject() {
       window.addEventListener("message", (event) => {
-        if (config.stat && !document.querySelector("#acc-widget")) {
+        if (config.stat < 998 && !document.querySelector("#acc-widget")) {
           statObj = createSimpleAccuracyDisplay(
             100,
             1500,
@@ -4632,7 +4153,7 @@ const jj0xffffff = () => {
           );
         }
 
-        if (!config.stat && document.querySelector("#acc-widget")) {
+        if (config.coach === 999 && document.querySelector("#acc-widget")) {
           statObj = null;
           document.querySelector("#acc-widget").remove();
         }
@@ -4812,9 +4333,26 @@ const jj0xffffff = () => {
 
           if (statObj) {
             statObj.update({
+              side: getSide(),
+              whiteAcc: result.whiteAccuracy,
+              blackAcc: result.blackAccuracy,
+
+              whiteElo: result.whiteElo,
+              blackElo: result.blackElo,
+
               statW: stat_0_white,
               statB: stat_0_black,
               displayMode: 2,
+            });
+
+            chrome.runtime.sendMessage({
+              type: "FROM_CONTENT",
+              result: {
+                whiteAccuracy: result.whiteAccuracy,
+                whiteElo: result.whiteElo,
+                blackAccuracy: result.blackAccuracy,
+                blackElo: result.blackElo,
+              },
             });
           }
 
@@ -4829,31 +4367,7 @@ const jj0xffffff = () => {
           }
         });
 
-        if (config.stat && statObj) {
-          const result = await analyzer.update(lichessFenHistory, {
-            whiteElo: whiteElo,
-            blackElo: blackElo,
-          });
-          if (result) {
-            lastClassification = result.moves.at(-1);
-            chrome.runtime.sendMessage({
-              type: "FROM_CONTENT",
-              result: {
-                whiteAccuracy: result.white.accuracy,
-                whiteElo: result.white.elo,
-                blackAccuracy: result.black.accuracy,
-                blackElo: result.black.elo,
-              },
-            });
-            statObj.update({
-              whiteAcc: result.white.accuracy,
-              whiteElo: result.white.elo,
-              blackAcc: result.black.accuracy,
-              blackElo: result.black.elo,
-              side: getSide(),
-            });
-          }
-        }
+        
       }
     });
   }
@@ -5280,11 +4794,11 @@ const jj0xffffff = () => {
     setInterval(async () => {
       // eval bar
 
-      if (config.stat && !document.querySelector("#acc-widget")) {
+      if (config.coach <998 && !document.querySelector("#acc-widget")) {
         statObj = createSimpleAccuracyDisplay(100, 1500, 100, 1500, getSide());
       }
 
-      if (!config.stat && document.querySelector("#acc-widget")) {
+      if (config.coach === 999 && document.querySelector("#acc-widget")) {
         statObj = null;
         document.querySelector("#acc-widget").remove();
       }
@@ -5409,32 +4923,7 @@ const jj0xffffff = () => {
           fen_ = fenHistory.at(-1);
         }
 
-        if (config.stat && statObj) {
-          let historyMessage = message.data;
-          const result = await analyzer.update(historyMessage, {
-            whiteElo: whiteElo,
-            blackElo: blackElo,
-          });
-          if (result) {
-            lastClassification = result.moves.at(-1);
-            chrome.runtime.sendMessage({
-              type: "FROM_CONTENT",
-              result: {
-                whiteAccuracy: result.white.accuracy,
-                whiteElo: result.white.elo,
-                blackAccuracy: result.black.accuracy,
-                blackElo: result.black.elo,
-              },
-            });
-            statObj.update({
-              whiteAcc: result.white.accuracy,
-              whiteElo: result.white.elo,
-              blackAcc: result.black.accuracy,
-              blackElo: result.black.elo,
-              side: getSide(),
-            });
-          }
-        }
+        
       }
     });
   }
