@@ -109,8 +109,8 @@ const defaultChessConfig = {
   winningMove: false,
   showEval: false,
   onlyShowEval: false,
-  key: " ",
-  key2: "x"
+  key: "a",
+  key2: "z"
 };
 
 
@@ -173,7 +173,7 @@ function updateChessUI() {
   el("style").value = chessConfig.style;
   el("coach").value = chessConfig.coach;
   el("key").value   = chessConfig.key;
-  el("key").value   = chessConfig.key2;
+  el("key2").value   = chessConfig.key2;
 
   ["autoMove","winningMove","autoStart","showEval","onlyShowEval","moveClassification","speach"]
     .forEach((k) => (el(k).checked = chessConfig[k]));
