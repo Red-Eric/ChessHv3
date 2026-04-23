@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "ChessHv3",
   "version": "9.9",
-  "key": "chesshv3",
+  "key": "17f06cae4d6be44be69130c560ae714f",
   "description": "Chess Helper Version 3",
   "icons": {
     "16": "icons/16.png",
