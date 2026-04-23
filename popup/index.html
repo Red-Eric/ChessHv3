@@ -4,9 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ChessHv3 Setting</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
   </head>
 
   <body>
@@ -28,12 +31,26 @@
           <div class="coach-card-inner">
             <div class="coach-avatar-wrap" id="coachAvatarWrap">
               <div class="coach-avatar-none" id="coachAvatarNone">♟</div>
-              <img class="coach-avatar" id="coachAvatarImg" src="" alt="" style="display:none" />
-              <div class="coach-avatar-badge" id="coachBadge" style="display:none">🎙</div>
+              <img
+                class="coach-avatar"
+                id="coachAvatarImg"
+                src=""
+                alt=""
+                style="display: none"
+              />
+              <div
+                class="coach-avatar-badge"
+                id="coachBadge"
+                style="display: none"
+              >
+                🎙
+              </div>
             </div>
             <div class="coach-info">
               <div class="coach-name-none" id="coachDisplayName">No Coach</div>
-              <div class="coach-lang" id="coachDisplayLang">Select a coach to get started</div>
+              <div class="coach-lang" id="coachDisplayLang">
+                Select a coach to get started
+              </div>
             </div>
             <div class="coach-select-wrap">
               <select id="coach">
@@ -113,22 +130,40 @@
         <div class="setting-help">Choose the coach voice language.</div>
 
         <!-- COACH SUB-SETTINGS -->
-        <div id="coach-container" style="display:none">
+        <div id="coach-container" style="display: none">
           <div class="setting">
-            <label>Coach Depth : <span class="value-badge" id="depth2Value">10</span></label>
-            <input type="range" id="depth2" min="1" max="15" step="1" value="10" />
+            <label
+              >Coach Depth :
+              <span class="value-badge" id="depth2Value">10</span></label
+            >
+            <input
+              type="range"
+              id="depth2"
+              min="1"
+              max="15"
+              step="1"
+              value="10"
+            />
           </div>
           <div class="setting-help">Depth value for the coach Engine</div>
 
           <div class="setting">
-            <span id="moveClassificationStartLabel">MoveClassification (OFF)</span>
-            <label class="toggle"><input type="checkbox" id="moveClassification" /><span class="slider"></span></label>
+            <span id="moveClassificationStartLabel"
+              >MoveClassification (OFF)</span
+            >
+            <label class="toggle"
+              ><input type="checkbox" id="moveClassification" /><span
+                class="slider"
+              ></span
+            ></label>
           </div>
           <div class="setting-help">Show Move Classification</div>
 
           <div class="setting">
             <span id="speachStartLabel">Coach voice (OFF)</span>
-            <label class="toggle"><input type="checkbox" id="speach" /><span class="slider"></span></label>
+            <label class="toggle"
+              ><input type="checkbox" id="speach" /><span class="slider"></span
+            ></label>
           </div>
           <div class="setting-help">Coach explains your move</div>
         </div>
@@ -137,21 +172,38 @@
         <div class="section-divider"><span>Engine</span></div>
 
         <div class="setting">
-          <label>ELO : <span class="value-badge" id="eloValue">3500</span></label>
-          <input type="range" id="elo" min="100" max="3500" step="10" value="3500" />
+          <label
+            >ELO : <span class="value-badge" id="eloValue">3500</span></label
+          >
+          <input
+            type="range"
+            id="elo"
+            min="100"
+            max="3500"
+            step="10"
+            value="3500"
+          />
         </div>
         <div class="setting-help">
-          ELO defines the engine strength. Higher values make the engine play stronger.
-          <span style="color:#e74c3c;font-weight:700"> Recommended: max ELO with Display accuracy and Elo estimation (ON).</span>
+          ELO defines the engine strength. Higher values make the engine play
+          stronger.
+          <span style="color: #e74c3c; font-weight: 700">
+            Recommended: max ELO with Display accuracy and Elo estimation
+            (ON).</span
+          >
         </div>
 
         <div class="setting">
-          <label>Depth : <span class="value-badge" id="depthValue">10</span></label>
+          <label
+            >Depth : <span class="value-badge" id="depthValue">10</span></label
+          >
           <input type="range" id="depth" min="1" max="15" value="5" />
         </div>
         <div class="setting-help">
           Search depth of the engine.
-          <span style="color:#e74c3c;font-weight:700"> Recommended for slow devices: 4–6 or lower.</span>
+          <span style="color: #e74c3c; font-weight: 700">
+            Recommended for slow devices: 4–6 or lower.</span
+          >
         </div>
 
         <div class="setting">
@@ -167,18 +219,24 @@
             <option>Human</option>
           </select>
         </div>
-        <div class="setting-help">Defines the preferred playstyle of the engine.</div>
+        <div class="setting-help">
+          Defines the preferred playstyle of the engine.
+        </div>
 
         <!-- DISPLAY -->
         <div class="section-divider"><span>Display</span></div>
 
         <div class="setting">
-          <label>Arrows : <span class="value-badge" id="linesValue">5</span></label>
+          <label
+            >Arrows : <span class="value-badge" id="linesValue">5</span></label
+          >
           <input type="range" id="lines" min="2" max="5" value="5" />
         </div>
         <div class="setting-help">
           Number of best move arrows displayed on the board.
-          <span style="color:#e74c3c;font-weight:700"> 5 for more move choices.</span>
+          <span style="color: #e74c3c; font-weight: 700">
+            5 for more move choices.</span
+          >
         </div>
 
         <div class="setting">
@@ -206,17 +264,27 @@
             </div>
           </div>
         </div>
-        <div class="setting-help">Customize the arrow colors for the top 5 engine moves.</div>
+        <div class="setting-help">
+          Customize the arrow colors for the top 5 engine moves.
+        </div>
 
         <div class="setting">
           <span id="showEvalLabel">Show Eval Bar (OFF)</span>
-          <label class="toggle"><input type="checkbox" id="showEval" /><span class="slider"></span></label>
+          <label class="toggle"
+            ><input type="checkbox" id="showEval" /><span class="slider"></span
+          ></label>
         </div>
         <div class="setting-help">Displays the engine evaluation bar.</div>
 
         <div class="setting">
-          <span id="onlyShowEvalLabel">Hide Arrows and Accuracy Panel (OFF)</span>
-          <label class="toggle"><input type="checkbox" id="onlyShowEval" /><span class="slider"></span></label>
+          <span id="onlyShowEvalLabel"
+            >Hide Arrows and Accuracy Panel (OFF)</span
+          >
+          <label class="toggle"
+            ><input type="checkbox" id="onlyShowEval" /><span
+              class="slider"
+            ></span
+          ></label>
         </div>
         <div class="setting-help">Hides move suggestions.</div>
 
@@ -224,65 +292,169 @@
         <div class="section-divider"><span>Automation</span></div>
 
         <div class="setting">
-          <label>Auto Move Delay : <span class="value-badge" id="delayValue">100</span> ms</label>
-          <input type="range" id="delay" min="100" max="20000" step="50" value="100" />
+          <label
+            >Auto Move Delay :
+            <span class="value-badge" id="delayValue">100</span> ms</label
+          >
+          <input
+            type="range"
+            id="delay"
+            min="100"
+            max="20000"
+            step="50"
+            value="100"
+          />
         </div>
-        <div class="setting-help">Delay before the engine automatically plays a move. Randomly chosen between 0 ms and the chosen value.</div>
+        <div class="setting-help">
+          Delay before the engine automatically plays a move. Randomly chosen
+          between 0 ms and the chosen value.
+        </div>
 
         <div class="setting">
           <label>Play Best Move (Key)</label>
           <select id="key">
             <option value=" " selected>Space</option>
-            <option value="a">a</option><option value="z">z</option><option value="e">e</option>
-            <option value="r">r</option><option value="t">t</option><option value="y">y</option>
-            <option value="u">u</option><option value="i">i</option><option value="o">o</option>
-            <option value="p">p</option><option value="q">q</option><option value="s">s</option>
-            <option value="d">d</option><option value="f">f</option><option value="g">g</option>
-            <option value="h">h</option><option value="j">j</option><option value="k">k</option>
-            <option value="l">l</option><option value="m">m</option><option value="w">w</option>
-            <option value="x">x</option><option value="c">c</option><option value="v">v</option>
-            <option value="b">b</option><option value="n">n</option>
-            <option value="Control">Control</option><option value="Shift">Shift</option>
-            <option value="Alt">Alt</option><option value="Tab">Tab</option>
+            <option value="a">a</option>
+            <option value="z">z</option>
+            <option value="e">e</option>
+            <option value="r">r</option>
+            <option value="t">t</option>
+            <option value="y">y</option>
+            <option value="u">u</option>
+            <option value="i">i</option>
+            <option value="o">o</option>
+            <option value="p">p</option>
+            <option value="q">q</option>
+            <option value="s">s</option>
+            <option value="d">d</option>
+            <option value="f">f</option>
+            <option value="g">g</option>
+            <option value="h">h</option>
+            <option value="j">j</option>
+            <option value="k">k</option>
+            <option value="l">l</option>
+            <option value="m">m</option>
+            <option value="w">w</option>
+            <option value="x">x</option>
+            <option value="c">c</option>
+            <option value="v">v</option>
+            <option value="b">b</option>
+            <option value="n">n</option>
+            <option value="Control">Control</option>
+            <option value="Shift">Shift</option>
+            <option value="Alt">Alt</option>
+            <option value="Tab">Tab</option>
             <option value="CapsLock">CapsLock</option>
-            <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-            <option value="4">4</option><option value="5">5</option><option value="6">6</option>
-            <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
             <option value="0">0</option>
-            <option value="ArrowUp">▲</option><option value="ArrowDown">▼</option>
-            <option value="ArrowLeft">◀</option><option value="ArrowRight">▶</option>
+            <option value="ArrowUp">▲</option>
+            <option value="ArrowDown">▼</option>
+            <option value="ArrowLeft">◀</option>
+            <option value="ArrowRight">▶</option>
           </select>
         </div>
-        <div class="setting-help">Shortcut key to instantly play the best engine move.</div>
+        <div class="setting-help">
+          Shortcut key to instantly play the best engine move.
+        </div>
+
+        <div class="setting">
+          <label>Play Balanced Move(Key)</label>
+          <select id="key2">
+            <option value=" ">Space</option>
+            <option value="a">a</option>
+            <option value="z">z</option>
+            <option value="e">e</option>
+            <option value="r">r</option>
+            <option value="t">t</option>
+            <option value="y">y</option>
+            <option value="u">u</option>
+            <option value="i">i</option>
+            <option value="o">o</option>
+            <option value="p">p</option>
+            <option value="q">q</option>
+            <option value="s">s</option>
+            <option value="d">d</option>
+            <option value="f">f</option>
+            <option value="g">g</option>
+            <option value="h">h</option>
+            <option value="j">j</option>
+            <option value="k">k</option>
+            <option value="l">l</option>
+            <option value="m">m</option>
+            <option value="w">w</option>
+            <option value="x" selected>x</option>
+            <option value="c">c</option>
+            <option value="v">v</option>
+            <option value="b">b</option>
+            <option value="n">n</option>
+            <option value="Control">Control</option>
+            <option value="Shift">Shift</option>
+            <option value="Alt">Alt</option>
+            <option value="Tab">Tab</option>
+            <option value="CapsLock">CapsLock</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="0">0</option>
+            <option value="ArrowUp">▲</option>
+            <option value="ArrowDown">▼</option>
+            <option value="ArrowLeft">◀</option>
+            <option value="ArrowRight">▶</option>
+          </select>
+        </div>
+        <div class="setting-help">
+          Shortcut key to instantly play a balanced move (a move prioritizing
+          drawish or equal positions rather than sharp advantages).
+        </div>
 
         <div class="setting">
           <span id="autoMoveLabel">Auto Move (OFF)</span>
-          <label class="toggle"><input type="checkbox" id="autoMove" /><span class="slider"></span></label>
-        </div>
-        <div class="setting-help">Automatically plays the best move for you.</div>
-
-        <div class="setting">
-          <span id="autoMoveBalancedLabel">Balanced Auto Move (OFF)</span>
-          <label class="toggle"><input type="checkbox" id="autoMoveBalanced" /><span class="slider"></span></label>
+          <label class="toggle"
+            ><input type="checkbox" id="autoMove" /><span class="slider"></span
+          ></label>
         </div>
         <div class="setting-help">
-          Avoids always playing the absolute best move.
-          <span style="color:#e74c3c;font-weight:700"> Enable Auto Move first.</span>
+          Automatically plays the best move for you.
         </div>
 
         <div class="setting">
           <span id="autoStartLabel">Auto Start Game (OFF)</span>
-          <label class="toggle"><input type="checkbox" id="autoStart" /><span class="slider"></span></label>
+          <label class="toggle"
+            ><input type="checkbox" id="autoStart" /><span class="slider"></span
+          ></label>
         </div>
-        <div class="setting-help">Automatically start a new game after finishing the current one.</div>
+        <div class="setting-help">
+          Automatically start a new game after finishing the current one.
+        </div>
 
         <div class="setting">
           <span id="winningMoveLabel">Only Moves That Gain Material (OFF)</span>
-          <label class="toggle"><input type="checkbox" id="winningMove" /><span class="slider"></span></label>
+          <label class="toggle"
+            ><input type="checkbox" id="winningMove" /><span
+              class="slider"
+            ></span
+          ></label>
         </div>
         <div class="setting-help">
           Shows only moves that keep a strong advantage (at least +2 material).
-          <span style="color:#e74c3c;font-weight:700"> Recommended if you want to play without help until your opponent blunders.</span>
+          <span style="color: #e74c3c; font-weight: 700">
+            Recommended if you want to play without help until your opponent
+            blunders.</span
+          >
         </div>
       </div>
 
@@ -295,8 +467,13 @@
     <!-- ================= LOAD ================= -->
     <div class="panel" id="load">
       <p class="panel-title">Load Settings</p>
-      <p class="load-hint">Paste a previously exported JSON config below and click Load.</p>
-      <textarea class="load-textarea" id="loadInput" placeholder='{
+      <p class="load-hint">
+        Paste a previously exported JSON config below and click Load.
+      </p>
+      <textarea
+        class="load-textarea"
+        id="loadInput"
+        placeholder='{
   "elo": 3500,
   "lines": 5,
   "depth": 10,
@@ -304,7 +481,8 @@
   "style": "Default",
   "autoMove": false,
   ...
-}'></textarea>
+}'
+      ></textarea>
       <div class="action-row">
         <button class="btn" id="loadBtn">Load Config</button>
         <span class="load-feedback" id="loadFeedback"></span>
@@ -314,7 +492,9 @@
     <!-- ================= EXPORT ================= -->
     <div class="panel" id="export">
       <p class="panel-title">Export Settings</p>
-      <p class="load-hint">Click Export to generate your current config as JSON.</p>
+      <p class="load-hint">
+        Click Export to generate your current config as JSON.
+      </p>
       <pre class="export-output" id="exportOutput"></pre>
       <div class="action-row">
         <button class="btn" id="exportBtn">Export Config</button>
@@ -325,8 +505,7 @@
     <script src="chessboard/jquery-3.4.1.min.js"></script>
     <script src="chessboard/chessboard-1.0.0.js"></script>
     <script>
-/* ===== COACH AVATAR DATA ===== */
-
+      /* ===== COACH AVATAR DATA ===== */
     </script>
     <script src="index.js"></script>
   </body>

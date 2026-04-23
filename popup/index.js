@@ -104,13 +104,13 @@ const defaultChessConfig = {
   style: "Default",
   autoMove: false,
   speach: false,
-  autoMoveBalanced: false,
   moveClassification: false,
   autoStart: false,
   winningMove: false,
   showEval: false,
   onlyShowEval: false,
   key: " ",
+  key2: "x"
 };
 
 
@@ -173,8 +173,9 @@ function updateChessUI() {
   el("style").value = chessConfig.style;
   el("coach").value = chessConfig.coach;
   el("key").value   = chessConfig.key;
+  el("key").value   = chessConfig.key2;
 
-  ["autoMove","winningMove","autoStart","showEval","onlyShowEval","autoMoveBalanced","moveClassification","speach"]
+  ["autoMove","winningMove","autoStart","showEval","onlyShowEval","moveClassification","speach"]
     .forEach((k) => (el(k).checked = chessConfig[k]));
 
   el("eloValue").textContent   = chessConfig.elo;
@@ -184,7 +185,6 @@ function updateChessUI() {
   el("depth2Value").textContent = chessConfig.depth2;
 
   el("autoMoveLabel").textContent           = `Auto Move (${chessConfig.autoMove ? "ON" : "OFF"})`;
-  el("autoMoveBalancedLabel").textContent   = `Balanced Auto Move (${chessConfig.autoMoveBalanced ? "ON" : "OFF"})`;
   el("autoStartLabel").textContent          = `Auto Start Game (${chessConfig.autoStart ? "ON" : "OFF"})`;
   el("moveClassificationStartLabel").textContent = `MoveClassification (${chessConfig.moveClassification ? "ON" : "OFF"})`;
   el("speachStartLabel").textContent        = `Coach voice (${chessConfig.speach ? "ON" : "OFF"})`;
@@ -211,7 +211,7 @@ loadChessConfig(updateChessUI);
   };
 });
 
-["autoMove","winningMove","autoStart","showEval","onlyShowEval","autoMoveBalanced","moveClassification","speach"]
+["autoMove","winningMove","autoStart","showEval","onlyShowEval","moveClassification","speach"]
   .forEach((k) => {
     el(k).onchange = (e) => {
       chessConfig[k] = e.target.checked;
@@ -242,6 +242,11 @@ el("coach").onchange = (e) => {
 
 el("key").onchange = (e) => {
   chessConfig.key = e.target.value;
+  updateChessUI();
+  saveChessConfig();
+};
+el("key2").onchange = (e) => {
+  chessConfig.key2 = e.target.value;
   updateChessUI();
   saveChessConfig();
 };
