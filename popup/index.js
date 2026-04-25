@@ -103,6 +103,7 @@ const defaultChessConfig = {
   delay: 100,
   style: "Default",
   autoMove: false,
+  floatingBtn : false,
   speach: false,
   moveClassification: false,
   autoStart: false,
@@ -175,7 +176,7 @@ function updateChessUI() {
   el("key").value   = chessConfig.key;
   el("key2").value   = chessConfig.key2;
 
-  ["autoMove","winningMove","autoStart","showEval","onlyShowEval","moveClassification","speach"]
+  ["autoMove","winningMove","autoStart","showEval","onlyShowEval","moveClassification","speach","floatingBtn"]
     .forEach((k) => (el(k).checked = chessConfig[k]));
 
   el("eloValue").textContent   = chessConfig.elo;
@@ -185,6 +186,7 @@ function updateChessUI() {
   el("depth2Value").textContent = chessConfig.depth2;
 
   el("autoMoveLabel").textContent           = `Auto Move (${chessConfig.autoMove ? "ON" : "OFF"})`;
+  el("floatingBtnLabel").textContent           = `Android FLoating BTN (${chessConfig.autoMove ? "ON" : "OFF"})`;
   el("autoStartLabel").textContent          = `Auto Start Game (${chessConfig.autoStart ? "ON" : "OFF"})`;
   el("moveClassificationStartLabel").textContent = `MoveClassification (${chessConfig.moveClassification ? "ON" : "OFF"})`;
   el("speachStartLabel").textContent        = `Coach voice (${chessConfig.speach ? "ON" : "OFF"})`;
@@ -211,7 +213,7 @@ loadChessConfig(updateChessUI);
   };
 });
 
-["autoMove","winningMove","autoStart","showEval","onlyShowEval","moveClassification","speach"]
+["autoMove","winningMove","autoStart","showEval","onlyShowEval","moveClassification","speach","floatingBtn"]
   .forEach((k) => {
     el(k).onchange = (e) => {
       chessConfig[k] = e.target.checked;
