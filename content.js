@@ -2628,7 +2628,15 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                           displayMode: 2,
                         });
 
-                        send1(result);
+                        chrome.runtime.sendMessage({
+                          type: "FROM_CONTENT",
+                          result: {
+                            whiteAccuracy: result.whiteAccuracy,
+                            whiteElo: result.whiteElo,
+                            blackAccuracy: result.blackAccuracy,
+                            blackElo: result.blackElo,
+                          },
+                        });
                       }
 
                       if (config.moveClassification) {
@@ -2648,7 +2656,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             const blackElo = getElo(getSide())?.black || null;
 
             // fen
-            send2(fen_);
+            chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
             clearHighlightSquares();
 
             if (
@@ -2656,7 +2664,10 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
               engine.getMovesByFen(fen_, getSide()).then((moves) => {
-                send3(moves);
+                chrome.runtime.sendMessage({
+                  type: "FROM_CONTENT",
+                  data: moves,
+                });
                 keyMove = moves;
 
                 if (config.autoMove) {
@@ -2702,7 +2713,10 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
               engine.getMovesByFen(fen_, getSide()).then((moves) => {
-                send4(moves);
+                chrome.runtime.sendMessage({
+                  type: "FROM_CONTENT",
+                  data: moves,
+                });
                 keyMove = moves;
 
                 if (config.autoMove) {
@@ -2724,7 +2738,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
       }
 
       if (window.location.host === "lichess.org") {
-        sendDebugger();
+        chrome.runtime.sendMessage({ type: "ATTACH_DEBUGGER" }, (res) => {
+          if (res?.success) {
+            let ok = true;
+          }
+        });
         let fen_ = "";
         let evalObj = null;
         let statObj = null;
@@ -3106,13 +3124,20 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             height: rect.height,
           };
 
-          send5(boardInfo);
+          chrome.runtime.sendMessage({ type: "BOARD_INFO", boardInfo });
+
           const coordFrom = squareToPixels(fromSquare, boardInfo, getSide());
           const coordTo = squareToPixels(toSquare, boardInfo, getSide());
 
           await sleep(moveDelay);
 
-          send6(coordFrom, coordTo);
+          chrome.runtime.sendMessage({
+            type: "DRAG_MOVE",
+            fromX: coordFrom.x,
+            fromY: coordFrom.y,
+            toX: coordTo.x,
+            toY: coordTo.y,
+          });
         }
 
         window.onkeyup = async (e) => {
@@ -3157,8 +3182,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
               if (fenTemp !== fen_) {
                 fen_ = fenTemp;
-                // chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
-                send2(fen_);
+                chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
 
                 clearHighlightSquares();
 
@@ -3193,11 +3217,10 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                       }
                     }
 
-                    // chrome.runtime.sendMessage({
-                    //   type: "FROM_CONTENT",
-                    //   data: moves,
-                    // });
-                    send3(moves);
+                    chrome.runtime.sendMessage({
+                      type: "FROM_CONTENT",
+                      data: moves,
+                    });
                   });
                 }
               }
@@ -3357,7 +3380,10 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     );
                   }
                 }
-                send3(moves);
+                chrome.runtime.sendMessage({
+                  type: "FROM_CONTENT",
+                  data: moves,
+                });
               });
             }
           }
@@ -3399,7 +3425,15 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                       displayMode: 2,
                     });
 
-                    send1(result);
+                    chrome.runtime.sendMessage({
+                      type: "FROM_CONTENT",
+                      result: {
+                        whiteAccuracy: result.whiteAccuracy,
+                        whiteElo: result.whiteElo,
+                        blackAccuracy: result.blackAccuracy,
+                        blackElo: result.blackElo,
+                      },
+                    });
                   }
 
                   if (config.moveClassification) {
@@ -3416,7 +3450,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
       }
 
       if (window.location.host === "worldchess.com") {
-        sendDebugger();
+        chrome.runtime.sendMessage({ type: "ATTACH_DEBUGGER" }, (res) => {
+          if (res?.success) {
+            let ok = true;
+          }
+        });
         let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         let currentFen = "";
         let evalObj = null;
@@ -3802,12 +3840,20 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             height: rect.height,
           };
 
-          send5(boardInfo);
+          chrome.runtime.sendMessage({ type: "BOARD_INFO", boardInfo });
+
           const coordFrom = squareToPixels(fromSquare, boardInfo, getSide());
           const coordTo = squareToPixels(toSquare, boardInfo, getSide());
 
           await sleep(moveDelay);
-          send6(coordFrom, coordTo);
+
+          chrome.runtime.sendMessage({
+            type: "DRAG_MOVE",
+            fromX: coordFrom.x,
+            fromY: coordFrom.y,
+            toX: coordTo.x,
+            toY: coordTo.y,
+          });
         }
 
         window.onkeyup = async (e) => {
@@ -3934,7 +3980,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
           if (fen_ && fen_ !== currentFen) {
             currentFen = fen_;
-            send2(fen_);
+            chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
 
             clearHighlightSquares();
 
@@ -3950,7 +3996,10 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               engine.getMovesByFen(fen_, getSide()).then((moves) => {
                 keyMove = moves;
 
-                send3(moves);
+                chrome.runtime.sendMessage({
+                  type: "FROM_CONTENT",
+                  data: moves,
+                });
                 highlightMovesOnBoard(moves, getSide()[0]);
 
                 if (moves.length > 0 && evalObj) {
@@ -4002,11 +4051,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             ) {
               engine.getMovesByFen(fen_, getSide()).then((moves) => {
                 keyMove = moves;
-                // chrome.runtime.sendMessage({
-                //   type: "FROM_CONTENT",
-                //   data: moves,
-                // });
-                send3(moves);
+
+                chrome.runtime.sendMessage({
+                  type: "FROM_CONTENT",
+                  data: moves,
+                });
                 highlightMovesOnBoard(moves, getSide()[0]);
 
                 if (moves.length > 0 && evalObj) {
