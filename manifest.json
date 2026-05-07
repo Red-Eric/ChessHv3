@@ -50,6 +50,11 @@
       "js": [
         "alert.js",
         "lib/chess_min.js",
+        "utils/const.js",
+        "utils/config.js",
+        "utils/engines.js",
+        "utils/func.js",
+        "utils/draw.js",
         "content.js"
       ],
       "run_at": "document_idle"
