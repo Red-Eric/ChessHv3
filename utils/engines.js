@@ -1,3 +1,4 @@
+// create webworker for komodo
 async function createWorkerKomodo() {
   const url = `${chrome.runtime.getURL("lib/komodo.js")}`;
   const blob = new Blob([`importScripts("${url}");`], {
@@ -8,6 +9,8 @@ async function createWorkerKomodo() {
   return new Worker(blobUrl);
 }
 
+
+// create webworker for torch (coach)
 async function createWorkerTorch() {
   const url = `${chrome.runtime.getURL("lib/torch.js")}`;
   const blob = new Blob([`importScripts("${url}");`], {
@@ -17,6 +20,7 @@ async function createWorkerTorch() {
   return new Worker(blobUrl);
 }
 
+// Komodo instance
 class komodo {
   constructor({
     elo = config.elo,
@@ -197,6 +201,7 @@ class komodo {
   }
 }
 
+// coach engine
 class CoachEngine {
   constructor() {
     this.worker = null;

@@ -1,4 +1,6 @@
 
+// place move icon on the board
+
 function placeSVGOnBoard(side, square, svgCode) {
   const board =
     document.querySelector("wc-chess-board") ||
@@ -145,6 +147,9 @@ function placeSVGOnBoard(side, square, svgCode) {
   }
 }
 
+
+// Inject a.js
+
 function preInjection() {
   const s = document.createElement("script");
   s.src = chrome.runtime.getURL("a.js");
@@ -152,12 +157,14 @@ function preInjection() {
   s.onload = () => s.remove();
 }
 
-
+// pause the code for x ms
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+
+// square to screen position
 function squareToPixels(square, boardInfo, orientation = "white") {
   const files = "abcdefgh";
   const file = files.indexOf(square[0]); // e = 4
@@ -187,10 +194,12 @@ function randomIntBetween(min, max) {
 }
 
 
-
+// clear the arrows on the board
 function clearHighlightSquares() {
   document.querySelectorAll(".customH").forEach((el) => el.remove());
 }
+
+// clear move classification icon
 function clearHint() {
   const className = "." + classMoveClassification;
   document.querySelectorAll(className).forEach((el) => el.remove());

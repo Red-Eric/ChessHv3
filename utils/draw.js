@@ -1088,217 +1088,208 @@ function createEvalBarWorld(initialScore = "0.0", initialColor = "white") {
 }
 
 function highlightMovesOnBoardWorld(moves, side) {
-      if (!Array.isArray(moves)) return;
-      if (
-        !(
-          (side === "w" && fen_.split(" ")[1] === "w") ||
-          (side === "b" && fen_.split(" ")[1] === "b")
-        )
-      ) {
-        return;
-      }
-      if (config.onlyShowEval) return;
+  if (!Array.isArray(moves)) return;
+  if (
+    !(
+      (side === "w" && fen_.split(" ")[1] === "w") ||
+      (side === "b" && fen_.split(" ")[1] === "b")
+    )
+  ) {
+    return;
+  }
+  if (config.onlyShowEval) return;
 
-      const parent = document.querySelector("cg-board");
+  const parent = document.querySelector("cg-board");
 
-      if (!parent) return;
+  if (!parent) return;
 
-      const squareSize = parent.offsetWidth / 8;
-      const maxMoves = 5;
-      let colors = config.colors;
+  const squareSize = parent.offsetWidth / 8;
+  const maxMoves = 5;
+  let colors = config.colors;
 
-      // parent.querySelectorAll(".customH").forEach((el) => el.remove());
+  // parent.querySelectorAll(".customH").forEach((el) => el.remove());
 
-      function squareToPosition(square) {
-        const fileChar = square[0];
-        const rankChar = square[1];
-        const rank = parseInt(rankChar, 10) - 1;
+  function squareToPosition(square) {
+    const fileChar = square[0];
+    const rankChar = square[1];
+    const rank = parseInt(rankChar, 10) - 1;
 
-        let file;
-        if (side === "w") {
-          file = fileChar.charCodeAt(0) - "a".charCodeAt(0);
-          const y = (7 - rank) * squareSize;
-          const x = file * squareSize;
-          return { x, y };
-        } else {
-          file = "h".charCodeAt(0) - fileChar.charCodeAt(0);
-          const y = rank * squareSize;
-          const x = file * squareSize;
-          return { x, y };
-        }
-      }
+    let file;
+    if (side === "w") {
+      file = fileChar.charCodeAt(0) - "a".charCodeAt(0);
+      const y = (7 - rank) * squareSize;
+      const x = file * squareSize;
+      return { x, y };
+    } else {
+      file = "h".charCodeAt(0) - fileChar.charCodeAt(0);
+      const y = rank * squareSize;
+      const x = file * squareSize;
+      return { x, y };
+    }
+  }
 
-      function drawArrow(fromSquare, toSquare, color, score) {
-        const from = squareToPosition(fromSquare);
-        const to = squareToPosition(toSquare);
+  function drawArrow(fromSquare, toSquare, color, score) {
+    const from = squareToPosition(fromSquare);
+    const to = squareToPosition(toSquare);
 
-        const svg = document.createElementNS(
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", "customH");
+    svg.setAttribute("width", parent.offsetWidth);
+    svg.setAttribute("height", parent.offsetWidth);
+    svg.style.position = "absolute";
+    svg.style.left = "0";
+    svg.style.top = "0";
+    svg.style.pointerEvents = "none";
+    svg.style.overflow = "visible";
+    svg.style.zIndex = "10";
+
+    const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+    const marker = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "marker",
+    );
+    marker.setAttribute("id", `arrowhead-${color}`);
+    marker.setAttribute("markerWidth", "3.5");
+    marker.setAttribute("markerHeight", "2.5");
+    marker.setAttribute("refX", "1.75");
+    marker.setAttribute("refY", "1.25");
+    marker.setAttribute("orient", "auto");
+    marker.setAttribute("markerUnits", "strokeWidth");
+
+    const arrowPath = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "path",
+    );
+    arrowPath.setAttribute("d", "M0,0 L3.5,1.25 L0,2.5 Z");
+    arrowPath.setAttribute("fill", color);
+    marker.appendChild(arrowPath);
+    defs.appendChild(marker);
+    svg.appendChild(defs);
+
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("x1", from.x + squareSize / 2);
+    line.setAttribute("y1", from.y + squareSize / 2);
+    line.setAttribute("x2", to.x + squareSize / 2);
+    line.setAttribute("y2", to.y + squareSize / 2);
+    line.setAttribute("stroke", color);
+    line.setAttribute("stroke-width", "5");
+    line.setAttribute("marker-end", `url(#arrowhead-${color})`);
+    line.setAttribute("opacity", "0.6");
+    svg.appendChild(line);
+
+    if (score !== undefined) {
+      if (score === "book") {
+        const foreignObject = document.createElementNS(
           "http://www.w3.org/2000/svg",
-          "svg",
+          "foreignObject",
         );
-        svg.setAttribute("class", "customH");
-        svg.setAttribute("width", parent.offsetWidth);
-        svg.setAttribute("height", parent.offsetWidth);
-        svg.style.position = "absolute";
-        svg.style.left = "0";
-        svg.style.top = "0";
-        svg.style.pointerEvents = "none";
-        svg.style.overflow = "visible";
-        svg.style.zIndex = "10";
+        foreignObject.setAttribute("x", to.x + squareSize - 12);
+        foreignObject.setAttribute("y", to.y - 12);
+        foreignObject.setAttribute("width", "24");
+        foreignObject.setAttribute("height", "24");
 
-        const defs = document.createElementNS(
+        const div = document.createElement("div");
+        div.innerHTML = bookSVG;
+        foreignObject.appendChild(div);
+        svg.appendChild(foreignObject);
+      } else {
+        const group = document.createElementNS(
           "http://www.w3.org/2000/svg",
-          "defs",
+          "g",
         );
-        const marker = document.createElementNS(
+
+        const text = document.createElementNS(
           "http://www.w3.org/2000/svg",
-          "marker",
+          "text",
         );
-        marker.setAttribute("id", `arrowhead-${color}`);
-        marker.setAttribute("markerWidth", "3.5");
-        marker.setAttribute("markerHeight", "2.5");
-        marker.setAttribute("refX", "1.75");
-        marker.setAttribute("refY", "1.25");
-        marker.setAttribute("orient", "auto");
-        marker.setAttribute("markerUnits", "strokeWidth");
 
-        const arrowPath = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "path",
-        );
-        arrowPath.setAttribute("d", "M0,0 L3.5,1.25 L0,2.5 Z");
-        arrowPath.setAttribute("fill", color);
-        marker.appendChild(arrowPath);
-        defs.appendChild(marker);
-        svg.appendChild(defs);
+        text.setAttribute("x", to.x + squareSize);
+        text.setAttribute("y", to.y);
+        text.setAttribute("font-size", "9");
+        text.setAttribute("font-weight", "bold");
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("dominant-baseline", "middle");
+        text.setAttribute("fill", color);
 
-        const line = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "line",
-        );
-        line.setAttribute("x1", from.x + squareSize / 2);
-        line.setAttribute("y1", from.y + squareSize / 2);
-        line.setAttribute("x2", to.x + squareSize / 2);
-        line.setAttribute("y2", to.y + squareSize / 2);
-        line.setAttribute("stroke", color);
-        line.setAttribute("stroke-width", "5");
-        line.setAttribute("marker-end", `url(#arrowhead-${color})`);
-        line.setAttribute("opacity", "0.6");
-        svg.appendChild(line);
+        let isNegative = false;
+        let displayScore = score;
 
-        if (score !== undefined) {
-          if (score === "book") {
-            const foreignObject = document.createElementNS(
-              "http://www.w3.org/2000/svg",
-              "foreignObject",
-            );
-            foreignObject.setAttribute("x", to.x + squareSize - 12);
-            foreignObject.setAttribute("y", to.y - 12);
-            foreignObject.setAttribute("width", "24");
-            foreignObject.setAttribute("height", "24");
+        const hasHash = score.startsWith("#");
+        let raw = hasHash ? score.slice(1) : score;
 
-            const div = document.createElement("div");
-            div.innerHTML = bookSVG;
-            foreignObject.appendChild(div);
-            svg.appendChild(foreignObject);
-          } else {
-            const group = document.createElementNS(
-              "http://www.w3.org/2000/svg",
-              "g",
-            );
-
-            const text = document.createElementNS(
-              "http://www.w3.org/2000/svg",
-              "text",
-            );
-
-            text.setAttribute("x", to.x + squareSize);
-            text.setAttribute("y", to.y);
-            text.setAttribute("font-size", "9");
-            text.setAttribute("font-weight", "bold");
-            text.setAttribute("text-anchor", "middle");
-            text.setAttribute("dominant-baseline", "middle");
-            text.setAttribute("fill", color);
-
-            let isNegative = false;
-            let displayScore = score;
-
-            const hasHash = score.startsWith("#");
-            let raw = hasHash ? score.slice(1) : score;
-
-            if (raw.startsWith("-")) {
-              isNegative = true;
-              raw = raw.slice(1);
-            } else if (raw.startsWith("+")) {
-              raw = raw.slice(1);
-            }
-
-            displayScore = hasHash ? "#" + raw : raw;
-            text.textContent = displayScore;
-
-            group.appendChild(text);
-            svg.appendChild(group);
-
-            requestAnimationFrame(() => {
-              const bbox = text.getBBox();
-
-              const paddingX = 2;
-              const paddingY = 2;
-
-              const rect = document.createElementNS(
-                "http://www.w3.org/2000/svg",
-                "rect",
-              );
-
-              rect.setAttribute("x", bbox.x - paddingX);
-              rect.setAttribute("y", bbox.y - paddingY);
-              rect.setAttribute("width", bbox.width + paddingX * 2);
-              rect.setAttribute("height", bbox.height + paddingY * 2);
-
-              rect.setAttribute("rx", "8");
-              rect.setAttribute("ry", "8");
-
-              rect.setAttribute("fill", isNegative ? "#312e2b" : "#ffffff");
-              rect.setAttribute("fill-opacity", "0.85");
-              rect.setAttribute("stroke", isNegative ? "#000000" : "#cccccc");
-              rect.setAttribute("stroke-width", "1");
-
-              group.insertBefore(rect, text);
-            });
-          }
+        if (raw.startsWith("-")) {
+          isNegative = true;
+          raw = raw.slice(1);
+        } else if (raw.startsWith("+")) {
+          raw = raw.slice(1);
         }
 
-        parent.appendChild(svg);
-      }
+        displayScore = hasHash ? "#" + raw : raw;
+        text.textContent = displayScore;
 
-      parent.style.position = "relative";
+        group.appendChild(text);
+        svg.appendChild(group);
 
-      let filteredMoves = moves;
-      if (config.winningMove) {
-        filteredMoves = moves.filter((move) => {
-          const evalValue = parseFloat(move.eval);
-          if (side === "w") {
-            return (
-              evalValue >= 2 ||
-              (move.eval.startsWith("#") && parseInt(move.eval.slice(1)) > 0)
-            );
-          } else {
-            return (
-              evalValue <= -2 ||
-              (move.eval.startsWith("#-") && parseInt(move.eval.slice(2)) > 0)
-            );
-          }
+        requestAnimationFrame(() => {
+          const bbox = text.getBBox();
+
+          const paddingX = 2;
+          const paddingY = 2;
+
+          const rect = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "rect",
+          );
+
+          rect.setAttribute("x", bbox.x - paddingX);
+          rect.setAttribute("y", bbox.y - paddingY);
+          rect.setAttribute("width", bbox.width + paddingX * 2);
+          rect.setAttribute("height", bbox.height + paddingY * 2);
+
+          rect.setAttribute("rx", "8");
+          rect.setAttribute("ry", "8");
+
+          rect.setAttribute("fill", isNegative ? "#312e2b" : "#ffffff");
+          rect.setAttribute("fill-opacity", "0.85");
+          rect.setAttribute("stroke", isNegative ? "#000000" : "#cccccc");
+          rect.setAttribute("stroke-width", "1");
+
+          group.insertBefore(rect, text);
         });
       }
-
-      filteredMoves.slice(0, maxMoves).forEach((move, index) => {
-        const color = colors[index] || "red";
-        // drawArrow(move.from, move.to, color, move.eval);
-        drawArrow(move.from, move.to, color, move.eval);
-        if (side === "b") {
-          document
-            .querySelectorAll(".customH")
-            .forEach((el) => (el.style.transform = "rotate(180deg)"));
-        }
-      });
     }
+
+    parent.appendChild(svg);
+  }
+
+  parent.style.position = "relative";
+
+  let filteredMoves = moves;
+  if (config.winningMove) {
+    filteredMoves = moves.filter((move) => {
+      const evalValue = parseFloat(move.eval);
+      if (side === "w") {
+        return (
+          evalValue >= 2 ||
+          (move.eval.startsWith("#") && parseInt(move.eval.slice(1)) > 0)
+        );
+      } else {
+        return (
+          evalValue <= -2 ||
+          (move.eval.startsWith("#-") && parseInt(move.eval.slice(2)) > 0)
+        );
+      }
+    });
+  }
+
+  filteredMoves.slice(0, maxMoves).forEach((move, index) => {
+    const color = colors[index] || "red";
+    // drawArrow(move.from, move.to, color, move.eval);
+    drawArrow(move.from, move.to, color, move.eval);
+    if (side === "b") {
+      document
+        .querySelectorAll(".customH")
+        .forEach((el) => (el.style.transform = "rotate(180deg)"));
+    }
+  });
+}
