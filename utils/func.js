@@ -285,27 +285,29 @@ async function findInScripts(search) {
     for (const url of scripts) {
         try {
             const res = await fetch(url);
-            let code = await res.text();
+            const code = await res.text();
 
-            const normalizedCode = code.replace(/\s+/g, "");
-            const normalizedSearch = search.replace(/\s+/g, "");
+            let found = false;
+            let index = -1;
 
-            const index = normalizedCode.indexOf(normalizedSearch);
+            if (search instanceof RegExp) {
+                const match = code.match(search);
 
-            if (index === -1) continue;
-
-            let realIndex = 0;
-            let normalizedIndex = 0;
-
-            while (normalizedIndex < index && realIndex < code.length) {
-                if (!/\s/.test(code[realIndex])) {
-                    normalizedIndex++;
+                if (match) {
+                    found = true;
+                    index = match.index;
                 }
+            } else {
+                index = code.indexOf(search);
 
-                realIndex++;
+                if (index !== -1) {
+                    found = true;
+                }
             }
 
-            const before = code.slice(0, realIndex);
+            if (!found) continue;
+
+            const before = code.slice(0, index);
 
             const line = before.split("\n").length;
             const column = before.split("\n").pop().length;
@@ -317,8 +319,8 @@ async function findInScripts(search) {
 
             console.log(
                 code.substring(
-                    Math.max(0, realIndex - 200),
-                    realIndex + 300
+                    Math.max(0, index - 200),
+                    index + 300
                 )
             );
 
@@ -326,9 +328,8 @@ async function findInScripts(search) {
                 url,
                 line,
                 column,
-                index: realIndex
+                index
             };
-
         } catch (e) {
             console.error(url, e);
         }

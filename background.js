@@ -1,4 +1,4 @@
-importScripts("./lib/chess_min.js")
+importScripts("./lib/chess_min.js");
 
 function getStartFEN(fen) {
   const board = fen.split(" ")[0];
@@ -58,7 +58,7 @@ function pgnToUciString(pgn) {
 
   const moves = game.history({ verbose: true });
 
-  const uciMoves = moves.map(m => {
+  const uciMoves = moves.map((m) => {
     // roque
     if (m.flags.includes("k")) {
       return m.color === "w" ? "e1g1" : "e8g8";
@@ -101,8 +101,9 @@ function sendMovesToSite(type, moves, urlPattern) {
   });
 }
 
-// Stockage global des listeners par tabId
 const activeListeners = {};
+
+// breakpoint for lichess and worldchess com
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (!sender.tab || !sender.tab.id) return;
@@ -123,7 +124,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return;
       }
 
-      let TARGET = null;
+      let TARGET = "";
       let BREAK_SEARCH = "";
 
       if (host === "lichess.org") {
@@ -132,9 +133,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
 
       if (host === "worldchess.com") {
-        TARGET =
-          `i.on("history",e=>{this.clearAll()})`;
-        BREAK_SEARCH = "this.clearAll()";
+        TARGET = `i.on("history",e=>{this.clearAll()`;
+        BREAK_SEARCH = `this.clearAll()`;
       }
 
       let breakpointId = null;
@@ -144,13 +144,23 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           const res = await fetch(url);
           const code = await res.text();
 
-          const index = code.indexOf(TARGET);
-          if (index === -1) return false;
+          let index = -1;
 
+          if (host === "worldchess.com") {
+            const targetIndex = code.indexOf(TARGET);
+            if (targetIndex === -1) return false;
+            index = targetIndex + TARGET.indexOf(BREAK_SEARCH);
+          } else {
+            const targetIndex = code.indexOf(TARGET);
+            if (targetIndex === -1) return false;
+            index = targetIndex + TARGET.indexOf(BREAK_SEARCH);
+          }
+
+          // Les deux cas sont identiques, donc simplifié :
           const before = code.slice(0, index);
-          const lineNumber = before.split("\n").length - 1;
-          const columnNumber =
-            before.split("\n").pop().length + TARGET.indexOf(BREAK_SEARCH);
+          const lines = before.split("\n");
+          const lineNumber = lines.length - 1;
+          const columnNumber = lines[lines.length - 1].length;
 
           const bpRes = await new Promise((resolve) => {
             chrome.debugger.sendCommand(
@@ -166,6 +176,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             return true;
           }
         } catch (e) {
+          console.error("trySetBreakpoint error:", e);
         }
         return false;
       }
@@ -271,8 +282,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
                 let uciHistory = `position fen ${movesHistory[0]?.fen ?? ""} moves`;
 
-                
-
                 if (movesHistory.length > 0) {
                   game.load(movesHistory[0].fen);
 
@@ -301,9 +310,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
                   fenhistory = pgnToFenArray(game.pgn());
                   uciHistory = pgnToUciString(game.pgn());
-
-                
-
 
                   chrome.tabs.query({}, (tabs) => {
                     for (const tab of tabs) {
@@ -352,11 +358,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                   startFen,
                 );
 
-                let uciHistory = pgnToUciString(game.pgn())
+                let uciHistory = pgnToUciString(game.pgn());
 
-                console.clear()
-                console.log(uciHistory)
-                console.log(fenhistory)
+                console.clear();
+                console.log(uciHistory);
+                console.log(fenhistory);
 
                 chrome.tabs.query({}, (tabs) => {
                   for (const tab of tabs) {
@@ -364,7 +370,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                       chrome.tabs.sendMessage(tab.id, {
                         type: "history",
                         data: fenhistory,
-                        uci : uciHistory
+                        uci: uciHistory,
                       });
                     }
                   }
@@ -413,7 +419,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return;
       }
 
-      // console.log("Debugger detached from tab", tabId);
       sendResponse({ success: true });
     });
 
@@ -479,7 +484,6 @@ function sendMouseEvent(tabId, params) {
   });
 }
 
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "stream") {
     chrome.windows.create({
@@ -488,18 +492,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       state: "maximized",
     });
   }
-  
 });
 
-
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg.type === 'FETCH_AUDIO') {
+  if (msg.type === "FETCH_AUDIO") {
     fetch(msg.url)
-      .then(r => r.arrayBuffer())
-      .then(buffer => {
+      .then((r) => r.arrayBuffer())
+      .then((buffer) => {
         sendResponse({ buffer: Array.from(new Uint8Array(buffer)) });
       })
-      .catch(err => sendResponse({ error: err.message }));
+      .catch((err) => sendResponse({ error: err.message }));
     return true;
   }
 });
