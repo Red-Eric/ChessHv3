@@ -244,59 +244,60 @@ chrome.storage.local.get(["chessConfig"], (result) => {
         async function checkAndSendMoves() {
           // fix refresh page
 
-          if (!isMobile && document.body.offsetWidth < 988) {
-            isMobile = true;
-            if (isMobile) {
-              if (document.getElementById("rederic-float-wrap")) return;
-
+          // Floating Button for Android 
+          if (config.floatingBtn) {
+            if (!document.getElementById("rederic-float-wrap")) {
               const wrap = document.createElement("div");
               wrap.id = "rederic-float-wrap";
 
-              wrap.style.position = "fixed";
-              wrap.style.right = "18px";
-              wrap.style.bottom = "18px";
-              wrap.style.display = "flex";
-              wrap.style.flexDirection = "column";
-              wrap.style.gap = "10px";
-              wrap.style.zIndex = "999999";
+              Object.assign(wrap.style, {
+                position: "fixed",
+                right: "18px",
+                bottom: "18px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "10px",
+                zIndex: "999999",
+              });
 
-              function makeBtn(label, variant) {
+              const makeBtn = (label, variant) => {
                 const btn = document.createElement("button");
                 btn.textContent = label;
 
-                btn.style.fontFamily = "var(--font-mono)";
-                btn.style.fontSize = "11px";
-                btn.style.fontWeight = "700";
-                btn.style.letterSpacing = "1.5px";
-                btn.style.textTransform = "uppercase";
-                btn.style.padding = "10px 20px";
-                btn.style.borderRadius = "8px";
-                btn.style.cursor = "pointer";
-                btn.style.transition = "all 0.2s ease";
-                btn.style.backdropFilter = "blur(4px)";
+                const isBest = variant === "best";
+                Object.assign(btn.style, {
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "11px",
+                  fontWeight: "700",
+                  letterSpacing: "1.5px",
+                  textTransform: "uppercase",
+                  padding: "10px 20px",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                  backdropFilter: "blur(4px)",
+                  background: isBest
+                    ? "rgba(74,124,31,0.15)"
+                    : "rgba(0,0,0,0.05)",
+                  border: isBest
+                    ? "1px solid #4a7c1f"
+                    : "1px solid rgba(74,124,31,0.3)",
+                  color: isBest ? "#4a7c1f" : "#7a7060",
+                });
 
-                if (variant === "best") {
-                  btn.style.background = "rgba(74,124,31,0.15)";
-                  btn.style.border = "1px solid #4a7c1f";
-                  btn.style.color = "#4a7c1f";
-                } else {
-                  btn.style.background = "rgba(0,0,0,0.05)";
-                  btn.style.border = "1px solid rgba(74,124,31,0.3)";
-                  btn.style.color = "#7a7060";
-                }
-
-                btn.onmouseenter = () => {
-                  btn.style.transform = "translateY(-2px)";
-                  btn.style.boxShadow = "0 6px 18px rgba(0,0,0,0.15)";
-                };
-
-                btn.onmouseleave = () => {
-                  btn.style.transform = "translateY(0)";
-                  btn.style.boxShadow = "none";
-                };
+                btn.onmouseenter = () =>
+                  Object.assign(btn.style, {
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 6px 18px rgba(0,0,0,0.15)",
+                  });
+                btn.onmouseleave = () =>
+                  Object.assign(btn.style, {
+                    transform: "translateY(0)",
+                    boxShadow: "none",
+                  });
 
                 return btn;
-              }
+              };
 
               const playBest = makeBtn("Play Best", "best");
               const playBalanced = makeBtn("Play Balanced", "balanced");
@@ -307,15 +308,15 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               };
 
               playBalanced.onclick = () => {
-                const balancedMove = extractNormalMove(keyMove, getSide());
-                requestMove(balancedMove.from, balancedMove.to, "q", true);
+                const { from, to } = extractNormalMove(keyMove, getSide());
+                requestMove(from, to, "q", true);
               };
 
-              wrap.appendChild(playBest);
-              wrap.appendChild(playBalanced);
-
+              wrap.append(playBest, playBalanced);
               document.body.appendChild(wrap);
             }
+          } else {
+            document.getElementById("rederic-float-wrap")?.remove();
           }
 
           if (lastUrl !== window.location.pathname) {
@@ -710,59 +711,59 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             }
           }
 
-          if (!isMobile && document.body.offsetWidth < 1010) {
-            isMobile = true;
-            if (isMobile) {
-              if (document.getElementById("rederic-float-wrap")) return;
-
+          if (config.floatingBtn) {
+            if (!document.getElementById("rederic-float-wrap")) {
               const wrap = document.createElement("div");
               wrap.id = "rederic-float-wrap";
 
-              wrap.style.position = "fixed";
-              wrap.style.right = "18px";
-              wrap.style.bottom = "18px";
-              wrap.style.display = "flex";
-              wrap.style.flexDirection = "column";
-              wrap.style.gap = "10px";
-              wrap.style.zIndex = "999999";
+              Object.assign(wrap.style, {
+                position: "fixed",
+                right: "18px",
+                bottom: "18px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "10px",
+                zIndex: "999999",
+              });
 
-              function makeBtn(label, variant) {
+              const makeBtn = (label, variant) => {
                 const btn = document.createElement("button");
                 btn.textContent = label;
 
-                btn.style.fontFamily = "var(--font-mono)";
-                btn.style.fontSize = "11px";
-                btn.style.fontWeight = "700";
-                btn.style.letterSpacing = "1.5px";
-                btn.style.textTransform = "uppercase";
-                btn.style.padding = "10px 20px";
-                btn.style.borderRadius = "8px";
-                btn.style.cursor = "pointer";
-                btn.style.transition = "all 0.2s ease";
-                btn.style.backdropFilter = "blur(4px)";
+                const isBest = variant === "best";
+                Object.assign(btn.style, {
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "11px",
+                  fontWeight: "700",
+                  letterSpacing: "1.5px",
+                  textTransform: "uppercase",
+                  padding: "10px 20px",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                  backdropFilter: "blur(4px)",
+                  background: isBest
+                    ? "rgba(74,124,31,0.15)"
+                    : "rgba(0,0,0,0.05)",
+                  border: isBest
+                    ? "1px solid #4a7c1f"
+                    : "1px solid rgba(74,124,31,0.3)",
+                  color: isBest ? "#4a7c1f" : "#7a7060",
+                });
 
-                if (variant === "best") {
-                  btn.style.background = "rgba(74,124,31,0.15)";
-                  btn.style.border = "1px solid #4a7c1f";
-                  btn.style.color = "#4a7c1f";
-                } else {
-                  btn.style.background = "rgba(0,0,0,0.05)";
-                  btn.style.border = "1px solid rgba(74,124,31,0.3)";
-                  btn.style.color = "#7a7060";
-                }
-
-                btn.onmouseenter = () => {
-                  btn.style.transform = "translateY(-2px)";
-                  btn.style.boxShadow = "0 6px 18px rgba(0,0,0,0.15)";
-                };
-
-                btn.onmouseleave = () => {
-                  btn.style.transform = "translateY(0)";
-                  btn.style.boxShadow = "none";
-                };
+                btn.onmouseenter = () =>
+                  Object.assign(btn.style, {
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 6px 18px rgba(0,0,0,0.15)",
+                  });
+                btn.onmouseleave = () =>
+                  Object.assign(btn.style, {
+                    transform: "translateY(0)",
+                    boxShadow: "none",
+                  });
 
                 return btn;
-              }
+              };
 
               const playBest = makeBtn("Play Best", "best");
               const playBalanced = makeBtn("Play Balanced", "balanced");
@@ -777,11 +778,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                 movePiece(balancedMove.from, balancedMove.to, 0);
               };
 
-              wrap.appendChild(playBest);
-              wrap.appendChild(playBalanced);
-
+              wrap.append(playBest, playBalanced);
               document.body.appendChild(wrap);
             }
+          } else {
+            document.getElementById("rederic-float-wrap")?.remove();
           }
 
           requestFen();
@@ -990,60 +991,60 @@ chrome.storage.local.get(["chessConfig"], (result) => {
         };
 
         setInterval(async () => {
-          // detect if the width is < 988
-          if (!isMobile && document.body.offsetWidth < 988) {
-            isMobile = true;
-            if (isMobile) {
-              if (document.getElementById("rederic-float-wrap")) return;
 
+          if (config.floatingBtn) {
+            if (!document.getElementById("rederic-float-wrap")) {
               const wrap = document.createElement("div");
               wrap.id = "rederic-float-wrap";
 
-              wrap.style.position = "fixed";
-              wrap.style.right = "18px";
-              wrap.style.bottom = "18px";
-              wrap.style.display = "flex";
-              wrap.style.flexDirection = "column";
-              wrap.style.gap = "10px";
-              wrap.style.zIndex = "999999";
+              Object.assign(wrap.style, {
+                position: "fixed",
+                right: "18px",
+                bottom: "18px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "10px",
+                zIndex: "999999",
+              });
 
-              function makeBtn(label, variant) {
+              const makeBtn = (label, variant) => {
                 const btn = document.createElement("button");
                 btn.textContent = label;
 
-                btn.style.fontFamily = "var(--font-mono)";
-                btn.style.fontSize = "11px";
-                btn.style.fontWeight = "700";
-                btn.style.letterSpacing = "1.5px";
-                btn.style.textTransform = "uppercase";
-                btn.style.padding = "10px 20px";
-                btn.style.borderRadius = "8px";
-                btn.style.cursor = "pointer";
-                btn.style.transition = "all 0.2s ease";
-                btn.style.backdropFilter = "blur(4px)";
+                const isBest = variant === "best";
+                Object.assign(btn.style, {
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "11px",
+                  fontWeight: "700",
+                  letterSpacing: "1.5px",
+                  textTransform: "uppercase",
+                  padding: "10px 20px",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                  backdropFilter: "blur(4px)",
+                  background: isBest
+                    ? "rgba(74,124,31,0.15)"
+                    : "rgba(0,0,0,0.05)",
+                  border: isBest
+                    ? "1px solid #4a7c1f"
+                    : "1px solid rgba(74,124,31,0.3)",
+                  color: isBest ? "#4a7c1f" : "#7a7060",
+                });
 
-                if (variant === "best") {
-                  btn.style.background = "rgba(74,124,31,0.15)";
-                  btn.style.border = "1px solid #4a7c1f";
-                  btn.style.color = "#4a7c1f";
-                } else {
-                  btn.style.background = "rgba(0,0,0,0.05)";
-                  btn.style.border = "1px solid rgba(74,124,31,0.3)";
-                  btn.style.color = "#7a7060";
-                }
-
-                btn.onmouseenter = () => {
-                  btn.style.transform = "translateY(-2px)";
-                  btn.style.boxShadow = "0 6px 18px rgba(0,0,0,0.15)";
-                };
-
-                btn.onmouseleave = () => {
-                  btn.style.transform = "translateY(0)";
-                  btn.style.boxShadow = "none";
-                };
+                btn.onmouseenter = () =>
+                  Object.assign(btn.style, {
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 6px 18px rgba(0,0,0,0.15)",
+                  });
+                btn.onmouseleave = () =>
+                  Object.assign(btn.style, {
+                    transform: "translateY(0)",
+                    boxShadow: "none",
+                  });
 
                 return btn;
-              }
+              };
 
               const playBest = makeBtn("Play Best", "best");
               const playBalanced = makeBtn("Play Balanced", "balanced");
@@ -1058,11 +1059,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                 movePiece(balancedMove.from, balancedMove.to, 0);
               };
 
-              wrap.appendChild(playBest);
-              wrap.appendChild(playBalanced);
-
+              wrap.append(playBest, playBalanced);
               document.body.appendChild(wrap);
             }
+          } else {
+            document.getElementById("rederic-float-wrap")?.remove();
           }
 
           if (config.coach < 998 && !document.querySelector("#acc-widget")) {
