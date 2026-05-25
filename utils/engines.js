@@ -1,23 +1,35 @@
-// create webworker for komodo
-async function createWorkerKomodo() {
-  const url = `${chrome.runtime.getURL("lib/komodo.js")}`;
-  const blob = new Blob([`importScripts("${url}");`], {
-    type: "application/javascript",
-  });
-  const blobUrl = URL.createObjectURL(blob);
+async function loadWorkerScript(path) {
+  const url = chrome.runtime.getURL(path);
+  const res = await fetch(url);
+  const code = await res.text();
+  const patched = code.replaceAll(
+    'const EXTENSION_ID = "chesshV3ID"',
+    `const EXTENSION_ID = "${chrome.runtime.id}"`
+  );
 
-  return new Worker(blobUrl);
+  return patched;
 }
 
+// create webworker for komodo
+async function createWorkerKomodo() {
+  const code = await loadWorkerScript("lib/komodo.js");
+
+  const blob = new Blob([code], {
+    type: "application/javascript",
+  });
+
+  return new Worker(URL.createObjectURL(blob));
+}
 
 // create webworker for torch (coach)
 async function createWorkerTorch() {
-  const url = `${chrome.runtime.getURL("lib/torch.js")}`;
-  const blob = new Blob([`importScripts("${url}");`], {
+  const code = await loadWorkerScript("lib/torch.js");
+
+  const blob = new Blob([code], {
     type: "application/javascript",
   });
-  const blobUrl = URL.createObjectURL(blob);
-  return new Worker(blobUrl);
+
+  return new Worker(URL.createObjectURL(blob));
 }
 
 // Komodo instance
