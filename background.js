@@ -123,7 +123,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return;
       }
 
-      let TARGET = "";
+      let TARGET = null;
       let BREAK_SEARCH = "";
 
       if (host === "lichess.org") {
@@ -133,7 +133,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
       if (host === "worldchess.com") {
         TARGET =
-          'i.on("history",e=>{this.clearAll()})';
+          `i.on("history",e=>{this.clearAll()})`;
         BREAK_SEARCH = "this.clearAll()";
       }
 
@@ -212,7 +212,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             }
           }
 
-          if (!found) console.log("");
+          if (!found) console.log("Code Not found");
 
           const scriptParsedListener = async (source, method, params) => {
             if (source.tabId !== tabId) return;
@@ -353,6 +353,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 );
 
                 let uciHistory = pgnToUciString(game.pgn())
+
+                console.clear()
+                console.log(uciHistory)
+                console.log(fenhistory)
 
                 chrome.tabs.query({}, (tabs) => {
                   for (const tab of tabs) {

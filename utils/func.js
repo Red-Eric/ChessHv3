@@ -273,3 +273,66 @@ function extractNormalMove(moves, side = "white") {
 
       return sorted[0];
     }
+
+  
+// For dev
+
+async function findInScripts(search) {
+    const scripts = [...document.scripts]
+        .map(s => s.src)
+        .filter(Boolean);
+
+    for (const url of scripts) {
+        try {
+            const res = await fetch(url);
+            let code = await res.text();
+
+            const normalizedCode = code.replace(/\s+/g, "");
+            const normalizedSearch = search.replace(/\s+/g, "");
+
+            const index = normalizedCode.indexOf(normalizedSearch);
+
+            if (index === -1) continue;
+
+            let realIndex = 0;
+            let normalizedIndex = 0;
+
+            while (normalizedIndex < index && realIndex < code.length) {
+                if (!/\s/.test(code[realIndex])) {
+                    normalizedIndex++;
+                }
+
+                realIndex++;
+            }
+
+            const before = code.slice(0, realIndex);
+
+            const line = before.split("\n").length;
+            const column = before.split("\n").pop().length;
+
+            console.log("FOUND");
+            console.log("URL :", url);
+            console.log("LINE :", line);
+            console.log("COLUMN :", column);
+
+            console.log(
+                code.substring(
+                    Math.max(0, realIndex - 200),
+                    realIndex + 300
+                )
+            );
+
+            return {
+                url,
+                line,
+                column,
+                index: realIndex
+            };
+
+        } catch (e) {
+            console.error(url, e);
+        }
+    }
+
+    console.log("NOT FOUND");
+}
