@@ -103,8 +103,8 @@ function sendMovesToSite(type, moves, urlPattern) {
 
 const activeListeners = {};
 
-// breakpoint for lichess and worldchess com
 
+// fix both
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (!sender.tab || !sender.tab.id) return;
   const tabId = sender.tab.id;
@@ -146,17 +146,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
           let index = -1;
 
-          if (host === "worldchess.com") {
-            const targetIndex = code.indexOf(TARGET);
-            if (targetIndex === -1) return false;
-            index = targetIndex + TARGET.indexOf(BREAK_SEARCH);
-          } else {
+          if (host === "lichess.org") {
             const targetIndex = code.indexOf(TARGET);
             if (targetIndex === -1) return false;
             index = targetIndex + TARGET.indexOf(BREAK_SEARCH);
           }
 
-          // Les deux cas sont identiques, donc simplifié :
+          if (host === "worldchess.com") {
+            const targetIndex = code.indexOf(TARGET);
+            if (targetIndex === -1) return false;
+            index = targetIndex + TARGET.indexOf(BREAK_SEARCH);
+          }
+
+          if (index === -1) return false;
+
           const before = code.slice(0, index);
           const lines = before.split("\n");
           const lineNumber = lines.length - 1;
