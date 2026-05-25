@@ -133,8 +133,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
       if (host === "worldchess.com") {
         TARGET =
-          'e.on("history",(i,n)=>{if(i.length===n.length){this.clearPremoves();';
-        BREAK_SEARCH = "if(i.length===n.length";
+          'i.on("history",e=>{this.clearAll()})';
+        BREAK_SEARCH = "this.clearAll()";
       }
 
       let breakpointId = null;
@@ -326,7 +326,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                   "Debugger.evaluateOnCallFrame",
                   {
                     callFrameId: params.callFrames[0].callFrameId,
-                    expression: "i",
+                    expression: "e",
                     returnByValue: true,
                   },
                 );

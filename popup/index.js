@@ -188,7 +188,7 @@ function updateChessUI() {
   el("autoMoveLabel").textContent           = `Auto Move (${chessConfig.autoMove ? "ON" : "OFF"})`;
   el("floatingBtnLabel").textContent           = `Android FLoating BTN (${chessConfig.autoMove ? "ON" : "OFF"})`;
   el("autoStartLabel").textContent          = `Auto Start Game (${chessConfig.autoStart ? "ON" : "OFF"})`;
-  el("moveClassificationStartLabel").textContent = `MoveClassification (${chessConfig.moveClassification ? "ON" : "OFF"})`;
+  el("moveClassificationStartLabel").textContent = `Move Classification + Accuracy + Elo (${chessConfig.moveClassification ? "ON" : "OFF"})`;
   el("speachStartLabel").textContent        = `Coach voice (${chessConfig.speach ? "ON" : "OFF"})`;
   el("winningMoveLabel").textContent        = `Only Moves That Gain Material (${chessConfig.winningMove ? "ON" : "OFF"})`;
   el("showEvalLabel").textContent           = `Show Eval Bar (${chessConfig.showEval ? "ON" : "OFF"})`;
