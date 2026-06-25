@@ -533,10 +533,11 @@ class Stockfish6 {
   }
 }
 
+
 class Stockfish11 {
-  constructor({ multipv = config.lines, depth = config.depth } = {}) {
-    this.multipv = multipv;
-    this.depth = depth;
+  constructor() {
+    this.depth = 5;
+    this.multipv = 5;
     this.ready = this.init();
   }
 
@@ -547,132 +548,92 @@ class Stockfish11 {
   }
 
   setOptions() {
-    this.worker.postMessage(
-      `setoption name MultiPV value ${this.multipv}`
-    );
+    this.worker.postMessage(`setoption name MultiPV value ${config.lines}`);
+    this.worker.postMessage("setoption name Ponder value false");
+
   }
 
-  updateConfig(cfg = {}) {
-    Object.assign(this, cfg);
+  updateConfig({ elo, depth, multipv, threads, hash, style }) {
+    if (elo !== undefined) this.elo = elo;
+    if (depth !== undefined) this.depth = depth;
+    if (multipv !== undefined) this.multipv = multipv;
+    if (threads !== undefined) this.threads = threads;
+    if (hash !== undefined) this.hash = hash;
+    if (style !== undefined) this.style = style;
     this.setOptions();
   }
 
-  hardStop() {
-    if (this.worker) {
-      this.worker.terminate();
-      this.worker = null;
-    }
-  }
-
-  quit() {
-    this.hardStop();
-    this.worker?.postMessage("quit");
-  }
-
-  async restartWorker() {
-    this.hardStop();
-    this.worker = await createWorkerStockfish11();
-    this.worker.postMessage("uci");
-    this.setOptions();
-  }
-
-  parseScore(parts, sideToMove) {
-    const scoreIndex = parts.indexOf("score");
-    if (scoreIndex === -1) return null;
-
-    const type = parts[scoreIndex + 1];
-    const value = parseInt(parts[scoreIndex + 2], 10);
-
-    if (isNaN(value)) return null;
-
-    if (type === "mate") {
-      return { type: "mate", value };
-    }
-
-    let cp = value;
-    if (sideToMove === "b") cp = -cp;
-
-    return { type: "cp", value: cp / 100 };
-  }
-
-  scoreToNumber(score) {
-    if (!score) return -99999;
-
-    if (score.type === "mate") {
-      return score.value > 0
-        ? 100000 - score.value
-        : -100000 - score.value;
-    }
-
-    return score.value;
-  }
-
-  sortMoves(moves, side) {
-    return moves.sort((a, b) => {
-      const A = this.scoreToNumber(a.rawScore);
-      const B = this.scoreToNumber(b.rawScore);
-      return side === "white" ? B - A : A - B;
-    });
-  }
-
-  async getMovesByFen(fen, side) {
+  async getMovesByFen(fen, side = "white") {
     await this.ready;
 
-    const results = [];
-    const seen = new Set();
+
+    this.worker.postMessage(`setoption name MultiPV value ${config.lines}`);
+    this.worker.postMessage("setoption name Ponder value false");
+
     const sideToMove = fen.split(" ")[1];
 
     return new Promise((resolve) => {
+      const multipvResults = new Map();
+      this.worker.postMessage("uci");
+
       const onMessage = (event) => {
-        const line = event.data;
-        if (typeof line !== "string") return;
+        const msg = event.data;
+        // console.log(msg);
+        if (typeof msg !== "string") return;
 
-        if (!line.startsWith("info")) return;
+        if (msg.includes(`info depth ${this.depth}`)) {
+          const multipvMatch = msg.match(/multipv (\d+)/);
+          const scoreMatch = msg.match(/score (cp|mate) (-?\d+)/);
+          const pvMatch = msg.match(/pv ([a-h][1-8][a-h][1-8][qrbn]?)/);
 
-        const parts = line.split(" ");
+          if (multipvMatch && scoreMatch && pvMatch) {
+            const multipv = parseInt(multipvMatch[1], 10);
+            const scoreType = scoreMatch[1];
+            let scoreValueRaw = parseInt(scoreMatch[2], 10);
 
-        const mpvIndex = parts.indexOf("multipv");
-        if (mpvIndex === -1) return;
+            if (sideToMove === "b") {
+              scoreValueRaw = -scoreValueRaw;
+            }
 
-        const pvIndex = parts.indexOf("pv");
-        if (pvIndex === -1) return;
+            const bestMove = pvMatch[1]; // best Move
+            let score;
+            if (scoreType === "cp") {
+              const value = +(scoreValueRaw / 100).toFixed(2);
+              score = value > 0 ? `+${value}` : `${value}`;
+            } else if (scoreType === "mate") {
+              score =
+                scoreValueRaw > 0
+                  ? `#${scoreValueRaw}`
+                  : `#-${Math.abs(scoreValueRaw)}`;
+            }
 
-        const move = parts[pvIndex + 1];
-        if (!move || move.length < 4) return;
+            const from = bestMove.slice(0, 2);
+            const to = bestMove.slice(2, 4);
 
-        if (seen.has(move)) return;
-        seen.add(move);
+            multipvResults.set(multipv, {
+              from,
+              to,
+              eval: score,
+              fen: fen,
+              side: side,
+            });
+          }
+        }
 
-        const rawScore = this.parseScore(parts, sideToMove);
-
-        results.push({
-          from: move.slice(0, 2),
-          to: move.slice(2, 4),
-          eval:
-            rawScore?.type === "mate"
-              ? `#${rawScore.value}`
-              : rawScore
-              ? rawScore.value > 0
-                ? `+${rawScore.value.toFixed(2)}`
-                : rawScore.value.toFixed(2)
-              : null,
-          rawScore,
-          fen,
-          side,
-        });
-
-        // IMPORTANT : on resolve dès qu'on a assez de lignes
-        if (results.length >= this.multipv) {
+        if (msg.startsWith("bestmove")) {
           this.worker.removeEventListener("message", onMessage);
-          resolve(this.sortMoves(results, side));
+          resolve(
+            Array.from(multipvResults.entries())
+              .sort(([a], [b]) => a - b)
+              .map(([_, val]) => val)
+          );
         }
       };
 
       this.worker.addEventListener("message", onMessage);
-
       this.worker.postMessage(`position fen ${fen}`);
-      this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
-      this.worker.postMessage(`go depth ${this.depth}`);
+      this.worker.postMessage("stop");
+      this.worker.postMessage(`go depth ${config.depth}`);
     });
   }
 }
