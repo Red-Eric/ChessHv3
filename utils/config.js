@@ -17,4 +17,13 @@ let config = {
   onlyShowEval: false,
   key: "a",
   key2: "z",
+
+  // special stockfish 6
+  st6_mobilityMid: 100,
+  st6_mobilityEnd: 100,
+  st6_pawnStructureMid: 100,
+  st6_pawnStructureEnd: 100,
+  st6_passedPawnsMid: 100,
+  st6_passedPawnsEnd: 100,
+  st6_kingSafety: 100,
 };

@@ -1294,9 +1294,6 @@
     console.log(moves)
   })
 
-
-
-
   // engine.postMessage("uci")
   // engine.postMessage("position fen r1bqkbnr/pppn1ppp/3p4/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 2 4")
   // engine.postMessage("setoption name MultiPV value 5")
