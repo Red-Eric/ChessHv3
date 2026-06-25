@@ -10,7 +10,6 @@ async function loadWorkerScript(path) {
   return patched;
 }
 
-
 async function createWorkerStockfish6() {
   const code = await loadWorkerScript("lib/stockfish6.js");
 
@@ -20,7 +19,6 @@ async function createWorkerStockfish6() {
 
   return new Worker(URL.createObjectURL(blob));
 }
-
 
 async function createWorkerStockfish11() {
   const code = await loadWorkerScript("lib/stockfish11.js");
@@ -358,29 +356,7 @@ class CoachEngine {
 }
 
 class Stockfish6 {
-  constructor({
-    mobilityMid = 100,
-    mobilityEnd = 100,
-    pawnStructureMid = 100,
-    pawnStructureEnd = 100,
-    passedPawnsMid = 100,
-    passedPawnsEnd = 100,
-    kingSafety = 100,
-    multipv = config.lines,
-    depth = config.depth,
-  } = {}) {
-    this.mobilityMid = mobilityMid;
-    this.mobilityEnd = mobilityEnd;
-    this.pawnStructureMid = pawnStructureMid;
-    this.pawnStructureEnd = pawnStructureEnd;
-    this.pawnStructureEnd = pawnStructureEnd;
-    this.passedPawnsMid = passedPawnsMid;
-    this.passedPawnsEnd = passedPawnsEnd;
-    this.kingSafety = kingSafety;
-
-    this.multipv = multipv;
-    this.depth = depth;
-
+  constructor() {
     this.ready = this.init();
   }
 
@@ -391,32 +367,28 @@ class Stockfish6 {
   }
 
   setOptions() {
-    this.worker.postMessage(
-      `setoption name Mobility (Midgame) value ${this.mobilityMid}`,
-    );
-    this.worker.postMessage(
-      `setoption name Mobility (Endgame) value ${this.mobilityEnd}`,
-    );
-
-    this.worker.postMessage(
-      `setoption name Pawn Structure (Midgame) value ${this.pawnStructureMid}`,
-    );
-    this.worker.postMessage(
-      `setoption name Pawn Structure (Endgame) value ${this.pawnStructureEnd}`,
-    );
-
-    this.worker.postMessage(
-      `setoption name Passed Pawns (Midgame) value ${this.passedPawnsMid}`,
-    );
-    this.worker.postMessage(
-      `setoption name Passed Pawns (Endgame) value ${this.passedPawnsEnd}`,
-    );
-
-    this.worker.postMessage(
-      `setoption name King Safety value ${this.kingSafety}`,
-    );
-
-    this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
+    // this.worker.postMessage(
+    //   `setoption name Mobility (Midgame) value ${this.mobilityMid}`,
+    // );
+    // this.worker.postMessage(
+    //   `setoption name Mobility (Endgame) value ${this.mobilityEnd}`,
+    // );
+    // this.worker.postMessage(
+    //   `setoption name Pawn Structure (Midgame) value ${this.pawnStructureMid}`,
+    // );
+    // this.worker.postMessage(
+    //   `setoption name Pawn Structure (Endgame) value ${this.pawnStructureEnd}`,
+    // );
+    // this.worker.postMessage(
+    //   `setoption name Passed Pawns (Midgame) value ${this.passedPawnsMid}`,
+    // );
+    // this.worker.postMessage(
+    //   `setoption name Passed Pawns (Endgame) value ${this.passedPawnsEnd}`,
+    // );
+    // this.worker.postMessage(
+    //   `setoption name King Safety value ${this.kingSafety}`,
+    // );
+    // this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
   }
 
   updateConfig(cfg = {}) {
@@ -445,6 +417,34 @@ class Stockfish6 {
 
   async getMovesByFen(fen, side) {
     await this.ready;
+
+    this.worker.postMessage(
+      `setoption name Mobility (Midgame) value ${config.st6_mobilityMid}`,
+    );
+    this.worker.postMessage(
+      `setoption name Mobility (Endgame) value ${config.st6_mobilityEnd}`,
+    );
+
+    this.worker.postMessage(
+      `setoption name Pawn Structure (Midgame) value ${config.st6_pawnStructureMid}`,
+    );
+    this.worker.postMessage(
+      `setoption name Pawn Structure (Endgame) value ${config.st6_pawnStructureEnd}`,
+    );
+
+    this.worker.postMessage(
+      `setoption name Passed Pawns (Midgame) value ${config.st6_passedPawnsMid}`,
+    );
+    this.worker.postMessage(
+      `setoption name Passed Pawns (Endgame) value ${config.st6_passedPawnsEnd}`,
+    );
+
+    this.worker.postMessage(
+      `setoption name King Safety value ${config.st6_kingSafety}`,
+    );
+
+    this.worker.postMessage(`setoption name MultiPV value ${config.lines}`);
+
     const results = [];
     const infoLines = [];
     const seenMoves = new Set();
@@ -524,7 +524,7 @@ class Stockfish6 {
 
       this.worker.addEventListener("message", onMessage);
 
-    this.worker.postMessage(`setoption name MultiPV value ${config.lines}`);
+      this.worker.postMessage(`setoption name MultiPV value ${config.lines}`);
 
       this.worker.postMessage("stop");
       this.worker.postMessage(`position fen ${fen}`);
@@ -532,7 +532,6 @@ class Stockfish6 {
     });
   }
 }
-
 
 class Stockfish11 {
   constructor() {
@@ -550,7 +549,6 @@ class Stockfish11 {
   setOptions() {
     this.worker.postMessage(`setoption name MultiPV value ${config.lines}`);
     this.worker.postMessage("setoption name Ponder value false");
-
   }
 
   updateConfig({ elo, depth, multipv, threads, hash, style }) {
@@ -565,7 +563,6 @@ class Stockfish11 {
 
   async getMovesByFen(fen, side = "white") {
     await this.ready;
-
 
     this.worker.postMessage(`setoption name MultiPV value ${config.lines}`);
     this.worker.postMessage("setoption name Ponder value false");
@@ -625,7 +622,7 @@ class Stockfish11 {
           resolve(
             Array.from(multipvResults.entries())
               .sort(([a], [b]) => a - b)
-              .map(([_, val]) => val)
+              .map(([_, val]) => val),
           );
         }
       };
