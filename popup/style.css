@@ -384,26 +384,135 @@ h2 {
 input:focus, select:focus { outline: none; border-color: var(--olive-vivid); box-shadow: 0 0 0 3px var(--olive-glow); }
 .setting span.active { color: var(--olive-vivid); font-weight: 700; }
 
+
 /* ================= RESPONSIVE ================= */
-@media (max-width: 768px) {
-  .tabs { padding: 16px 12px 0; gap: 2px; overflow-x: auto; justify-content: flex-start; }
-  .tab { padding: 10px 20px; font-size: 11px; }
-  .panel { margin: 0 12px 40px; padding: 24px 20px; }
-  .setting input[type="range"] { width: 50%; }
-  .coach-avatar, .coach-avatar-none { width: 48px; height: 48px; }
+
+/* Panels: padding réduit sur mobile */
+@media (max-width: 600px) {
+  .tabs {
+    padding: 16px 0 0;
+    gap: 0;
+  }
+
+  .tab {
+    padding: 10px 18px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    flex: 1;
+    text-align: center;
+  }
+
+  .panel {
+    padding: 20px 16px;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  h1 {
+    font-size: 13px;
+    letter-spacing: 2px;
+  }
+
+  /* Settings row : passe en colonne sur très petit écran */
+  .setting {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+
+  .setting label,
+  .setting > span {
+    font-size: 13px;
+    white-space: normal;
+  }
+
+  /* Slider prend toute la largeur */
+  .setting input[type="range"] {
+    width: 100%;
+    order: 3;
+  }
+
+  /* Select prend toute la largeur */
+  .setting select {
+    width: 100%;
+  }
+
+  /* Coach card */
+  .coach-card-inner {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 14px;
+  }
+
+  .coach-select-wrap {
+    width: 100%;
+  }
+
+  .coach-select-wrap select {
+    width: 100%;
+  }
+
+  /* Color row : wrap si trop serré */
+  .color-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .color-item {
+    min-width: 48px;
+  }
+
+  .color-item input[type="color"] {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* Buttons */
+  .bottom-actions {
+    padding-top: 16px;
+    gap: 10px;
+  }
+
+  .btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .action-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .action-row .btn {
+    width: 100%;
+  }
+
+  .load-feedback {
+    text-align: center;
+  }
+
+  .load-textarea,
+  .export-output {
+    min-height: 140px;
+  }
+
+  #coach-container {
+    padding: 8px;
+  }
 }
 
-@media (max-width: 480px) {
-  .tab { padding: 9px 14px; font-size: 10px; }
-  .panel { margin: 0 8px 32px; padding: 18px 14px; }
-  .setting { flex-wrap: wrap; gap: 10px; padding: 12px; }
-  .setting label, .setting > span:first-child { width: 100%; white-space: normal; }
-  .setting input[type="range"] { width: 100%; }
-  .setting select { width: 100%; }
-  .color-row { flex-wrap: wrap; }
-  .color-item { flex: 0 0 calc(33.33% - 8px); }
-  .action-row { flex-direction: column; align-items: stretch; }
-  .btn { width: 100%; text-align: center; }
-  .coach-card-inner { flex-wrap: wrap; }
-  .coach-select-wrap select { width: 100%; }
+/* Intermédiaire : tablette */
+@media (min-width: 601px) and (max-width: 760px) {
+  .panel {
+    padding: 24px 20px;
+  }
+
+  .setting input[type="range"] {
+    width: 48%;
+  }
+
+  .tab {
+    padding: 10px 24px;
+  }
 }

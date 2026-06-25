@@ -1,5 +1,9 @@
 importScripts("./lib/chess_min.js");
 
+chrome.action.onClicked.addListener(() => {
+  chrome.tabs.create({ url: chrome.runtime.getURL("popup/index.html") });
+});
+
 function getStartFEN(fen) {
   const board = fen.split(" ")[0];
   const rows = board.split("/");
@@ -9,6 +13,7 @@ function getStartFEN(fen) {
 
   return `${blackBackRank}/pppppppp/8/8/8/8/PPPPPPPP/${whiteBackRank} w KQkq - 0 1`;
 }
+
 
 const game = Chess();
 

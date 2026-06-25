@@ -4,10 +4,32 @@ async function loadWorkerScript(path) {
   const code = await res.text();
   const patched = code.replaceAll(
     'const EXTENSION_ID = "chesshV3ID"',
-    `const EXTENSION_ID = "${chrome.runtime.id}"`
+    `const EXTENSION_ID = "${chrome.runtime.id}"`,
   );
 
   return patched;
+}
+
+
+async function createWorkerStockfish6() {
+  const code = await loadWorkerScript("lib/stockfish6.js");
+
+  const blob = new Blob([code], {
+    type: "application/javascript",
+  });
+
+  return new Worker(URL.createObjectURL(blob));
+}
+
+
+async function createWorkerStockfish11() {
+  const code = await loadWorkerScript("lib/stockfish11.js");
+
+  const blob = new Blob([code], {
+    type: "application/javascript",
+  });
+
+  return new Worker(URL.createObjectURL(blob));
 }
 
 // create webworker for komodo
@@ -331,6 +353,326 @@ class CoachEngine {
 
       this.send(movesString);
       this.send("fetch analysis");
+    });
+  }
+}
+
+class Stockfish6 {
+  constructor({
+    mobilityMid = 100,
+    mobilityEnd = 100,
+    pawnStructureMid = 100,
+    pawnStructureEnd = 100,
+    passedPawnsMid = 100,
+    passedPawnsEnd = 100,
+    kingSafety = 100,
+    multipv = config.lines,
+    depth = config.depth,
+  } = {}) {
+    this.mobilityMid = mobilityMid;
+    this.mobilityEnd = mobilityEnd;
+    this.pawnStructureMid = pawnStructureMid;
+    this.pawnStructureEnd = pawnStructureEnd;
+    this.pawnStructureEnd = pawnStructureEnd;
+    this.passedPawnsMid = passedPawnsMid;
+    this.passedPawnsEnd = passedPawnsEnd;
+    this.kingSafety = kingSafety;
+
+    this.multipv = multipv;
+    this.depth = depth;
+
+    this.ready = this.init();
+  }
+
+  async init() {
+    this.worker = await createWorkerStockfish6();
+    this.worker.postMessage("uci");
+    this.setOptions();
+  }
+
+  setOptions() {
+    this.worker.postMessage(
+      `setoption name Mobility (Midgame) value ${this.mobilityMid}`,
+    );
+    this.worker.postMessage(
+      `setoption name Mobility (Endgame) value ${this.mobilityEnd}`,
+    );
+
+    this.worker.postMessage(
+      `setoption name Pawn Structure (Midgame) value ${this.pawnStructureMid}`,
+    );
+    this.worker.postMessage(
+      `setoption name Pawn Structure (Endgame) value ${this.pawnStructureEnd}`,
+    );
+
+    this.worker.postMessage(
+      `setoption name Passed Pawns (Midgame) value ${this.passedPawnsMid}`,
+    );
+    this.worker.postMessage(
+      `setoption name Passed Pawns (Endgame) value ${this.passedPawnsEnd}`,
+    );
+
+    this.worker.postMessage(
+      `setoption name King Safety value ${this.kingSafety}`,
+    );
+
+    this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
+  }
+
+  updateConfig(cfg = {}) {
+    Object.assign(this, cfg);
+    this.setOptions();
+  }
+
+  hardStop() {
+    if (this.worker) {
+      this.worker.terminate();
+      this.worker = null;
+    }
+  }
+
+  quit() {
+    this.hardStop();
+    this.worker?.postMessage("quit");
+  }
+
+  async restartWorker() {
+    this.hardStop();
+    this.worker = await createWorkerStockfish6();
+    this.worker.postMessage("uci");
+    this.setOptions();
+  }
+
+  async getMovesByFen(fen, side) {
+    await this.ready;
+    const results = [];
+    const infoLines = [];
+    const seenMoves = new Set();
+    let lastDepth = 0;
+    const sideToMove = fen.split(" ")[1];
+
+    return new Promise((resolve) => {
+      const onMessage = (event) => {
+        const line = event.data;
+        if (typeof line !== "string") return;
+
+        if (line.startsWith("info")) {
+          infoLines.push(line);
+
+          const parts = line.split(" ");
+          const depthIndex = parts.indexOf("depth");
+          if (depthIndex !== -1) {
+            const d = parseInt(parts[depthIndex + 1], 10);
+            if (!isNaN(d)) lastDepth = d;
+          }
+          return;
+        }
+
+        if (line.startsWith("bestmove")) {
+          this.worker.removeEventListener("message", onMessage);
+
+          for (const infoLine of infoLines) {
+            if (!infoLine.includes("multipv") || !infoLine.includes(" pv "))
+              continue;
+            if (!infoLine.includes(`depth ${lastDepth}`)) continue;
+
+            const parts = infoLine.split(" ");
+
+            const mpvIndex = parts.indexOf("multipv");
+            const mpv = mpvIndex !== -1 ? parseInt(parts[mpvIndex + 1], 10) : 1;
+            if (mpv > this.multipv) continue;
+
+            let evalScore = null;
+            const scoreIndex = parts.indexOf("score");
+            if (scoreIndex !== -1) {
+              const type = parts[scoreIndex + 1];
+              let value = parseInt(parts[scoreIndex + 2], 10);
+
+              if (!isNaN(value)) {
+                if (sideToMove === "b") value = -value;
+
+                if (type === "cp") {
+                  const v = (value / 100).toFixed(2);
+                  evalScore = value >= 0 ? `+${v}` : `${v}`;
+                } else if (type === "mate") {
+                  evalScore = `#${value}`;
+                }
+              }
+            }
+
+            const pvIndex = parts.indexOf("pv");
+            if (pvIndex !== -1 && parts[pvIndex + 1]) {
+              const move = parts[pvIndex + 1];
+
+              if (move.length >= 4 && !seenMoves.has(move)) {
+                seenMoves.add(move);
+
+                results.push({
+                  from: move.slice(0, 2),
+                  to: move.slice(2, 4),
+                  eval: evalScore,
+                  fen,
+                  side,
+                });
+              }
+            }
+          }
+
+          resolve(results);
+        }
+      };
+
+      this.worker.addEventListener("message", onMessage);
+
+    this.worker.postMessage(`setoption name MultiPV value ${config.lines}`);
+
+      this.worker.postMessage("stop");
+      this.worker.postMessage(`position fen ${fen}`);
+      this.worker.postMessage(`go depth ${config.depth}`);
+    });
+  }
+}
+
+class Stockfish11 {
+  constructor({ multipv = config.lines, depth = config.depth } = {}) {
+    this.multipv = multipv;
+    this.depth = depth;
+    this.ready = this.init();
+  }
+
+  async init() {
+    this.worker = await createWorkerStockfish11();
+    this.worker.postMessage("uci");
+    this.setOptions();
+  }
+
+  setOptions() {
+    this.worker.postMessage(
+      `setoption name MultiPV value ${this.multipv}`
+    );
+  }
+
+  updateConfig(cfg = {}) {
+    Object.assign(this, cfg);
+    this.setOptions();
+  }
+
+  hardStop() {
+    if (this.worker) {
+      this.worker.terminate();
+      this.worker = null;
+    }
+  }
+
+  quit() {
+    this.hardStop();
+    this.worker?.postMessage("quit");
+  }
+
+  async restartWorker() {
+    this.hardStop();
+    this.worker = await createWorkerStockfish11();
+    this.worker.postMessage("uci");
+    this.setOptions();
+  }
+
+  parseScore(parts, sideToMove) {
+    const scoreIndex = parts.indexOf("score");
+    if (scoreIndex === -1) return null;
+
+    const type = parts[scoreIndex + 1];
+    const value = parseInt(parts[scoreIndex + 2], 10);
+
+    if (isNaN(value)) return null;
+
+    if (type === "mate") {
+      return { type: "mate", value };
+    }
+
+    let cp = value;
+    if (sideToMove === "b") cp = -cp;
+
+    return { type: "cp", value: cp / 100 };
+  }
+
+  scoreToNumber(score) {
+    if (!score) return -99999;
+
+    if (score.type === "mate") {
+      return score.value > 0
+        ? 100000 - score.value
+        : -100000 - score.value;
+    }
+
+    return score.value;
+  }
+
+  sortMoves(moves, side) {
+    return moves.sort((a, b) => {
+      const A = this.scoreToNumber(a.rawScore);
+      const B = this.scoreToNumber(b.rawScore);
+      return side === "white" ? B - A : A - B;
+    });
+  }
+
+  async getMovesByFen(fen, side) {
+    await this.ready;
+
+    const results = [];
+    const seen = new Set();
+    const sideToMove = fen.split(" ")[1];
+
+    return new Promise((resolve) => {
+      const onMessage = (event) => {
+        const line = event.data;
+        if (typeof line !== "string") return;
+
+        if (!line.startsWith("info")) return;
+
+        const parts = line.split(" ");
+
+        const mpvIndex = parts.indexOf("multipv");
+        if (mpvIndex === -1) return;
+
+        const pvIndex = parts.indexOf("pv");
+        if (pvIndex === -1) return;
+
+        const move = parts[pvIndex + 1];
+        if (!move || move.length < 4) return;
+
+        if (seen.has(move)) return;
+        seen.add(move);
+
+        const rawScore = this.parseScore(parts, sideToMove);
+
+        results.push({
+          from: move.slice(0, 2),
+          to: move.slice(2, 4),
+          eval:
+            rawScore?.type === "mate"
+              ? `#${rawScore.value}`
+              : rawScore
+              ? rawScore.value > 0
+                ? `+${rawScore.value.toFixed(2)}`
+                : rawScore.value.toFixed(2)
+              : null,
+          rawScore,
+          fen,
+          side,
+        });
+
+        // IMPORTANT : on resolve dès qu'on a assez de lignes
+        if (results.length >= this.multipv) {
+          this.worker.removeEventListener("message", onMessage);
+          resolve(this.sortMoves(results, side));
+        }
+      };
+
+      this.worker.addEventListener("message", onMessage);
+
+      this.worker.postMessage(`position fen ${fen}`);
+      this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
+      this.worker.postMessage(`go depth ${this.depth}`);
     });
   }
 }

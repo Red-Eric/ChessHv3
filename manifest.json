@@ -12,7 +12,6 @@
     "service_worker": "background.js"
   },
   "action": {
-    "default_popup": "popup/index.html",
     "default_icon": {
       "16": "icons/16.png",
       "48": "icons/48.png",
@@ -69,12 +68,17 @@
         "lib/komodo.wasm",
         "lib/stockfish.wasm",
         "lib/stockfish.js",
+        "lib/stockfish6.js",
+        "lib/stockfish8.js",
+        "lib/stockfish10.js",
+        "lib/stockfish11.js",
         "lib/torch.js",
         "lib/torch.wasm",
         "dist/index.html",
         "book/book.bin",
         "book/*",
-        "audio.html"
+        "audio.html",
+        "popup/index.html"
       ],
       "matches": [
         "<all_urls>"
