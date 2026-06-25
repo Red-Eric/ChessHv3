@@ -390,6 +390,7 @@ class Stockfish6 {
     // );
     // this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
   }
+  
 
   updateConfig(cfg = {}) {
     Object.assign(this, cfg);
