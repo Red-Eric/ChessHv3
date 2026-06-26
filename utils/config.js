@@ -29,6 +29,4 @@ let config = {
   st6_passedPawnsMid: 100,
   st6_passedPawnsEnd: 100,
   st6_kingSafety: 100,
-  
-
 };
