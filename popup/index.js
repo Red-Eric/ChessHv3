@@ -430,7 +430,7 @@ const engineData = {
     label: "Stockfish 6",
     elo: "Elo non supporté",
   },
-  Stockfish11: {
+  stockfish11: {
     pic: "logo/stockfish.jpg",
     label: "Stockfish 11",
     elo: "Elo non supporté",
@@ -569,6 +569,8 @@ function updateChessUI() {
   el("coach").value = chessConfig.coach;
   el("key").value = chessConfig.key;
   el("key2").value = chessConfig.key2;
+  el("engine").value = chessConfig.engine;
+
 
   [
     "autoMove",
@@ -586,6 +588,7 @@ function updateChessUI() {
   el("depthValue").textContent = chessConfig.depth;
   el("delayValue").textContent = chessConfig.delay;
   el("depth2Value").textContent = chessConfig.depth2;
+
 
   el("st6_mobilityMidValue").textContent = chessConfig.st6_mobilityMid;
   el("st6_mobilityEndValue").textContent = chessConfig.st6_mobilityEnd;
