@@ -72,8 +72,10 @@ preInjection();
 const interval = 100;
 
 chrome.storage.local.get(["chessConfig"], (result) => {
-  console.log("config storage ", result.chessConfig);
+  // console.log("config storage ", result.chessConfig);
   config = result.chessConfig || {
+    engine: "komodo",
+
     elo: 3500,
     coach: 999,
     lines: 5,
@@ -92,6 +94,15 @@ chrome.storage.local.get(["chessConfig"], (result) => {
     onlyShowEval: false,
     key: "a",
     key2: "z",
+
+    // special stockfish 6
+    st6_mobilityMid: 100,
+    st6_mobilityEnd: 100,
+    st6_pawnStructureMid: 100,
+    st6_pawnStructureEnd: 100,
+    st6_passedPawnsMid: 100,
+    st6_passedPawnsEnd: 100,
+    st6_kingSafety: 100,
   };
 
   (() => {
@@ -483,6 +494,12 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               onCoachChanged(newConfig.coach);
             }
 
+            if (!oldConfig || oldConfig.engine !== newConfig.engine) {
+              // onCoachChanged(newConfig.coach);
+
+              location.reload(true);
+            }
+
             config = newConfig;
             engine.updateConfig(
               config.lines,
@@ -797,6 +814,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               onCoachChanged(newConfig.coach);
             }
 
+            if (!oldConfig || oldConfig.engine !== newConfig.engine) {
+              // onCoachChanged(newConfig.coach);
+              location.reload(true);
+            }
+
             config = newConfig;
             engine.updateConfig(
               config.lines,
@@ -991,7 +1013,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
         };
 
         setInterval(async () => {
-
           if (config.floatingBtn) {
             if (!document.getElementById("rederic-float-wrap")) {
               const wrap = document.createElement("div");
@@ -1158,6 +1179,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
             if (!oldConfig || oldConfig.coach !== newConfig.coach) {
               onCoachChanged(newConfig.coach);
+            }
+
+            if (!oldConfig || oldConfig.engine !== newConfig.engine) {
+              // onCoachChanged(newConfig.coach);
+              location.reload(true);
             }
 
             config = newConfig;
