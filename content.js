@@ -105,15 +105,28 @@ chrome.storage.local.get(["chessConfig"], (result) => {
     st6_kingSafety: 100,
   };
 
+  let engine = null;
+
   (() => {
-    const engine = new komodo({
-      elo: config.elo,
-      depth: config.depth,
-      multipv: config.lines,
-      threads: 2,
-      hash: 128,
-      personality: config.style,
-    });
+    if (config.engine === "komodo") {
+      engine = new komodo({
+        elo: config.elo,
+        depth: config.depth,
+        multipv: config.lines,
+        threads: 2,
+        hash: 128,
+        personality: config.style,
+      });
+    }
+    if (config.engine === "maia3") {
+      engine = new Maia3();
+    }
+    if (config.engine === "stockfish6") {
+      engine = new Stockfish6();
+    }
+    if (config.engine === "stockfish11") {
+      engine = new Stockfish11();
+    }
 
     // variable for key press Move
     let keyMove = [
@@ -501,12 +514,12 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             }
 
             config = newConfig;
-            engine.updateConfig(
-              config.lines,
-              config.depth,
-              config.style,
-              config.elo,
-            );
+            // engine.updateConfig(
+            //   config.lines,
+            //   config.depth,
+            //   config.style,
+            //   config.elo,
+            // );
 
             clearHighlightSquares();
 
@@ -820,12 +833,12 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             }
 
             config = newConfig;
-            engine.updateConfig(
-              config.lines,
-              config.depth,
-              config.style,
-              config.elo,
-            );
+            // engine.updateConfig(
+            //   config.lines,
+            //   config.depth,
+            //   config.style,
+            //   config.elo,
+            // );
 
             clearHighlightSquares();
             if (
@@ -1187,12 +1200,12 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             }
 
             config = newConfig;
-            engine.updateConfig(
-              config.lines,
-              config.depth,
-              config.style,
-              config.elo,
-            );
+            // engine.updateConfig(
+            //   config.lines,
+            //   config.depth,
+            //   config.style,
+            //   config.elo,
+            // );
 
             clearHighlightSquares();
             if (

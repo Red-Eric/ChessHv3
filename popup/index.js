@@ -424,7 +424,7 @@ const infoCoach = [
 
 const engineData = {
   komodo: { pic: "logo/komodo.jpg", label: "Komodo", elo: "3500 Elo" },
-  maia3: { pic: "logo/maia.jpg", label: "Maia 3", elo: "2600 Elo" },
+  maia3: { pic: "logo/maia_ios.png", label: "Maia 3", elo: "2600 Elo" },
   stockfish6: {
     pic: "logo/stockfish.jpg",
     label: "Stockfish 6",
