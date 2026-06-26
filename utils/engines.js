@@ -635,3 +635,161 @@ class Stockfish11 {
     });
   }
 }
+
+
+
+async function createWorkerMaia3() {
+  const code = await loadWorkerScript("lib/maia3/maia3-worker.js");
+  const blob = new Blob([code], { type: "application/javascript" });
+  return new Worker(URL.createObjectURL(blob));
+}
+
+function ordinal(n) {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+
+  return n + (
+    s[(v - 20) % 10] || s[v] || s[0]
+  );
+}
+
+class Maia3 {
+  constructor(selfElo = 1500, oppoElo = 1500) {
+    this.selfElo = selfElo;
+    this.oppoElo = oppoElo;
+    this.topN = 5;
+    this._inferenceId = 0;
+    this._resolvers = {};
+    this.ready = this.init();
+  }
+
+  async init() {
+    // Worker
+    this.worker = await createWorkerMaia3();
+
+    // ORT blob URL
+    const ortResp = await fetch(chrome.runtime.getURL("lib/ort/ort.min.js"));
+    const ortText = await ortResp.text();
+    const ortBlob = new Blob([ortText], { type: "application/javascript" });
+    const ortRuntimeUrl = URL.createObjectURL(ortBlob);
+
+    // all_moves cache
+    const r = await fetch(chrome.runtime.getURL("lib/maia3/all_moves.json"));
+    this._allMoves = await r.json();
+    this._allMovesDict = {};
+    this._allMoves.forEach((m, i) => (this._allMovesDict[m] = i));
+
+    // Message handler permanent
+    this.worker.addEventListener("message", (e) => {
+      const msg = e.data;
+
+      if (msg.type === "inference-result") {
+        const resolve = this._resolvers[msg.id];
+        if (resolve) {
+          resolve(new Float32Array(msg.logitsMove));
+          delete this._resolvers[msg.id];
+        }
+      }
+
+      if (msg.type === "error" && msg.id != null) {
+        const resolve = this._resolvers[msg.id];
+        if (resolve) {
+          resolve(null);
+          delete this._resolvers[msg.id];
+        }
+      }
+    });
+
+    // Init worker engine
+    await new Promise((resolve, reject) => {
+      const onMsg = (e) => {
+        if (e.data.type === "status" && e.data.status === "ready") {
+          this.worker.removeEventListener("message", onMsg);
+          resolve();
+        }
+        if (e.data.type === "error" && e.data.id == null) {
+          this.worker.removeEventListener("message", onMsg);
+          reject(new Error(e.data.message));
+        }
+      };
+      this.worker.addEventListener("message", onMsg);
+
+      this.worker.postMessage({
+        type: "init",
+        modelUrl: chrome.runtime.getURL("lib/maia3/maia3-5m.onnx"),
+        ortBaseUrl: chrome.runtime.getURL("lib/ort/"),
+        ortRuntimeUrl: ortRuntimeUrl,
+      });
+    });
+  }
+
+  async getMovesByFen(fen) {
+    await this.ready;
+
+    const turn = fen.split(" ")[1];
+
+    // Tokenize
+    const boardTokens = tokenizeBoard(fen);
+    const tokenFlat = getHistoricalTokens([boardTokens], {
+      history: 8,
+      include_time_info: false,
+    });
+
+    // Inference
+    const id = ++this._inferenceId;
+    const buf = tokenFlat.buffer.slice(0);
+
+    const logits = await new Promise((resolve) => {
+      this._resolvers[id] = resolve;
+      this.worker.postMessage(
+        {
+          type: "inference",
+          id,
+          tokens: buf,
+          eloSelfs: [config.elo2],
+          eloOppos: [config.elo2],
+          batchSize: 1,
+        },
+        [buf],
+      );
+    });
+
+    if (!logits) throw new Error("Inference échouée");
+
+    // Mask + softmax
+    const mask = getLegalMovesMask(fen, this._allMovesDict, turn);
+    const masked = new Float32Array(4352);
+    for (let i = 0; i < 4352; i++) masked[i] = mask[i] ? logits[i] : -Infinity;
+
+    const finiteVals = masked.filter((v) => isFinite(v));
+    const maxL = Math.max(...finiteVals);
+    let expSum = 0;
+    const probs = new Float32Array(4352);
+    for (let i = 0; i < 4352; i++) {
+      if (mask[i]) {
+        probs[i] = Math.exp(masked[i] - maxL);
+        expSum += probs[i];
+      }
+    }
+    for (let i = 0; i < 4352; i++) probs[i] /= expSum;
+
+    const indexed = [];
+    for (let i = 0; i < 4352; i++) {
+      if (mask[i]) indexed.push({ idx: i, prob: probs[i] });
+    }
+    indexed.sort((a, b) => b.prob - a.prob);
+
+    return indexed.slice(0, config.lines).map(({ idx, prob }, rank) => {
+      const uci = indexToUci(idx, this._allMoves, turn);
+      const from = uci.slice(0, 2);
+      const to = uci.slice(2, 4);
+      return {
+        from,
+        to,
+        eval: ordinal(rank + 1),
+        fen,
+        rank: rank + 1,
+      };
+    });
+  }
+}

@@ -169,7 +169,51 @@
         </div>
 
         <!-- ENGINE -->
+        <!-- #region engine -->
         <div class="section-divider"><span>Engine</span></div>
+
+        <div class="coach-card" id="engine-card-wrap">
+          <div class="coach-card-inner">
+            <div class="coach-avatar-wrap" id="engineAvatarWrap">
+              <div class="coach-avatar-none" id="engineAvatarNone">⚙</div>
+              <img
+                class="coach-avatar"
+                id="engineAvatarImg"
+                src=""
+                alt=""
+                style="display: none"
+              />
+              <div
+                class="coach-avatar-badge"
+                id="engineBadge"
+                style="display: none"
+              >
+                🔩
+              </div>
+            </div>
+            <div class="coach-info">
+              <div class="coach-name-none" id="engineDisplayName">
+                No Engine
+              </div>
+              <div class="coach-lang" id="engineDisplayLang">
+                Select an engine to get started
+              </div>
+            </div>
+            <div class="coach-select-wrap">
+              <select id="engine">
+                <option selected value="None">None</option>
+                <optgroup label="Elo Supported">
+                  <option value="komodo">Komodo (3500)</option>
+                  <option value="maia3">Maia 3 (2600)</option>
+                </optgroup>
+                <optgroup label="Elo Not Supported">
+                  <option value="stockfish6">Stockfish 6</option>
+                  <option value="Stockfish11">Stockfish 11</option>
+                </optgroup>
+              </select>
+            </div>
+          </div>
+        </div>
 
         <div class="setting">
           <label
@@ -519,7 +563,7 @@
 
     <script src="chessboard/jquery-3.4.1.min.js"></script>
     <script src="chessboard/chessboard-1.0.0.js"></script>
-    
+
     <script src="index.js"></script>
   </body>
 </html>

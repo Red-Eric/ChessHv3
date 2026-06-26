@@ -48,6 +48,7 @@
       "js": [
         "alert.js",
         "lib/chess_min.js",
+        "lib/maia3/maia3-tokenizer.js",
         "utils/const.js",
         "utils/config.js",
         "utils/engines.js",
@@ -78,7 +79,24 @@
         "book/book.bin",
         "book/*",
         "audio.html",
-        "popup/index.html"
+        "popup/index.html",
+        
+        "lib/maia3/all_moves.json",
+        "lib/maia3/all_moves_reversed.json",
+        "lib/maia3/maia3-5m.onnx",
+        "lib/maia3/maia3-engine.js",
+        "lib/maia3/maia3-tokenizer.js",
+        "lib/maia3/maia3-worker.js",
+
+        "lib/ort/ort-wasm-simd-threaded.wasm",
+        "lib/ort/ort-wasm-simd.wasm",
+        "lib/ort/ort-wasm-threaded.js",
+        "lib/ort/ort-wasm-threaded.wasm",
+        "lib/ort/ort-wasm-threaded.worker.js",
+        "lib/ort/ort-wasm.wasm",
+        "lib/ort/ort.min.js",
+        "lib/ort/ort.wasm.min.js"
+        
       ],
       "matches": [
         "<all_urls>"
