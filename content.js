@@ -1273,11 +1273,12 @@
 // });
 
 
-const maia = new Maia3(1500, 1500);
+
 
 (async () => {
-  const moves = await maia.getMovesByFen(
-    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1",
-  );
-  console.log(moves);
+  const engine = await createWorkerStockfish6()
+
+  engine.onmessage = (e => console.log(e.data))
+
+  engine.postMessage("uci")
 })();

@@ -29,7 +29,6 @@ let config = {
   st6_passedPawnsMid: 100,
   st6_passedPawnsEnd: 100,
   st6_kingSafety: 100,
+  
 
-  // maia3
-  elo2 : 2600
 };

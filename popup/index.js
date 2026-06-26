@@ -2,6 +2,51 @@ document.addEventListener("DOMContentLoaded", () => {
   chrome?.runtime?.sendMessage({ type: "popupReady" });
 });
 
+function hideAllSetting() {
+  document.getElementById("main").style.display = "none";
+}
+
+function showAllSetting() {
+  document.getElementById("main").style.display = "";
+}
+
+function hideEngineSettings() {
+  showAllSetting();
+  document
+    .querySelectorAll(".komodo, .maia3, .stockfish6, .stockfish11")
+    .forEach((el) => {
+      el.style.display = "none";
+    });
+}
+
+function showKomodoSetting() {
+  hideEngineSettings();
+  document.querySelectorAll(".komodo").forEach((el) => {
+    el.style.display = "";
+  });
+}
+
+function showMaiaSetting() {
+  hideEngineSettings();
+  document.querySelectorAll(".maia3").forEach((el) => {
+    el.style.display = "";
+  });
+}
+
+function showStockfish6Setting() {
+  hideEngineSettings();
+  document.querySelectorAll(".stockfish6").forEach((el) => {
+    el.style.display = "";
+  });
+}
+
+function showStockfish11Setting() {
+  hideEngineSettings();
+  document.querySelectorAll(".stockfish11").forEach((el) => {
+    el.style.display = "";
+  });
+}
+
 /* ================= TABS ================= */
 document.querySelectorAll(".tab").forEach((tab) => {
   tab.onclick = () => {
@@ -228,9 +273,6 @@ const defaultChessConfig = {
   st6_passedPawnsMid: 100,
   st6_passedPawnsEnd: 100,
   st6_kingSafety: 100,
-
-  // maia3
-  elo2: 2600,
 };
 
 const infoCoach = [
@@ -381,43 +423,51 @@ const infoCoach = [
 ];
 
 const engineData = {
-  komodo:   { pic: "logo/komodo.jpg",    label: "Komodo",     elo: "3500 Elo" },
-  maia3:    { pic: "logo/maia.jpg",      label: "Maia 3",     elo: "2600 Elo" },
-  stockfish6:  { pic: "logo/stockfish.jpg", label: "Stockfish 6",  elo: "Elo non supporté" },
-  Stockfish11: { pic: "logo/stockfish.jpg", label: "Stockfish 11", elo: "Elo non supporté" },
+  komodo: { pic: "logo/komodo.jpg", label: "Komodo", elo: "3500 Elo" },
+  maia3: { pic: "logo/maia.jpg", label: "Maia 3", elo: "2600 Elo" },
+  stockfish6: {
+    pic: "logo/stockfish.jpg",
+    label: "Stockfish 6",
+    elo: "Elo non supporté",
+  },
+  Stockfish11: {
+    pic: "logo/stockfish.jpg",
+    label: "Stockfish 11",
+    elo: "Elo non supporté",
+  },
 };
 
 function updateEngineAvatar(engineId) {
-  const none   = document.getElementById("engineAvatarNone");
-  const img    = document.getElementById("engineAvatarImg");
-  const badge  = document.getElementById("engineBadge");
+  const none = document.getElementById("engineAvatarNone");
+  const img = document.getElementById("engineAvatarImg");
+  const badge = document.getElementById("engineBadge");
   const nameEl = document.getElementById("engineDisplayName");
   const langEl = document.getElementById("engineDisplayLang");
 
   if (engineId === "None" || !engineId) {
-    none.style.display  = "flex";
-    img.style.display   = "none";
+    none.style.display = "flex";
+    img.style.display = "none";
     badge.style.display = "none";
-    nameEl.className    = "coach-name-none";
-    nameEl.textContent  = "No Engine";
-    langEl.textContent  = "Select an engine to get started";
+    nameEl.className = "coach-name-none";
+    nameEl.textContent = "No Engine";
+    langEl.textContent = "Select an engine to get started";
     return;
   }
 
   const data = engineData[engineId];
   if (!data) return;
 
-  nameEl.className   = "coach-name";
+  nameEl.className = "coach-name";
   nameEl.textContent = data.label;
   langEl.textContent = data.elo;
   badge.style.display = "flex";
 
   img.src = data.pic;
   img.alt = data.label;
-  img.style.display  = "block";
+  img.style.display = "block";
   none.style.display = "none";
   img.onerror = () => {
-    img.style.display  = "none";
+    img.style.display = "none";
     none.style.display = "flex";
   };
 }
@@ -439,7 +489,10 @@ function loadChessConfig(callback) {
 }
 
 function saveChessConfig() {
-  chrome?.storage?.local?.set({ chessConfig }, () => console.log("Config saved"));
+  chrome?.storage?.local?.set({ chessConfig }, () =>
+    // console.log("Config saved"),
+    console.log(),
+  );
 }
 
 function hideExtraColorInputs(lines) {
@@ -449,14 +502,24 @@ function hideExtraColorInputs(lines) {
 }
 
 function updateChessUI() {
-  ["elo", "lines", "depth", "delay", "depth2"].forEach(
-    (k) => (el(k).value = chessConfig[k]),
-  );
+  [
+    "elo",
+    "lines",
+    "depth",
+    "delay",
+    "depth2",
+    "st6_mobilityMid",
+    "st6_mobilityEnd",
+    "st6_pawnStructureMid",
+    "st6_pawnStructureEnd",
+    "st6_passedPawnsMid",
+    "st6_passedPawnsEnd",
+    "st6_kingSafety",
+  ].forEach((k) => (el(k).value = chessConfig[k]));
   el("style").value = chessConfig.style;
   el("coach").value = chessConfig.coach;
   el("key").value = chessConfig.key;
   el("key2").value = chessConfig.key2;
-  
 
   [
     "autoMove",
@@ -474,6 +537,16 @@ function updateChessUI() {
   el("depthValue").textContent = chessConfig.depth;
   el("delayValue").textContent = chessConfig.delay;
   el("depth2Value").textContent = chessConfig.depth2;
+
+  el("st6_mobilityMidValue").textContent = chessConfig.st6_mobilityMid;
+  el("st6_mobilityEndValue").textContent = chessConfig.st6_mobilityEnd;
+  el("st6_pawnStructureMidValue").textContent =
+    chessConfig.st6_pawnStructureMid;
+  el("st6_pawnStructureEndValue").textContent =
+    chessConfig.st6_pawnStructureEnd;
+  el("st6_passedPawnsMidValue").textContent = chessConfig.st6_passedPawnsMid;
+  el("st6_passedPawnsEndValue").textContent = chessConfig.st6_passedPawnsEnd;
+  el("st6_kingSafetyValue").textContent = chessConfig.st6_kingSafety;
 
   el("autoMoveLabel").textContent =
     `Auto Move (${chessConfig.autoMove ? "ON" : "OFF"})`;
@@ -498,8 +571,8 @@ function updateChessUI() {
   }
 
   if (typeof updateEngineAvatar === "function") {
-  updateEngineAvatar(chessConfig.engine);
-}
+    updateEngineAvatar(chessConfig.engine);
+  }
 
   hideExtraColorInputs(chessConfig.lines);
 }
@@ -507,7 +580,20 @@ function updateChessUI() {
 loadChessConfig(updateChessUI);
 
 /* ================= INPUT HANDLERS ================= */
-["elo", "lines", "depth", "delay", "depth2"].forEach((k) => {
+[
+  "elo",
+  "lines",
+  "depth",
+  "delay",
+  "depth2",
+  "st6_mobilityMid",
+  "st6_mobilityEnd",
+  "st6_pawnStructureMid",
+  "st6_pawnStructureEnd",
+  "st6_passedPawnsMid",
+  "st6_passedPawnsEnd",
+  "st6_kingSafety",
+].forEach((k) => {
   el(k).oninput = (e) => {
     chessConfig[k] = +e.target.value;
     updateChessUI();
@@ -554,6 +640,51 @@ el("engine").onchange = (e) => {
   chessConfig.engine = e.target.value;
   updateChessUI();
   saveChessConfig();
+
+  const val = e.target.value;
+  console.clear();
+  console.log(val);
+
+  if (val === "None") {
+    hideAllSetting();
+  } else {
+    // showingt
+    if (val === "komodo") {
+      showKomodoSetting();
+      el("elo").value = 3500;
+      el("elo").min = 100;
+      el("elo").max = 3500;
+      el("elo").step = 10;
+      el("eloValue").textContent = 3500;
+      chessConfig.elo = 3500;
+
+      updateChessUI();
+      saveChessConfig();
+    }
+    if (val === "maia3") {
+      showMaiaSetting();
+
+      el("elo").value = 2600;
+      el("elo").min = 600;
+      el("elo").max = 2600;
+      el("elo").step = 100;
+      el("eloValue").textContent = 2600;
+      chessConfig.elo = 2600;
+
+      updateChessUI();
+      saveChessConfig();
+    }
+    if (val === "stockfish6") {
+      showStockfish6Setting();
+      updateChessUI();
+      saveChessConfig();
+    }
+    if (val === "stockfish11") {
+      showStockfish11Setting();
+      updateChessUI();
+      saveChessConfig();
+    }
+  }
 };
 
 el("key").onchange = (e) => {
