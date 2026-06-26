@@ -70,6 +70,8 @@
         "lib/komodo.wasm",
         "lib/stockfish.wasm",
         "lib/stockfish.js",
+        "lib/lozza.js",
+        "lib/wukong.js",
         "lib/stockfish6.js",
         "lib/stockfish8.js",
         "lib/stockfish10.js",

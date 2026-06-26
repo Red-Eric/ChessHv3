@@ -428,13 +428,23 @@ const engineData = {
   stockfish6: {
     pic: "logo/stockfish.jpg",
     label: "Stockfish 6",
-    elo: "Elo non supporté",
+    elo: "Elo adjustment not supported",
   },
   stockfish11: {
     pic: "logo/stockfish.jpg",
     label: "Stockfish 11",
-    elo: "Elo non supporté",
+    elo: "Elo adjustment not supported",
   },
+  wukong : {
+    pic: "logo/wukong.png",
+    label: "Wukong JS",
+    elo: "Elo adjustment not supported",
+  },
+  lozza : {
+    pic: "logo/lozza.png",
+    label: "Lozza",
+    elo: "Elo adjustment not supported",
+  }
 };
 
 function updateEngineAvatar(engineId) {

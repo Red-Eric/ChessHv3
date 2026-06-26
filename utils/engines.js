@@ -390,7 +390,6 @@ class Stockfish6 {
     // );
     // this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
   }
-  
 
   updateConfig(cfg = {}) {
     Object.assign(this, cfg);
@@ -636,8 +635,6 @@ class Stockfish11 {
   }
 }
 
-
-
 async function createWorkerMaia3() {
   const code = await loadWorkerScript("lib/maia3/maia3-worker.js");
   const blob = new Blob([code], { type: "application/javascript" });
@@ -648,9 +645,7 @@ function ordinal(n) {
   const s = ["th", "st", "nd", "rd"];
   const v = n % 100;
 
-  return n + (
-    s[(v - 20) % 10] || s[v] || s[0]
-  );
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
 class Maia3 {
@@ -790,6 +785,101 @@ class Maia3 {
         fen,
         rank: rank + 1,
       };
+    });
+  }
+}
+
+class Lozza {
+  constructor() {
+    this.ready = this.init();
+  }
+
+  async init() {
+    await this.createWorker();
+  }
+
+  async createWorker() {
+    if (this.worker) this.worker.terminate();
+    const url = chrome.runtime.getURL("lib/lozza.js");
+    const blob = new Blob([`importScripts("${url}");`], {
+      type: "application/javascript",
+    });
+    const blobUrl = URL.createObjectURL(blob);
+    this.worker = new Worker(blobUrl);
+    URL.revokeObjectURL(blobUrl);
+  }
+
+  stop() {
+    if (this.worker) this.worker.terminate();
+  }
+
+  async getMovesByFen(fen, side) {
+    await this.ready;
+    await this.createWorker();
+
+    return new Promise((resolve) => {
+      const onMessage = (e) => {
+        const msg = e.data;
+        if (
+          typeof msg === "string" &&
+          msg.toLowerCase().startsWith("bestmove")
+        ) {
+          this.worker.removeEventListener("message", onMessage);
+          const moveParts = msg.split(" ")[1];
+          resolve([{ from: moveParts.slice(0, 2), to: moveParts.slice(2, 4), eval : "1st", fen : fen , side : side }]);
+          
+        }
+      };
+
+      this.worker.addEventListener("message", onMessage);
+      this.worker.postMessage(`position fen ${fen}`);
+      this.worker.postMessage(`go depth ${config.depth}`);
+    });
+  }
+}
+
+class Wukong {
+  constructor() {
+    this.ready = this.init();
+  }
+
+  async init() {
+    await this.createWorker();
+  }
+
+  async createWorker() {
+    if (this.worker) this.worker.terminate();
+    const url = chrome.runtime.getURL("lib/wukong.js");
+    const blob = new Blob([`importScripts("${url}");`], {
+      type: "application/javascript",
+    });
+    const blobUrl = URL.createObjectURL(blob);
+    this.worker = new Worker(blobUrl);
+    URL.revokeObjectURL(blobUrl);
+  }
+
+  stop() {
+    if (this.worker) this.worker.terminate();
+  }
+
+  async getMovesByFen(fen, side) {
+    await this.ready;
+    await this.createWorker();
+
+    return new Promise((resolve) => {
+      const onMessage = (e) => {
+        const { type, text } = e.data;
+        if (type === "log" && text.startsWith("Best move:")) {
+          this.worker.removeEventListener("message", onMessage);
+          resolve([{ from: text.slice(11, 13), to: text.slice(13, 15), eval : "1st",fen: fen, side : side }]);
+
+          
+        }
+      };
+
+      this.worker.addEventListener("message", onMessage);
+      this.worker.postMessage({ command: `position fen ${fen}` });
+      this.worker.postMessage({ command: `go depth ${config.depth}` });
     });
   }
 }

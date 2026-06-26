@@ -127,6 +127,12 @@ chrome.storage.local.get(["chessConfig"], (result) => {
     if (config.engine === "stockfish11") {
       engine = new Stockfish11();
     }
+    if (config.engine === "lozza") {
+      engine = new Lozza();
+    }
+    if (config.engine === "wukong") {
+      engine = new Wukong();
+    }
 
     // variable for key press Move
     let keyMove = [
