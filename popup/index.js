@@ -509,11 +509,11 @@ function applyEngineSettings(engine) {
       el("elo").min = 100;
       el("elo").max = 3500;
       el("elo").step = 10;
-      el("lines").value = 2;
+      chessConfig.lines = Math.max(chessConfig.lines, 2);
 
       el("lines").min = 2;
       el("lines").max = 5;
-
+      el("lines").value = chessConfig.lines;
 
       if (chessConfig.elo > 3500 || chessConfig.elo < 100) {
         chessConfig.elo = 3500;
@@ -526,11 +526,11 @@ function applyEngineSettings(engine) {
       el("elo").min = 600;
       el("elo").max = 2600;
       el("elo").step = 100;
-      el("lines").value = 2;
+      chessConfig.lines = Math.max(chessConfig.lines, 2);
 
       el("lines").min = 2;
       el("lines").max = 5;
-
+      el("lines").value = chessConfig.lines;
 
       if (chessConfig.elo > 2600 || chessConfig.elo < 600) {
         chessConfig.elo = 2600;
@@ -539,20 +539,23 @@ function applyEngineSettings(engine) {
 
     case "stockfish6":
       showStockfish6Setting();
-      el("lines").value = 2;
+      chessConfig.lines = Math.max(chessConfig.lines, 2);
 
       el("lines").min = 2;
       el("lines").max = 5;
+      el("lines").value = chessConfig.lines;
       break;
 
     case "stockfish11":
       showStockfish11Setting();
-      el("lines").value = 2;
+      chessConfig.lines = Math.max(chessConfig.lines, 2);
 
       el("lines").min = 2;
       el("lines").max = 5;
+      el("lines").value = chessConfig.lines;
 
       break;
+      
     case "lozza":
       showLozzaSetting();
       chessConfig.lines = 1;
