@@ -474,16 +474,65 @@ function updateEngineAvatar(engineId) {
 
 var chessConfig = { ...defaultChessConfig };
 
+function applyEngineSettings(engine) {
+  updateEngineAvatar(engine);
+
+  hideAllSetting();
+
+  switch (engine) {
+    case "komodo":
+      showKomodoSetting();
+
+      el("elo").min = 100;
+      el("elo").max = 3500;
+      el("elo").step = 10;
+
+      if (chessConfig.elo > 3500 || chessConfig.elo < 100) {
+        chessConfig.elo = 3500;
+      }
+      break;
+
+    case "maia3":
+      showMaiaSetting();
+
+      el("elo").min = 600;
+      el("elo").max = 2600;
+      el("elo").step = 100;
+
+      if (chessConfig.elo > 2600 || chessConfig.elo < 600) {
+        chessConfig.elo = 2600;
+      }
+      break;
+
+    case "stockfish6":
+      showStockfish6Setting();
+      break;
+
+    case "stockfish11":
+      showStockfish11Setting();
+      break;
+
+    case "None":
+    default:
+      break;
+  }
+
+  updateChessUI();
+}
+
 function loadChessConfig(callback) {
-  chrome?.storage?.local?.get(["chessConfig"], function (result) {
+  chrome.storage.local.get(["chessConfig"], function (result) {
     const savedConfig = result.chessConfig;
+
     chessConfig = savedConfig
       ? { ...defaultChessConfig, ...savedConfig }
       : { ...defaultChessConfig };
 
     el("coach-container").style.display =
       chessConfig.coach === 999 ? "none" : "";
-    updateChessUI();
+
+    applyEngineSettings(chessConfig.engine);
+
     if (callback) callback();
   });
 }
@@ -638,53 +687,10 @@ el("coach").onchange = (e) => {
 
 el("engine").onchange = (e) => {
   chessConfig.engine = e.target.value;
-  updateChessUI();
+
+  applyEngineSettings(chessConfig.engine);
+
   saveChessConfig();
-
-  const val = e.target.value;
-  console.clear();
-  console.log(val);
-
-  if (val === "None") {
-    hideAllSetting();
-  } else {
-    // showingt
-    if (val === "komodo") {
-      showKomodoSetting();
-      el("elo").value = 3500;
-      el("elo").min = 100;
-      el("elo").max = 3500;
-      el("elo").step = 10;
-      el("eloValue").textContent = 3500;
-      chessConfig.elo = 3500;
-
-      updateChessUI();
-      saveChessConfig();
-    }
-    if (val === "maia3") {
-      showMaiaSetting();
-
-      el("elo").value = 2600;
-      el("elo").min = 600;
-      el("elo").max = 2600;
-      el("elo").step = 100;
-      el("eloValue").textContent = 2600;
-      chessConfig.elo = 2600;
-
-      updateChessUI();
-      saveChessConfig();
-    }
-    if (val === "stockfish6") {
-      showStockfish6Setting();
-      updateChessUI();
-      saveChessConfig();
-    }
-    if (val === "stockfish11") {
-      showStockfish11Setting();
-      updateChessUI();
-      saveChessConfig();
-    }
-  }
 };
 
 el("key").onchange = (e) => {
