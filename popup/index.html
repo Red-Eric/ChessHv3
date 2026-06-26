@@ -211,7 +211,7 @@
                 <optgroup label="Elo adjustment not supported">
                   <option value="stockfish6">Stockfish 6</option>
                   <option value="stockfish11">Stockfish 11</option>
-                  <option value="lozza">Lozza </option>
+                  <option value="lozza">Lozza</option>
                   <option value="wukong">wukong</option>
                 </optgroup>
               </select>
@@ -246,7 +246,7 @@
             </div>
           </div>
 
-          <div class="komodo stockfish6 stockfish11">
+          <div class="komodo stockfish6 stockfish11 wukong lozza">
             <div class="setting">
               <label
                 >Depth :
@@ -279,8 +279,7 @@
             <div class="setting-help">
               Adjusts how much the engine values piece mobility during the
               middlegame. Higher values favor active pieces, while lower values
-              favor more solid play. 
-
+              favor more solid play.
             </div>
 
             <div class="setting">
@@ -421,18 +420,20 @@
           <!-- DISPLAY -->
           <div class="section-divider"><span>Display</span></div>
 
-          <div class="setting">
-            <label
-              >Arrows :
-              <span class="value-badge" id="linesValue">5</span></label
-            >
-            <input type="range" id="lines" min="2" max="5" value="5" />
-          </div>
-          <div class="setting-help">
-            Number of best move arrows displayed on the board.
-            <span style="color: #e74c3c; font-weight: 700">
-              5 for more move choices.</span
-            >
+          <div class="maia3 komodo stockfish11 stockfish6 wukong lozza">
+            <div class="setting">
+              <label
+                >Arrows :
+                <span class="value-badge" id="linesValue">5</span></label
+              >
+              <input type="range" id="lines" min="2" max="5" value="5" />
+            </div>
+            <div class="setting-help">
+              Number of move arrows displayed on the board.
+              <span style="color: #e74c3c; font-weight: 700">
+                5 for more move choices.</span
+              >
+            </div>
           </div>
 
           <div class="setting">

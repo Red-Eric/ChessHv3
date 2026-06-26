@@ -33,6 +33,19 @@ function showMaiaSetting() {
   });
 }
 
+function showWukongSetting() {
+  hideEngineSettings();
+  document.querySelectorAll(".wukong").forEach((el) => {
+    el.style.display = "";
+  });
+}
+function showLozzaSetting() {
+  hideEngineSettings();
+  document.querySelectorAll(".lozza").forEach((el) => {
+    el.style.display = "";
+  });
+}
+
 function showStockfish6Setting() {
   hideEngineSettings();
   document.querySelectorAll(".stockfish6").forEach((el) => {
@@ -428,23 +441,23 @@ const engineData = {
   stockfish6: {
     pic: "logo/stockfish.jpg",
     label: "Stockfish 6",
-    elo: "Elo adjustment not supported",
+    elo: "~2990 Elo",
   },
   stockfish11: {
     pic: "logo/stockfish.jpg",
     label: "Stockfish 11",
-    elo: "Elo adjustment not supported",
+    elo: "~3100 Elo",
   },
-  wukong : {
+  wukong: {
     pic: "logo/wukong.png",
     label: "Wukong JS",
-    elo: "Elo adjustment not supported",
+    elo: "~1800 Elo",
   },
-  lozza : {
+  lozza: {
     pic: "logo/lozza.png",
     label: "Lozza",
-    elo: "Elo adjustment not supported",
-  }
+    elo: "~2200 Elo",
+  },
 };
 
 function updateEngineAvatar(engineId) {
@@ -496,6 +509,11 @@ function applyEngineSettings(engine) {
       el("elo").min = 100;
       el("elo").max = 3500;
       el("elo").step = 10;
+      el("lines").value = 2;
+
+      el("lines").min = 2;
+      el("lines").max = 5;
+
 
       if (chessConfig.elo > 3500 || chessConfig.elo < 100) {
         chessConfig.elo = 3500;
@@ -508,6 +526,11 @@ function applyEngineSettings(engine) {
       el("elo").min = 600;
       el("elo").max = 2600;
       el("elo").step = 100;
+      el("lines").value = 2;
+
+      el("lines").min = 2;
+      el("lines").max = 5;
+
 
       if (chessConfig.elo > 2600 || chessConfig.elo < 600) {
         chessConfig.elo = 2600;
@@ -516,10 +539,33 @@ function applyEngineSettings(engine) {
 
     case "stockfish6":
       showStockfish6Setting();
+      el("lines").value = 2;
+
+      el("lines").min = 2;
+      el("lines").max = 5;
       break;
 
     case "stockfish11":
       showStockfish11Setting();
+      el("lines").value = 2;
+
+      el("lines").min = 2;
+      el("lines").max = 5;
+
+      break;
+    case "lozza":
+      showLozzaSetting();
+      chessConfig.lines = 1;
+      el("lines").value = 1;
+      el("lines").min = 1;
+      el("lines").max = 1;
+      break;
+    case "wukong":
+      showWukongSetting();
+      chessConfig.lines = 1;
+      el("lines").value = 1;
+      el("lines").min = 1;
+      el("lines").max = 1;
       break;
 
     case "None":
@@ -581,7 +627,6 @@ function updateChessUI() {
   el("key2").value = chessConfig.key2;
   el("engine").value = chessConfig.engine;
 
-
   [
     "autoMove",
     "winningMove",
@@ -598,7 +643,6 @@ function updateChessUI() {
   el("depthValue").textContent = chessConfig.depth;
   el("delayValue").textContent = chessConfig.delay;
   el("depth2Value").textContent = chessConfig.depth2;
-
 
   el("st6_mobilityMidValue").textContent = chessConfig.st6_mobilityMid;
   el("st6_mobilityEndValue").textContent = chessConfig.st6_mobilityEnd;
@@ -636,7 +680,13 @@ function updateChessUI() {
     updateEngineAvatar(chessConfig.engine);
   }
 
-  hideExtraColorInputs(chessConfig.lines);
+  // hideExtraColorInputs(chessConfig.lines);
+
+  if (chessConfig.engine === "lozza" || chessConfig.engine === "wukong") {
+    hideExtraColorInputs(1);
+  } else {
+    hideExtraColorInputs(chessConfig.lines);
+  }
 }
 
 loadChessConfig(updateChessUI);
