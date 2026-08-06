@@ -384,7 +384,12 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             evalObj = null;
           }
 
-          if (!document.querySelector("#customEval") && config.showEval) {
+          if (config.onlyShowEval && document.querySelector("#customEval")) {
+            document.querySelector("#customEval").remove();
+            evalObj = null;
+          }
+
+          if (!document.querySelector("#customEval") && config.showEval && !config.onlyShowEval) {
             const boardContainer = document.querySelector(".board");
             if (boardContainer) {
               evalObj = createEvalBarChessCom("0.0", getSide());
@@ -819,7 +824,13 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             evalObj = null;
           }
 
-          if (!document.querySelector("#customEval") && config.showEval) {
+
+          if (config.onlyShowEval && document.querySelector("#customEval")) {
+            document.querySelector("#customEval").remove();
+            evalObj = null;
+          }
+
+          if (!document.querySelector("#customEval") && config.showEval && !config.onlyShowEval) {
             const boardContainer = document.querySelector("cg-container");
             if (boardContainer) {
               evalObj = createEvalBarLichess("0.0", getSide());
@@ -1263,7 +1274,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             document.querySelector("#acc-widget").remove();
           }
 
-          if (!document.querySelector("#customEval") && config.showEval) {
+          if (!document.querySelector("#customEval") && config.showEval && !config.onlyShowEval) {
             const boardContainer = document.querySelector("cg-board");
             if (boardContainer) {
               evalObj = createEvalBarWorld("0.0", getSide());
@@ -1290,6 +1301,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             clearHighlights();
 
             if (!config.showEval && document.querySelector("#customEval")) {
+              document.querySelector("#customEval").remove();
+              evalObj = null;
+            }
+            if (config.onlyShowEval && document.querySelector("#customEval")) {
+              
               document.querySelector("#customEval").remove();
               evalObj = null;
             }
