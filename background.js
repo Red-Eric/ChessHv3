@@ -537,21 +537,18 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   
   if (msg.type === "FEN_UPDATE") {
 
-    console.clear()
-    console.log();
-
 
     fetch("http://127.0.0.1:5000/api/clear_hint")
       .then((response) => response.json())
       .then((data) => console.log("Réponse :", data))
       .catch((error) => console.error("Erreur :", error));
 
-    // fetch("http://127.0.0.1:5000/api/update_fen", {
-    //   method: "GET",
-    // })
-    //   .then((res) => res.json())
-    //   .then((data) => console.log(data))
-    //   .catch((err) => console.error(err));
+    fetch("http://127.0.0.1:5000/api/update_fen", {
+      method: "GET",
+    })
+      .then((res) => res.json())
+      .then((data) => console.log(data))
+      .catch((err) => console.error(err));
   }
 
   if (msg.type === "ACC") {

@@ -413,6 +413,12 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
           if (lastFEN !== fen_) {
             //accuracy
+
+            chrome.runtime.sendMessage({
+              type: "FEN_UPDATE"
+            });
+
+
             clearHint();
             lastFEN = fen_;
 
@@ -519,10 +525,8 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
             clearHighlightSquares();
             clearHighlighthints();
-            clear;
-            chrome.runtime.sendMessage({
-              type: "FEN_UPDATE"
-            });
+            
+            
 
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
@@ -581,9 +585,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
             clearHighlightSquares();
             clearHighlighthints();
-            chrome.runtime.sendMessage({
-              type: "FEN_UPDATE"
-            });
+            
 
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
@@ -735,7 +737,13 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               }
 
               if (fenTemp !== fen_) {
+
                 fen_ = fenTemp;
+                
+                chrome.runtime.sendMessage({
+              type: "FEN_UPDATE"
+            });
+
                 chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
 
                 clearHighlightSquares();
@@ -914,9 +922,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
             clearHighlightSquares();
             clearHighlighthints();
-            chrome.runtime.sendMessage({
-              type: "FEN_UPDATE"
-            });
+            
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
@@ -1259,13 +1265,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
           if (fen_ && fen_ !== currentFen) {
             currentFen = fen_;
+            chrome.runtime.sendMessage({
+              type: "FEN_UPDATE"
+            });
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
 
             clearHighlightSquares();
             clearHighlights();
-            chrome.runtime.sendMessage({
-              type: "FEN_UPDATE"
-            });
+            
 
             if (!config.showEval && document.querySelector("#customEval")) {
               document.querySelector("#customEval").remove();
@@ -1336,9 +1343,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
             clearHighlightSquares();
             clearHighlighthints();
-            chrome.runtime.sendMessage({
-              type: "FEN_UPDATE"
-            });
+            
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
