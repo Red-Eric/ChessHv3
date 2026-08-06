@@ -110,26 +110,6 @@ function placeSVGOnBoard(side, square, svgCode) {
       );
     }
 
-    // ─── BLUNDER : chute / bâtiment qui tombe ────────────────────────────────
-    if (isBlunder) {
-      svg.style.transformOrigin = "bottom center";
-
-      svg.animate(
-        [
-          { transform: "rotate(0deg)", offset: 0 },
-          { transform: "rotate(3deg)", offset: 0.3, easing: "ease-in" },
-          { transform: "rotate(7deg)", offset: 0.6, easing: "ease-in" },
-          { transform: "rotate(12deg)", offset: 0.8, easing: "ease-out" },
-          { transform: "rotate(15deg)", offset: 0.92, easing: "ease-out" },
-          { transform: "rotate(16deg)", offset: 1 },
-        ],
-        {
-          duration: 1200,
-          easing: "ease-in",
-          fill: "forwards",
-        },
-      );
-    }
   });
 
   if (window.location.host === "www.chess.com") {

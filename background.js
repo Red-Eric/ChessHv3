@@ -534,15 +534,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     return true; // Obligatoire car sendResponse est appelé plus tard
   }
-  
+
   if (msg.type === "FEN_UPDATE") {
-
-
-    fetch("http://127.0.0.1:5000/api/clear_hint")
-      .then((response) => response.json())
-      .then((data) => console.log("Réponse :", data))
-      .catch((error) => console.error("Erreur :", error));
-
     fetch("http://127.0.0.1:5000/api/update_fen", {
       method: "GET",
     })
@@ -584,5 +577,31 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       .then((response) => response.json())
       .then((data) => console.log("Réponse API:", data))
       .catch((error) => console.error("Erreur d'envoi du hint:", error));
+  }
+
+  if (msg.type === "SVG") {
+    fetch("http://127.0.0.1:5000/api/placeSVG", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        side: msg.side, // "white" ou "black"
+        square: msg.square, // La case cible (ex: "e4", "g1")
+        moveclassification: msg.moveClassification, // "brilliant", "greatFind", "best", "blunder", etc.
+      }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Erreur HTTP : ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("SVG placé avec succès :", data);
+      })
+      .catch((error) => {
+        console.error("Erreur lors de l'envoi du SVG :", error);
+      });
   }
 });

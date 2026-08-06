@@ -415,9 +415,8 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             //accuracy
 
             chrome.runtime.sendMessage({
-              type: "FEN_UPDATE"
+              type: "FEN_UPDATE",
             });
-
 
             clearHint();
             lastFEN = fen_;
@@ -454,6 +453,13 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                             result.moveLan.slice(2),
                             svg,
                           );
+
+                          chrome.runtime.sendMessage({
+                            type: "SVG",
+                            side: getSide(),
+                            square: result.moveLan.slice(2),
+                            moveClassification: result.classificationName,
+                          });
                         }
 
                         chrome.runtime.sendMessage({
@@ -513,6 +519,13 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                           result.moveLan.slice(2),
                           svg,
                         );
+
+                        chrome.runtime.sendMessage({
+                          type: "SVG",
+                          side: getSide(),
+                          square: result.moveLan.slice(2),
+                          moveClassification: result.classificationName,
+                        });
                       }
                     }
                   });
@@ -525,8 +538,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
             clearHighlightSquares();
             clearHighlighthints();
-            
-            
 
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
@@ -585,7 +596,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
             clearHighlightSquares();
             clearHighlighthints();
-            
 
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
@@ -737,12 +747,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               }
 
               if (fenTemp !== fen_) {
-
                 fen_ = fenTemp;
-                
+
                 chrome.runtime.sendMessage({
-              type: "FEN_UPDATE"
-            });
+                  type: "FEN_UPDATE",
+                });
 
                 chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
 
@@ -922,7 +931,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
             clearHighlightSquares();
             clearHighlighthints();
-            
+
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
@@ -1005,10 +1014,15 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                         getSide()[0],
                       );
 
+                      chrome.runtime.sendMessage({
+                        type: "SVG",
+                        side: getSide(),
+                        square: result.moveLan.slice(2),
+                        moveClassification: result.classificationName,
+                      });
+
                       const classification_ = result.classificationName;
-
                       const svg = classificationSVG[classification_];
-
                       placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
                     }
 
@@ -1055,6 +1069,13 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     const svg = classificationSVG[classification_];
 
                     placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
+
+                    chrome.runtime.sendMessage({
+                      type: "SVG",
+                      side: getSide(),
+                      square: result.moveLan.slice(2),
+                      moveClassification: result.classificationName,
+                    });
                   }
                 });
             }
@@ -1266,13 +1287,12 @@ chrome.storage.local.get(["chessConfig"], (result) => {
           if (fen_ && fen_ !== currentFen) {
             currentFen = fen_;
             chrome.runtime.sendMessage({
-              type: "FEN_UPDATE"
+              type: "FEN_UPDATE",
             });
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
 
             clearHighlightSquares();
             clearHighlights();
-            
 
             if (!config.showEval && document.querySelector("#customEval")) {
               document.querySelector("#customEval").remove();
@@ -1343,7 +1363,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
             clearHighlightSquares();
             clearHighlighthints();
-            
+
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
@@ -1435,6 +1455,13 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                       const classification_ = result.classificationName;
                       const svg = classificationSVG[classification_];
                       placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
+
+                      chrome.runtime.sendMessage({
+                        type: "SVG",
+                        side: getSide(),
+                        square: result.moveLan.slice(2),
+                        moveClassification: result.classificationName,
+                      });
                     }
 
                     chrome.runtime.sendMessage({
@@ -1473,6 +1500,12 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     const classification_ = result.classificationName;
                     const svg = classificationSVG[classification_];
                     placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
+                    chrome.runtime.sendMessage({
+                      type: "SVG",
+                      side: getSide(),
+                      square: result.moveLan.slice(2),
+                      moveClassification: result.classificationName,
+                    });
                   }
                 });
             }
