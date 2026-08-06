@@ -402,7 +402,10 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
           if (
             (config.coach === 999 && document.querySelector("#acc-widget")) ||
-            (config.coach === 999 && document.querySelector("#acc-widget"))
+            (config.onlyShowEval && document.querySelector("#acc-widget")) ||
+            !(
+              config.moveClassification && document.querySelector("#acc-widget")
+            )
           ) {
             statObj = null;
             document.querySelector("#acc-widget").remove();
@@ -665,7 +668,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
             if (
               (config.coach === 999 && document.querySelector("#acc-widget")) ||
-              (config.onlyShowEval && document.querySelector("#acc-widget"))
+              (config.onlyShowEval && document.querySelector("#acc-widget")) ||
+              !(
+                config.moveClassification &&
+                document.querySelector("#acc-widget")
+              )
             ) {
               statObj = null;
               document.querySelector("#acc-widget").remove();
@@ -914,7 +921,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
                   clearHighlighthints();
 
-                  if (!(result.res_data.show)) {
+                  if (!result.res_data.show) {
                     HintLichess(
                       result.res_data.from,
                       result.res_data.to,
@@ -1138,10 +1145,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
           }
 
           if (
-            config.coach === 999 &&
-            document.querySelector("#acc-widget") &&
-            config.coach === 999 &&
-            document.querySelector("#acc-widget")
+            (config.coach === 999 && document.querySelector("#acc-widget")) ||
+            (config.onlyShowEval && document.querySelector("#acc-widget")) ||
+            !(
+              config.moveClassification && document.querySelector("#acc-widget")
+            )
           ) {
             statObj = null;
             document.querySelector("#acc-widget").remove();
@@ -1293,7 +1301,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
                   clearHighlighthints();
 
-                  if (!(result.res_data.show)) {
+                  if (!result.res_data.show) {
                     HintWorldChessCom(
                       result.res_data.from,
                       result.res_data.to,
