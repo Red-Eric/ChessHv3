@@ -278,6 +278,7 @@ const defaultChessConfig = {
   onlyShowEval: false,
   key: "a",
   key2: "z",
+  hints : ["brilliant","greatFind","best","excellent","good","book","inaccuracy","mistake","miss","blunder","forced"],
 
   // special stockfish 6
   st6_mobilityMid: 100,
@@ -610,6 +611,32 @@ function hideExtraColorInputs(lines) {
   });
 }
 
+/* ================= HINTS MULTI-SELECT ================= */
+function updateHintsUI() {
+  document.querySelectorAll("#hintsContainer .hint-chip").forEach((chip) => {
+    const input = chip.querySelector('input[type="checkbox"]');
+    const checked = chessConfig.hints.includes(input.value);
+    input.checked = checked;
+    chip.classList.toggle("checked", checked);
+  });
+}
+
+document.querySelectorAll("#hintsContainer .hint-chip").forEach((chip) => {
+  const input = chip.querySelector('input[type="checkbox"]');
+  input.onchange = (e) => {
+    const value = e.target.value;
+    if (e.target.checked) {
+      if (!chessConfig.hints.includes(value)) {
+        chessConfig.hints.push(value);
+      }
+    } else {
+      chessConfig.hints = chessConfig.hints.filter((h) => h !== value);
+    }
+    updateHintsUI();
+    saveChessConfig();
+  };
+});
+
 function updateChessUI() {
   [
     "elo",
@@ -697,6 +724,8 @@ function updateChessUI() {
   }
 
   updateDelayTrack();
+
+  updateHintsUI();
 }
 
 loadChessConfig(updateChessUI);
