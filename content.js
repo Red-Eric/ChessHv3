@@ -527,11 +527,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                       if (config.moveClassification) {
                         const classification_ = result.classificationName;
                         const svg = classificationSVG[classification_];
-                        placeSVGOnBoard(
-                          getSide(),
-                          result.moveLan.slice(2),
-                          svg,
-                        );
 
                         if (config.onlyShowEval) {
                           chrome.runtime.sendMessage({
@@ -540,6 +535,12 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                             square: result.moveLan.slice(2),
                             moveClassification: result.classificationName,
                           });
+                        } else {
+                          placeSVGOnBoard(
+                            getSide(),
+                            result.moveLan.slice(2),
+                            svg,
+                          );
                         }
                       }
                     }
@@ -1095,8 +1096,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
                     const svg = classificationSVG[classification_];
 
-                    placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
-
                     if (config.onlyShowEval) {
                       chrome.runtime.sendMessage({
                         type: "SVG",
@@ -1104,6 +1103,8 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                         square: result.moveLan.slice(2),
                         moveClassification: result.classificationName,
                       });
+                    } else {
+                      placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
                     }
                   }
                 });
@@ -1536,7 +1537,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   if (config.moveClassification) {
                     const classification_ = result.classificationName;
                     const svg = classificationSVG[classification_];
-                    placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
 
                     if (config.onlyShowEval) {
                       chrome.runtime.sendMessage({
@@ -1545,6 +1545,8 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                         square: result.moveLan.slice(2),
                         moveClassification: result.classificationName,
                       });
+                    } else {
+                      placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
                     }
                   }
                 });
