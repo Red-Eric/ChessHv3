@@ -428,11 +428,13 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   .getChat(uciHistory, getSide(), whiteElo, blackElo)
                   .then((result) => {
                     if (lastFEN === result.fen) {
-                      console.log(result);
 
                       clearHighlighthints();
 
-                      if (result.res_data.show) {
+                      if (
+                        result.res_data.show &&
+                        config.hints.includes(result.classificationName)
+                      ) {
                         HintChessCom(
                           result.res_data.from,
                           result.res_data.to,
@@ -916,12 +918,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               coach
                 .getChat(uciH_, getSide(), whiteElo_, blackElo_)
                 .then((result) => {
-                  console.log(result);
                   const urlAudio_ = result.urlAudio;
 
                   clearHighlighthints();
 
-                  if (!result.res_data.show) {
+                  if (
+                    !result.res_data.show &&
+                    config.hints.includes(result.classificationName)
+                  ) {
                     HintLichess(
                       result.res_data.from,
                       result.res_data.to,
@@ -1301,7 +1305,10 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
                   clearHighlighthints();
 
-                  if (!result.res_data.show) {
+                  if (
+                    !result.res_data.show &&
+                    config.hints.includes(result.classificationName)
+                  ) {
                     HintWorldChessCom(
                       result.res_data.from,
                       result.res_data.to,
