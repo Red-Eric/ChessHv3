@@ -423,10 +423,12 @@ chrome.storage.local.get(["chessConfig"], (result) => {
           if (lastFEN !== fen_) {
             //accuracy
 
-            chrome.runtime.sendMessage({
-              type: "FEN_UPDATE",
-              colors: config.colors,
-            });
+            if (config.onlyShowEval) {
+              chrome.runtime.sendMessage({
+                type: "FEN_UPDATE",
+                colors: config.colors,
+              });
+            }
 
             clearHint();
             lastFEN = fen_;
@@ -445,6 +447,9 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     if (lastFEN === result.fen) {
                       clearHighlighthints();
 
+                      const classification_ = result.classificationName;
+                      const svg = classificationSVG[classification_];
+
                       if (
                         result.res_data.show &&
                         config.hints.includes(result.classificationName)
@@ -456,28 +461,26 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                             getSide()[0],
                           );
 
-                          const classification_ = result.classificationName;
-                          const svg = classificationSVG[classification_];
                           placeSVGOnBoard(
                             getSide(),
                             result.moveLan.slice(2),
                             svg,
                           );
-
+                        } else {
                           chrome.runtime.sendMessage({
                             type: "SVG",
                             side: getSide(),
                             square: result.moveLan.slice(2),
                             moveClassification: result.classificationName,
                           });
-                        }
 
-                        chrome.runtime.sendMessage({
-                          type: "HINT",
-                          from: result.res_data.from,
-                          to: result.res_data.to,
-                          side: getSide()[0],
-                        });
+                          chrome.runtime.sendMessage({
+                            type: "HINT",
+                            from: result.res_data.from,
+                            to: result.res_data.to,
+                            side: getSide()[0],
+                          });
+                        }
 
                         // logo
                       }
@@ -487,14 +490,16 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                         chessComAudio.play();
                       }
 
-                      chrome.runtime.sendMessage({
-                        type: "ACC",
-                        whiteAcc: result.whiteAccuracy,
-                        blackAcc: result.blackAccuracy,
+                      if (config.onlyShowEval) {
+                        chrome.runtime.sendMessage({
+                          type: "ACC",
+                          whiteAcc: result.whiteAccuracy,
+                          blackAcc: result.blackAccuracy,
 
-                        whiteElo: result.whiteElo,
-                        blackElo: result.blackElo,
-                      });
+                          whiteElo: result.whiteElo,
+                          blackElo: result.blackElo,
+                        });
+                      }
 
                       if (statObj) {
                         statObj.update({
@@ -521,7 +526,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                         });
                       }
 
-                      if (config.moveClassification && !config.onlyShowEval) {
+                      if (config.moveClassification) {
                         const classification_ = result.classificationName;
                         const svg = classificationSVG[classification_];
                         placeSVGOnBoard(
@@ -530,12 +535,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                           svg,
                         );
 
-                        chrome.runtime.sendMessage({
-                          type: "SVG",
-                          side: getSide(),
-                          square: result.moveLan.slice(2),
-                          moveClassification: result.classificationName,
-                        });
+                        if (config.onlyShowEval) {
+                          chrome.runtime.sendMessage({
+                            type: "SVG",
+                            side: getSide(),
+                            square: result.moveLan.slice(2),
+                            moveClassification: result.classificationName,
+                          });
+                        }
                       }
                     }
                   });
@@ -555,11 +562,13 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             ) {
               if (engine.config !== "None") {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
-                  chrome.runtime.sendMessage({
-                    type: "STREAM",
-                    moves: moves,
-                    side: getSide(),
-                  });
+                  if (config.onlyShowEval) {
+                    chrome.runtime.sendMessage({
+                      type: "STREAM",
+                      moves: moves,
+                      side: getSide(),
+                    });
+                  }
 
                   chrome.runtime.sendMessage({
                     type: "FROM_CONTENT",
@@ -753,11 +762,12 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
               if (fenTemp !== fen_) {
                 fen_ = fenTemp;
-
-                chrome.runtime.sendMessage({
-                  type: "FEN_UPDATE",
-                  colors: config.colors,
-                });
+                if (config.onlyShowEval) {
+                  chrome.runtime.sendMessage({
+                    type: "FEN_UPDATE",
+                    colors: config.colors,
+                  });
+                }
 
                 chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
 
@@ -772,11 +782,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     engine
                       .getMovesByFen(fen_, getSide())
                       .then(async (moves) => {
-                        chrome.runtime.sendMessage({
-                          type: "STREAM",
-                          moves: moves,
-                          side: getSide(),
-                        });
+                        if (config.onlyShowEval) {
+                          chrome.runtime.sendMessage({
+                            type: "STREAM",
+                            moves: moves,
+                            side: getSide(),
+                          });
+                        }
+
                         highlightMovesOnBoardLichess(moves, getSide()[0]);
                         keyMove = moves;
                         if (moves.length > 0 && evalObj) {
@@ -1007,16 +1020,20 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                 .then((result) => {
                   const urlAudio_ = result.urlAudio;
 
-                  chrome.runtime.sendMessage({
-                    type: "ACC",
-                    whiteAcc: result.whiteAccuracy,
-                    blackAcc: result.blackAccuracy,
+                  if (config.onlyShowEval) {
+                    chrome.runtime.sendMessage({
+                      type: "ACC",
+                      whiteAcc: result.whiteAccuracy,
+                      blackAcc: result.blackAccuracy,
 
-                    whiteElo: result.whiteElo,
-                    blackElo: result.blackElo,
-                  });
+                      whiteElo: result.whiteElo,
+                      blackElo: result.blackElo,
+                    });
+                  }
 
                   clearHighlighthints();
+                  const classification_ = result.classificationName;
+                  const svg = classificationSVG[classification_];
 
                   if (
                     result.res_data.show &&
@@ -1029,6 +1046,8 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                         getSide()[0],
                       );
 
+                      placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
+                    } else {
                       chrome.runtime.sendMessage({
                         type: "SVG",
                         side: getSide(),
@@ -1036,17 +1055,13 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                         moveClassification: result.classificationName,
                       });
 
-                      const classification_ = result.classificationName;
-                      const svg = classificationSVG[classification_];
-                      placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
+                      chrome.runtime.sendMessage({
+                        type: "HINT",
+                        from: result.res_data.from,
+                        to: result.res_data.to,
+                        side: getSide()[0],
+                      });
                     }
-
-                    chrome.runtime.sendMessage({
-                      type: "HINT",
-                      from: result.res_data.from,
-                      to: result.res_data.to,
-                      side: getSide()[0],
-                    });
                   }
 
                   if (config.speach) {
@@ -1078,19 +1093,21 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     });
                   }
 
-                  if (config.moveClassification && !config.onlyShowEval) {
+                  if (config.moveClassification) {
                     const classification_ = result.classificationName;
 
                     const svg = classificationSVG[classification_];
 
                     placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
 
-                    chrome.runtime.sendMessage({
-                      type: "SVG",
-                      side: getSide(),
-                      square: result.moveLan.slice(2),
-                      moveClassification: result.classificationName,
-                    });
+                    if (config.onlyShowEval) {
+                      chrome.runtime.sendMessage({
+                        type: "SVG",
+                        side: getSide(),
+                        square: result.moveLan.slice(2),
+                        moveClassification: result.classificationName,
+                      });
+                    }
                   }
                 });
             }
@@ -1305,10 +1322,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
           if (fen_ && fen_ !== currentFen) {
             currentFen = fen_;
-            chrome.runtime.sendMessage({
-              type: "FEN_UPDATE",
-              colors: config.colors,
-            });
+
+            if (config.onlyShowEval) {
+              chrome.runtime.sendMessage({
+                type: "FEN_UPDATE",
+                colors: config.colors,
+              });
+            }
+
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
 
             clearHighlightSquares();
@@ -1331,11 +1352,13 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
                   keyMove = moves;
 
-                  chrome.runtime.sendMessage({
-                    type: "STREAM",
-                    moves: moves,
-                    side: getSide(),
-                  });
+                  if (config.onlyShowEval) {
+                    chrome.runtime.sendMessage({
+                      type: "STREAM",
+                      moves: moves,
+                      side: getSide(),
+                    });
+                  }
 
                   chrome.runtime.sendMessage({
                     type: "FROM_CONTENT",
@@ -1448,17 +1471,20 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     chessComAudio.play();
                   }
 
-                  chrome.runtime.sendMessage({
-                    type: "ACC",
-                    whiteAcc: result.whiteAccuracy,
-                    blackAcc: result.blackAccuracy,
+                  if (config.onlyShowEval) {
+                    chrome.runtime.sendMessage({
+                      type: "ACC",
+                      whiteAcc: result.whiteAccuracy,
+                      blackAcc: result.blackAccuracy,
 
-                    whiteElo: result.whiteElo,
-                    blackElo: result.blackElo,
-                  });
+                      whiteElo: result.whiteElo,
+                      blackElo: result.blackElo,
+                    });
+                  }
 
                   clearHighlighthints();
-
+                  const classification_ = result.classificationName;
+                  const svg = classificationSVG[classification_];
                   if (
                     result.res_data.show &&
                     config.hints.includes(result.classificationName)
@@ -1470,24 +1496,22 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                         getSide()[0],
                       );
 
-                      const classification_ = result.classificationName;
-                      const svg = classificationSVG[classification_];
                       placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
-
+                    } else {
                       chrome.runtime.sendMessage({
                         type: "SVG",
                         side: getSide(),
                         square: result.moveLan.slice(2),
                         moveClassification: result.classificationName,
                       });
-                    }
 
-                    chrome.runtime.sendMessage({
-                      type: "HINT",
-                      from: result.res_data.from,
-                      to: result.res_data.to,
-                      side: getSide()[0],
-                    });
+                      chrome.runtime.sendMessage({
+                        type: "HINT",
+                        from: result.res_data.from,
+                        to: result.res_data.to,
+                        side: getSide()[0],
+                      });
+                    }
                   }
 
                   if (statObj) {
@@ -1514,16 +1538,19 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     });
                   }
 
-                  if (config.moveClassification && !config.onlyShowEval) {
+                  if (config.moveClassification) {
                     const classification_ = result.classificationName;
                     const svg = classificationSVG[classification_];
                     placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
-                    chrome.runtime.sendMessage({
-                      type: "SVG",
-                      side: getSide(),
-                      square: result.moveLan.slice(2),
-                      moveClassification: result.classificationName,
-                    });
+
+                    if (config.onlyShowEval) {
+                      chrome.runtime.sendMessage({
+                        type: "SVG",
+                        side: getSide(),
+                        square: result.moveLan.slice(2),
+                        moveClassification: result.classificationName,
+                      });
+                    }
                   }
                 });
             }

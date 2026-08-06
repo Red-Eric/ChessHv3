@@ -535,9 +535,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       .catch((err) => console.error(err));
 
 
-      console.clear()
-      console.log("doefoefoekjfo")
-
     fetch("http://127.0.0.1:5000/api/color", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
