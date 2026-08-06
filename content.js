@@ -511,7 +511,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                         });
                       }
 
-                      if (config.moveClassification) {
+                      if (config.moveClassification && !config.onlyShowEval) {
                         const classification_ = result.classificationName;
                         const svg = classificationSVG[classification_];
                         placeSVGOnBoard(
@@ -1063,7 +1063,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     });
                   }
 
-                  if (config.moveClassification) {
+                  if (config.moveClassification && !config.onlyShowEval) {
                     const classification_ = result.classificationName;
 
                     const svg = classificationSVG[classification_];
@@ -1496,7 +1496,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     });
                   }
 
-                  if (config.moveClassification) {
+                  if (config.moveClassification && !config.onlyShowEval) {
                     const classification_ = result.classificationName;
                     const svg = classificationSVG[classification_];
                     placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);

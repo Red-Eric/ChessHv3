@@ -928,18 +928,6 @@
           </div>
           <div class="setting-help">Displays the engine evaluation bar.</div>
 
-          <div class="setting">
-            <span id="onlyShowEvalLabel"
-              >Hide Arrows and Accuracy Panel (OFF)</span
-            >
-            <label class="toggle"
-              ><input type="checkbox" id="onlyShowEval" /><span
-                class="slider"
-              ></span
-            ></label>
-          </div>
-          <div class="setting-help">Hides move suggestions.</div>
-
           <!-- AUTOMATION -->
           <div class="section-divider"><span>Automation</span></div>
 
@@ -1162,11 +1150,25 @@
           </div>
         </div>
 
+        <div class="section-divider"><span>HIDE</span></div>
+
+        <div class="setting">
+          <span id="onlyShowEvalLabel">HIDE EVERYTHING (OFF)</span>
+          <label class="toggle"
+            ><input type="checkbox" id="onlyShowEval" /><span
+              class="slider"
+            ></span
+          ></label>
+        </div>
+        <div class="setting-help">
+          This option hides everything on the page (Arrows, Move Classification
+          , Panel , EvalBAr ...)<span style="color: #e74c3c; font-weight: 700">
+            Enable this if you want to stream (use the 'Stream_Proof.exe')</span
+          >
+        </div>
+
         <div class="bottom-actions">
-          <button class="btn" id="stream">
-            Open Stream Window (for ppl with 2 screen only)
-          </button>
-          <button class="btn" id="reset">Reset</button>
+          <button class="btn" id="reset">Reset your setting</button>
         </div>
       </div>
     </div>
@@ -1212,6 +1214,8 @@
     <script src="chessboard/jquery-3.4.1.min.js"></script>
     <script src="chessboard/chessboard-1.0.0.js"></script>
 
+    <script src="config.js"></script>
+    <script src="variable.js"></script>
     <script src="index.js"></script>
   </body>
 </html>

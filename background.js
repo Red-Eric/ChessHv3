@@ -490,15 +490,15 @@ function sendMouseEvent(tabId, params) {
   });
 }
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.type === "stream") {
-    chrome.windows.create({
-      url: chrome.runtime.getURL("dist/index.html"),
-      type: "popup",
-      state: "maximized",
-    });
-  }
-});
+// chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+//   if (message.type === "stream") {
+//     chrome.windows.create({
+//       url: chrome.runtime.getURL("dist/index.html"),
+//       type: "popup",
+//       state: "maximized",
+//     });
+//   }
+// });
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === "FETCH_AUDIO") {
