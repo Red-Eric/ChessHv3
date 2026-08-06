@@ -404,9 +404,8 @@ chrome.storage.local.get(["chessConfig"], (result) => {
           if (
             (config.coach === 999 && document.querySelector("#acc-widget")) ||
             (config.onlyShowEval && document.querySelector("#acc-widget")) ||
-            (
-              !config.moveClassification && document.querySelector("#acc-widget")
-            )
+            (!config.moveClassification &&
+              document.querySelector("#acc-widget"))
           ) {
             statObj = null;
             document.querySelector("#acc-widget").remove();
@@ -499,6 +498,12 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             // fen
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
             clearHighlightSquares();
+            clearHighlighthints();
+            clear;
+            chrome.runtime.sendMessage({
+              type: "FEN_UPDATE",
+              flag: 1,
+            });
 
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
@@ -507,9 +512,9 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               if (engine.config !== "None") {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
                   chrome.runtime.sendMessage({
-                    type : "STREAM",
-                    moves : moves,
-                    side : getSide()
+                    type: "STREAM",
+                    moves: moves,
+                    side: getSide(),
                   });
 
                   chrome.runtime.sendMessage({
@@ -556,6 +561,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             config = newConfig;
 
             clearHighlightSquares();
+            clearHighlighthints();
+            chrome.runtime.sendMessage({
+              type: "FEN_UPDATE",
+              flag: 1,
+            });
 
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
@@ -564,9 +574,9 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               if (engine.config !== "None") {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
                   chrome.runtime.sendMessage({
-                    type : "STREAM",
-                    moves : moves,
-                    side : getSide()
+                    type: "STREAM",
+                    moves: moves,
+                    side: getSide(),
                   });
                   chrome.runtime.sendMessage({
                     type: "FROM_CONTENT",
@@ -690,10 +700,8 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             if (
               (config.coach === 999 && document.querySelector("#acc-widget")) ||
               (config.onlyShowEval && document.querySelector("#acc-widget")) ||
-              (
-                !config.moveClassification &&
-                document.querySelector("#acc-widget")
-              )
+              (!config.moveClassification &&
+                document.querySelector("#acc-widget"))
             ) {
               statObj = null;
               document.querySelector("#acc-widget").remove();
@@ -713,6 +721,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                 chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
 
                 clearHighlightSquares();
+                clearHighlighthints();
 
                 if (
                   (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
@@ -886,6 +895,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             config = newConfig;
 
             clearHighlightSquares();
+            clearHighlighthints();
+            chrome.runtime.sendMessage({
+              type: "FEN_UPDATE",
+              flag: 1,
+            });
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
@@ -893,9 +907,9 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               if (engine.config !== "None") {
                 engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
                   chrome.runtime.sendMessage({
-                    type : "STREAM",
-                    moves : moves,
-                    side : getSide()
+                    type: "STREAM",
+                    moves: moves,
+                    side: getSide(),
                   });
                   highlightMovesOnBoardLichess(moves, getSide()[0]);
                   keyMove = moves;
@@ -1184,9 +1198,8 @@ chrome.storage.local.get(["chessConfig"], (result) => {
           if (
             (config.coach === 999 && document.querySelector("#acc-widget")) ||
             (config.onlyShowEval && document.querySelector("#acc-widget")) ||
-            (
-              !config.moveClassification && document.querySelector("#acc-widget")
-            )
+            (!config.moveClassification &&
+              document.querySelector("#acc-widget"))
           ) {
             statObj = null;
             document.querySelector("#acc-widget").remove();
@@ -1213,6 +1226,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
 
             clearHighlightSquares();
+            clearHighlighthints();
+            chrome.runtime.sendMessage({
+              type: "FEN_UPDATE",
+              flag: 1,
+            });
 
             if (!config.showEval && document.querySelector("#customEval")) {
               document.querySelector("#customEval").remove();
@@ -1228,9 +1246,9 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   keyMove = moves;
 
                   chrome.runtime.sendMessage({
-                    type : "STREAM",
-                    moves : moves,
-                    side : getSide()
+                    type: "STREAM",
+                    moves: moves,
+                    side: getSide(),
                   });
 
                   chrome.runtime.sendMessage({
@@ -1282,6 +1300,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             config = newConfig;
 
             clearHighlightSquares();
+            clearHighlighthints();
+            chrome.runtime.sendMessage({
+              type: "FEN_UPDATE",
+              flag: 1,
+            });
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
@@ -1291,9 +1314,9 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   keyMove = moves;
 
                   chrome.runtime.sendMessage({
-                    type : "STREAM",
-                    moves : moves,
-                    side : getSide()
+                    type: "STREAM",
+                    moves: moves,
+                    side: getSide(),
                   });
 
                   chrome.runtime.sendMessage({

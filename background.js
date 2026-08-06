@@ -519,7 +519,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       },
       body: JSON.stringify({
         moves: msg.moves,
-        side: msg.side, // 
+        side: msg.side, //
       }),
     })
       .then((res) => res.json())
@@ -533,5 +533,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       });
 
     return true; // Obligatoire car sendResponse est appelé plus tard
+  }
+  if (msg.type === "FEN_UPDATE") {
+    fetch("http://127.0.0.1:5000/api/update_fen", {
+      method: "GET",
+    })
+      .then((res) => res.json())
+      .then((data) => console.log(data))
+      .catch((err) => console.error(err));
   }
 });
