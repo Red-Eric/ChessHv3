@@ -434,19 +434,30 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                         result.res_data.show &&
                         config.hints.includes(result.classificationName)
                       ) {
-                        HintChessCom(
-                          result.res_data.from,
-                          result.res_data.to,
-                          getSide()[0],
-                        );
+                        if (!config.onlyShowEval) {
+                          HintChessCom(
+                            result.res_data.from,
+                            result.res_data.to,
+                            getSide()[0],
+                          );
+
+                          const classification_ = result.classificationName;
+                          const svg = classificationSVG[classification_];
+                          placeSVGOnBoard(
+                            getSide(),
+                            result.moveLan.slice(2),
+                            svg,
+                          );
+                        }
+
+                        chrome.runtime.sendMessage({
+                          type: "HINT",
+                          from: result.res_data.from,
+                          to: result.res_data.to,
+                          side: getSide()[0],
+                        });
+
                         // logo
-                        const classification_ = result.classificationName;
-                        const svg = classificationSVG[classification_];
-                        placeSVGOnBoard(
-                          getSide(),
-                          result.moveLan.slice(2),
-                          svg,
-                        );
                       }
 
                       if (config.speach) {
@@ -510,8 +521,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             clearHighlighthints();
             clear;
             chrome.runtime.sendMessage({
-              type: "FEN_UPDATE",
-              flag: 1,
+              type: "FEN_UPDATE"
             });
 
             if (
@@ -572,8 +582,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             clearHighlightSquares();
             clearHighlighthints();
             chrome.runtime.sendMessage({
-              type: "FEN_UPDATE",
-              flag: 1,
+              type: "FEN_UPDATE"
             });
 
             if (
@@ -906,8 +915,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             clearHighlightSquares();
             clearHighlighthints();
             chrome.runtime.sendMessage({
-              type: "FEN_UPDATE",
-              flag: 1,
+              type: "FEN_UPDATE"
             });
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
@@ -984,16 +992,26 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     result.res_data.show &&
                     config.hints.includes(result.classificationName)
                   ) {
-                    HintLichess(
-                      result.res_data.from,
-                      result.res_data.to,
-                      getSide()[0],
-                    );
-                    const classification_ = result.classificationName;
+                    if (!config.onlyShowEval) {
+                      HintLichess(
+                        result.res_data.from,
+                        result.res_data.to,
+                        getSide()[0],
+                      );
 
-                    const svg = classificationSVG[classification_];
+                      const classification_ = result.classificationName;
 
-                    placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
+                      const svg = classificationSVG[classification_];
+
+                      placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
+                    }
+
+                    chrome.runtime.sendMessage({
+                      type: "HINT",
+                      from: result.res_data.from,
+                      to: result.res_data.to,
+                      side: getSide()[0],
+                    });
                   }
 
                   if (config.speach) {
@@ -1244,10 +1262,9 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
 
             clearHighlightSquares();
-            clearHighlighthints();
+            clearHighlights();
             chrome.runtime.sendMessage({
-              type: "FEN_UPDATE",
-              flag: 1,
+              type: "FEN_UPDATE"
             });
 
             if (!config.showEval && document.querySelector("#customEval")) {
@@ -1320,8 +1337,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             clearHighlightSquares();
             clearHighlighthints();
             chrome.runtime.sendMessage({
-              type: "FEN_UPDATE",
-              flag: 1,
+              type: "FEN_UPDATE"
             });
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
@@ -1404,14 +1420,24 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     result.res_data.show &&
                     config.hints.includes(result.classificationName)
                   ) {
-                    HintWorldChessCom(
-                      result.res_data.from,
-                      result.res_data.to,
-                      getSide()[0],
-                    );
-                    const classification_ = result.classificationName;
-                    const svg = classificationSVG[classification_];
-                    placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
+                    if (!config.onlyShowEval) {
+                      HintWorldChessCom(
+                        result.res_data.from,
+                        result.res_data.to,
+                        getSide()[0],
+                      );
+
+                      const classification_ = result.classificationName;
+                      const svg = classificationSVG[classification_];
+                      placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
+                    }
+
+                    chrome.runtime.sendMessage({
+                      type: "HINT",
+                      from: result.res_data.from,
+                      to: result.res_data.to,
+                      side: getSide()[0],
+                    });
                   }
 
                   if (statObj) {

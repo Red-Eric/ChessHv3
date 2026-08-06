@@ -534,13 +534,24 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     return true; // Obligatoire car sendResponse est appelé plus tard
   }
+  
   if (msg.type === "FEN_UPDATE") {
-    fetch("http://127.0.0.1:5000/api/update_fen", {
-      method: "GET",
-    })
-      .then((res) => res.json())
-      .then((data) => console.log(data))
-      .catch((err) => console.error(err));
+
+    console.clear()
+    console.log();
+
+
+    fetch("http://127.0.0.1:5000/api/clear_hint")
+      .then((response) => response.json())
+      .then((data) => console.log("Réponse :", data))
+      .catch((error) => console.error("Erreur :", error));
+
+    // fetch("http://127.0.0.1:5000/api/update_fen", {
+    //   method: "GET",
+    // })
+    //   .then((res) => res.json())
+    //   .then((data) => console.log(data))
+    //   .catch((err) => console.error(err));
   }
 
   if (msg.type === "ACC") {
@@ -559,5 +570,22 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       .then((response) => response.json())
       .then((data) => console.log("Succès:", data))
       .catch((error) => console.error("Erreur:", error));
+  }
+
+  if (msg.type === "HINT") {
+    fetch("http://127.0.0.1:5000/api/hint", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: msg.from, // Case de départ
+        to: msg.to, // Case d'arrivée
+        side: msg.side, // "w" pour Blancs, "b" pour Noirs
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => console.log("Réponse API:", data))
+      .catch((error) => console.error("Erreur d'envoi du hint:", error));
   }
 });
