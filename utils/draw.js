@@ -1293,3 +1293,423 @@ function highlightMovesOnBoardWorld(moves, side) {
     }
   });
 }
+
+/* HINT*/
+
+function HintChessCom(from, to, side) {
+  const parent = document.querySelector("wc-chess-board");
+  if (!parent) return;
+
+  const squareSize = parent.offsetWidth / 8;
+  parent.querySelectorAll(".customHint").forEach((el) => el.remove());
+
+  function squareToPosition(square) {
+    const fileChar = square[0];
+    const rankChar = square[1];
+    const rank = parseInt(rankChar, 10) - 1;
+    let file;
+    if (side === "b") {
+      file = fileChar.charCodeAt(0) - "a".charCodeAt(0);
+      return {
+        x: file * squareSize + squareSize / 2,
+        y: (7 - rank) * squareSize + squareSize / 2,
+      };
+    } else {
+      file = "h".charCodeAt(0) - fileChar.charCodeAt(0);
+      return {
+        x: file * squareSize + squareSize / 2,
+        y: rank * squareSize + squareSize / 2,
+      };
+    }
+  }
+
+  const fromPos = squareToPosition(from);
+  const toPos = squareToPosition(to);
+
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("class", "customHint");
+  svg.setAttribute("width", parent.offsetWidth);
+  svg.setAttribute("height", parent.offsetWidth);
+  svg.style.position = "absolute";
+  svg.style.left = "0";
+  svg.style.top = "0";
+  svg.style.pointerEvents = "none";
+  svg.style.overflow = "visible";
+  svg.style.zIndex = "10";
+
+  const color = "rgba(159, 207, 63, 0.8)";
+
+  // Proportions identiques à celles utilisées nativement par chess.com (relatives à une case)
+  const shaftHalfW = 0.11 * squareSize; // demi-largeur de la hampe
+  const headHalfW = 0.26 * squareSize; // demi-largeur de la pointe
+  const headLen = 0.36 * squareSize; // longueur de la pointe
+  const gap = 0.36 * squareSize; // décalage par rapport au centre de départ
+
+  function makePolygon(points) {
+    const poly = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "polygon",
+    );
+    poly.setAttribute("points", points.map((p) => `${p.x} ${p.y}`).join(", "));
+    poly.setAttribute("style", `fill: ${color}; opacity: 0.8;`);
+    poly.setAttribute("class", "arrow");
+    svg.appendChild(poly);
+  }
+
+  const dx = toPos.x - fromPos.x;
+  const dy = toPos.y - fromPos.y;
+
+  const fileDiff = Math.round(Math.abs(dx) / squareSize);
+  const rankDiff = Math.round(Math.abs(dy) / squareSize);
+  const isKnightMove =
+    (fileDiff === 1 && rankDiff === 2) || (fileDiff === 2 && rankDiff === 1);
+
+  if (!isKnightMove) {
+    // Flèche droite (horizontale, verticale, diagonale)
+    const D = Math.sqrt(dx * dx + dy * dy);
+    const ux = dx / D,
+      uy = dy / D;
+    const px = -uy,
+      py = ux;
+
+    const p = (t, w) => ({
+      x: fromPos.x + ux * t + px * w,
+      y: fromPos.y + uy * t + py * w,
+    });
+
+    makePolygon([
+      p(gap, shaftHalfW),
+      p(D - headLen, shaftHalfW),
+      p(D - headLen, headHalfW),
+      p(D, 0),
+      p(D - headLen, -headHalfW),
+      p(D - headLen, -shaftHalfW),
+      p(gap, -shaftHalfW),
+    ]);
+  } else {
+    // Flèche coudée pour les coups de cavalier
+    const longAxisIsX = fileDiff === 2;
+    const ulx = longAxisIsX ? Math.sign(dx) : 0;
+    const uly = longAxisIsX ? 0 : Math.sign(dy);
+    const usx = longAxisIsX ? 0 : Math.sign(dx);
+    const usy = longAxisIsX ? Math.sign(dy) : 0;
+
+    const longDist = longAxisIsX ? Math.abs(dx) : Math.abs(dy);
+    const shortDist = longAxisIsX ? Math.abs(dy) : Math.abs(dx);
+
+    const corner = {
+      x: fromPos.x + ulx * longDist,
+      y: fromPos.y + uly * longDist,
+    };
+
+    // Segment 1 : départ -> coude (grand axe)
+    makePolygon([
+      {
+        x: fromPos.x + ulx * gap + usx * shaftHalfW,
+        y: fromPos.y + uly * gap + usy * shaftHalfW,
+      },
+      { x: corner.x + usx * shaftHalfW, y: corner.y + usy * shaftHalfW },
+      { x: corner.x - usx * shaftHalfW, y: corner.y - usy * shaftHalfW },
+      {
+        x: fromPos.x + ulx * gap - usx * shaftHalfW,
+        y: fromPos.y + uly * gap - usy * shaftHalfW,
+      },
+    ]);
+
+    // Segment 2 + pointe : coude -> cible (petit axe)
+    const p2 = (t, w) => ({
+      x: corner.x + usx * t + ulx * w,
+      y: corner.y + usy * t + uly * w,
+    });
+
+    makePolygon([
+      p2(0, shaftHalfW),
+      p2(shortDist - headLen, shaftHalfW),
+      p2(shortDist - headLen, headHalfW),
+      p2(shortDist, 0),
+      p2(shortDist - headLen, -headHalfW),
+      p2(shortDist - headLen, -shaftHalfW),
+      p2(0, -shaftHalfW),
+    ]);
+  }
+
+  parent.style.position = "relative";
+  parent.appendChild(svg);
+}
+
+function HintLichess(from, to, side) {
+  const parent = document.querySelector("cg-container");
+  if (!parent) return;
+
+  const squareSize = parent.offsetWidth / 8;
+  parent.querySelectorAll(".customHint").forEach((el) => el.remove());
+
+  function squareToPosition(square) {
+    const fileChar = square[0];
+    const rankChar = square[1];
+    const rank = parseInt(rankChar, 10) - 1;
+    let file;
+    if (side === "w") {
+      file = fileChar.charCodeAt(0) - "a".charCodeAt(0);
+      return {
+        x: file * squareSize + squareSize / 2,
+        y: (7 - rank) * squareSize + squareSize / 2,
+      };
+    } else {
+      file = "h".charCodeAt(0) - fileChar.charCodeAt(0);
+      return {
+        x: file * squareSize + squareSize / 2,
+        y: rank * squareSize + squareSize / 2,
+      };
+    }
+  }
+
+  const fromPos = squareToPosition(from);
+  const toPos = squareToPosition(to);
+
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("class", "customHint");
+  svg.setAttribute("width", parent.offsetWidth);
+  svg.setAttribute("height", parent.offsetWidth);
+  svg.style.position = "absolute";
+  svg.style.left = "0";
+  svg.style.top = "0";
+  svg.style.pointerEvents = "none";
+  svg.style.overflow = "visible";
+  svg.style.zIndex = "10";
+
+  const color = "rgba(159, 207, 63, 0.8)";
+
+  const shaftHalfW = 0.11 * squareSize;
+  const headHalfW = 0.26 * squareSize;
+  const headLen = 0.36 * squareSize;
+  const gap = 0.36 * squareSize;
+
+  function makePolygon(points) {
+    const poly = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "polygon",
+    );
+    poly.setAttribute("points", points.map((p) => `${p.x} ${p.y}`).join(", "));
+    poly.setAttribute("style", `fill: ${color}; opacity: 0.8;`);
+    poly.setAttribute("class", "arrow");
+    svg.appendChild(poly);
+  }
+
+  const dx = toPos.x - fromPos.x;
+  const dy = toPos.y - fromPos.y;
+
+  const fileDiff = Math.round(Math.abs(dx) / squareSize);
+  const rankDiff = Math.round(Math.abs(dy) / squareSize);
+  const isKnightMove =
+    (fileDiff === 1 && rankDiff === 2) || (fileDiff === 2 && rankDiff === 1);
+
+  if (!isKnightMove) {
+    const D = Math.sqrt(dx * dx + dy * dy);
+    const ux = dx / D,
+      uy = dy / D;
+    const px = -uy,
+      py = ux;
+
+    const p = (t, w) => ({
+      x: fromPos.x + ux * t + px * w,
+      y: fromPos.y + uy * t + py * w,
+    });
+
+    makePolygon([
+      p(gap, shaftHalfW),
+      p(D - headLen, shaftHalfW),
+      p(D - headLen, headHalfW),
+      p(D, 0),
+      p(D - headLen, -headHalfW),
+      p(D - headLen, -shaftHalfW),
+      p(gap, -shaftHalfW),
+    ]);
+  } else {
+    const longAxisIsX = fileDiff === 2;
+    const ulx = longAxisIsX ? Math.sign(dx) : 0;
+    const uly = longAxisIsX ? 0 : Math.sign(dy);
+    const usx = longAxisIsX ? 0 : Math.sign(dx);
+    const usy = longAxisIsX ? Math.sign(dy) : 0;
+
+    const longDist = longAxisIsX ? Math.abs(dx) : Math.abs(dy);
+    const shortDist = longAxisIsX ? Math.abs(dy) : Math.abs(dx);
+
+    const corner = {
+      x: fromPos.x + ulx * longDist,
+      y: fromPos.y + uly * longDist,
+    };
+
+    makePolygon([
+      {
+        x: fromPos.x + ulx * gap + usx * shaftHalfW,
+        y: fromPos.y + uly * gap + usy * shaftHalfW,
+      },
+      { x: corner.x + usx * shaftHalfW, y: corner.y + usy * shaftHalfW },
+      { x: corner.x - usx * shaftHalfW, y: corner.y - usy * shaftHalfW },
+      {
+        x: fromPos.x + ulx * gap - usx * shaftHalfW,
+        y: fromPos.y + uly * gap - usy * shaftHalfW,
+      },
+    ]);
+
+    const p2 = (t, w) => ({
+      x: corner.x + usx * t + ulx * w,
+      y: corner.y + usy * t + uly * w,
+    });
+
+    makePolygon([
+      p2(0, shaftHalfW),
+      p2(shortDist - headLen, shaftHalfW),
+      p2(shortDist - headLen, headHalfW),
+      p2(shortDist, 0),
+      p2(shortDist - headLen, -headHalfW),
+      p2(shortDist - headLen, -shaftHalfW),
+      p2(0, -shaftHalfW),
+    ]);
+  }
+
+  parent.style.position = "relative";
+  parent.appendChild(svg);
+}
+
+function HintWorldChessCom(from, to, side) {
+  const parent = document.querySelector("cg-board");
+  if (!parent) return;
+
+  const squareSize = parent.offsetWidth / 8;
+  parent.querySelectorAll(".customHint").forEach((el) => el.remove());
+
+  function squareToPosition(square) {
+    const fileChar = square[0];
+    const rankChar = square[1];
+    const rank = parseInt(rankChar, 10) - 1;
+    let file;
+    if (side === "w") {
+      file = fileChar.charCodeAt(0) - "a".charCodeAt(0);
+      return {
+        x: file * squareSize + squareSize / 2,
+        y: (7 - rank) * squareSize + squareSize / 2,
+      };
+    } else {
+      file = "h".charCodeAt(0) - fileChar.charCodeAt(0);
+      return {
+        x: file * squareSize + squareSize / 2,
+        y: rank * squareSize + squareSize / 2,
+      };
+    }
+  }
+
+  const fromPos = squareToPosition(from);
+  const toPos = squareToPosition(to);
+
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("class", "customHint");
+  svg.setAttribute("width", parent.offsetWidth);
+  svg.setAttribute("height", parent.offsetWidth);
+  svg.style.position = "absolute";
+  svg.style.left = "0";
+  svg.style.top = "0";
+  svg.style.pointerEvents = "none";
+  svg.style.overflow = "visible";
+  svg.style.zIndex = "10";
+
+  const color = "rgba(159, 207, 63, 0.8)";
+
+  const shaftHalfW = 0.11 * squareSize;
+  const headHalfW = 0.26 * squareSize;
+  const headLen = 0.36 * squareSize;
+  const gap = 0.36 * squareSize;
+
+  function makePolygon(points) {
+    const poly = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "polygon",
+    );
+    poly.setAttribute("points", points.map((p) => `${p.x} ${p.y}`).join(", "));
+    poly.setAttribute("style", `fill: ${color}; opacity: 0.8;`);
+    poly.setAttribute("class", "arrow");
+    svg.appendChild(poly);
+  }
+
+  const dx = toPos.x - fromPos.x;
+  const dy = toPos.y - fromPos.y;
+
+  const fileDiff = Math.round(Math.abs(dx) / squareSize);
+  const rankDiff = Math.round(Math.abs(dy) / squareSize);
+  const isKnightMove =
+    (fileDiff === 1 && rankDiff === 2) || (fileDiff === 2 && rankDiff === 1);
+
+  if (!isKnightMove) {
+    const D = Math.sqrt(dx * dx + dy * dy);
+    const ux = dx / D,
+      uy = dy / D;
+    const px = -uy,
+      py = ux;
+
+    const p = (t, w) => ({
+      x: fromPos.x + ux * t + px * w,
+      y: fromPos.y + uy * t + py * w,
+    });
+
+    makePolygon([
+      p(gap, shaftHalfW),
+      p(D - headLen, shaftHalfW),
+      p(D - headLen, headHalfW),
+      p(D, 0),
+      p(D - headLen, -headHalfW),
+      p(D - headLen, -shaftHalfW),
+      p(gap, -shaftHalfW),
+    ]);
+  } else {
+    const longAxisIsX = fileDiff === 2;
+    const ulx = longAxisIsX ? Math.sign(dx) : 0;
+    const uly = longAxisIsX ? 0 : Math.sign(dy);
+    const usx = longAxisIsX ? 0 : Math.sign(dx);
+    const usy = longAxisIsX ? Math.sign(dy) : 0;
+
+    const longDist = longAxisIsX ? Math.abs(dx) : Math.abs(dy);
+    const shortDist = longAxisIsX ? Math.abs(dy) : Math.abs(dx);
+
+    const corner = {
+      x: fromPos.x + ulx * longDist,
+      y: fromPos.y + uly * longDist,
+    };
+
+    makePolygon([
+      {
+        x: fromPos.x + ulx * gap + usx * shaftHalfW,
+        y: fromPos.y + uly * gap + usy * shaftHalfW,
+      },
+      { x: corner.x + usx * shaftHalfW, y: corner.y + usy * shaftHalfW },
+      { x: corner.x - usx * shaftHalfW, y: corner.y - usy * shaftHalfW },
+      {
+        x: fromPos.x + ulx * gap - usx * shaftHalfW,
+        y: fromPos.y + uly * gap - usy * shaftHalfW,
+      },
+    ]);
+
+    const p2 = (t, w) => ({
+      x: corner.x + usx * t + ulx * w,
+      y: corner.y + usy * t + uly * w,
+    });
+
+    makePolygon([
+      p2(0, shaftHalfW),
+      p2(shortDist - headLen, shaftHalfW),
+      p2(shortDist - headLen, headHalfW),
+      p2(shortDist, 0),
+      p2(shortDist - headLen, -headHalfW),
+      p2(shortDist - headLen, -shaftHalfW),
+      p2(0, -shaftHalfW),
+    ]);
+  }
+
+  parent.style.position = "relative";
+  parent.appendChild(svg);
+
+  // Comportement identique à highlightMovesOnBoardWorld : rotation 180° côté noir
+  if (side === "b") {
+    svg.style.transform = "rotate(180deg)";
+  }
+}

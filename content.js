@@ -134,6 +134,10 @@ chrome.storage.local.get(["chessConfig"], (result) => {
       engine = new Wukong();
     }
 
+    if (config.engine === "None") {
+      engine = null;
+    }
+
     // variable for key press Move
     let keyMove = [
       {
@@ -236,8 +240,8 @@ chrome.storage.local.get(["chessConfig"], (result) => {
         }
         function requestMove(from, to, promotion = "q", key = false) {
           key
-            ? (moveDelay = 0)
-            : (moveDelay = randomIntBetween(100, config.delay));
+            ? (moveDelay = config.delay0)
+            : (moveDelay = randomIntBetween(config.delay0, config.delay));
           window.postMessage(
             {
               type: "MOVE",
@@ -420,9 +424,18 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                 coach
                   .getChat(uciHistory, getSide(), whiteElo, blackElo)
                   .then((result) => {
-                    // console.log(result);
                     if (lastFEN === result.fen) {
-                      // console.log(result)
+                      console.log(result);
+
+                      clearHighlighthints();
+
+                      if (result.res_data.show) {
+                        HintChessCom(
+                          result.res_data.from,
+                          result.res_data.to,
+                          getSide()[0],
+                        );
+                      }
 
                       if (config.speach) {
                         chessComAudio.src = result.urlAudio;
@@ -478,26 +491,28 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
-              engine.getMovesByFen(fen_, getSide()).then((moves) => {
-                chrome.runtime.sendMessage({
-                  type: "FROM_CONTENT",
-                  data: moves,
-                });
-                keyMove = moves;
+              if (engine.config !== "None") {
+                engine.getMovesByFen(fen_, getSide()).then((moves) => {
+                  chrome.runtime.sendMessage({
+                    type: "FROM_CONTENT",
+                    data: moves,
+                  });
+                  keyMove = moves;
 
-                if (config.autoMove) {
-                  if (config.autoMoveBalanced) {
-                    const moveBalanced = extractNormalMove(moves, getSide());
-                    requestMove(moveBalanced.from, moveBalanced.to);
-                  } else {
-                    requestMove(moves[0].from, moves[0].to);
+                  if (config.autoMove) {
+                    if (config.autoMoveBalanced) {
+                      const moveBalanced = extractNormalMove(moves, getSide());
+                      requestMove(moveBalanced.from, moveBalanced.to);
+                    } else {
+                      requestMove(moves[0].from, moves[0].to);
+                    }
                   }
-                }
-                if (moves.length > 0 && evalObj) {
-                  evalObj.update(moves[0].eval, getSide());
-                }
-                highlightMovesOnBoardChessCom(moves, getSide()[0]);
-              });
+                  if (moves.length > 0 && evalObj) {
+                    evalObj.update(moves[0].eval, getSide());
+                  }
+                  highlightMovesOnBoardChessCom(moves, getSide()[0]);
+                });
+              }
             }
           }
         }
@@ -520,12 +535,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             }
 
             config = newConfig;
-            // engine.updateConfig(
-            //   config.lines,
-            //   config.depth,
-            //   config.style,
-            //   config.elo,
-            // );
 
             clearHighlightSquares();
 
@@ -533,26 +542,28 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
-              engine.getMovesByFen(fen_, getSide()).then((moves) => {
-                chrome.runtime.sendMessage({
-                  type: "FROM_CONTENT",
-                  data: moves,
-                });
-                keyMove = moves;
+              if (engine.config !== "None") {
+                engine.getMovesByFen(fen_, getSide()).then((moves) => {
+                  chrome.runtime.sendMessage({
+                    type: "FROM_CONTENT",
+                    data: moves,
+                  });
+                  keyMove = moves;
 
-                if (config.autoMove) {
-                  if (config.autoMoveBalanced) {
-                    const moveBalanced = extractNormalMove(moves, getSide());
-                    requestMove(moveBalanced.from, moveBalanced.to);
-                  } else {
-                    requestMove(moves[0].from, moves[0].to);
+                  if (config.autoMove) {
+                    if (config.autoMoveBalanced) {
+                      const moveBalanced = extractNormalMove(moves, getSide());
+                      requestMove(moveBalanced.from, moveBalanced.to);
+                    } else {
+                      requestMove(moves[0].from, moves[0].to);
+                    }
                   }
-                }
-                if (moves.length > 0 && evalObj) {
-                  evalObj.update(moves[0].eval, getSide());
-                }
-                highlightMovesOnBoardChessCom(moves, getSide()[0]);
-              });
+                  if (moves.length > 0 && evalObj) {
+                    evalObj.update(moves[0].eval, getSide());
+                  }
+                  highlightMovesOnBoardChessCom(moves, getSide()[0]);
+                });
+              }
             }
           }
         });
@@ -679,38 +690,42 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
                   (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
                 ) {
-                  engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
-                    highlightMovesOnBoardLichess(moves, getSide()[0]);
-                    keyMove = moves;
-                    if (moves.length > 0 && evalObj) {
-                      evalObj.update(moves[0].eval, getSide());
-                    }
+                  if (engine.config !== "None") {
+                    engine
+                      .getMovesByFen(fen_, getSide())
+                      .then(async (moves) => {
+                        highlightMovesOnBoardLichess(moves, getSide()[0]);
+                        keyMove = moves;
+                        if (moves.length > 0 && evalObj) {
+                          evalObj.update(moves[0].eval, getSide());
+                        }
 
-                    if (moves.length > 0 && config.autoMove) {
-                      if (config.autoMoveBalanced) {
-                        const balancedMove = extractNormalMove(
-                          moves,
-                          getSide(),
-                        );
-                        await movePiece(
-                          balancedMove.from,
-                          balancedMove.to,
-                          randomIntBetween(0, config.delay),
-                        );
-                      } else {
-                        await movePiece(
-                          moves[0].from,
-                          moves[0].to,
-                          randomIntBetween(0, config.delay),
-                        );
-                      }
-                    }
+                        if (moves.length > 0 && config.autoMove) {
+                          if (config.autoMoveBalanced) {
+                            const balancedMove = extractNormalMove(
+                              moves,
+                              getSide(),
+                            );
+                            await movePiece(
+                              balancedMove.from,
+                              balancedMove.to,
+                              randomIntBetween(config.delay0, config.delay),
+                            );
+                          } else {
+                            await movePiece(
+                              moves[0].from,
+                              moves[0].to,
+                              randomIntBetween(config.delay0, config.delay),
+                            );
+                          }
+                        }
 
-                    chrome.runtime.sendMessage({
-                      type: "FROM_CONTENT",
-                      data: moves,
-                    });
-                  });
+                        chrome.runtime.sendMessage({
+                          type: "FROM_CONTENT",
+                          data: moves,
+                        });
+                      });
+                  }
                 }
               }
             }
@@ -839,46 +854,42 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             }
 
             config = newConfig;
-            // engine.updateConfig(
-            //   config.lines,
-            //   config.depth,
-            //   config.style,
-            //   config.elo,
-            // );
 
             clearHighlightSquares();
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
-              engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
-                highlightMovesOnBoardLichess(moves, getSide()[0]);
-                keyMove = moves;
-                if (moves.length > 0 && evalObj) {
-                  evalObj.update(moves[0].eval, getSide());
-                }
-
-                if (moves.length > 0 && config.autoMove) {
-                  if (config.autoMoveBalanced) {
-                    const balancedMove = extractNormalMove(moves, getSide());
-                    await movePiece(
-                      balancedMove.from,
-                      balancedMove.to,
-                      randomIntBetween(0, config.delay),
-                    );
-                  } else {
-                    await movePiece(
-                      moves[0].from,
-                      moves[0].to,
-                      randomIntBetween(0, config.delay),
-                    );
+              if (engine.config !== "None") {
+                engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
+                  highlightMovesOnBoardLichess(moves, getSide()[0]);
+                  keyMove = moves;
+                  if (moves.length > 0 && evalObj) {
+                    evalObj.update(moves[0].eval, getSide());
                   }
-                }
-                chrome.runtime.sendMessage({
-                  type: "FROM_CONTENT",
-                  data: moves,
+
+                  if (moves.length > 0 && config.autoMove) {
+                    if (config.autoMoveBalanced) {
+                      const balancedMove = extractNormalMove(moves, getSide());
+                      await movePiece(
+                        balancedMove.from,
+                        balancedMove.to,
+                        randomIntBetween(config.delay0, config.delay),
+                      );
+                    } else {
+                      await movePiece(
+                        moves[0].from,
+                        moves[0].to,
+                        randomIntBetween(config.delay0, config.delay),
+                      );
+                    }
+                  }
+                  chrome.runtime.sendMessage({
+                    type: "FROM_CONTENT",
+                    data: moves,
+                  });
                 });
-              });
+              }
             }
           }
         });
@@ -898,8 +909,18 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               coach
                 .getChat(uciH_, getSide(), whiteElo_, blackElo_)
                 .then((result) => {
-                  // console.log(result);
+                  console.log(result);
                   const urlAudio_ = result.urlAudio;
+
+                  clearHighlighthints();
+
+                  if (!(result.res_data.show)) {
+                    HintLichess(
+                      result.res_data.from,
+                      result.res_data.to,
+                      getSide()[0],
+                    );
+                  }
 
                   if (config.speach) {
                     playAudio(result.urlAudio);
@@ -1157,36 +1178,38 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
-              engine.getMovesByFen(fen_, getSide()).then((moves) => {
-                keyMove = moves;
+              if (engine.config !== "None") {
+                engine.getMovesByFen(fen_, getSide()).then((moves) => {
+                  keyMove = moves;
 
-                chrome.runtime.sendMessage({
-                  type: "FROM_CONTENT",
-                  data: moves,
-                });
-                highlightMovesOnBoardWorld(moves, getSide()[0]);
+                  chrome.runtime.sendMessage({
+                    type: "FROM_CONTENT",
+                    data: moves,
+                  });
+                  highlightMovesOnBoardWorld(moves, getSide()[0]);
 
-                if (moves.length > 0 && evalObj) {
-                  evalObj.update(moves[0].eval, getSide());
-                }
-
-                if (moves.length > 0 && config.autoMove) {
-                  if (config.autoMoveBalanced) {
-                    const balancedMove = extractNormalMove(moves, getSide());
-                    movePiece(
-                      balancedMove.from,
-                      balancedMove.to,
-                      randomIntBetween(0, config.delay),
-                    );
-                  } else {
-                    movePiece(
-                      moves[0].from,
-                      moves[0].to,
-                      randomIntBetween(0, config.delay),
-                    );
+                  if (moves.length > 0 && evalObj) {
+                    evalObj.update(moves[0].eval, getSide());
                   }
-                }
-              });
+
+                  if (moves.length > 0 && config.autoMove) {
+                    if (config.autoMoveBalanced) {
+                      const balancedMove = extractNormalMove(moves, getSide());
+                      movePiece(
+                        balancedMove.from,
+                        balancedMove.to,
+                        randomIntBetween(config.delay0, config.delay),
+                      );
+                    } else {
+                      movePiece(
+                        moves[0].from,
+                        moves[0].to,
+                        randomIntBetween(config.delay0, config.delay),
+                      );
+                    }
+                  }
+                });
+              }
             }
           }
         }, interval);
@@ -1206,48 +1229,44 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             }
 
             config = newConfig;
-            // engine.updateConfig(
-            //   config.lines,
-            //   config.depth,
-            //   config.style,
-            //   config.elo,
-            // );
 
             clearHighlightSquares();
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
-              engine.getMovesByFen(fen_, getSide()).then((moves) => {
-                keyMove = moves;
+              if (engine.config !== "None") {
+                engine.getMovesByFen(fen_, getSide()).then((moves) => {
+                  keyMove = moves;
 
-                chrome.runtime.sendMessage({
-                  type: "FROM_CONTENT",
-                  data: moves,
-                });
-                highlightMovesOnBoardWorld(moves, getSide()[0]);
+                  chrome.runtime.sendMessage({
+                    type: "FROM_CONTENT",
+                    data: moves,
+                  });
+                  highlightMovesOnBoardWorld(moves, getSide()[0]);
 
-                if (moves.length > 0 && evalObj) {
-                  evalObj.update(moves[0].eval, getSide());
-                }
-
-                if (moves.length > 0 && config.autoMove) {
-                  if (config.autoMoveBalanced) {
-                    const balancedMove = extractNormalMove(moves, getSide());
-                    movePiece(
-                      balancedMove.from,
-                      balancedMove.to,
-                      randomIntBetween(0, config.delay),
-                    );
-                  } else {
-                    movePiece(
-                      moves[0].from,
-                      moves[0].to,
-                      randomIntBetween(0, config.delay),
-                    );
+                  if (moves.length > 0 && evalObj) {
+                    evalObj.update(moves[0].eval, getSide());
                   }
-                }
-              });
+
+                  if (moves.length > 0 && config.autoMove) {
+                    if (config.autoMoveBalanced) {
+                      const balancedMove = extractNormalMove(moves, getSide());
+                      movePiece(
+                        balancedMove.from,
+                        balancedMove.to,
+                        randomIntBetween(config.delay0, config.delay),
+                      );
+                    } else {
+                      movePiece(
+                        moves[0].from,
+                        moves[0].to,
+                        randomIntBetween(config.delay0, config.delay),
+                      );
+                    }
+                  }
+                });
+              }
             }
           }
         });
@@ -1270,6 +1289,16 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   if (config.speach) {
                     chessComAudio.src = result.urlAudio;
                     chessComAudio.play();
+                  }
+
+                  clearHighlighthints();
+
+                  if (!(result.res_data.show)) {
+                    HintWorldChessCom(
+                      result.res_data.from,
+                      result.res_data.to,
+                      getSide()[0],
+                    );
                   }
 
                   if (statObj) {

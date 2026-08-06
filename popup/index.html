@@ -490,7 +490,7 @@
           <!-- AUTOMATION -->
           <div class="section-divider"><span>Automation</span></div>
 
-          <div class="setting">
+          <!-- <div class="setting">
             <label
               >Auto Move Delay :
               <span class="value-badge" id="delayValue">100</span> ms</label
@@ -503,7 +503,39 @@
               step="50"
               value="100"
             />
+          </div> -->
+
+          <div class="setting dual">
+            <label>
+              Auto Move Delay :
+              <span>
+                <span class="value-badge" id="delayMinValue">100</span>
+                –
+                <span class="value-badge" id="delayMaxValue">20000</span> ms
+              </span>
+            </label>
+
+            <div class="dual-range">
+              <div class="dual-range-track" id="delayTrack"></div>
+              <input
+                type="range"
+                id="delayMin"
+                min="100"
+                max="20000"
+                step="50"
+                value="100"
+              />
+              <input
+                type="range"
+                id="delayMax"
+                min="100"
+                max="20000"
+                step="50"
+                value="20000"
+              />
+            </div>
           </div>
+
           <div class="setting-help">
             Delay before the engine automatically plays a move. Randomly chosen
             between 0 ms and the chosen value.

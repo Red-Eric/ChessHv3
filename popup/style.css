@@ -516,3 +516,88 @@ input:focus, select:focus { outline: none; border-color: var(--olive-vivid); box
     padding: 10px 24px;
   }
 }
+
+/* ================= DUAL RANGE SLIDER ================= */
+.setting.dual {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+.setting.dual > label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  white-space: normal;
+}
+
+.dual-range {
+  position: relative;
+  width: 100%;
+  height: 26px;
+}
+.dual-range-track {
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  background: var(--olive-vivid);
+  border-radius: 4px;
+  transform: translateY(-50%);
+  box-shadow: 0 0 8px var(--olive-glow);
+}
+
+/* on override le style générique .setting input[type=range] pour ces deux inputs */
+.dual-range input[type="range"] {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 26px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  appearance: none;
+  pointer-events: none;
+}
+.dual-range input[type="range"]::-webkit-slider-runnable-track {
+  background: transparent;
+  border: none;
+}
+.dual-range input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  pointer-events: auto;
+  width: 17px; height: 17px; border-radius: 50%;
+  background: var(--grey-fish);
+  border: 2px solid var(--bg-deep);
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(30,26,20,0.20);
+  margin-top: 5px;
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.dual-range input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.25);
+  background: var(--olive-vivid);
+  box-shadow: 0 0 14px rgba(74,124,31,0.50);
+}
+.dual-range input[type="range"]::-moz-range-track {
+  background: transparent;
+  border: none;
+}
+.dual-range input[type="range"]::-moz-range-thumb {
+  pointer-events: auto;
+  width: 17px; height: 17px; border-radius: 50%;
+  background: var(--grey-fish);
+  border: 2px solid var(--bg-deep);
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(30,26,20,0.20);
+}
+
+/* la poignée min doit rester attrapable même collée à gauche */
+#delayMin { z-index: 2; }
+#delayMax { z-index: 1; }
+
+@media (max-width: 600px) {
+  .setting.dual { padding: 12px 14px; }
+  .dual-range { order: unset; }
+}

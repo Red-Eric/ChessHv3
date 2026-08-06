@@ -289,6 +289,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 let fenhistory = [];
 
                 let uciHistory = `position fen ${movesHistory[0]?.fen ?? ""} moves`;
+                
+                
 
                 if (movesHistory.length > 0) {
                   game.load(movesHistory[0].fen);

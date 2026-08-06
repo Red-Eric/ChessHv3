@@ -199,6 +199,9 @@ function clearHighlightSquares() {
   document.querySelectorAll(".customH").forEach((el) => el.remove());
 }
 
+function clearHighlighthints() {
+  document.querySelectorAll(".customHint").forEach((el) => el.remove());
+}
 // clear move classification icon
 function clearHint() {
   const className = "." + classMoveClassification;

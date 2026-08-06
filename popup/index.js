@@ -265,7 +265,8 @@ const defaultChessConfig = {
   colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
   depth: 10,
   depth2: 10,
-  delay: 100,
+  delay0 : 0,
+  delay: 5000,
   style: "Default",
   autoMove: false,
   floatingBtn: false,
@@ -614,7 +615,6 @@ function updateChessUI() {
     "elo",
     "lines",
     "depth",
-    "delay",
     "depth2",
     "st6_mobilityMid",
     "st6_mobilityEnd",
@@ -630,6 +630,9 @@ function updateChessUI() {
   el("key2").value = chessConfig.key2;
   el("engine").value = chessConfig.engine;
 
+  el("delayMin").value = chessConfig.delay0;
+  el("delayMax").value = chessConfig.delay;
+
   [
     "autoMove",
     "winningMove",
@@ -644,8 +647,10 @@ function updateChessUI() {
   el("eloValue").textContent = chessConfig.elo;
   el("linesValue").textContent = chessConfig.lines;
   el("depthValue").textContent = chessConfig.depth;
-  el("delayValue").textContent = chessConfig.delay;
   el("depth2Value").textContent = chessConfig.depth2;
+
+  el("delayMinValue").textContent = chessConfig.delay0;
+  el("delayMaxValue").textContent = chessConfig.delay;
 
   el("st6_mobilityMidValue").textContent = chessConfig.st6_mobilityMid;
   el("st6_mobilityEndValue").textContent = chessConfig.st6_mobilityEnd;
@@ -690,6 +695,8 @@ function updateChessUI() {
   } else {
     hideExtraColorInputs(chessConfig.lines);
   }
+
+  updateDelayTrack();
 }
 
 loadChessConfig(updateChessUI);
@@ -699,7 +706,6 @@ loadChessConfig(updateChessUI);
   "elo",
   "lines",
   "depth",
-  "delay",
   "depth2",
   "st6_mobilityMid",
   "st6_mobilityEnd",
@@ -715,6 +721,43 @@ loadChessConfig(updateChessUI);
     saveChessConfig();
   };
 });
+
+/* ================= DELAY DUAL RANGE (delayMin -> delay0, delayMax -> delay) ================= */
+const DELAY_MIN_GAP = 50;
+
+function updateDelayTrack() {
+  const track = el("delayTrack");
+  if (!track) return;
+  const minInput = el("delayMin");
+  const maxInput = el("delayMax");
+  const range = maxInput.max - maxInput.min;
+  const leftPct = ((chessConfig.delay0 - minInput.min) / range) * 100;
+  const rightPct = ((chessConfig.delay - minInput.min) / range) * 100;
+  track.style.left = leftPct + "%";
+  track.style.right = 100 - rightPct + "%";
+}
+
+function handleDelayInput(e) {
+  let minV = +el("delayMin").value;
+  let maxV = +el("delayMax").value;
+
+  if (maxV - minV < DELAY_MIN_GAP) {
+    if (e.target.id === "delayMin") {
+      minV = maxV - DELAY_MIN_GAP;
+    } else {
+      maxV = minV + DELAY_MIN_GAP;
+    }
+  }
+
+  chessConfig.delay0 = minV;
+  chessConfig.delay = maxV;
+
+  updateChessUI();
+  saveChessConfig();
+}
+
+el("delayMin").oninput = handleDelayInput;
+el("delayMax").oninput = handleDelayInput;
 
 [
   "autoMove",

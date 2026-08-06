@@ -1,5 +1,4 @@
 let config = {
-
   engine: "komodo",
 
   elo: 3500,
@@ -8,7 +7,8 @@ let config = {
   colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
   depth: 10,
   depth2: 10,
-  delay: 100,
+  delay0 : 0,
+  delay: 5000,
   style: "Default",
   autoMove: false,
   floatingBtn: false,
