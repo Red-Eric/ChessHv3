@@ -423,12 +423,10 @@ chrome.storage.local.get(["chessConfig"], (result) => {
           if (lastFEN !== fen_) {
             //accuracy
 
-            if (config.onlyShowEval) {
-              chrome.runtime.sendMessage({
-                type: "FEN_UPDATE",
-                colors: config.colors,
-              });
-            }
+            chrome.runtime.sendMessage({
+              type: "FEN_UPDATE",
+              colors: config.colors,
+            });
 
             clearHint();
             lastFEN = fen_;
@@ -490,7 +488,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                         chessComAudio.play();
                       }
 
-                      if (config.onlyShowEval) {
+                      if (config.onlyShowEval && config.moveClassification) {
                         chrome.runtime.sendMessage({
                           type: "ACC",
                           whiteAcc: result.whiteAccuracy,
@@ -762,12 +760,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
               if (fenTemp !== fen_) {
                 fen_ = fenTemp;
-                if (config.onlyShowEval) {
-                  chrome.runtime.sendMessage({
-                    type: "FEN_UPDATE",
-                    colors: config.colors,
-                  });
-                }
+
+                chrome.runtime.sendMessage({
+                  type: "FEN_UPDATE",
+                  colors: config.colors,
+                });
 
                 chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
 
@@ -1020,7 +1017,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                 .then((result) => {
                   const urlAudio_ = result.urlAudio;
 
-                  if (config.onlyShowEval) {
+                  if (config.onlyShowEval && config.moveClassification) {
                     chrome.runtime.sendMessage({
                       type: "ACC",
                       whiteAcc: result.whiteAccuracy,
@@ -1323,12 +1320,10 @@ chrome.storage.local.get(["chessConfig"], (result) => {
           if (fen_ && fen_ !== currentFen) {
             currentFen = fen_;
 
-            if (config.onlyShowEval) {
-              chrome.runtime.sendMessage({
-                type: "FEN_UPDATE",
-                colors: config.colors,
-              });
-            }
+            chrome.runtime.sendMessage({
+              type: "FEN_UPDATE",
+              colors: config.colors,
+            });
 
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
 
@@ -1471,7 +1466,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     chessComAudio.play();
                   }
 
-                  if (config.onlyShowEval) {
+                  if (config.onlyShowEval && config.moveClassification) {
                     chrome.runtime.sendMessage({
                       type: "ACC",
                       whiteAcc: result.whiteAccuracy,
