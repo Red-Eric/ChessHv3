@@ -392,7 +392,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
           if (!document.querySelector("#customEval") && config.showEval && !config.onlyShowEval) {
             const boardContainer = document.querySelector(".board");
             if (boardContainer) {
-              evalObj = createEvalBarChessCom("0.0", getSide());
+              evalObj = CreateEvalBar("0.0", getSide());
             }
           }
 
@@ -833,7 +833,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
           if (!document.querySelector("#customEval") && config.showEval && !config.onlyShowEval) {
             const boardContainer = document.querySelector("cg-container");
             if (boardContainer) {
-              evalObj = createEvalBarLichess("0.0", getSide());
+              evalObj = CreateEvalBar("0.0", getSide());
               // customEval = document.querySelector("#customEval");
             }
           }
@@ -1277,7 +1277,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
           if (!document.querySelector("#customEval") && config.showEval && !config.onlyShowEval) {
             const boardContainer = document.querySelector("cg-board");
             if (boardContainer) {
-              evalObj = createEvalBarWorld("0.0", getSide());
+              evalObj = CreateEvalBar("0.0", getSide());
             }
           }
 
