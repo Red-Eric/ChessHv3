@@ -296,6 +296,8 @@ class CoachEngine {
         let raw = e.data;
         let cleanRaw = raw;
 
+        // console.log(cleanRaw)
+
         if (typeof cleanRaw === "string" && cleanRaw.startsWith("json ")) {
           cleanRaw = cleanRaw.slice(5).trim();
         } else {
@@ -307,6 +309,7 @@ class CoachEngine {
 
         try {
           const data = JSON.parse(cleanRaw);
+          // console.log(data);
           const last = data?.positions?.[data.positions.length - 1];
           const whiteAccuracy = data?.CAPS.white.all;
           const blackAccuracy = data?.CAPS.black.all;
@@ -321,6 +324,28 @@ class CoachEngine {
           const fen = last.fen;
           const audioUrlHash = last?.playedMove?.speech?.[0]?.audioUrlHash;
           const moveLan = last?.playedMove?.moveLan;
+          const side_res = side === "black" ? "white" : "black";
+
+          let show_ = false;
+
+          const bestMove = last?.bestMove?.moveLan;
+          const bestMove_classification = last?.bestMove?.classification;
+
+          
+
+          if(side_res !== last?.color){ // play as back vs last move play by white
+            show_ = true;
+          }
+
+          const res_data = {
+            from : bestMove.slice(0,2),
+            to : bestMove.slice(2,4),
+            classification : bestMove_classification,
+            show : show_
+          }
+
+          console.log(res_data)
+
           if (!audioUrlHash) return;
 
           const urlAudio = `${coachs[config.coach].link}${audioUrlHash}.mp3`;
@@ -336,6 +361,7 @@ class CoachEngine {
             whiteElo,
             blackAccuracy,
             blackElo,
+            res_data
           });
         } catch (err) {}
       };
@@ -826,8 +852,15 @@ class Lozza {
         ) {
           this.worker.removeEventListener("message", onMessage);
           const moveParts = msg.split(" ")[1];
-          resolve([{ from: moveParts.slice(0, 2), to: moveParts.slice(2, 4), eval : "1st", fen : fen , side : side }]);
-          
+          resolve([
+            {
+              from: moveParts.slice(0, 2),
+              to: moveParts.slice(2, 4),
+              eval: "1st",
+              fen: fen,
+              side: side,
+            },
+          ]);
         }
       };
 
@@ -871,9 +904,15 @@ class Wukong {
         const { type, text } = e.data;
         if (type === "log" && text.startsWith("Best move:")) {
           this.worker.removeEventListener("message", onMessage);
-          resolve([{ from: text.slice(11, 13), to: text.slice(13, 15), eval : "1st",fen: fen, side : side }]);
-
-          
+          resolve([
+            {
+              from: text.slice(11, 13),
+              to: text.slice(13, 15),
+              eval: "1st",
+              fen: fen,
+              side: side,
+            },
+          ]);
         }
       };
 
