@@ -542,4 +542,22 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       .then((data) => console.log(data))
       .catch((err) => console.error(err));
   }
+
+  if (msg.type === "ACC") {
+    fetch("http://127.0.0.1:5000/api/accuracy", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        accWhite: msg.whiteAcc,
+        EloWhite: msg.whiteElo,
+        accBlack: msg.blackAcc,
+        EloBlack: msg.blackElo,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => console.log("Succès:", data))
+      .catch((error) => console.error("Erreur:", error));
+  }
 });

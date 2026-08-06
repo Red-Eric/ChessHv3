@@ -454,6 +454,15 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                         chessComAudio.play();
                       }
 
+                      chrome.runtime.sendMessage({
+                        type: "ACC",
+                        whiteAcc: result.whiteAccuracy,
+                        blackAcc: result.blackAccuracy,
+
+                        whiteElo: result.whiteElo,
+                        blackElo: result.blackElo,
+                      });
+
                       if (statObj) {
                         statObj.update({
                           side: getSide(),
@@ -960,6 +969,15 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                 .then((result) => {
                   const urlAudio_ = result.urlAudio;
 
+                  chrome.runtime.sendMessage({
+                    type: "ACC",
+                    whiteAcc: result.whiteAccuracy,
+                    blackAcc: result.blackAccuracy,
+
+                    whiteElo: result.whiteElo,
+                    blackElo: result.blackElo,
+                  });
+
                   clearHighlighthints();
 
                   if (
@@ -1370,6 +1388,15 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     chessComAudio.src = result.urlAudio;
                     chessComAudio.play();
                   }
+
+                  chrome.runtime.sendMessage({
+                    type: "ACC",
+                    whiteAcc: result.whiteAccuracy,
+                    blackAcc: result.blackAccuracy,
+
+                    whiteElo: result.whiteElo,
+                    blackElo: result.blackElo,
+                  });
 
                   clearHighlighthints();
 
