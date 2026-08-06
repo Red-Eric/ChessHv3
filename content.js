@@ -604,11 +604,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               if (engine.config !== "None") {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
                   chrome.runtime.sendMessage({
-                    type: "STREAM",
-                    moves: moves,
-                    side: getSide(),
-                  });
-                  chrome.runtime.sendMessage({
                     type: "FROM_CONTENT",
                     data: moves,
                   });
@@ -753,8 +748,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   type: "FEN_UPDATE",
                 });
 
-                
-
                 chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
 
                 clearHighlightSquares();
@@ -768,6 +761,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     engine
                       .getMovesByFen(fen_, getSide())
                       .then(async (moves) => {
+                        chrome.runtime.sendMessage({
+                          type: "STREAM",
+                          moves: moves,
+                          side: getSide(),
+                        });
                         highlightMovesOnBoardLichess(moves, getSide()[0]);
                         keyMove = moves;
                         if (moves.length > 0 && evalObj) {
@@ -940,11 +938,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             ) {
               if (engine.config !== "None") {
                 engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
-                  chrome.runtime.sendMessage({
-                    type: "STREAM",
-                    moves: moves,
-                    side: getSide(),
-                  });
                   highlightMovesOnBoardLichess(moves, getSide()[0]);
                   keyMove = moves;
                   if (moves.length > 0 && evalObj) {
@@ -1373,12 +1366,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               if (engine.config !== "None") {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
                   keyMove = moves;
-
-                  chrome.runtime.sendMessage({
-                    type: "STREAM",
-                    moves: moves,
-                    side: getSide(),
-                  });
 
                   chrome.runtime.sendMessage({
                     type: "FROM_CONTENT",
