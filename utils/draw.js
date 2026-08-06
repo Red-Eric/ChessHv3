@@ -1295,7 +1295,6 @@ function highlightMovesOnBoardWorld(moves, side) {
 }
 
 /* HINT*/
-
 function HintChessCom(from, to, side) {
   const parent = document.querySelector("wc-chess-board");
   if (!parent) return;
@@ -1345,15 +1344,38 @@ function HintChessCom(from, to, side) {
   const headLen = 0.36 * squareSize; // longueur de la pointe
   const gap = 0.36 * squareSize; // décalage par rapport au centre de départ
 
+  // Groupe englobant : l'opacité est appliquée UNE SEULE FOIS sur l'ensemble,
+  // ce qui évite l'effet de "double transparence" là où les formes se chevauchent.
+  const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  g.setAttribute("style", `opacity: 0.8;`);
+  svg.appendChild(g);
+
   function makePolygon(points) {
     const poly = document.createElementNS(
       "http://www.w3.org/2000/svg",
       "polygon",
     );
     poly.setAttribute("points", points.map((p) => `${p.x} ${p.y}`).join(", "));
-    poly.setAttribute("style", `fill: ${color}; opacity: 0.8;`);
+    poly.setAttribute("style", `fill: ${color};`);
     poly.setAttribute("class", "arrow");
-    svg.appendChild(poly);
+    g.appendChild(poly);
+  }
+
+  // Trait en <path> avec un coude arrondi (stroke-linejoin="round").
+  // C'est ce qui donne la courbe douce au lieu d'une jointure visible entre 2 polygones.
+  function makePath(points, width) {
+    const d = points
+      .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+      .join(" ");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", d);
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", color.replace(", 0.8)", ")").replace("rgba", "rgb"));
+    path.setAttribute("stroke-width", width);
+    path.setAttribute("stroke-linejoin", "round");
+    path.setAttribute("stroke-linecap", "butt");
+    path.setAttribute("class", "arrow");
+    g.appendChild(path);
   }
 
   const dx = toPos.x - fromPos.x;
@@ -1387,49 +1409,36 @@ function HintChessCom(from, to, side) {
       p(gap, -shaftHalfW),
     ]);
   } else {
-    // Flèche coudée pour les coups de cavalier
+    // Flèche coudée pour les coups de cavalier — centerline en path (coude arrondi)
+    // + pointe de flèche en polygone séparé
     const longAxisIsX = fileDiff === 2;
-    const ulx = longAxisIsX ? Math.sign(dx) : 0;
+    const ulx = longAxisIsX ? Math.sign(dx) : 0; // direction du grand axe
     const uly = longAxisIsX ? 0 : Math.sign(dy);
-    const usx = longAxisIsX ? 0 : Math.sign(dx);
+    const usx = longAxisIsX ? 0 : Math.sign(dx); // direction du petit axe
     const usy = longAxisIsX ? Math.sign(dy) : 0;
 
     const longDist = longAxisIsX ? Math.abs(dx) : Math.abs(dy);
     const shortDist = longAxisIsX ? Math.abs(dy) : Math.abs(dx);
+    const b1 = shortDist - headLen;
 
-    const corner = {
-      x: fromPos.x + ulx * longDist,
-      y: fromPos.y + uly * longDist,
-    };
-
-    // Segment 1 : départ -> coude (grand axe)
-    makePolygon([
-      {
-        x: fromPos.x + ulx * gap + usx * shaftHalfW,
-        y: fromPos.y + uly * gap + usy * shaftHalfW,
-      },
-      { x: corner.x + usx * shaftHalfW, y: corner.y + usy * shaftHalfW },
-      { x: corner.x - usx * shaftHalfW, y: corner.y - usy * shaftHalfW },
-      {
-        x: fromPos.x + ulx * gap - usx * shaftHalfW,
-        y: fromPos.y + uly * gap - usy * shaftHalfW,
-      },
-    ]);
-
-    // Segment 2 + pointe : coude -> cible (petit axe)
-    const p2 = (t, w) => ({
-      x: corner.x + usx * t + ulx * w,
-      y: corner.y + usy * t + uly * w,
+    // Conversion (u le long du grand axe, v le long du petit axe) -> coordonnées absolues
+    const pt = (u, v) => ({
+      x: fromPos.x + ulx * u + usx * v,
+      y: fromPos.y + uly * u + usy * v,
     });
 
+    // Centerline : départ -> coude -> juste avant la pointe. Le stroke-linejoin="round"
+    // arrondit automatiquement l'angle du coude.
+    makePath(
+      [pt(gap, 0), pt(longDist, 0), pt(longDist, b1)],
+      shaftHalfW * 2,
+    );
+
+    // Pointe de flèche
     makePolygon([
-      p2(0, shaftHalfW),
-      p2(shortDist - headLen, shaftHalfW),
-      p2(shortDist - headLen, headHalfW),
-      p2(shortDist, 0),
-      p2(shortDist - headLen, -headHalfW),
-      p2(shortDist - headLen, -shaftHalfW),
-      p2(0, -shaftHalfW),
+      pt(longDist - headHalfW, b1),
+      pt(longDist, shortDist),
+      pt(longDist + headHalfW, b1),
     ]);
   }
 
@@ -1485,15 +1494,34 @@ function HintLichess(from, to, side) {
   const headLen = 0.36 * squareSize;
   const gap = 0.36 * squareSize;
 
+  const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  g.setAttribute("style", `opacity: 0.8;`);
+  svg.appendChild(g);
+
   function makePolygon(points) {
     const poly = document.createElementNS(
       "http://www.w3.org/2000/svg",
       "polygon",
     );
     poly.setAttribute("points", points.map((p) => `${p.x} ${p.y}`).join(", "));
-    poly.setAttribute("style", `fill: ${color}; opacity: 0.8;`);
+    poly.setAttribute("style", `fill: ${color};`);
     poly.setAttribute("class", "arrow");
-    svg.appendChild(poly);
+    g.appendChild(poly);
+  }
+
+  function makePath(points, width) {
+    const d = points
+      .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+      .join(" ");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", d);
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", color.replace(", 0.8)", ")").replace("rgba", "rgb"));
+    path.setAttribute("stroke-width", width);
+    path.setAttribute("stroke-linejoin", "round");
+    path.setAttribute("stroke-linecap", "butt");
+    path.setAttribute("class", "arrow");
+    g.appendChild(path);
   }
 
   const dx = toPos.x - fromPos.x;
@@ -1526,6 +1554,8 @@ function HintLichess(from, to, side) {
       p(gap, -shaftHalfW),
     ]);
   } else {
+    // Flèche coudée pour les coups de cavalier — centerline en path (coude arrondi)
+    // + pointe de flèche en polygone séparé
     const longAxisIsX = fileDiff === 2;
     const ulx = longAxisIsX ? Math.sign(dx) : 0;
     const uly = longAxisIsX ? 0 : Math.sign(dy);
@@ -1534,38 +1564,22 @@ function HintLichess(from, to, side) {
 
     const longDist = longAxisIsX ? Math.abs(dx) : Math.abs(dy);
     const shortDist = longAxisIsX ? Math.abs(dy) : Math.abs(dx);
+    const b1 = shortDist - headLen;
 
-    const corner = {
-      x: fromPos.x + ulx * longDist,
-      y: fromPos.y + uly * longDist,
-    };
-
-    makePolygon([
-      {
-        x: fromPos.x + ulx * gap + usx * shaftHalfW,
-        y: fromPos.y + uly * gap + usy * shaftHalfW,
-      },
-      { x: corner.x + usx * shaftHalfW, y: corner.y + usy * shaftHalfW },
-      { x: corner.x - usx * shaftHalfW, y: corner.y - usy * shaftHalfW },
-      {
-        x: fromPos.x + ulx * gap - usx * shaftHalfW,
-        y: fromPos.y + uly * gap - usy * shaftHalfW,
-      },
-    ]);
-
-    const p2 = (t, w) => ({
-      x: corner.x + usx * t + ulx * w,
-      y: corner.y + usy * t + uly * w,
+    const pt = (u, v) => ({
+      x: fromPos.x + ulx * u + usx * v,
+      y: fromPos.y + uly * u + usy * v,
     });
 
+    makePath(
+      [pt(gap, 0), pt(longDist, 0), pt(longDist, b1)],
+      shaftHalfW * 2,
+    );
+
     makePolygon([
-      p2(0, shaftHalfW),
-      p2(shortDist - headLen, shaftHalfW),
-      p2(shortDist - headLen, headHalfW),
-      p2(shortDist, 0),
-      p2(shortDist - headLen, -headHalfW),
-      p2(shortDist - headLen, -shaftHalfW),
-      p2(0, -shaftHalfW),
+      pt(longDist - headHalfW, b1),
+      pt(longDist, shortDist),
+      pt(longDist + headHalfW, b1),
     ]);
   }
 
@@ -1621,15 +1635,34 @@ function HintWorldChessCom(from, to, side) {
   const headLen = 0.36 * squareSize;
   const gap = 0.36 * squareSize;
 
+  const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  g.setAttribute("style", `opacity: 0.8;`);
+  svg.appendChild(g);
+
   function makePolygon(points) {
     const poly = document.createElementNS(
       "http://www.w3.org/2000/svg",
       "polygon",
     );
     poly.setAttribute("points", points.map((p) => `${p.x} ${p.y}`).join(", "));
-    poly.setAttribute("style", `fill: ${color}; opacity: 0.8;`);
+    poly.setAttribute("style", `fill: ${color};`);
     poly.setAttribute("class", "arrow");
-    svg.appendChild(poly);
+    g.appendChild(poly);
+  }
+
+  function makePath(points, width) {
+    const d = points
+      .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+      .join(" ");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", d);
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", color.replace(", 0.8)", ")").replace("rgba", "rgb"));
+    path.setAttribute("stroke-width", width);
+    path.setAttribute("stroke-linejoin", "round");
+    path.setAttribute("stroke-linecap", "butt");
+    path.setAttribute("class", "arrow");
+    g.appendChild(path);
   }
 
   const dx = toPos.x - fromPos.x;
@@ -1662,6 +1695,8 @@ function HintWorldChessCom(from, to, side) {
       p(gap, -shaftHalfW),
     ]);
   } else {
+    // Flèche coudée pour les coups de cavalier — centerline en path (coude arrondi)
+    // + pointe de flèche en polygone séparé
     const longAxisIsX = fileDiff === 2;
     const ulx = longAxisIsX ? Math.sign(dx) : 0;
     const uly = longAxisIsX ? 0 : Math.sign(dy);
@@ -1670,38 +1705,22 @@ function HintWorldChessCom(from, to, side) {
 
     const longDist = longAxisIsX ? Math.abs(dx) : Math.abs(dy);
     const shortDist = longAxisIsX ? Math.abs(dy) : Math.abs(dx);
+    const b1 = shortDist - headLen;
 
-    const corner = {
-      x: fromPos.x + ulx * longDist,
-      y: fromPos.y + uly * longDist,
-    };
-
-    makePolygon([
-      {
-        x: fromPos.x + ulx * gap + usx * shaftHalfW,
-        y: fromPos.y + uly * gap + usy * shaftHalfW,
-      },
-      { x: corner.x + usx * shaftHalfW, y: corner.y + usy * shaftHalfW },
-      { x: corner.x - usx * shaftHalfW, y: corner.y - usy * shaftHalfW },
-      {
-        x: fromPos.x + ulx * gap - usx * shaftHalfW,
-        y: fromPos.y + uly * gap - usy * shaftHalfW,
-      },
-    ]);
-
-    const p2 = (t, w) => ({
-      x: corner.x + usx * t + ulx * w,
-      y: corner.y + usy * t + uly * w,
+    const pt = (u, v) => ({
+      x: fromPos.x + ulx * u + usx * v,
+      y: fromPos.y + uly * u + usy * v,
     });
 
+    makePath(
+      [pt(gap, 0), pt(longDist, 0), pt(longDist, b1)],
+      shaftHalfW * 2,
+    );
+
     makePolygon([
-      p2(0, shaftHalfW),
-      p2(shortDist - headLen, shaftHalfW),
-      p2(shortDist - headLen, headHalfW),
-      p2(shortDist, 0),
-      p2(shortDist - headLen, -headHalfW),
-      p2(shortDist - headLen, -shaftHalfW),
-      p2(0, -shaftHalfW),
+      pt(longDist - headHalfW, b1),
+      pt(longDist, shortDist),
+      pt(longDist + headHalfW, b1),
     ]);
   }
 
