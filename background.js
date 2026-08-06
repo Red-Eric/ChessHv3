@@ -1,5 +1,6 @@
 importScripts("./lib/chess_min.js");
 
+
 chrome.action.onClicked.addListener(() => {
   chrome.tabs.create({ url: chrome.runtime.getURL("popup/index.html") });
 });
@@ -490,7 +491,6 @@ function sendMouseEvent(tabId, params) {
   });
 }
 
-
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === "FETCH_AUDIO") {
     fetch(msg.url)
@@ -529,6 +529,19 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === "FEN_UPDATE") {
     fetch("http://127.0.0.1:5000/api/update_fen", {
       method: "GET",
+    })
+      .then((res) => res.json())
+      .then((data) => console.log(data))
+      .catch((err) => console.error(err));
+
+
+      console.clear()
+      console.log("doefoefoekjfo")
+
+    fetch("http://127.0.0.1:5000/api/color", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(msg.colors),
     })
       .then((res) => res.json())
       .then((data) => console.log(data))

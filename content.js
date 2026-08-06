@@ -389,7 +389,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             evalObj = null;
           }
 
-          if (!document.querySelector("#customEval") && config.showEval && !config.onlyShowEval) {
+          if (
+            !document.querySelector("#customEval") &&
+            config.showEval &&
+            !config.onlyShowEval
+          ) {
             const boardContainer = document.querySelector(".board");
             if (boardContainer) {
               evalObj = CreateEvalBar("0.0", getSide());
@@ -421,6 +425,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
             chrome.runtime.sendMessage({
               type: "FEN_UPDATE",
+              colors: config.colors,
             });
 
             clearHint();
@@ -751,6 +756,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
                 chrome.runtime.sendMessage({
                   type: "FEN_UPDATE",
+                  colors: config.colors,
                 });
 
                 chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
@@ -824,13 +830,16 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             evalObj = null;
           }
 
-
           if (config.onlyShowEval && document.querySelector("#customEval")) {
             document.querySelector("#customEval").remove();
             evalObj = null;
           }
 
-          if (!document.querySelector("#customEval") && config.showEval && !config.onlyShowEval) {
+          if (
+            !document.querySelector("#customEval") &&
+            config.showEval &&
+            !config.onlyShowEval
+          ) {
             const boardContainer = document.querySelector("cg-container");
             if (boardContainer) {
               evalObj = CreateEvalBar("0.0", getSide());
@@ -1274,7 +1283,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             document.querySelector("#acc-widget").remove();
           }
 
-          if (!document.querySelector("#customEval") && config.showEval && !config.onlyShowEval) {
+          if (
+            !document.querySelector("#customEval") &&
+            config.showEval &&
+            !config.onlyShowEval
+          ) {
             const boardContainer = document.querySelector("cg-board");
             if (boardContainer) {
               evalObj = CreateEvalBar("0.0", getSide());
@@ -1294,6 +1307,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             currentFen = fen_;
             chrome.runtime.sendMessage({
               type: "FEN_UPDATE",
+              colors: config.colors,
             });
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
 
@@ -1305,7 +1319,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               evalObj = null;
             }
             if (config.onlyShowEval && document.querySelector("#customEval")) {
-              
               document.querySelector("#customEval").remove();
               evalObj = null;
             }
