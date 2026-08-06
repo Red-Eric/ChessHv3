@@ -118,13 +118,7 @@ function placeSVGOnBoard(side, square, svgCode) {
       el.style.opacity = "0.6";
     });
   }
-
-  if (window.location.host === "lichess.org") {
-    document.querySelectorAll(".last-move").forEach((el) => {
-      el.style.setProperty("background-color", detectedColor, "important");
-      el.style.setProperty("opacity", "0.6", "important");
-    });
-  }
+  
 }
 
 

@@ -753,6 +753,8 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   type: "FEN_UPDATE",
                 });
 
+                
+
                 chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
 
                 clearHighlightSquares();
