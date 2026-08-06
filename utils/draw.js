@@ -1307,7 +1307,7 @@ function HintChessCom(from, to, side) {
     const rankChar = square[1];
     const rank = parseInt(rankChar, 10) - 1;
     let file;
-    if (side === "b") {
+    if (side === "w") {
       file = fileChar.charCodeAt(0) - "a".charCodeAt(0);
       return {
         x: file * squareSize + squareSize / 2,

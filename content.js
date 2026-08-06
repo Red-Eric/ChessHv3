@@ -428,7 +428,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   .getChat(uciHistory, getSide(), whiteElo, blackElo)
                   .then((result) => {
                     if (lastFEN === result.fen) {
-
                       clearHighlighthints();
 
                       if (
@@ -439,6 +438,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                           result.res_data.from,
                           result.res_data.to,
                           getSide()[0],
+                        );
+                        // logo
+                        const classification_ = result.classificationName;
+                        const svg = classificationSVG[classification_];
+                        placeSVGOnBoard(
+                          getSide(),
+                          result.moveLan.slice(2),
+                          svg,
                         );
                       }
 
@@ -923,7 +930,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   clearHighlighthints();
 
                   if (
-                    !result.res_data.show &&
+                    result.res_data.show &&
                     config.hints.includes(result.classificationName)
                   ) {
                     HintLichess(
@@ -931,6 +938,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                       result.res_data.to,
                       getSide()[0],
                     );
+                    const classification_ = result.classificationName;
+
+                    const svg = classificationSVG[classification_];
+
+                    placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
                   }
 
                   if (config.speach) {
@@ -1306,7 +1318,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   clearHighlighthints();
 
                   if (
-                    !result.res_data.show &&
+                    result.res_data.show &&
                     config.hints.includes(result.classificationName)
                   ) {
                     HintWorldChessCom(
@@ -1314,6 +1326,9 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                       result.res_data.to,
                       getSide()[0],
                     );
+                    const classification_ = result.classificationName;
+                    const svg = classificationSVG[classification_];
+                    placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
                   }
 
                   if (statObj) {

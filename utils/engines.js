@@ -324,7 +324,7 @@ class CoachEngine {
           const fen = last.fen;
           const audioUrlHash = last?.playedMove?.speech?.[0]?.audioUrlHash;
           const moveLan = last?.playedMove?.moveLan;
-          const side_res = side === "black" ? "white" : "black";
+          
 
           let show_ = false;
 
@@ -332,8 +332,7 @@ class CoachEngine {
           const bestMove_classification = last?.bestMove?.classification;
 
           
-
-          if(side_res !== last?.color){ // play as back vs last move play by white
+          if(side !== last?.color){ // play as back vs last move play by white
             show_ = true;
           }
 
