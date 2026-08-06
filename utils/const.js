@@ -1,3 +1,5 @@
+let BOARD_WIDTH = 480;
+
 const swalThemeCSS = `
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap');

@@ -276,6 +276,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
         };
 
         async function checkAndSendMoves() {
+          BOARD_WIDTH = getBoardWidth();
           // fix refresh page
 
           // Floating Button for Android
@@ -403,8 +404,8 @@ chrome.storage.local.get(["chessConfig"], (result) => {
           if (
             (config.coach === 999 && document.querySelector("#acc-widget")) ||
             (config.onlyShowEval && document.querySelector("#acc-widget")) ||
-            !(
-              config.moveClassification && document.querySelector("#acc-widget")
+            (
+              !config.moveClassification && document.querySelector("#acc-widget")
             )
           ) {
             statObj = null;
@@ -506,6 +507,12 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               if (engine.config !== "None") {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
                   chrome.runtime.sendMessage({
+                    type : "STREAM",
+                    moves : moves,
+                    side : getSide()
+                  });
+
+                  chrome.runtime.sendMessage({
                     type: "FROM_CONTENT",
                     data: moves,
                   });
@@ -556,6 +563,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             ) {
               if (engine.config !== "None") {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
+                  chrome.runtime.sendMessage({
+                    type : "STREAM",
+                    moves : moves,
+                    side : getSide()
+                  });
                   chrome.runtime.sendMessage({
                     type: "FROM_CONTENT",
                     data: moves,
@@ -678,8 +690,8 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             if (
               (config.coach === 999 && document.querySelector("#acc-widget")) ||
               (config.onlyShowEval && document.querySelector("#acc-widget")) ||
-              !(
-                config.moveClassification &&
+              (
+                !config.moveClassification &&
                 document.querySelector("#acc-widget")
               )
             ) {
@@ -751,6 +763,8 @@ chrome.storage.local.get(["chessConfig"], (result) => {
         inject();
 
         setInterval(() => {
+          BOARD_WIDTH = getBoardWidth();
+
           if (document.querySelector("#user_tag")) {
             userName = document.querySelector("#user_tag").innerText;
           }
@@ -878,6 +892,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             ) {
               if (engine.config !== "None") {
                 engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
+                  chrome.runtime.sendMessage({
+                    type : "STREAM",
+                    moves : moves,
+                    side : getSide()
+                  });
                   highlightMovesOnBoardLichess(moves, getSide()[0]);
                   keyMove = moves;
                   if (moves.length > 0 && evalObj) {
@@ -1076,6 +1095,8 @@ chrome.storage.local.get(["chessConfig"], (result) => {
         };
 
         setInterval(async () => {
+          BOARD_WIDTH = getBoardWidth();
+
           if (config.floatingBtn) {
             if (!document.getElementById("rederic-float-wrap")) {
               const wrap = document.createElement("div");
@@ -1163,8 +1184,8 @@ chrome.storage.local.get(["chessConfig"], (result) => {
           if (
             (config.coach === 999 && document.querySelector("#acc-widget")) ||
             (config.onlyShowEval && document.querySelector("#acc-widget")) ||
-            !(
-              config.moveClassification && document.querySelector("#acc-widget")
+            (
+              !config.moveClassification && document.querySelector("#acc-widget")
             )
           ) {
             statObj = null;
@@ -1205,6 +1226,12 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               if (engine.config !== "None") {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
                   keyMove = moves;
+
+                  chrome.runtime.sendMessage({
+                    type : "STREAM",
+                    moves : moves,
+                    side : getSide()
+                  });
 
                   chrome.runtime.sendMessage({
                     type: "FROM_CONTENT",
@@ -1262,6 +1289,12 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               if (engine.config !== "None") {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
                   keyMove = moves;
+
+                  chrome.runtime.sendMessage({
+                    type : "STREAM",
+                    moves : moves,
+                    side : getSide()
+                  });
 
                   chrome.runtime.sendMessage({
                     type: "FROM_CONTENT",

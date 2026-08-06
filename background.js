@@ -14,7 +14,6 @@ function getStartFEN(fen) {
   return `${blackBackRank}/pppppppp/8/8/8/8/PPPPPPPP/${whiteBackRank} w KQkq - 0 1`;
 }
 
-
 const game = Chess();
 
 function pgnToFenArray(pgn) {
@@ -107,7 +106,6 @@ function sendMovesToSite(type, moves, urlPattern) {
 }
 
 const activeListeners = {};
-
 
 // fix both
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -289,8 +287,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 let fenhistory = [];
 
                 let uciHistory = `position fen ${movesHistory[0]?.fen ?? ""} moves`;
-                
-                
 
                 if (movesHistory.length > 0) {
                   game.load(movesHistory[0].fen);
@@ -513,5 +509,29 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       })
       .catch((err) => sendResponse({ error: err.message }));
     return true;
+  }
+
+  if (msg.type === "STREAM") {
+    fetch("http://127.0.0.1:5000/api/arrowEngine", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        moves: msg.moves,
+        side: msg.side, // 
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        sendResponse(data);
+      })
+      .catch((err) => {
+        console.error(err);
+        sendResponse({ error: err.message });
+      });
+
+    return true; // Obligatoire car sendResponse est appelé plus tard
   }
 });

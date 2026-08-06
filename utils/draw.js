@@ -1370,7 +1370,10 @@ function HintChessCom(from, to, side) {
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.setAttribute("d", d);
     path.setAttribute("fill", "none");
-    path.setAttribute("stroke", color.replace(", 0.8)", ")").replace("rgba", "rgb"));
+    path.setAttribute(
+      "stroke",
+      color.replace(", 0.8)", ")").replace("rgba", "rgb"),
+    );
     path.setAttribute("stroke-width", width);
     path.setAttribute("stroke-linejoin", "round");
     path.setAttribute("stroke-linecap", "butt");
@@ -1429,10 +1432,7 @@ function HintChessCom(from, to, side) {
 
     // Centerline : départ -> coude -> juste avant la pointe. Le stroke-linejoin="round"
     // arrondit automatiquement l'angle du coude.
-    makePath(
-      [pt(gap, 0), pt(longDist, 0), pt(longDist, b1)],
-      shaftHalfW * 2,
-    );
+    makePath([pt(gap, 0), pt(longDist, 0), pt(longDist, b1)], shaftHalfW * 2);
 
     // Pointe de flèche
     makePolygon([
@@ -1516,7 +1516,10 @@ function HintLichess(from, to, side) {
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.setAttribute("d", d);
     path.setAttribute("fill", "none");
-    path.setAttribute("stroke", color.replace(", 0.8)", ")").replace("rgba", "rgb"));
+    path.setAttribute(
+      "stroke",
+      color.replace(", 0.8)", ")").replace("rgba", "rgb"),
+    );
     path.setAttribute("stroke-width", width);
     path.setAttribute("stroke-linejoin", "round");
     path.setAttribute("stroke-linecap", "butt");
@@ -1571,10 +1574,7 @@ function HintLichess(from, to, side) {
       y: fromPos.y + uly * u + usy * v,
     });
 
-    makePath(
-      [pt(gap, 0), pt(longDist, 0), pt(longDist, b1)],
-      shaftHalfW * 2,
-    );
+    makePath([pt(gap, 0), pt(longDist, 0), pt(longDist, b1)], shaftHalfW * 2);
 
     makePolygon([
       pt(longDist - headHalfW, b1),
@@ -1657,7 +1657,10 @@ function HintWorldChessCom(from, to, side) {
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.setAttribute("d", d);
     path.setAttribute("fill", "none");
-    path.setAttribute("stroke", color.replace(", 0.8)", ")").replace("rgba", "rgb"));
+    path.setAttribute(
+      "stroke",
+      color.replace(", 0.8)", ")").replace("rgba", "rgb"),
+    );
     path.setAttribute("stroke-width", width);
     path.setAttribute("stroke-linejoin", "round");
     path.setAttribute("stroke-linecap", "butt");
@@ -1712,10 +1715,7 @@ function HintWorldChessCom(from, to, side) {
       y: fromPos.y + uly * u + usy * v,
     });
 
-    makePath(
-      [pt(gap, 0), pt(longDist, 0), pt(longDist, b1)],
-      shaftHalfW * 2,
-    );
+    makePath([pt(gap, 0), pt(longDist, 0), pt(longDist, b1)], shaftHalfW * 2);
 
     makePolygon([
       pt(longDist - headHalfW, b1),
@@ -1730,5 +1730,22 @@ function HintWorldChessCom(from, to, side) {
   // Comportement identique à highlightMovesOnBoardWorld : rotation 180° côté noir
   if (side === "b") {
     svg.style.transform = "rotate(180deg)";
+  }
+}
+
+// get board width
+
+function getBoardWidth() {
+  let width = 480;
+  const parent =
+    document.querySelector("wc-chess-board") ||
+    document.querySelector("cg-container") ||
+    document.querySelector("cg-board") ||
+    null;
+
+  if (parent) {
+    return parent.offsetWidth;
+  } else {
+    return width;
   }
 }
