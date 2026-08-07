@@ -78,7 +78,6 @@
         "lib/stockfish11.js",
         "lib/torch.js",
         "lib/torch.wasm",
-        "dist/index.html",
         "book/book.bin",
         "book/*",
         "audio.html",
