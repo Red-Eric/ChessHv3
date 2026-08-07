@@ -931,21 +931,6 @@
           <!-- AUTOMATION -->
           <div class="section-divider"><span>Automation</span></div>
 
-          <!-- <div class="setting">
-            <label
-              >Auto Move Delay :
-              <span class="value-badge" id="delayValue">100</span> ms</label
-            >
-            <input
-              type="range"
-              id="delay"
-              min="100"
-              max="20000"
-              step="50"
-              value="100"
-            />
-          </div> -->
-
           <div class="setting dual">
             <label>
               Auto Move Delay :
@@ -979,14 +964,15 @@
 
           <div class="setting-help">
             Delay before the engine automatically plays a move. Randomly chosen
-            between 0 ms and the chosen value.
+            between these two selected values.
           </div>
 
           <div class="setting">
             <label>Play Best Move (Key)</label>
             <select id="key">
+              <option value="disable" selected>Disable</option>
               <option value=" ">Space</option>
-              <option value="a" selected>a</option>
+              <option value="a">a</option>
               <option value="z">z</option>
               <option value="e">e</option>
               <option value="r">r</option>
@@ -1040,9 +1026,10 @@
           <div class="setting">
             <label>Play Balanced Move(Key)</label>
             <select id="key2">
+              <option value="disable" selected>Disable</option>
               <option value=" ">Space</option>
               <option value="a">a</option>
-              <option value="z" selected>z</option>
+              <option value="z">z</option>
               <option value="e">e</option>
               <option value="r">r</option>
               <option value="t">t</option>
