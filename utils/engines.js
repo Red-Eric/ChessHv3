@@ -233,11 +233,162 @@ class komodo {
   }
 }
 
-// coach engine
+// // coach engine
+// class CoachEngine {
+//   constructor() {
+//     this.worker = null;
+//     this.ready = this.init();
+//   }
+
+//   async init() {
+//     this.worker = await createWorkerTorch();
+//     this.setup();
+//   }
+
+//   hardStop() {
+//     if (this.worker) {
+//       this.worker.terminate();
+//       this.worker = null;
+//     }
+//   }
+
+//   async restartWorker() {
+//     this.hardStop();
+//     this.worker = await createWorkerTorch();
+//     this.setup();
+//   }
+
+//   send(cmd) {
+//     if (this.worker) {
+//       this.worker.postMessage(cmd);
+//     }
+//   }
+
+//   setup() {
+//     // default setting for analysis
+//     this.send("setoption name UseDeclarativePositionCommand value true");
+//     this.send("setoption name BlackElo value 3200");
+//     this.send("setoption name WhiteElo value 3200");
+//     this.send("setoption name HandleContinuations value true");
+//     this.send(`setoption name HandleContinuationsDepth value ${config.depth2}`);
+//     this.send("setoption name UserColor value white");
+//     this.send("setoption name BotChatPrioritizePlayerMove value true");
+//     this.send("setoption name SerializeSpeechDetails value true");
+//     this.send("setoption name AllowBoardEventsWithoutSpeech value true");
+//     this.send("setoption name ServeCommandV2 value true");
+//     this.send("setoption name SpeechV3 value true");
+//     this.send("setoption name ClassificationV3 value true");
+//     this.send("setoption name UCI_Chess960 value false");
+//     this.send("setoption name UseRatingRanges value true");
+//     this.send(`setoption name Language value ${coachs[config.coach].lang}`);
+//     this.send(coachs[config.coach].cmd);
+//     this.send(`setoption name Language value ${coachs[config.coach].lang}`);
+//   }
+
+//   async getChat(movesString, side = "white", whiteElo = 3200, blackElo = 3200) {
+//     if (config.coach === 999) return null;
+
+//     await this.ready;
+//     if (!this.worker) throw new Error("Engine non initialisé");
+
+//     return new Promise((resolve) => {
+//       const onMessage = (e) => {
+//         let raw = e.data;
+//         let cleanRaw = raw;
+
+//         // console.log(cleanRaw)
+
+//         if (typeof cleanRaw === "string" && cleanRaw.startsWith("json ")) {
+//           cleanRaw = cleanRaw.slice(5).trim();
+//         } else {
+//           console.clear();
+//           if (cleanRaw.includes("ABORD")) {
+//             alert("crash");
+//           }
+//         }
+
+//         try {
+//           const data = JSON.parse(cleanRaw);
+//           // console.log(data);
+//           const last = data?.positions?.[data.positions.length - 1];
+//           const whiteAccuracy = data?.CAPS.white.all;
+//           const blackAccuracy = data?.CAPS.black.all;
+//           const blackElo = data?.reportCard.black.effectiveElo;
+//           const whiteElo = data?.reportCard.white.effectiveElo;
+//           stat_0_white = data?.tallies?.white;
+//           stat_0_black = data?.tallies?.black;
+
+//           if (!last) return;
+
+//           const classificationName = last.classificationName;
+//           const fen = last.fen;
+//           const audioUrlHash = last?.playedMove?.speech?.[0]?.audioUrlHash;
+//           const moveLan = last?.playedMove?.moveLan;
+          
+
+//           let show_ = false;
+
+//           const bestMove = last?.bestMove?.moveLan;
+//           const bestMove_classification = last?.bestMove?.classification;
+
+          
+//           if(side !== last?.color){ // play as back vs last move play by white
+//             show_ = true;
+//           }
+
+//           const res_data = {
+//             from : bestMove.slice(0,2),
+//             to : bestMove.slice(2,4),
+//             classification : bestMove_classification,
+//             show : show_
+//           }
+
+//           console.log(res_data)
+
+//           if (!audioUrlHash) return;
+
+//           const urlAudio = `${coachs[config.coach].link}${audioUrlHash}.mp3`;
+
+//           this.worker.removeEventListener("message", onMessage);
+
+//           resolve({
+//             classificationName,
+//             fen,
+//             urlAudio,
+//             moveLan,
+//             whiteAccuracy,
+//             whiteElo,
+//             blackAccuracy,
+//             blackElo,
+//             res_data
+//           });
+//         } catch (err) {}
+//       };
+
+//       this.worker.addEventListener("message", onMessage);
+
+//       this.send(`setoption name UserColor value ${side}`);
+//       this.send(
+//         `setoption name HandleContinuationsDepth value ${config.depth2}`,
+//       );
+//       this.send(`setoption name BlackElo value ${blackElo}`);
+//       this.send(`setoption name WhiteElo value ${whiteElo}`);
+
+//       this.send(movesString);
+//       this.send("fetch analysis");
+//     });
+//   }
+// }
+
+
 class CoachEngine {
   constructor() {
     this.worker = null;
     this.ready = this.init();
+    
+    // Garde en mémoire la promesse du calcul en cours et un ID unique
+    this.currentRequestId = 0;
+    this.activeReject = null;
   }
 
   async init() {
@@ -265,7 +416,6 @@ class CoachEngine {
   }
 
   setup() {
-    // default setting for analysis
     this.send("setoption name UseDeclarativePositionCommand value true");
     this.send("setoption name BlackElo value 3200");
     this.send("setoption name WhiteElo value 3200");
@@ -291,65 +441,78 @@ class CoachEngine {
     await this.ready;
     if (!this.worker) throw new Error("Engine non initialisé");
 
-    return new Promise((resolve) => {
+    // 1. Incrémenter l'ID de requête pour rejeter tout ancien message en attente
+    const requestId = ++this.currentRequestId;
+
+    // 2. Si une requête précédente tourne encore, on simule une annulation
+    if (this.activeReject) {
+      this.activeReject(new Error("CANCELLED"));
+      this.activeReject = null;
+    }
+
+    return new Promise((resolve, reject) => {
+      this.activeReject = reject;
+
       const onMessage = (e) => {
+        // Si entre-temps un nouveau coup a été joué, on ignore ce message périmé
+        if (requestId !== this.currentRequestId) {
+          this.worker.removeEventListener("message", onMessage);
+          return;
+        }
+
         let raw = e.data;
         let cleanRaw = raw;
-
-        // console.log(cleanRaw)
 
         if (typeof cleanRaw === "string" && cleanRaw.startsWith("json ")) {
           cleanRaw = cleanRaw.slice(5).trim();
         } else {
-          console.clear();
-          if (cleanRaw.includes("ABORD")) {
-            alert("crash");
+          if (cleanRaw.includes("ABORT")) {
+            console.warn("Analyse interrompue par le worker");
           }
         }
 
         try {
           const data = JSON.parse(cleanRaw);
-          // console.log(data);
           const last = data?.positions?.[data.positions.length - 1];
-          const whiteAccuracy = data?.CAPS.white.all;
-          const blackAccuracy = data?.CAPS.black.all;
-          const blackElo = data?.reportCard.black.effectiveElo;
-          const whiteElo = data?.reportCard.white.effectiveElo;
-          stat_0_white = data?.tallies?.white;
-          stat_0_black = data?.tallies?.black;
 
-          if (!last) return;
+          if (!last) return; // On attend la réponse contenant la dernière position
+
+          const whiteAccuracy = data?.CAPS?.white?.all;
+          const blackAccuracy = data?.CAPS?.black?.all;
+          const blackEloRes = data?.reportCard?.black?.effectiveElo;
+          const whiteEloRes = data?.reportCard?.white?.effectiveElo;
+          
+          // Mise à jour des variables globales si nécessaire
+          if (typeof stat_0_white !== "undefined") stat_0_white = data?.tallies?.white;
+          if (typeof stat_0_black !== "undefined") stat_0_black = data?.tallies?.black;
 
           const classificationName = last.classificationName;
           const fen = last.fen;
           const audioUrlHash = last?.playedMove?.speech?.[0]?.audioUrlHash;
           const moveLan = last?.playedMove?.moveLan;
-          
 
           let show_ = false;
-
-          const bestMove = last?.bestMove?.moveLan;
+          const bestMove = last?.bestMove?.moveLan || "";
           const bestMove_classification = last?.bestMove?.classification;
 
-          
-          if(side !== last?.color){ // play as back vs last move play by white
+          if (side !== last?.color) {
             show_ = true;
           }
 
           const res_data = {
-            from : bestMove.slice(0,2),
-            to : bestMove.slice(2,4),
-            classification : bestMove_classification,
-            show : show_
-          }
-
-          console.log(res_data)
+            from: bestMove.slice(0, 2),
+            to: bestMove.slice(2, 4),
+            classification: bestMove_classification,
+            show: show_
+          };
 
           if (!audioUrlHash) return;
 
           const urlAudio = `${coachs[config.coach].link}${audioUrlHash}.mp3`;
 
+          // Nettoyage : suppression de l'écouteur
           this.worker.removeEventListener("message", onMessage);
+          this.activeReject = null;
 
           resolve({
             classificationName,
@@ -357,25 +520,34 @@ class CoachEngine {
             urlAudio,
             moveLan,
             whiteAccuracy,
-            whiteElo,
+            whiteElo: whiteEloRes,
             blackAccuracy,
-            blackElo,
+            blackElo: blackEloRes,
             res_data
           });
-        } catch (err) {}
+        } catch (err) {
+          // Ignorer les messages non-JSON émis pendant les étapes intermédiaires du worker
+        }
       };
 
       this.worker.addEventListener("message", onMessage);
 
+      // 3. Envoyer la commande Stop pour arrêter l'analyse précédente dans le Worker avant de relancer
+      this.send("stop");
+
+      // 4. Mettre à jour la configuration et demander la nouvelle analyse
       this.send(`setoption name UserColor value ${side}`);
-      this.send(
-        `setoption name HandleContinuationsDepth value ${config.depth2}`,
-      );
+      this.send(`setoption name HandleContinuationsDepth value ${config.depth2}`);
       this.send(`setoption name BlackElo value ${blackElo}`);
       this.send(`setoption name WhiteElo value ${whiteElo}`);
 
       this.send(movesString);
       this.send("fetch analysis");
+    }).catch((err) => {
+      if (err.message === "CANCELLED") {
+        return null; // Annulation silencieuse lorsqu'un coup plus récent est joué
+      }
+      throw err;
     });
   }
 }
