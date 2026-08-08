@@ -960,7 +960,6 @@ function highlightMovesOnBoardWorld(moves, side) {
 }
 
 /* HINT*/
-
 function HintGlobal(from, to, side, tags, mateIn) {
   let parent = null;
   let platform = null;
@@ -1146,6 +1145,10 @@ function HintGlobal(from, to, side, tags, mateIn) {
       : { bg: "#ffffff", border: "#cccccc" };
   }
 
+  function resolveLeftColors(text) {
+    return text === "Game Over" ? resolveColorsBySide() : resolveColorsBySign(text);
+  }
+
   const pendingBadges = [];
 
   function createBadgeText(text, anchorX, y, colorFn) {
@@ -1162,11 +1165,7 @@ function HintGlobal(from, to, side, tags, mateIn) {
     textEl.setAttribute("font-weight", "bold");
     textEl.setAttribute("text-anchor", "middle");
     textEl.setAttribute("dominant-baseline", "middle");
-    if (text === "Game Over") {
-      textEl.setAttribute("fill", side === "w" ? "#ffffff" : "#312e2b");
-    } else {
-      textEl.setAttribute("fill", arrowSolidColor);
-    }
+    textEl.setAttribute("fill", arrowSolidColor);
     textEl.textContent = text;
 
     group.appendChild(textEl);
@@ -1189,12 +1188,12 @@ function HintGlobal(from, to, side, tags, mateIn) {
   const leftItems = [];
   if (mateIn !== null && mateIn !== undefined) {
     if (mateIn === 0) {
-      leftItems.push.apply("Game Over");
+      leftItems.push("Game Over");
     } else {
       leftItems.push(`mate in ${mateIn}`);
     }
   }
-  layoutStack(leftItems, leftAnchorX, topAnchorY, resolveColorsBySign);
+  layoutStack(leftItems, leftAnchorX, topAnchorY, resolveLeftColors);
 
   parent.style.position = "relative";
   parent.appendChild(svg);
@@ -1229,7 +1228,6 @@ function HintGlobal(from, to, side, tags, mateIn) {
     });
   });
 }
-
 
 
 // get board width
