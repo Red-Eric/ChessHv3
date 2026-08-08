@@ -453,7 +453,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                         config.hints.includes(result.classificationName)
                       ) {
                         if (!config.onlyShowEval) {
-                          HintChessCom(
+                          HintGlobal(
                             result.res_data.from,
                             result.res_data.to,
                             getSide()[0],
@@ -1038,7 +1038,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     config.hints.includes(result.classificationName)
                   ) {
                     if (!config.onlyShowEval) {
-                      HintLichess(
+                      HintGlobal(
                         result.res_data.from,
                         result.res_data.to,
                         getSide()[0],
@@ -1486,7 +1486,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     config.hints.includes(result.classificationName)
                   ) {
                     if (!config.onlyShowEval) {
-                      HintWorldChessCom(
+                      HintGlobal(
                         result.res_data.from,
                         result.res_data.to,
                         getSide()[0],
