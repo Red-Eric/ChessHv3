@@ -365,6 +365,7 @@ class CoachEngine {
             }
           };
 
+
           if (!audioUrlHash) return;
 
           const urlAudio = `${coachs[config.coach].link}${audioUrlHash}.mp3`;

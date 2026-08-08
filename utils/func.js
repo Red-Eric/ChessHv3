@@ -54,7 +54,7 @@ function placeSVGOnBoard(side, square, svgCode) {
 
   const svg = wrapper.querySelector("svg");
   svg.style.position = "absolute";
-  svg.style.zIndex = "9999";
+  svg.style.zIndex = "10";
   svg.style.borderRadius = "50%";
   svg.style.overflow = "visible";
 

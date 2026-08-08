@@ -457,6 +457,8 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                             result.res_data.from,
                             result.res_data.to,
                             getSide()[0],
+                            result.res_data.info.tags,
+                            result.res_data.info.mateIn,
                           );
 
                           placeSVGOnBoard(
@@ -1038,10 +1040,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     config.hints.includes(result.classificationName)
                   ) {
                     if (!config.onlyShowEval) {
+
+
                       HintGlobal(
                         result.res_data.from,
                         result.res_data.to,
                         getSide()[0],
+                        result.res_data.info.tags,
+                        result.res_data.info.mateIn,
                       );
 
                       placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);
@@ -1490,6 +1496,8 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                         result.res_data.from,
                         result.res_data.to,
                         getSide()[0],
+                        result.res_data.info.tags,
+                        result.res_data.info.mateIn,
                       );
 
                       placeSVGOnBoard(getSide(), result.moveLan.slice(2), svg);

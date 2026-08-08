@@ -961,10 +961,7 @@ function highlightMovesOnBoardWorld(moves, side) {
 
 /* HINT*/
 
-function HintGlobal(from, to, side) {
-  // --- 1. Détection de la plateforme / du conteneur du plateau ---
-  // On essaie les sélecteurs dans un ordre précis pour éviter les ambiguïtés
-  // (chessground étant utilisé à la fois par lichess.org et worldchess.com).
+function HintGlobal(from, to, side, tags, mateIn) {
   let parent = null;
   let platform = null;
 
@@ -973,8 +970,6 @@ function HintGlobal(from, to, side) {
     parent = wcChessCom;
     platform = "chesscom";
   } else {
-    // chessground : cg-container (lichess) englobe généralement cg-board.
-    // On différencie via le hostname pour lever l'ambiguïté.
     const host = window.location.hostname;
     if (host.includes("lichess.org")) {
       parent = document.querySelector("cg-container");
@@ -983,8 +978,6 @@ function HintGlobal(from, to, side) {
       parent = document.querySelector("cg-board");
       platform = "worldchess";
     } else {
-      // Repli générique si le hostname ne correspond à aucun cas connu :
-      // on tente cg-container puis cg-board.
       const cgContainer = document.querySelector("cg-container");
       const cgBoard = document.querySelector("cg-board");
       if (cgContainer) {
@@ -1002,7 +995,6 @@ function HintGlobal(from, to, side) {
   const squareSize = parent.offsetWidth / 8;
   parent.querySelectorAll(".customHint").forEach((el) => el.remove());
 
-  // --- 2. Conversion case -> coordonnées pixel ---
   function squareToPosition(square) {
     const fileChar = square[0];
     const rankChar = square[1];
@@ -1026,7 +1018,6 @@ function HintGlobal(from, to, side) {
   const fromPos = squareToPosition(from);
   const toPos = squareToPosition(to);
 
-  // --- 3. Création du SVG ---
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("class", "customHint");
   svg.setAttribute("width", parent.offsetWidth);
@@ -1036,18 +1027,15 @@ function HintGlobal(from, to, side) {
   svg.style.top = "0";
   svg.style.pointerEvents = "none";
   svg.style.overflow = "visible";
-  svg.style.zIndex = "10";
+  svg.style.zIndex = "11";
 
   const color = "rgba(159, 207, 63, 0.8)";
 
-  // Proportions identiques à celles utilisées nativement (relatives à une case)
-  const shaftHalfW = 0.11 * squareSize; // demi-largeur de la hampe
-  const headHalfW = 0.26 * squareSize; // demi-largeur de la pointe
-  const headLen = 0.36 * squareSize; // longueur de la pointe
-  const gap = 0.36 * squareSize; // décalage par rapport au centre de départ
+  const shaftHalfW = 0.11 * squareSize;
+  const headHalfW = 0.26 * squareSize;
+  const headLen = 0.36 * squareSize;
+  const gap = 0.36 * squareSize;
 
-  // Groupe englobant : l'opacité est appliquée UNE SEULE FOIS sur l'ensemble,
-  // ce qui évite l'effet de "double transparence" là où les formes se chevauchent.
   const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
   g.setAttribute("style", `opacity: 0.8;`);
   svg.appendChild(g);
@@ -1063,7 +1051,6 @@ function HintGlobal(from, to, side) {
     g.appendChild(poly);
   }
 
-  // Trait en <path> avec un coude arrondi (stroke-linejoin="round").
   function makePath(points, width) {
     const d = points
       .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
@@ -1082,7 +1069,6 @@ function HintGlobal(from, to, side) {
     g.appendChild(path);
   }
 
-  // --- 4. Calcul de la géométrie de la flèche ---
   const dx = toPos.x - fromPos.x;
   const dy = toPos.y - fromPos.y;
 
@@ -1092,7 +1078,6 @@ function HintGlobal(from, to, side) {
     (fileDiff === 1 && rankDiff === 2) || (fileDiff === 2 && rankDiff === 1);
 
   if (!isKnightMove) {
-    // Flèche droite (horizontale, verticale, diagonale)
     const D = Math.sqrt(dx * dx + dy * dy);
     const ux = dx / D,
       uy = dy / D;
@@ -1114,19 +1099,16 @@ function HintGlobal(from, to, side) {
       p(gap, -shaftHalfW),
     ]);
   } else {
-    // Flèche coudée pour les coups de cavalier — centerline en path (coude arrondi)
-    // + pointe de flèche en polygone séparé
     const longAxisIsX = fileDiff === 2;
-    const ulx = longAxisIsX ? Math.sign(dx) : 0; // direction du grand axe
+    const ulx = longAxisIsX ? Math.sign(dx) : 0;
     const uly = longAxisIsX ? 0 : Math.sign(dy);
-    const usx = longAxisIsX ? 0 : Math.sign(dx); // direction du petit axe
+    const usx = longAxisIsX ? 0 : Math.sign(dx);
     const usy = longAxisIsX ? Math.sign(dy) : 0;
 
     const longDist = longAxisIsX ? Math.abs(dx) : Math.abs(dy);
     const shortDist = longAxisIsX ? Math.abs(dy) : Math.abs(dx);
     const b1 = shortDist - headLen;
 
-    // Conversion (u le long du grand axe, v le long du petit axe) -> coordonnées absolues
     const pt = (u, v) => ({
       x: fromPos.x + ulx * u + usx * v,
       y: fromPos.y + uly * u + usy * v,
@@ -1141,15 +1123,114 @@ function HintGlobal(from, to, side) {
     ]);
   }
 
+  const arrowSolidColor = color.replace(", 0.8)", ")").replace("rgba", "rgb");
+  const badgeGap = 4;
+
+  const rightAnchorX = toPos.x + squareSize / 2;
+  const leftAnchorX = toPos.x - squareSize / 2;
+  const topAnchorY = toPos.y - squareSize / 2;
+
+  function resolveColorsBySide() {
+    return side === "w"
+      ? { bg: "#ffffff", border: "#cccccc" }
+      : { bg: "#312e2b", border: "#000000" };
+  }
+
+  function resolveColorsBySign(text) {
+    let value = null;
+    const match = text.match(/-?\d+(\.\d+)?/);
+    if (match) value = parseFloat(match[0]);
+    const isNegative = value !== null ? value < 0 : false;
+    return isNegative
+      ? { bg: "#312e2b", border: "#000000" }
+      : { bg: "#ffffff", border: "#cccccc" };
+  }
+
+  const pendingBadges = [];
+
+  function createBadgeText(text, anchorX, y, colorFn) {
+    const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    group.setAttribute("class", "customHintBadge");
+
+    const textEl = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "text",
+    );
+    textEl.setAttribute("x", anchorX);
+    textEl.setAttribute("y", y);
+    textEl.setAttribute("font-size", "9");
+    textEl.setAttribute("font-weight", "bold");
+    textEl.setAttribute("text-anchor", "middle");
+    textEl.setAttribute("dominant-baseline", "middle");
+    if (text === "Game Over") {
+      textEl.setAttribute("fill", side === "w" ? "#ffffff" : "#312e2b");
+    } else {
+      textEl.setAttribute("fill", arrowSolidColor);
+    }
+    textEl.textContent = text;
+
+    group.appendChild(textEl);
+    svg.appendChild(group);
+
+    pendingBadges.push({ group, textEl, text, colorFn });
+  }
+
+  function layoutStack(items, anchorX, startY, colorFn) {
+    let currentY = startY;
+    items.forEach((text) => {
+      createBadgeText(text, anchorX, currentY, colorFn);
+      currentY += 14 + badgeGap;
+    });
+  }
+
+  const rightTags = Array.isArray(tags) ? tags.map((t) => String(t)) : [];
+  layoutStack(rightTags, rightAnchorX, topAnchorY, resolveColorsBySide);
+
+  const leftItems = [];
+  if (mateIn !== null && mateIn !== undefined) {
+    if (mateIn === 0) {
+      leftItems.push.apply("Game Over");
+    } else {
+      leftItems.push(`mate in ${mateIn}`);
+    }
+  }
+  layoutStack(leftItems, leftAnchorX, topAnchorY, resolveColorsBySign);
+
   parent.style.position = "relative";
   parent.appendChild(svg);
 
-  // --- 5. Cas particulier worldchess.com : rotation 180° côté noir ---
-  // (comportement identique à highlightMovesOnBoardWorld dans le code d'origine)
   if (platform === "worldchess" && side === "b") {
     svg.style.transform = "rotate(180deg)";
   }
+
+  requestAnimationFrame(() => {
+    pendingBadges.forEach(({ group, textEl, text, colorFn }) => {
+      const bbox = textEl.getBBox();
+      const paddingX = 2;
+      const paddingY = 2;
+      const { bg, border } = colorFn(text);
+
+      const rect = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "rect",
+      );
+      rect.setAttribute("x", bbox.x - paddingX);
+      rect.setAttribute("y", bbox.y - paddingY);
+      rect.setAttribute("width", bbox.width + paddingX * 2);
+      rect.setAttribute("height", bbox.height + paddingY * 2);
+      rect.setAttribute("rx", "8");
+      rect.setAttribute("ry", "8");
+      rect.setAttribute("fill", bg);
+      rect.setAttribute("fill-opacity", "0.85");
+      rect.setAttribute("stroke", border);
+      rect.setAttribute("stroke-width", "1");
+
+      group.insertBefore(rect, textEl);
+    });
+  });
 }
+
+
 
 // get board width
 
