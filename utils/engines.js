@@ -233,12 +233,11 @@ class komodo {
   }
 }
 
-
 class CoachEngine {
   constructor() {
     this.worker = null;
     this.ready = this.init();
-    
+
     // Garde en mémoire la promesse du calcul en cours et un ID unique
     this.currentRequestId = 0;
     this.activeReject = null;
@@ -289,6 +288,7 @@ class CoachEngine {
   }
 
   async getChat(movesString, side = "white", whiteElo = 3200, blackElo = 3200) {
+    
     if (config.coach === 999) return null;
 
     await this.ready;
@@ -324,8 +324,6 @@ class CoachEngine {
         try {
           const data = JSON.parse(cleanRaw);
 
-          
-
           const last = data?.positions?.[data.positions.length - 1];
 
           if (!last) return;
@@ -334,10 +332,12 @@ class CoachEngine {
           const blackAccuracy = data?.CAPS?.black?.all;
           const blackEloRes = data?.reportCard?.black?.effectiveElo;
           const whiteEloRes = data?.reportCard?.white?.effectiveElo;
-          
+
           // Mise à jour des variables globales si nécessaire
-          if (typeof stat_0_white !== "undefined") stat_0_white = data?.tallies?.white;
-          if (typeof stat_0_black !== "undefined") stat_0_black = data?.tallies?.black;
+          if (typeof stat_0_white !== "undefined")
+            stat_0_white = data?.tallies?.white;
+          if (typeof stat_0_black !== "undefined")
+            stat_0_black = data?.tallies?.black;
 
           const classificationName = last.classificationName;
           const fen = last.fen;
@@ -347,7 +347,6 @@ class CoachEngine {
           let show_ = false;
           const bestMove = last?.bestMove?.moveLan || "";
           const bestMove_classification = last?.bestMove?.classification;
-          
 
           if (side !== last?.color) {
             show_ = true;
@@ -358,14 +357,12 @@ class CoachEngine {
             to: bestMove.slice(2, 4),
             classification: bestMove_classification,
             show: show_,
-            info : {
-              tags : last?.bestMove?.insightsTags,
-              mateIn : last?.bestMove?.mateIn,
-              pv : last?.bestMove?.eval?.pv
-            }
+            info: {
+              tags: last?.bestMove?.insightsTags,
+              mateIn: last?.bestMove?.mateIn,
+              pv: last?.bestMove?.eval?.pv,
+            },
           };
-console.clear()
-console.log(res_data)
 
           if (!audioUrlHash) return;
 
@@ -383,7 +380,7 @@ console.log(res_data)
             whiteElo: whiteEloRes,
             blackAccuracy,
             blackElo: blackEloRes,
-            res_data
+            res_data,
           });
         } catch (err) {
           // Ignorer les messages non-JSON émis pendant les étapes intermédiaires du worker
@@ -397,7 +394,9 @@ console.log(res_data)
 
       // 4. Mettre à jour la configuration et demander la nouvelle analyse
       this.send(`setoption name UserColor value ${side}`);
-      this.send(`setoption name HandleContinuationsDepth value ${config.depth2}`);
+      this.send(
+        `setoption name HandleContinuationsDepth value ${config.depth2}`,
+      );
       this.send(`setoption name BlackElo value ${blackElo}`);
       this.send(`setoption name WhiteElo value ${whiteElo}`);
 

@@ -961,6 +961,7 @@ function highlightMovesOnBoardWorld(moves, side) {
 
 /* HINT*/
 function HintGlobal(from, to, side, tags, mateIn) {
+  
   let parent = null;
   let platform = null;
 
@@ -1026,7 +1027,7 @@ function HintGlobal(from, to, side, tags, mateIn) {
   svg.style.top = "0";
   svg.style.pointerEvents = "none";
   svg.style.overflow = "visible";
-  svg.style.zIndex = "11";
+  svg.style.zIndex = "13";
 
   const color = "rgba(159, 207, 63, 0.8)";
 
