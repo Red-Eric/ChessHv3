@@ -352,6 +352,8 @@ function createSimpleAccuracyDisplay(
 }
 
 function highlightMovesOnBoardChessCom(moves, side) {
+  if (config.hideArrow) return;
+
   if (!Array.isArray(moves)) return;
   if (
     !(
@@ -552,6 +554,8 @@ function highlightMovesOnBoardChessCom(moves, side) {
 }
 
 function highlightMovesOnBoardLichess(moves, side) {
+  if (config.hideArrow) return;
+
   if (!Array.isArray(moves)) return;
   if (
     !(
@@ -753,6 +757,8 @@ function highlightMovesOnBoardLichess(moves, side) {
 }
 
 function highlightMovesOnBoardWorld(moves, side) {
+  if (config.hideArrow) return;
+
   if (!Array.isArray(moves)) return;
   if (
     !(
@@ -961,7 +967,6 @@ function highlightMovesOnBoardWorld(moves, side) {
 
 /* HINT*/
 function HintGlobal(from, to, side, tags, mateIn) {
-  
   let parent = null;
   let platform = null;
 
@@ -1147,7 +1152,9 @@ function HintGlobal(from, to, side, tags, mateIn) {
   }
 
   function resolveLeftColors(text) {
-    return text === "Game Over" ? resolveColorsBySide() : resolveColorsBySign(text);
+    return text === "Game Over"
+      ? resolveColorsBySide()
+      : resolveColorsBySign(text);
   }
 
   const pendingBadges = [];
@@ -1230,7 +1237,6 @@ function HintGlobal(from, to, side, tags, mateIn) {
   });
 }
 
-
 // get board width
 
 function getBoardWidth() {
@@ -1247,8 +1253,6 @@ function getBoardWidth() {
     return width;
   }
 }
-
-
 
 function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
   const host = window.location.host;
@@ -1309,7 +1313,8 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
   [topBar, bottomBar].forEach((bar) => {
     bar.style.width = "100%";
     bar.style.position = "absolute";
-    bar.style.transition = "height 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease";
+    bar.style.transition =
+      "height 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease";
   });
 
   topBar.style.top = "0";
@@ -1338,10 +1343,11 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
   scoreText.style.color = "#ffffff";
   scoreText.style.fontWeight = "700";
   scoreText.style.fontSize = "11px";
-  scoreText.style.fontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  scoreText.style.fontFamily =
+    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
   scoreText.style.lineHeight = "1";
   scoreText.style.letterSpacing = "-0.2px";
-  
+
   scoreBadge.appendChild(scoreText);
   evalContainer.appendChild(scoreBadge);
 

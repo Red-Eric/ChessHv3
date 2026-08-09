@@ -4,6 +4,7 @@ const defaultChessConfig = {
 
   elo: 3500,
   coach: 999,
+  hideArrow : false,
   lines: 5,
   colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
   depth: 10,

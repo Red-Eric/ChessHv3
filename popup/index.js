@@ -318,6 +318,7 @@ function updateChessUI() {
     "winningMove",
     "autoStart",
     "showEval",
+    "hideArrow",
     "onlyShowEval",
     "moveClassification",
     "speach",
@@ -345,7 +346,7 @@ function updateChessUI() {
   el("autoMoveLabel").textContent =
     `Auto Move (${chessConfig.autoMove ? "ON" : "OFF"})`;
   el("floatingBtnLabel").textContent =
-    `Android FLoating BTN (${chessConfig.autoMove ? "ON" : "OFF"})`;
+    `Android FLoating BTN (${chessConfig.floatingBtn ? "ON" : "OFF"})`;
   el("autoStartLabel").textContent =
     `Auto Start Game (${chessConfig.autoStart ? "ON" : "OFF"})`;
   el("moveClassificationStartLabel").textContent =
@@ -356,7 +357,11 @@ function updateChessUI() {
     `Only Moves That Gain Material (${chessConfig.winningMove ? "ON" : "OFF"})`;
   el("showEvalLabel").textContent =
     `Show Eval Bar (${chessConfig.showEval ? "ON" : "OFF"})`;
-  el("onlyShowEvalLabel").textContent =
+
+  el("hideArrowLabel").textContent =
+    `Hide Arrow (${chessConfig.hideArrow ? "ON" : "OFF"})`;
+  
+    el("onlyShowEvalLabel").textContent =
     `HIDE EVERYTHING (${chessConfig.onlyShowEval ? "ON" : "OFF"})`;
 
   // Update coach avatar
@@ -446,6 +451,7 @@ el("delayMax").oninput = handleDelayInput;
   "winningMove",
   "autoStart",
   "showEval",
+  "hideArrow",
   "onlyShowEval",
   "moveClassification",
   "speach",
