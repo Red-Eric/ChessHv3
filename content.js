@@ -752,14 +752,17 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               document.querySelector("#acc-widget").remove();
             }
 
-            if (event.source !== window) return;
-            if (event.data && event.data.type === "FEN_RESPONSE") {
-              let fenTemp = event.data.fen;
+            // if (event.source !== window) return;
+            // if (event.data && event.data.type === "FEN_RESPONSE") {
+            if (lichessFenHistory.length > 0) {
+              // let fenTemp = event.data.fen;
 
-              if (lichessFenHistory.length > 0) {
-                fenTemp = lichessFenHistory.at(-1);
-                window.postMessage({ type: "stop" }, "*");
-              }
+              let fenTemp = lichessFenHistory.at(-1);
+              
+              // if (lichessFenHistory.length > 0) {
+              //   fenTemp = lichessFenHistory.at(-1);
+              //   window.postMessage({ type: "stop" }, "*");
+              // }
 
               if (fenTemp !== fen_) {
                 fen_ = fenTemp;
@@ -778,7 +781,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
                   (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
                 ) {
-                  if (engine.config !== "None") {
+                  if (config.engine !== "None") {
                     engine
                       .getMovesByFen(fen_, getSide())
                       .then(async (moves) => {
@@ -1040,8 +1043,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     config.hints.includes(result.classificationName)
                   ) {
                     if (!config.onlyShowEval) {
-
-
                       HintGlobal(
                         result.res_data.from,
                         result.res_data.to,
