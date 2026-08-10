@@ -1415,3 +1415,275 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
   update(initialScore, initialColor);
   return { update };
 }
+
+(function () {
+  // ----- Config par site -----
+  const SITE_CONFIGS = {
+    "www.chess.com": {
+      parentSelector: "wc-chess-board",
+      nativePieceSelector: ".piece",
+      rotateOverlayForBlack: false,
+    },
+    "lichess.org": {
+      parentSelector: "cg-container",
+      nativePieceSelector: "piece",
+      rotateOverlayForBlack: false,
+    },
+    "worldchess.com": {
+      parentSelector: "cg-board",
+      nativePieceSelector: "cg-piece",
+      rotateOverlayForBlack: true, // le board ne se retourne pas tout seul côté noir
+    },
+  };
+
+  function getSiteConfig() {
+    return SITE_CONFIGS[window.location.host] || null;
+  }
+
+  function fenToBoard(fen) {
+    const board = {};
+    const placement = fen.split(" ")[0];
+    const rows = placement.split("/");
+
+    rows.forEach((row, r) => {
+      const rank = 8 - r;
+      let file = 0;
+      for (const ch of row) {
+        if (/\d/.test(ch)) {
+          file += parseInt(ch, 10);
+        } else {
+          const fileChar = String.fromCharCode("a".charCodeAt(0) + file);
+          board[`${fileChar}${rank}`] = ch;
+          file += 1;
+        }
+      }
+    });
+
+    return board;
+  }
+
+  // Tes variables globales SVG (wp, wn, wb, wr, wq, wk, bp, bn, bb, br, bq, bk)
+  const PIECE_SVGS = {
+    P: typeof wp !== "undefined" ? wp : null,
+    N: typeof wn !== "undefined" ? wn : null,
+    B: typeof wb !== "undefined" ? wb : null,
+    R: typeof wr !== "undefined" ? wr : null,
+    Q: typeof wq !== "undefined" ? wq : null,
+    K: typeof wk !== "undefined" ? wk : null,
+    p: typeof bp !== "undefined" ? bp : null,
+    n: typeof bn !== "undefined" ? bn : null,
+    b: typeof bb !== "undefined" ? bb : null,
+    r: typeof br !== "undefined" ? br : null,
+    q: typeof bq !== "undefined" ? bq : null,
+    k: typeof bk !== "undefined" ? bk : null,
+  };
+
+  function clearPreviewPV() {
+    document.querySelectorAll(".customPV").forEach((el) => el.remove());
+    // Réaffiche les pièces natives masquées pendant la preview
+    document.querySelectorAll(".customPV-hidden-native").forEach((el) => {
+      el.style.visibility = "";
+      el.classList.remove("customPV-hidden-native");
+    });
+  }
+
+  function waitTwoFrames() {
+    return new Promise((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(resolve));
+    });
+  }
+
+  async function previewPV(side, startFen, pv) {
+    if (!Array.isArray(pv) || pv.length === 0) return;
+
+    const siteConfig = getSiteConfig();
+    if (!siteConfig) {
+      console.warn(`previewPV: site non supporté (${window.location.host})`);
+      return;
+    }
+
+    const parent = document.querySelector(siteConfig.parentSelector);
+    if (!parent) {
+      console.warn(`previewPV: ${siteConfig.parentSelector} introuvable`);
+      return;
+    }
+
+    clearPreviewPV();
+
+    const squareSize = parent.offsetWidth / 8;
+    parent.style.position = "relative";
+
+    function squareToPosition(square) {
+      const fileChar = square[0];
+      const rank = parseInt(square[1], 10) - 1;
+      let file;
+      if (side === "w") {
+        file = fileChar.charCodeAt(0) - "a".charCodeAt(0);
+        return { x: file * squareSize, y: (7 - rank) * squareSize };
+      } else {
+        file = "h".charCodeAt(0) - fileChar.charCodeAt(0);
+        return { x: file * squareSize, y: rank * squareSize };
+      }
+    }
+
+    ///////////////////////////////////////////////////////////////////
+    parent
+      .querySelectorAll(siteConfig.nativePieceSelector)
+      .forEach((el) => {
+        el.style.visibility = "hidden";
+        el.classList.add("customPV-hidden-native");
+      });
+
+    const overlay = document.createElement("div");
+    overlay.className = "customPV";
+    overlay.style.position = "absolute";
+    overlay.style.left = "0";
+    overlay.style.top = "0";
+    overlay.style.width = `${parent.offsetWidth}px`;
+    overlay.style.height = `${parent.offsetWidth}px`;
+    overlay.style.pointerEvents = "none";
+    overlay.style.zIndex = "11";
+
+    if (siteConfig.rotateOverlayForBlack && side === "b") {
+      overlay.style.transform = "rotate(180deg)";
+      overlay.style.transformOrigin = "center center";
+    }
+
+    parent.appendChild(overlay);
+
+    const board = fenToBoard(startFen);
+    const sprites = {};
+    const PIECE_SCALE = 0.85;
+    const size = squareSize * PIECE_SCALE;
+    const offset = (squareSize - size) / 2;
+
+    function setPieceSvg(el, pieceChar) {
+      const svgMarkup = PIECE_SVGS[pieceChar];
+      el.innerHTML = svgMarkup || "";
+      const svgEl = el.querySelector("svg");
+      if (!svgEl) return;
+
+      if (!svgEl.getAttribute("viewBox")) {
+        const w = svgEl.getAttribute("width") || "45";
+        const h = svgEl.getAttribute("height") || "45";
+        svgEl.setAttribute("viewBox", `0 0 ${w} ${h}`);
+      }
+
+      svgEl.removeAttribute("width");
+      svgEl.removeAttribute("height");
+      svgEl.style.width = "100%";
+      svgEl.style.height = "100%";
+      svgEl.style.display = "block";
+    }
+
+    function createSprite(square, pieceChar) {
+      const pos = squareToPosition(square);
+      const el = document.createElement("div");
+      el.className = "customPV-piece";
+      el.style.position = "absolute";
+      el.style.width = `${size}px`;
+      el.style.height = `${size}px`;
+      el.style.opacity = "0.9";
+      el.style.pointerEvents = "none";
+      el.style.transition = "none";
+      el.style.transform = `translate(${pos.x + offset}px, ${pos.y + offset}px)`;
+      setPieceSvg(el, pieceChar);
+      overlay.appendChild(el);
+      sprites[square] = el;
+    }
+
+    Object.entries(board).forEach(([square, pieceChar]) => createSprite(square, pieceChar));
+
+    await waitTwoFrames();
+    Object.values(sprites).forEach((el) => {
+      el.style.transition = "transform 0.3s ease";
+    });
+
+    function moveSprite(fromSquare, toSquare) {
+      const el = sprites[fromSquare];
+      if (!el) return;
+      delete sprites[fromSquare];
+      if (sprites[toSquare]) {
+        sprites[toSquare].remove();
+      }
+      const pos = squareToPosition(toSquare);
+      el.style.transform = `translate(${pos.x + offset}px, ${pos.y + offset}px)`;
+      sprites[toSquare] = el;
+    }
+
+    function removeSprite(square) {
+      const el = sprites[square];
+      if (!el) return;
+      el.remove();
+      delete sprites[square];
+    }
+
+    function sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    for (const uciMove of pv) {
+      const from = uciMove.slice(0, 2);
+      const to = uciMove.slice(2, 4);
+      const promo = uciMove.length === 5 ? uciMove[4] : null;
+
+      const pieceChar = board[from];
+      if (!pieceChar) {
+        console.warn(`previewPV: aucune pièce sur ${from} pour le coup ${uciMove}`);
+        continue;
+      }
+
+      const isWhite = pieceChar === pieceChar.toUpperCase();
+      const isPawn = pieceChar.toUpperCase() === "P";
+      const isKing = pieceChar.toUpperCase() === "K";
+      const fromFile = from.charCodeAt(0);
+      const toFile = to.charCodeAt(0);
+
+      if (isPawn && fromFile !== toFile && !board[to]) {
+        const capturedSquare = `${to[0]}${from[1]}`;
+        delete board[capturedSquare];
+        removeSprite(capturedSquare);
+      }
+
+      if (board[to]) {
+        removeSprite(to);
+      }
+
+      delete board[from];
+      board[to] = pieceChar;
+      moveSprite(from, to);
+
+      if (isKing && Math.abs(toFile - fromFile) === 2) {
+        const rank = from[1];
+        const kingSide = toFile > fromFile;
+        const rookFrom = kingSide ? `h${rank}` : `a${rank}`;
+        const rookTo = kingSide ? `f${rank}` : `d${rank}`;
+        const rookChar = board[rookFrom];
+        if (rookChar) {
+          delete board[rookFrom];
+          board[rookTo] = rookChar;
+          moveSprite(rookFrom, rookTo);
+        }
+      }
+
+      if (promo) {
+        const promoChar = isWhite ? promo.toUpperCase() : promo.toLowerCase();
+        board[to] = promoChar;
+        const el = sprites[to];
+        if (el) setPieceSvg(el, promoChar);
+      }
+
+      await sleep(300);
+    }
+  }
+
+  window.previewPV = previewPV;
+  window.clearPreviewPV = clearPreviewPV;
+})();
+/*
+previewPV(
+  "w",
+  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  ["","e2e4", "e7e5", "g1f3", "b8c6", "f1b5"]
+);*/
+
