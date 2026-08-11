@@ -1416,6 +1416,8 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
   return { update };
 }
 
+
+
 (function () {
   // ----- Config par site -----
   const SITE_CONFIGS = {
@@ -1675,11 +1677,14 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
 
       await sleep(300);
     }
+    clearPreviewPV()
   }
 
   window.previewPV = previewPV;
   window.clearPreviewPV = clearPreviewPV;
 })();
+
+
 /*
 previewPV(
   "w",

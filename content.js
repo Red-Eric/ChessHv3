@@ -561,7 +561,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
-              if (engine.config !== "None") {
+              if (config.engine !== "None") {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
                   if (config.onlyShowEval) {
                     chrome.runtime.sendMessage({
@@ -621,7 +621,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
-              if (engine.config !== "None") {
+              if (config.engine !== "None") {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
                   chrome.runtime.sendMessage({
                     type: "FROM_CONTENT",
@@ -972,7 +972,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
-              if (engine.config !== "None") {
+              if (config.engine !== "None") {
                 engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
                   highlightMovesOnBoardLichess(moves, getSide()[0]);
                   keyMove = moves;
@@ -1351,7 +1351,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
-              if (engine.config !== "None") {
+              if (config.engine !== "None") {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
                   keyMove = moves;
 
@@ -1418,7 +1418,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
-              if (engine.config !== "None") {
+              if (config.engine !== "None") {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
                   keyMove = moves;
 
