@@ -1416,7 +1416,6 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
   return { update };
 }
 
-
 (function () {
   // ----- Config par site -----
   const SITE_CONFIGS = {
@@ -1527,67 +1526,13 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
       }
     }
 
-    const board = fenToBoard(startFen);
-
     ///////////////////////////////////////////////////////////////////
-    // ----- Détermine les cases réellement impliquées dans le PV -----
-    // (cases de départ/arrivée de chaque coup, case mangée en passant,
-    //  cases de la tour en cas de roque) -> seules ces pièces bougeront,
-    //  donc ce sont les seules à cacher/animer.
-    const involvedSquares = new Set();
-    {
-      const simBoard = { ...board };
-      for (const uciMove of pv) {
-        const from = uciMove.slice(0, 2);
-        const to = uciMove.slice(2, 4);
-
-        involvedSquares.add(from);
-        involvedSquares.add(to);
-
-        const pieceChar = simBoard[from];
-        if (!pieceChar) continue;
-
-        const isPawn = pieceChar.toUpperCase() === "P";
-        const isKing = pieceChar.toUpperCase() === "K";
-        const fromFile = from.charCodeAt(0);
-        const toFile = to.charCodeAt(0);
-
-        if (isPawn && fromFile !== toFile && !simBoard[to]) {
-          involvedSquares.add(`${to[0]}${from[1]}`);
-        }
-
-        if (isKing && Math.abs(toFile - fromFile) === 2) {
-          const rank = from[1];
-          const kingSide = toFile > fromFile;
-          involvedSquares.add(kingSide ? `h${rank}` : `a${rank}`);
-          involvedSquares.add(kingSide ? `f${rank}` : `d${rank}`);
-        }
-
-        delete simBoard[from];
-        simBoard[to] = pieceChar;
-      }
-    }
-
-    // Retrouve l'élément DOM natif présent sur une case donnée, sans
-    // dépendre d'une classe/attribut spécifique au site.
-    function findNativePieceAt(square) {
-      const pos = squareToPosition(square);
-      const rect = parent.getBoundingClientRect();
-      const x = rect.left + pos.x + squareSize / 2;
-      const y = rect.top + pos.y + squareSize / 2;
-      const el = document.elementFromPoint(x, y);
-      return el ? el.closest(siteConfig.nativePieceSelector) : null;
-    }
-
-    // ----- Cache uniquement les pièces natives qui vont bouger -----
-    involvedSquares.forEach((square) => {
-      if (!board[square]) return; // case vide au départ, rien à cacher
-      const nativeEl = findNativePieceAt(square);
-      if (nativeEl) {
-        nativeEl.style.visibility = "hidden";
-        nativeEl.classList.add("customPV-hidden-native");
-      }
-    });
+    parent
+      .querySelectorAll(siteConfig.nativePieceSelector)
+      .forEach((el) => {
+        el.style.visibility = "hidden";
+        el.classList.add("customPV-hidden-native");
+      });
 
     const overlay = document.createElement("div");
     overlay.className = "customPV";
@@ -1606,9 +1551,9 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
 
     parent.appendChild(overlay);
 
+    const board = fenToBoard(startFen);
     const sprites = {};
     const PIECE_SCALE = 0.85;
-    const PIECE_OPACITY = 0.6;
     const size = squareSize * PIECE_SCALE;
     const offset = (squareSize - size) / 2;
 
@@ -1638,7 +1583,7 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
       el.style.position = "absolute";
       el.style.width = `${size}px`;
       el.style.height = `${size}px`;
-      el.style.opacity = String(PIECE_OPACITY);
+      el.style.opacity = "0.9";
       el.style.pointerEvents = "none";
       el.style.transition = "none";
       el.style.transform = `translate(${pos.x + offset}px, ${pos.y + offset}px)`;
@@ -1647,10 +1592,7 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
       sprites[square] = el;
     }
 
-    // Ne crée un sprite que pour les pièces qui vont réellement bouger
-    involvedSquares.forEach((square) => {
-      if (board[square]) createSprite(square, board[square]);
-    });
+    Object.entries(board).forEach(([square, pieceChar]) => createSprite(square, pieceChar));
 
     await waitTwoFrames();
     Object.values(sprites).forEach((el) => {
@@ -1733,15 +1675,11 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
 
       await sleep(300);
     }
-
-    clearPreviewPV();
   }
 
   window.previewPV = previewPV;
   window.clearPreviewPV = clearPreviewPV;
 })();
-
-
 /*
 previewPV(
   "w",
