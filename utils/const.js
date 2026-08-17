@@ -1,6 +1,59 @@
 let BOARD_WIDTH = 480;
 
 
+
+let stat_0_white = {
+  best: 0,
+  blunder: 0,
+  blunderGP0: 0,
+  blunderGP1: 0,
+  blunderGP2: 0,
+  book: 0,
+  brilliant: 0,
+  excellent: 0,
+  forced: 0,
+  good: 1,
+  greatFind: 0,
+  inaccuracy: 0,
+  inaccuracyGP0: 0,
+  inaccuracyGP1: 0,
+  inaccuracyGP2: 0,
+  miss: 0,
+  missGP0: 0,
+  missGP1: 0,
+  missGP2: 0,
+  mistake: 0,
+  mistakeGP0: 0,
+  mistakeGP1: 0,
+  mistakeGP2: 0,
+};
+let stat_0_black = {
+  best: 0,
+  blunder: 0,
+  blunderGP0: 0,
+  blunderGP1: 0,
+  blunderGP2: 0,
+  book: 0,
+  brilliant: 0,
+  excellent: 0,
+  forced: 0,
+  good: 1,
+  greatFind: 0,
+  inaccuracy: 0,
+  inaccuracyGP0: 0,
+  inaccuracyGP1: 0,
+  inaccuracyGP2: 0,
+  miss: 0,
+  missGP0: 0,
+  missGP1: 0,
+  missGP2: 0,
+  mistake: 0,
+  mistakeGP0: 0,
+  mistakeGP1: 0,
+  mistakeGP2: 0,
+};
+
+
 const coachs = [
   {
     lang: "en_US",

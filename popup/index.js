@@ -71,7 +71,6 @@ document.querySelectorAll(".tab").forEach((tab) => {
   };
 });
 
-
 function updateCoachAvatar(coachId) {
   const none = document.getElementById("coachAvatarNone");
   const img = document.getElementById("coachAvatarImg");
@@ -210,7 +209,7 @@ function applyEngineSettings(engine) {
       el("lines").value = chessConfig.lines;
 
       break;
-      
+
     case "lozza":
       showLozzaSetting();
       chessConfig.lines = 1;
@@ -321,6 +320,7 @@ function updateChessUI() {
     "hideArrow",
     "onlyShowEval",
     "moveClassification",
+    "accuracy",
     "speach",
     "floatingBtn",
   ].forEach((k) => (el(k).checked = chessConfig[k]));
@@ -350,7 +350,11 @@ function updateChessUI() {
   el("autoStartLabel").textContent =
     `Auto Start Game (${chessConfig.autoStart ? "ON" : "OFF"})`;
   el("moveClassificationStartLabel").textContent =
-    `Move Classification + Accuracy + Elo (${chessConfig.moveClassification ? "ON" : "OFF"})`;
+    `Move Classification (${chessConfig.moveClassification ? "ON" : "OFF"})`;
+
+  el("accuracyLabel").textContent =
+    `Accuracy + Elo (${chessConfig.accuracy ? "ON" : "OFF"})`;
+
   el("speachStartLabel").textContent =
     `Coach voice (${chessConfig.speach ? "ON" : "OFF"})`;
   el("winningMoveLabel").textContent =
@@ -360,8 +364,8 @@ function updateChessUI() {
 
   el("hideArrowLabel").textContent =
     `Hide Arrow (${chessConfig.hideArrow ? "ON" : "OFF"})`;
-  
-    el("onlyShowEvalLabel").textContent =
+
+  el("onlyShowEvalLabel").textContent =
     `HIDE EVERYTHING (${chessConfig.onlyShowEval ? "ON" : "OFF"})`;
 
   // Update coach avatar
@@ -454,6 +458,7 @@ el("delayMax").oninput = handleDelayInput;
   "hideArrow",
   "onlyShowEval",
   "moveClassification",
+  "accuracy",
   "speach",
   "floatingBtn",
 ].forEach((k) => {
@@ -500,7 +505,6 @@ el("key2").onchange = (e) => {
   updateChessUI();
   saveChessConfig();
 };
-
 
 document.querySelectorAll('input[type="color"]').forEach((input, index) => {
   input.addEventListener("input", (e) => {

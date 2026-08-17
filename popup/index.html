@@ -145,11 +145,18 @@
               value="10"
             />
           </div>
-          <div class="setting-help">Depth value for the coach Engine</div>
+          <div class="setting-help">
+            Depth value for the coach Engine.<span
+              style="color: #e74c3c; font-weight: 700"
+            >
+              Recommended depth for low-end and slower devices: 4–6 or
+              lower.</span
+            >
+          </div>
 
           <div class="setting">
             <span id="moveClassificationStartLabel"
-              >Move Classification + Accuracy + Elo (OFF)</span
+              >Move Classification (OFF)</span
             >
             <label class="toggle"
               ><input type="checkbox" id="moveClassification" /><span
@@ -158,6 +165,18 @@
             ></label>
           </div>
           <div class="setting-help">Show Move Classification</div>
+
+          <div class="setting">
+            <span id="accuracyLabel">Accuracy + Elo (OFF)</span>
+            <label class="toggle">
+              <input type="checkbox" id="accuracy" />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-help">
+            Display the estimated Elo and live game accuracy in real time.
+          </div>
 
           <div class="setting">
             <span id="speachStartLabel">Coach voice (OFF)</span>
@@ -855,13 +874,12 @@
             <div class="setting">
               <label>Style</label>
               <select id="style">
-                <option selected>Default</option>
+                <option selected value="Default">Engine</option>
                 <option>Aggressive</option>
                 <option>Defensive</option>
                 <option>Active</option>
                 <option>Positional</option>
                 <option>Endgame</option>
-                <option>Beginner</option>
                 <option>Human</option>
               </select>
             </div>
@@ -927,7 +945,6 @@
             ></label>
           </div>
           <div class="setting-help">hide Arrow</div>
-          
 
           <div class="setting">
             <span id="showEvalLabel">Show Eval Bar (OFF)</span>
@@ -1031,7 +1048,12 @@
             </select>
           </div>
           <div class="setting-help">
-            Shortcut key to instantly play the best engine move.
+            Shortcut key to instantly play the best engine move.<span
+              style="color: #e74c3c; font-weight: 700"
+            >
+              It’s easy to detect because the move is triggered by the extension
+              rather than an actual mouse click or touchscreen input.</span
+            >
           </div>
 
           <div class="setting">
@@ -1088,7 +1110,12 @@
           </div>
           <div class="setting-help">
             Shortcut key to instantly play a balanced move (a move prioritizing
-            drawish or equal positions rather than sharp advantages).
+            drawish or equal positions rather than sharp advantages).<span
+              style="color: #e74c3c; font-weight: 700"
+            >
+              It’s easy to detect because the move is triggered by the extension
+              rather than an actual mouse click or touchscreen input.</span
+            >
           </div>
 
           <div class="setting">
@@ -1101,7 +1128,10 @@
           </div>
           <div class="setting-help">
             Display a floating button to instantly play the best move or a
-            balanced move.
+            balanced move.<span style="color: #e74c3c; font-weight: 700">
+              It’s easy to detect because the move is triggered by the extension
+              rather than an actual mouse click or touchscreen input.</span
+            >
           </div>
 
           <div class="setting">
@@ -1113,7 +1143,12 @@
             ></label>
           </div>
           <div class="setting-help">
-            Automatically plays the best move for you.
+            Automatically plays the best move for you.<span
+              style="color: #e74c3c; font-weight: 700"
+            >
+              It’s easy to detect because the move is triggered by the extension
+              rather than an actual mouse click or touchscreen input.</span
+            >
           </div>
 
           <div class="setting">
@@ -1161,8 +1196,9 @@
         <div class="setting-help">
           This option hides everything on the page (Arrows, Move Classification
           , Panel , EvalBAr ...)<span style="color: #e74c3c; font-weight: 700">
-            Enable this if you want to stream (use the 'Stream_Proof.exe')</span
-          >
+            “Enable this if you want to stream. Use `Stream_Proof.exe`. Stream
+            Proof is available for PC players only.
+          </span>
         </div>
 
         <div class="bottom-actions">

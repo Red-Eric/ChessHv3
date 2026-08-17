@@ -3,60 +3,6 @@ let squareTo = "";
 let isMobile = false;
 
 const audioLichess = new Audio();
-
-// old code
-
-let stat_0_white = {
-  best: 0,
-  blunder: 0,
-  blunderGP0: 0,
-  blunderGP1: 0,
-  blunderGP2: 0,
-  book: 0,
-  brilliant: 0,
-  excellent: 0,
-  forced: 0,
-  good: 1,
-  greatFind: 0,
-  inaccuracy: 0,
-  inaccuracyGP0: 0,
-  inaccuracyGP1: 0,
-  inaccuracyGP2: 0,
-  miss: 0,
-  missGP0: 0,
-  missGP1: 0,
-  missGP2: 0,
-  mistake: 0,
-  mistakeGP0: 0,
-  mistakeGP1: 0,
-  mistakeGP2: 0,
-};
-let stat_0_black = {
-  best: 0,
-  blunder: 0,
-  blunderGP0: 0,
-  blunderGP1: 0,
-  blunderGP2: 0,
-  book: 0,
-  brilliant: 0,
-  excellent: 0,
-  forced: 0,
-  good: 1,
-  greatFind: 0,
-  inaccuracy: 0,
-  inaccuracyGP0: 0,
-  inaccuracyGP1: 0,
-  inaccuracyGP2: 0,
-  miss: 0,
-  missGP0: 0,
-  missGP1: 0,
-  missGP2: 0,
-  mistake: 0,
-  mistakeGP0: 0,
-  mistakeGP1: 0,
-  mistakeGP2: 0,
-};
-
 let userName = null;
 let lastClassification = null;
 let isGameOverFlag = true;
@@ -78,22 +24,38 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
     elo: 3500,
     coach: 999,
+    hideArrow: false,
     lines: 5,
     colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
     depth: 10,
     depth2: 10,
-    delay: 100,
+    delay0: 0,
+    delay: 5000,
     style: "Default",
     autoMove: false,
     floatingBtn: false,
     speach: false,
     moveClassification: false,
+    accuracy: false,
     autoStart: false,
     winningMove: false,
     showEval: false,
     onlyShowEval: false,
     key: "a",
     key2: "z",
+    hints: [
+      "brilliant",
+      "greatFind",
+      "best",
+      "excellent",
+      "good",
+      "book",
+      "inaccuracy",
+      "mistake",
+      "miss",
+      "blunder",
+      "forced",
+    ],
 
     // special stockfish 6
     st6_mobilityMid: 100,
@@ -413,11 +375,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
           if (
             (config.coach === 999 && document.querySelector("#acc-widget")) ||
             (config.onlyShowEval && document.querySelector("#acc-widget")) ||
-            (!config.moveClassification &&
+            (!config.accuracy &&
               document.querySelector("#acc-widget"))
           ) {
             statObj = null;
-            document.querySelector("#acc-widget").remove();
+            document.querySelector("#acc-widget")?.remove();
           }
 
           if (lastFEN !== fen_) {
@@ -490,7 +452,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                         chessComAudio.play();
                       }
 
-                      if (config.onlyShowEval && config.moveClassification) {
+                      if (config.onlyShowEval && config.accuracy) {
                         chrome.runtime.sendMessage({
                           type: "ACC",
                           whiteAcc: result.whiteAccuracy,
@@ -745,7 +707,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             if (
               (config.coach === 999 && document.querySelector("#acc-widget")) ||
               (config.onlyShowEval && document.querySelector("#acc-widget")) ||
-              (!config.moveClassification &&
+              (!config.accuracy &&
                 document.querySelector("#acc-widget"))
             ) {
               statObj = null;
@@ -758,7 +720,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               // let fenTemp = event.data.fen;
 
               let fenTemp = lichessFenHistory.at(-1);
-              
+
               // if (lichessFenHistory.length > 0) {
               //   fenTemp = lichessFenHistory.at(-1);
               //   window.postMessage({ type: "stop" }, "*");
@@ -1023,7 +985,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                 .then((result) => {
                   const urlAudio_ = result.urlAudio;
 
-                  if (config.onlyShowEval && config.moveClassification) {
+                  if (config.onlyShowEval && config.accuracy) {
                     chrome.runtime.sendMessage({
                       type: "ACC",
                       whiteAcc: result.whiteAccuracy,
@@ -1298,7 +1260,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
           if (
             (config.coach === 999 && document.querySelector("#acc-widget")) ||
             (config.onlyShowEval && document.querySelector("#acc-widget")) ||
-            (!config.moveClassification &&
+            (!config.accuracy &&
               document.querySelector("#acc-widget"))
           ) {
             statObj = null;
@@ -1474,7 +1436,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     chessComAudio.play();
                   }
 
-                  if (config.onlyShowEval && config.moveClassification) {
+                  if (config.onlyShowEval && config.accuracy) {
                     chrome.runtime.sendMessage({
                       type: "ACC",
                       whiteAcc: result.whiteAccuracy,

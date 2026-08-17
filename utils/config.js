@@ -15,6 +15,7 @@ let config = {
   floatingBtn: false,
   speach: false,
   moveClassification: false,
+  accuracy: false,
   autoStart: false,
   winningMove: false,
   showEval: false,
