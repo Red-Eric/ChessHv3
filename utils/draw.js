@@ -1416,10 +1416,7 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
   return { update };
 }
 
-
-
 (function () {
-  // ----- Config par site -----
   const SITE_CONFIGS = {
     "www.chess.com": {
       parentSelector: "wc-chess-board",
@@ -1434,7 +1431,7 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
     "worldchess.com": {
       parentSelector: "cg-board",
       nativePieceSelector: "cg-piece",
-      rotateOverlayForBlack: true, // le board ne se retourne pas tout seul côté noir
+      rotateOverlayForBlack: true,
     },
   };
 
@@ -1442,57 +1439,23 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
     return SITE_CONFIGS[window.location.host] || null;
   }
 
-  function fenToBoard(fen) {
-    const board = {};
-    const placement = fen.split(" ")[0];
-    const rows = placement.split("/");
-
-    rows.forEach((row, r) => {
-      const rank = 8 - r;
-      let file = 0;
-      for (const ch of row) {
-        if (/\d/.test(ch)) {
-          file += parseInt(ch, 10);
-        } else {
-          const fileChar = String.fromCharCode("a".charCodeAt(0) + file);
-          board[`${fileChar}${rank}`] = ch;
-          file += 1;
-        }
-      }
-    });
-
-    return board;
-  }
-
-  // Tes variables globales SVG (wp, wn, wb, wr, wq, wk, bp, bn, bb, br, bq, bk)
-  const PIECE_SVGS = {
-    P: typeof wp !== "undefined" ? wp : null,
-    N: typeof wn !== "undefined" ? wn : null,
-    B: typeof wb !== "undefined" ? wb : null,
-    R: typeof wr !== "undefined" ? wr : null,
-    Q: typeof wq !== "undefined" ? wq : null,
-    K: typeof wk !== "undefined" ? wk : null,
-    p: typeof bp !== "undefined" ? bp : null,
-    n: typeof bn !== "undefined" ? bn : null,
-    b: typeof bb !== "undefined" ? bb : null,
-    r: typeof br !== "undefined" ? br : null,
-    q: typeof bq !== "undefined" ? bq : null,
-    k: typeof bk !== "undefined" ? bk : null,
-  };
-
   function clearPreviewPV() {
     document.querySelectorAll(".customPV").forEach((el) => el.remove());
-    // Réaffiche les pièces natives masquées pendant la preview
     document.querySelectorAll(".customPV-hidden-native").forEach((el) => {
       el.style.visibility = "";
       el.classList.remove("customPV-hidden-native");
     });
   }
 
-  function waitTwoFrames() {
-    return new Promise((resolve) => {
-      requestAnimationFrame(() => requestAnimationFrame(resolve));
-    });
+  const SVG_NS = "http://www.w3.org/2000/svg";
+
+  function moveColor(moveSide) {
+    return moveSide === "w" ? "#ffffff" : "#262421";
+  }
+
+  function sideToMoveFromFen(fen) {
+    const parts = fen.trim().split(/\s+/);
+    return parts[1] === "b" ? "b" : "w";
   }
 
   async function previewPV(side, startFen, pv) {
@@ -1528,162 +1491,145 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
       }
     }
 
-    ///////////////////////////////////////////////////////////////////
-    parent
-      .querySelectorAll(siteConfig.nativePieceSelector)
-      .forEach((el) => {
-        el.style.visibility = "hidden";
-        el.classList.add("customPV-hidden-native");
-      });
-
-    const overlay = document.createElement("div");
-    overlay.className = "customPV";
-    overlay.style.position = "absolute";
-    overlay.style.left = "0";
-    overlay.style.top = "0";
-    overlay.style.width = `${parent.offsetWidth}px`;
-    overlay.style.height = `${parent.offsetWidth}px`;
-    overlay.style.pointerEvents = "none";
-    overlay.style.zIndex = "11";
-
-    if (siteConfig.rotateOverlayForBlack && side === "b") {
-      overlay.style.transform = "rotate(180deg)";
-      overlay.style.transformOrigin = "center center";
-    }
-
-    parent.appendChild(overlay);
-
-    const board = fenToBoard(startFen);
-    const sprites = {};
-    const PIECE_SCALE = 0.85;
-    const size = squareSize * PIECE_SCALE;
-    const offset = (squareSize - size) / 2;
-
-    function setPieceSvg(el, pieceChar) {
-      const svgMarkup = PIECE_SVGS[pieceChar];
-      el.innerHTML = svgMarkup || "";
-      const svgEl = el.querySelector("svg");
-      if (!svgEl) return;
-
-      if (!svgEl.getAttribute("viewBox")) {
-        const w = svgEl.getAttribute("width") || "45";
-        const h = svgEl.getAttribute("height") || "45";
-        svgEl.setAttribute("viewBox", `0 0 ${w} ${h}`);
-      }
-
-      svgEl.removeAttribute("width");
-      svgEl.removeAttribute("height");
-      svgEl.style.width = "100%";
-      svgEl.style.height = "100%";
-      svgEl.style.display = "block";
-    }
-
-    function createSprite(square, pieceChar) {
+    function squareCenter(square) {
       const pos = squareToPosition(square);
-      const el = document.createElement("div");
-      el.className = "customPV-piece";
-      el.style.position = "absolute";
-      el.style.width = `${size}px`;
-      el.style.height = `${size}px`;
-      el.style.opacity = "0.9";
-      el.style.pointerEvents = "none";
-      el.style.transition = "none";
-      el.style.transform = `translate(${pos.x + offset}px, ${pos.y + offset}px)`;
-      setPieceSvg(el, pieceChar);
-      overlay.appendChild(el);
-      sprites[square] = el;
+      return { x: pos.x + squareSize / 2, y: pos.y + squareSize / 2 };
     }
 
-    Object.entries(board).forEach(([square, pieceChar]) => createSprite(square, pieceChar));
+    const svg = document.createElementNS(SVG_NS, "svg");
+    svg.setAttribute("class", "customPV");
+    svg.setAttribute("width", `${parent.offsetWidth}px`);
+    svg.setAttribute("height", `${parent.offsetWidth}px`);
+    svg.setAttribute("viewBox", `0 0 ${parent.offsetWidth} ${parent.offsetWidth}`);
+    svg.style.position = "absolute";
+    svg.style.left = "0";
+    svg.style.top = "0";
+    svg.style.pointerEvents = "none";
+    svg.style.zIndex = "11";
 
-    await waitTwoFrames();
-    Object.values(sprites).forEach((el) => {
-      el.style.transition = "transform 0.3s ease";
-    });
+    const needsRotation = siteConfig.rotateOverlayForBlack && side === "b";
+    if (needsRotation) {
+      svg.style.transform = "rotate(180deg)";
+      svg.style.transformOrigin = "center center";
+    }
 
-    function moveSprite(fromSquare, toSquare) {
-      const el = sprites[fromSquare];
-      if (!el) return;
-      delete sprites[fromSquare];
-      if (sprites[toSquare]) {
-        sprites[toSquare].remove();
+    parent.appendChild(svg);
+
+    function pointAt(p1, p2, t) {
+      return { x: p1.x + (p2.x - p1.x) * t, y: p1.y + (p2.y - p1.y) * t };
+    }
+
+    const pairCounts = {};
+
+    function drawArrow(fromSquare, toSquare, color, label) {
+      const s = squareSize;
+      let p1 = squareCenter(fromSquare);
+      let p2 = squareCenter(toSquare);
+
+      const dx0 = p2.x - p1.x;
+      const dy0 = p2.y - p1.y;
+      const dist0 = Math.hypot(dx0, dy0);
+      if (dist0 === 0) return;
+
+      const key = [fromSquare, toSquare].sort().join("-");
+      const dupIndex = pairCounts[key] || 0;
+      pairCounts[key] = dupIndex + 1;
+      if (dupIndex > 0) {
+        const ux0 = dx0 / dist0;
+        const uy0 = dy0 / dist0;
+        const px0 = -uy0;
+        const py0 = ux0;
+        const sign = dupIndex % 2 === 1 ? 1 : -1;
+        const mag = Math.ceil(dupIndex / 2) * s * 0.14 * sign;
+        p1 = { x: p1.x + px0 * mag, y: p1.y + py0 * mag };
+        p2 = { x: p2.x + px0 * mag, y: p2.y + py0 * mag };
       }
-      const pos = squareToPosition(toSquare);
-      el.style.transform = `translate(${pos.x + offset}px, ${pos.y + offset}px)`;
-      sprites[toSquare] = el;
+
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist === 0) return;
+      const ux = dx / dist;
+      const uy = dy / dist;
+      const px = -uy;
+      const py = ux;
+
+      const headLen = s * 0.32;
+      const headWidth = s * 0.24;
+      const lineWidth = s * 0.1;
+      const startOffset = s * 0.18;
+      const endOffset = s * 0.12;
+
+      const lineStart = { x: p1.x + ux * startOffset, y: p1.y + uy * startOffset };
+      const tip = { x: p2.x - ux * endOffset, y: p2.y - uy * endOffset };
+      const headBase = { x: tip.x - ux * headLen, y: tip.y - uy * headLen };
+      const leftPt = { x: headBase.x + px * (headWidth / 2), y: headBase.y + py * (headWidth / 2) };
+      const rightPt = { x: headBase.x - px * (headWidth / 2), y: headBase.y - py * (headWidth / 2) };
+
+      const line = document.createElementNS(SVG_NS, "line");
+      line.setAttribute("x1", lineStart.x);
+      line.setAttribute("y1", lineStart.y);
+      line.setAttribute("x2", headBase.x);
+      line.setAttribute("y2", headBase.y);
+      line.setAttribute("stroke", color);
+      line.setAttribute("stroke-width", lineWidth);
+      line.setAttribute("stroke-linecap", "round");
+      line.setAttribute("opacity", "0.9");
+      svg.appendChild(line);
+
+      const head = document.createElementNS(SVG_NS, "polygon");
+      head.setAttribute(
+        "points",
+        `${tip.x},${tip.y} ${leftPt.x},${leftPt.y} ${rightPt.x},${rightPt.y}`
+      );
+      head.setAttribute("fill", color);
+      head.setAttribute("opacity", "0.9");
+      svg.appendChild(head);
+
+      const mid = pointAt(lineStart, headBase, 0.5);
+      const labelGroup = document.createElementNS(SVG_NS, "g");
+      if (needsRotation) {
+        labelGroup.setAttribute("transform", `rotate(180 ${mid.x} ${mid.y})`);
+      }
+
+      const circle = document.createElementNS(SVG_NS, "circle");
+      circle.setAttribute("cx", mid.x);
+      circle.setAttribute("cy", mid.y);
+      circle.setAttribute("r", s * 0.15);
+      circle.setAttribute("fill", color);
+      circle.setAttribute("stroke", "white");
+      circle.setAttribute("stroke-width", "2");
+      labelGroup.appendChild(circle);
+
+      const text = document.createElementNS(SVG_NS, "text");
+      text.setAttribute("x", mid.x);
+      text.setAttribute("y", mid.y);
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("dominant-baseline", "central");
+      text.setAttribute("fill", color === "#ffffff" ? "#262421" : "#ffffff");
+      text.setAttribute("font-size", s * 0.18);
+      text.setAttribute("font-weight", "bold");
+      text.setAttribute("font-family", "sans-serif");
+      text.textContent = label;
+      labelGroup.appendChild(text);
+
+      svg.appendChild(labelGroup);
     }
 
-    function removeSprite(square) {
-      const el = sprites[square];
-      if (!el) return;
-      el.remove();
-      delete sprites[square];
-    }
+    const fenSide = sideToMoveFromFen(startFen);
 
-    function sleep(ms) {
-      return new Promise((resolve) => setTimeout(resolve, ms));
-    }
-
-    for (const uciMove of pv) {
+    pv.forEach((uciMove, i) => {
       const from = uciMove.slice(0, 2);
       const to = uciMove.slice(2, 4);
-      const promo = uciMove.length === 5 ? uciMove[4] : null;
-
-      const pieceChar = board[from];
-      if (!pieceChar) {
-        console.warn(`previewPV: aucune pièce sur ${from} pour le coup ${uciMove}`);
-        continue;
-      }
-
-      const isWhite = pieceChar === pieceChar.toUpperCase();
-      const isPawn = pieceChar.toUpperCase() === "P";
-      const isKing = pieceChar.toUpperCase() === "K";
-      const fromFile = from.charCodeAt(0);
-      const toFile = to.charCodeAt(0);
-
-      if (isPawn && fromFile !== toFile && !board[to]) {
-        const capturedSquare = `${to[0]}${from[1]}`;
-        delete board[capturedSquare];
-        removeSprite(capturedSquare);
-      }
-
-      if (board[to]) {
-        removeSprite(to);
-      }
-
-      delete board[from];
-      board[to] = pieceChar;
-      moveSprite(from, to);
-
-      if (isKing && Math.abs(toFile - fromFile) === 2) {
-        const rank = from[1];
-        const kingSide = toFile > fromFile;
-        const rookFrom = kingSide ? `h${rank}` : `a${rank}`;
-        const rookTo = kingSide ? `f${rank}` : `d${rank}`;
-        const rookChar = board[rookFrom];
-        if (rookChar) {
-          delete board[rookFrom];
-          board[rookTo] = rookChar;
-          moveSprite(rookFrom, rookTo);
-        }
-      }
-
-      if (promo) {
-        const promoChar = isWhite ? promo.toUpperCase() : promo.toLowerCase();
-        board[to] = promoChar;
-        const el = sprites[to];
-        if (el) setPieceSvg(el, promoChar);
-      }
-
-      await sleep(300);
-    }
-    clearPreviewPV()
+      const moveSide = i % 2 === 0 ? fenSide : fenSide === "w" ? "b" : "w";
+      const color = moveColor(moveSide);
+      drawArrow(from, to, color, i + 1);
+    });
   }
 
   window.previewPV = previewPV;
   window.clearPreviewPV = clearPreviewPV;
 })();
-
 
 /*
 previewPV(
