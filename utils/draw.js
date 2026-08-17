@@ -1198,7 +1198,15 @@ function HintGlobal(from, to, side, tags, mateIn) {
     if (mateIn === 0) {
       leftItems.push("Game Over");
     } else {
-      leftItems.push(`mate in ${mateIn}`);
+      let tempMateIn = mateIn;
+
+      if (mateIn > 0) {
+        tempMateIn++;
+      } else if (mateIn < 0) {
+        tempMateIn--;
+      }
+
+      leftItems.push(`mate in ${Math.abs(mateIn)}`);
     }
   }
   layoutStack(leftItems, leftAnchorX, topAnchorY, resolveLeftColors);
@@ -1500,7 +1508,10 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
     svg.setAttribute("class", "customPV");
     svg.setAttribute("width", `${parent.offsetWidth}px`);
     svg.setAttribute("height", `${parent.offsetWidth}px`);
-    svg.setAttribute("viewBox", `0 0 ${parent.offsetWidth} ${parent.offsetWidth}`);
+    svg.setAttribute(
+      "viewBox",
+      `0 0 ${parent.offsetWidth} ${parent.offsetWidth}`,
+    );
     svg.style.position = "absolute";
     svg.style.left = "0";
     svg.style.top = "0";
@@ -1560,11 +1571,20 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
       const startOffset = s * 0.18;
       const endOffset = s * 0.12;
 
-      const lineStart = { x: p1.x + ux * startOffset, y: p1.y + uy * startOffset };
+      const lineStart = {
+        x: p1.x + ux * startOffset,
+        y: p1.y + uy * startOffset,
+      };
       const tip = { x: p2.x - ux * endOffset, y: p2.y - uy * endOffset };
       const headBase = { x: tip.x - ux * headLen, y: tip.y - uy * headLen };
-      const leftPt = { x: headBase.x + px * (headWidth / 2), y: headBase.y + py * (headWidth / 2) };
-      const rightPt = { x: headBase.x - px * (headWidth / 2), y: headBase.y - py * (headWidth / 2) };
+      const leftPt = {
+        x: headBase.x + px * (headWidth / 2),
+        y: headBase.y + py * (headWidth / 2),
+      };
+      const rightPt = {
+        x: headBase.x - px * (headWidth / 2),
+        y: headBase.y - py * (headWidth / 2),
+      };
 
       const line = document.createElementNS(SVG_NS, "line");
       line.setAttribute("x1", lineStart.x);
@@ -1580,7 +1600,7 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
       const head = document.createElementNS(SVG_NS, "polygon");
       head.setAttribute(
         "points",
-        `${tip.x},${tip.y} ${leftPt.x},${leftPt.y} ${rightPt.x},${rightPt.y}`
+        `${tip.x},${tip.y} ${leftPt.x},${leftPt.y} ${rightPt.x},${rightPt.y}`,
       );
       head.setAttribute("fill", color);
       head.setAttribute("opacity", "0.9");
@@ -1637,4 +1657,3 @@ previewPV(
   "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
   ["","e2e4", "e7e5", "g1f3", "b8c6", "f1b5"]
 );*/
-

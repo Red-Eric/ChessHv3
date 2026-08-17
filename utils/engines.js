@@ -313,6 +313,8 @@ class CoachEngine {
         let raw = e.data;
         let cleanRaw = raw;
 
+        // console.log(raw)
+
         if (typeof cleanRaw === "string" && cleanRaw.startsWith("json ")) {
           cleanRaw = cleanRaw.slice(5).trim();
         } else {
