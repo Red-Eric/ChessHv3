@@ -375,8 +375,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
           if (
             (config.coach === 999 && document.querySelector("#acc-widget")) ||
             (config.onlyShowEval && document.querySelector("#acc-widget")) ||
-            (!config.accuracy &&
-              document.querySelector("#acc-widget"))
+            (!config.accuracy && document.querySelector("#acc-widget"))
           ) {
             statObj = null;
             document.querySelector("#acc-widget")?.remove();
@@ -406,6 +405,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   .then((result) => {
                     if (lastFEN === result.fen) {
                       clearHighlighthints();
+                      clearPreviewPV();
 
                       const classification_ = result.classificationName;
                       const svg = classificationSVG[classification_];
@@ -518,6 +518,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
             clearHighlightSquares();
             clearHighlighthints();
+            clearPreviewPV();
 
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
@@ -578,6 +579,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
             clearHighlightSquares();
             clearHighlighthints();
+            clearPreviewPV();
 
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
@@ -707,8 +709,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             if (
               (config.coach === 999 && document.querySelector("#acc-widget")) ||
               (config.onlyShowEval && document.querySelector("#acc-widget")) ||
-              (!config.accuracy &&
-                document.querySelector("#acc-widget"))
+              (!config.accuracy && document.querySelector("#acc-widget"))
             ) {
               statObj = null;
               document.querySelector("#acc-widget").remove();
@@ -738,6 +739,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
                 clearHighlightSquares();
                 clearHighlighthints();
+                clearPreviewPV();
 
                 if (
                   (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
@@ -929,6 +931,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
             clearHighlightSquares();
             clearHighlighthints();
+            clearPreviewPV();
 
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
@@ -997,6 +1000,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   }
 
                   clearHighlighthints();
+                  clearPreviewPV();
                   const classification_ = result.classificationName;
                   const svg = classificationSVG[classification_];
 
@@ -1260,8 +1264,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
           if (
             (config.coach === 999 && document.querySelector("#acc-widget")) ||
             (config.onlyShowEval && document.querySelector("#acc-widget")) ||
-            (!config.accuracy &&
-              document.querySelector("#acc-widget"))
+            (!config.accuracy && document.querySelector("#acc-widget"))
           ) {
             statObj = null;
             document.querySelector("#acc-widget").remove();
@@ -1298,6 +1301,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
 
             clearHighlightSquares();
+            clearPreviewPV();
             clearHighlights();
 
             if (!config.showEval && document.querySelector("#customEval")) {
@@ -1374,6 +1378,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             config = newConfig;
 
             clearHighlightSquares();
+            clearPreviewPV();
             clearHighlighthints();
 
             if (
@@ -1448,6 +1453,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   }
 
                   clearHighlighthints();
+                  clearPreviewPV();
                   const classification_ = result.classificationName;
                   const svg = classificationSVG[classification_];
                   if (

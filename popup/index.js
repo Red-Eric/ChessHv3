@@ -304,6 +304,7 @@ function updateChessUI() {
     "st6_kingSafety",
   ].forEach((k) => (el(k).value = chessConfig[k]));
   el("style").value = chessConfig.style;
+  el("preview").value = chessConfig.style;
   el("coach").value = chessConfig.coach;
   el("key").value = chessConfig.key;
   el("key2").value = chessConfig.key2;
@@ -471,6 +472,11 @@ el("delayMax").oninput = handleDelayInput;
 
 el("style").onchange = (e) => {
   chessConfig.style = e.target.value;
+  updateChessUI();
+  saveChessConfig();
+};
+el("preview").onchange = (e) => {
+  chessConfig.preview = e.target.value;
   updateChessUI();
   saveChessConfig();
 };
