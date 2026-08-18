@@ -19,6 +19,7 @@ const defaultChessConfig = {
   autoStart: false,
   winningMove: false,
   showEval: false,
+  preview: "None",
   onlyShowEval: false,
   key: "a",
   key2: "z",

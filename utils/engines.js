@@ -325,6 +325,8 @@ class CoachEngine {
 
         try {
           const data = JSON.parse(cleanRaw);
+          console.clear()
+          console.log(data)
 
           const last = data?.positions?.[data.positions.length - 1];
 
