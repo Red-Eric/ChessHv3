@@ -368,6 +368,9 @@ class CoachEngine {
             },
           };
 
+          console.clear()
+          console.log(res_data)
+
 
           if (!audioUrlHash) return;
 
