@@ -407,6 +407,29 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                       clearHighlighthints();
                       clearPreviewPV();
 
+                      if (config.preview !== "None") {
+                        if (config.preview === "All") {
+                          if (result.res_data.info.tags.length > 0) {
+                            previewPV(
+                              getSide()[0],
+                              result.res_data.fen,
+                              result.res_data.info.pv,
+                            );
+                          }
+                        } else {
+                          const flag = result.res_data.info.tags.includes(
+                            config.preview,
+                          );
+                          if (flag) {
+                            previewPV(
+                              getSide()[0],
+                              result.res_data.fen,
+                              result.res_data.info.pv,
+                            );
+                          }
+                        }
+                      }
+
                       const classification_ = result.classificationName;
                       const svg = classificationSVG[classification_];
 
@@ -1008,6 +1031,29 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     result.res_data.show &&
                     config.hints.includes(result.classificationName)
                   ) {
+                    if (config.preview !== "None") {
+                      if (config.preview === "All") {
+                        if (result.res_data.info.tags.length > 0) {
+                          previewPV(
+                            getSide()[0],
+                            result.res_data.fen,
+                            result.res_data.info.pv,
+                          );
+                        }
+                      } else {
+                        const flag = result.res_data.info.tags.includes(
+                          config.preview,
+                        );
+                        if (flag) {
+                          previewPV(
+                            getSide()[0],
+                            result.res_data.fen,
+                            result.res_data.info.pv,
+                          );
+                        }
+                      }
+                    }
+
                     if (!config.onlyShowEval) {
                       HintGlobal(
                         result.res_data.from,
@@ -1454,6 +1500,30 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
                   clearHighlighthints();
                   clearPreviewPV();
+
+                  if (config.preview !== "None") {
+                    if (config.preview === "All") {
+                      if (result.res_data.info.tags.length > 0) {
+                        previewPV(
+                          getSide()[0],
+                          result.res_data.fen,
+                          result.res_data.info.pv,
+                        );
+                      }
+                    } else {
+                      const flag = result.res_data.info.tags.includes(
+                        config.preview,
+                      );
+                      if (flag) {
+                        previewPV(
+                          getSide()[0],
+                          result.res_data.fen,
+                          result.res_data.info.pv,
+                        );
+                      }
+                    }
+                  }
+
                   const classification_ = result.classificationName;
                   const svg = classificationSVG[classification_];
                   if (

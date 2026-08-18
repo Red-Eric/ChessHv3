@@ -325,10 +325,11 @@ class CoachEngine {
 
         try {
           const data = JSON.parse(cleanRaw);
-          console.clear()
-          console.log(data)
+          // console.clear()
+          // console.log(data)
 
           const last = data?.positions?.[data.positions.length - 1];
+          const _fen = last?.fen;
 
           if (!last) return;
 
@@ -361,6 +362,7 @@ class CoachEngine {
             to: bestMove.slice(2, 4),
             classification: bestMove_classification,
             show: show_,
+            fen : _fen,
             info: {
               tags: last?.bestMove?.insightsTags,
               mateIn: last?.bestMove?.mateIn,
@@ -368,8 +370,8 @@ class CoachEngine {
             },
           };
 
-          console.clear()
-          console.log(res_data)
+          // console.log(res_data)
+          
 
 
           if (!audioUrlHash) return;
