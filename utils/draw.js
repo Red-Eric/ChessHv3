@@ -353,6 +353,7 @@ function createSimpleAccuracyDisplay(
 
 function highlightMovesOnBoardChessCom(moves, side) {
   if (config.hideArrow) return;
+  if (config.onlyShowEval) return;
 
   if (!Array.isArray(moves)) return;
   if (
@@ -555,6 +556,7 @@ function highlightMovesOnBoardChessCom(moves, side) {
 
 function highlightMovesOnBoardLichess(moves, side) {
   if (config.hideArrow) return;
+  if (config.onlyShowEval) return;
 
   if (!Array.isArray(moves)) return;
   if (
@@ -758,6 +760,7 @@ function highlightMovesOnBoardLichess(moves, side) {
 
 function highlightMovesOnBoardWorld(moves, side) {
   if (config.hideArrow) return;
+  if (config.onlyShowEval) return;
 
   if (!Array.isArray(moves)) return;
   if (
