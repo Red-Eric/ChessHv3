@@ -773,7 +773,7 @@ function highlightMovesOnBoardWorld(moves, side) {
   }
   if (config.onlyShowEval) return;
 
-  const parent = document.querySelector("cg-board");
+  const parent = document.querySelector("div.cg-board");
 
   if (!parent) return;
 
@@ -963,7 +963,7 @@ function highlightMovesOnBoardWorld(moves, side) {
     if (side === "b") {
       document
         .querySelectorAll(".customH")
-        .forEach((el) => (el.style.transform = "rotate(180deg)"));
+        .forEach((el) => (el.style.transform = "rotate(360deg)"));
     }
   });
 }
