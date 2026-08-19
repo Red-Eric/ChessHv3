@@ -325,7 +325,7 @@ class CoachEngine {
 
         try {
           const data = JSON.parse(cleanRaw);
-          console.clear()
+          // console.clear()
           // console.log(data)
 
           const last = data?.positions?.[data.positions.length - 1];
@@ -370,7 +370,7 @@ class CoachEngine {
             },
           };
 
-          console.log(res_data)
+          // console.log(res_data)
           
 
 

@@ -422,6 +422,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                                 result.res_data.fen,
                                 result.res_data.info.pv,
                               );
+                              if (config.onlyShowEval) {
+                            chrome.runtime.sendMessage({
+                              type: "PV",
+                              side: getSide()[0],
+                              fen: result.res_data.fen,
+                              pv: result.res_data.info.pv,
+                            });
+                          }
                             }
                           } else {
                             const flag = result.res_data.info.tags.includes(
@@ -433,6 +441,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                                 result.res_data.fen,
                                 result.res_data.info.pv,
                               );
+                              if (config.onlyShowEval) {
+                            chrome.runtime.sendMessage({
+                              type: "PV",
+                              side: getSide()[0],
+                              fen: result.res_data.fen,
+                              pv: result.res_data.info.pv,
+                            });
+                          }
                             }
                           }
                         }
@@ -464,6 +480,8 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                             from: result.res_data.from,
                             to: result.res_data.to,
                             side: getSide()[0],
+                            tags: result.res_data.info.tags,
+                            mateIn: result.res_data.info.mateIn,
                           });
                         }
 
@@ -1039,6 +1057,15 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                             result.res_data.fen,
                             result.res_data.info.pv,
                           );
+
+                          if (config.onlyShowEval) {
+                            chrome.runtime.sendMessage({
+                              type: "PV",
+                              side: getSide()[0],
+                              fen: result.res_data.fen,
+                              pv: result.res_data.info.pv,
+                            });
+                          }
                         }
                       } else {
                         const flag = result.res_data.info.tags.includes(
@@ -1050,6 +1077,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                             result.res_data.fen,
                             result.res_data.info.pv,
                           );
+                          if (config.onlyShowEval) {
+                            chrome.runtime.sendMessage({
+                              type: "PV",
+                              side: getSide()[0],
+                              fen: result.res_data.fen,
+                              pv: result.res_data.info.pv,
+                            });
+                          }
                         }
                       }
                     }
@@ -1077,6 +1112,8 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                         from: result.res_data.from,
                         to: result.res_data.to,
                         side: getSide()[0],
+                        tags: result.res_data.info.tags,
+                        mateIn: result.res_data.info.mateIn,
                       });
                     }
                   }
@@ -1515,6 +1552,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                             result.res_data.fen,
                             result.res_data.info.pv,
                           );
+                          if (config.onlyShowEval) {
+                            chrome.runtime.sendMessage({
+                              type: "PV",
+                              side: getSide()[0],
+                              fen: result.res_data.fen,
+                              pv: result.res_data.info.pv,
+                            });
+                          }
                         }
                       } else {
                         const flag = result.res_data.info.tags.includes(
@@ -1526,6 +1571,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                             result.res_data.fen,
                             result.res_data.info.pv,
                           );
+                          if (config.onlyShowEval) {
+                            chrome.runtime.sendMessage({
+                              type: "PV",
+                              side: getSide()[0],
+                              fen: result.res_data.fen,
+                              pv: result.res_data.info.pv,
+                            });
+                          }
                         }
                       }
                     }
@@ -1553,6 +1606,8 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                         from: result.res_data.from,
                         to: result.res_data.to,
                         side: getSide()[0],
+                        tags: result.res_data.info.tags,
+                        mateIn: result.res_data.info.mateIn,
                       });
                     }
                   }

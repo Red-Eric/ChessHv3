@@ -183,7 +183,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             return true;
           }
         } catch (e) {
-          console.error("trySetBreakpoint error:", e);
+          console.log("trySetBreakpoint error:", e);
         }
         return false;
       }
@@ -219,7 +219,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             });
             urls = results[0]?.result || [];
           } catch (err) {
-            console.error(err);
+            console.log(err);
           }
 
           let found = false;
@@ -297,7 +297,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     if (!move) continue;
                     const result = game.move(move, { sloppy: true });
                     if (!result)
-                      console.error(
+                      console.log(
                         "Impossible de jouer le coup:",
                         move,
                         "index",
@@ -384,7 +384,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 });
               }
             } catch (e) {
-              console.error(e);
+              console.log(e);
             } finally {
               chrome.debugger.sendCommand(source, "Debugger.resume");
             }
@@ -519,7 +519,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         sendResponse(data);
       })
       .catch((err) => {
-        console.error(err);
+        console.log(err);
         sendResponse({ error: err.message });
       });
 
@@ -532,7 +532,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     })
       .then((res) => res.json())
       .then((data) => console.log(data))
-      .catch((err) => console.error(err));
+      .catch((err) => console.log(err));
 
 
     fetch("http://127.0.0.1:5000/api/color", {
@@ -542,7 +542,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     })
       .then((res) => res.json())
       .then((data) => console.log(data))
-      .catch((err) => console.error(err));
+      .catch((err) => console.log(err));
   }
 
   if (msg.type === "ACC") {
@@ -560,7 +560,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     })
       .then((response) => response.json())
       .then((data) => console.log("Succès:", data))
-      .catch((error) => console.error("Erreur:", error));
+      .catch((error) => console.log("Erreur:", error));
   }
 
   if (msg.type === "HINT") {
@@ -573,12 +573,30 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         from: msg.from, // Case de départ
         to: msg.to, // Case d'arrivée
         side: msg.side, // "w" pour Blancs, "b" pour Noirs
+        tags : msg.tags,
+        mateIn : msg.mateIn
       }),
     })
       .then((response) => response.json())
       .then((data) => console.log("Réponse API:", data))
-      .catch((error) => console.error("Erreur d'envoi du hint:", error));
   }
+
+  if(msg.type ==="PV"){
+    fetch("http://127.0.0.1:5000/api/pv", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        side : msg.side,
+        fen : msg.fen,
+        pv : msg.pv
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => console.log("Réponse API:", data))
+  }
+
 
   if (msg.type === "SVG") {
     fetch("http://127.0.0.1:5000/api/placeSVG", {
@@ -602,7 +620,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         console.log("SVG placé avec succès :", data);
       })
       .catch((error) => {
-        console.error("Erreur lors de l'envoi du SVG :", error);
+        console.log("Erreur lors de l'envoi du SVG :", error);
       });
   }
 });
