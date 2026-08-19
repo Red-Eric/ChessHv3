@@ -998,6 +998,10 @@ function HintGlobal(from, to, side, tags, mateIn) {
     }
   }
 
+  if (window.location.host === "worldchess.com"){
+    parent = document.querySelector("div.cg-board")
+  }
+
   if (!parent) return;
 
   const squareSize = parent.offsetWidth / 8;
@@ -1441,7 +1445,7 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
       rotateOverlayForBlack: false,
     },
     "worldchess.com": {
-      parentSelector: "cg-board",
+      parentSelector: "div.cg-board",
       nativePieceSelector: "cg-piece",
       rotateOverlayForBlack: true,
     },

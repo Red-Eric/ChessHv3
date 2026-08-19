@@ -1,6 +1,4 @@
-
 // place move icon on the board
-
 
 /*
 
@@ -28,11 +26,11 @@
 
 */
 
-
 function placeSVGOnBoard(side, square, svgCode) {
   const board =
     document.querySelector("wc-chess-board") ||
-    document.querySelector("cg-board").parentElement;
+    document.querySelector("cg-board").parentElement ||
+    document.querySelector("div.cg-board");
 
   if (!board) {
     console.log("no board");
@@ -137,7 +135,6 @@ function placeSVGOnBoard(side, square, svgCode) {
         },
       );
     }
-
   });
 
   if (window.location.host === "www.chess.com") {
@@ -146,9 +143,7 @@ function placeSVGOnBoard(side, square, svgCode) {
       el.style.opacity = "0.6";
     });
   }
-  
 }
-
 
 // Inject a.js
 
@@ -164,7 +159,6 @@ function preInjection() {
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
-
 
 // square to screen position
 function squareToPixels(square, boardInfo, orientation = "white") {
@@ -187,14 +181,11 @@ function squareToPixels(square, boardInfo, orientation = "white") {
   return { x, y };
 }
 
-
-
 function randomIntBetween(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-
 
 // clear the arrows on the board
 function clearHighlightSquares() {
@@ -210,135 +201,126 @@ function clearHint() {
   document.querySelectorAll(className).forEach((el) => el.remove());
 }
 
-
 function extractNormalMove(moves, side = "white") {
-      const factor = side === "white" ? 1 : -1;
+  const factor = side === "white" ? 1 : -1;
 
-      // 1. BOOK
-      const book = moves.find((m) => m.eval === "book");
-      if (book) return book;
+  // 1. BOOK
+  const book = moves.find((m) => m.eval === "book");
+  if (book) return book;
 
-      // 2. MATE CHECK
-      const mates = moves.filter(
-        (m) => typeof m.eval === "string" && m.eval.includes("#"),
-      );
+  // 2. MATE CHECK
+  const mates = moves.filter(
+    (m) => typeof m.eval === "string" && m.eval.includes("#"),
+  );
 
-      if (mates.length > 0) {
-        const allMate = mates.length === moves.length;
+  if (mates.length > 0) {
+    const allMate = mates.length === moves.length;
 
-        if (allMate) {
-          return mates.sort((a, b) => {
-            const ma = Math.abs(parseInt(a.eval.replace("#", "")));
-            const mb = Math.abs(parseInt(b.eval.replace("#", "")));
-            return ma - mb;
-          })[0];
-        }
-
-        const strong = moves
-          .filter((m) => typeof m.eval === "string" && !m.eval.includes("#"))
-          .map((m) => ({
-            ...m,
-            score: parseFloat(m.eval) * factor,
-          }))
-          .filter((m) => !isNaN(m.score));
-
-        const filtered = strong.filter((m) => m.score > 2.5);
-
-        if (filtered.length > 0) {
-          return filtered[Math.floor(Math.random() * filtered.length)];
-        }
-      }
-
-      const normal = moves
-        .filter((m) => typeof m.eval === "string" && !m.eval.includes("#"))
-        .map((m) => ({
-          ...m,
-          score: parseFloat(m.eval) * factor,
-        }))
-        .filter((m) => !isNaN(m.score));
-
-      if (normal.length === 0) return moves[0];
-
-      const sorted = normal.sort((a, b) => b.score - a.score);
-
-      const zone12 = sorted.filter((m) => Math.abs(m.score - 1.0) <= 0.4);
-      if (zone12.length > 0) {
-        return zone12[Math.floor(Math.random() * zone12.length)];
-      }
-
-      const zone0 = sorted.filter((m) => Math.abs(m.score) <= 0.5);
-      if (zone0.length > 0) {
-        return zone0[Math.floor(Math.random() * zone0.length)];
-      }
-
-      const allWinning = normal.every((m) => m.score > 2.5);
-      if (allWinning) {
-        return normal.sort((a, b) => a.score - b.score)[0];
-      }
-
-      return sorted[0];
+    if (allMate) {
+      return mates.sort((a, b) => {
+        const ma = Math.abs(parseInt(a.eval.replace("#", "")));
+        const mb = Math.abs(parseInt(b.eval.replace("#", "")));
+        return ma - mb;
+      })[0];
     }
 
-  
+    const strong = moves
+      .filter((m) => typeof m.eval === "string" && !m.eval.includes("#"))
+      .map((m) => ({
+        ...m,
+        score: parseFloat(m.eval) * factor,
+      }))
+      .filter((m) => !isNaN(m.score));
+
+    const filtered = strong.filter((m) => m.score > 2.5);
+
+    if (filtered.length > 0) {
+      return filtered[Math.floor(Math.random() * filtered.length)];
+    }
+  }
+
+  const normal = moves
+    .filter((m) => typeof m.eval === "string" && !m.eval.includes("#"))
+    .map((m) => ({
+      ...m,
+      score: parseFloat(m.eval) * factor,
+    }))
+    .filter((m) => !isNaN(m.score));
+
+  if (normal.length === 0) return moves[0];
+
+  const sorted = normal.sort((a, b) => b.score - a.score);
+
+  const zone12 = sorted.filter((m) => Math.abs(m.score - 1.0) <= 0.4);
+  if (zone12.length > 0) {
+    return zone12[Math.floor(Math.random() * zone12.length)];
+  }
+
+  const zone0 = sorted.filter((m) => Math.abs(m.score) <= 0.5);
+  if (zone0.length > 0) {
+    return zone0[Math.floor(Math.random() * zone0.length)];
+  }
+
+  const allWinning = normal.every((m) => m.score > 2.5);
+  if (allWinning) {
+    return normal.sort((a, b) => a.score - b.score)[0];
+  }
+
+  return sorted[0];
+}
+
 // For dev
 
 async function findInScripts(search) {
-    const scripts = [...document.scripts]
-        .map(s => s.src)
-        .filter(Boolean);
+  const scripts = [...document.scripts].map((s) => s.src).filter(Boolean);
 
-    for (const url of scripts) {
-        try {
-            const res = await fetch(url);
-            const code = await res.text();
+  for (const url of scripts) {
+    try {
+      const res = await fetch(url);
+      const code = await res.text();
 
-            let found = false;
-            let index = -1;
+      let found = false;
+      let index = -1;
 
-            if (search instanceof RegExp) {
-                const match = code.match(search);
+      if (search instanceof RegExp) {
+        const match = code.match(search);
 
-                if (match) {
-                    found = true;
-                    index = match.index;
-                }
-            } else {
-                index = code.indexOf(search);
-
-                if (index !== -1) {
-                    found = true;
-                }
-            }
-
-            if (!found) continue;
-
-            const before = code.slice(0, index);
-
-            const line = before.split("\n").length;
-            const column = before.split("\n").pop().length;
-
-            console.log("FOUND");
-            console.log("URL :", url);
-            console.log("LINE :", line);
-            console.log("COLUMN :", column);
-
-            console.log(
-                code.substring(
-                    Math.max(0, index - 200),
-                    index + 300
-                )
-            );
-
-            return {
-                url,
-                line,
-                column,
-                index
-            };
-        } catch (e) {
-            console.error(url, e);
+        if (match) {
+          found = true;
+          index = match.index;
         }
-    }
+      } else {
+        index = code.indexOf(search);
 
-    console.log("NOT FOUND");
+        if (index !== -1) {
+          found = true;
+        }
+      }
+
+      if (!found) continue;
+
+      const before = code.slice(0, index);
+
+      const line = before.split("\n").length;
+      const column = before.split("\n").pop().length;
+
+      console.log("FOUND");
+      console.log("URL :", url);
+      console.log("LINE :", line);
+      console.log("COLUMN :", column);
+
+      console.log(code.substring(Math.max(0, index - 200), index + 300));
+
+      return {
+        url,
+        line,
+        column,
+        index,
+      };
+    } catch (e) {
+      console.error(url, e);
+    }
+  }
+
+  console.log("NOT FOUND");
 }
