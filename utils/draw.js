@@ -1469,6 +1469,9 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
   async function previewPV(side, startFen, pv) {
     if (!Array.isArray(pv) || pv.length === 0) return;
 
+    if(config.onlyShowEval) return;
+
+
     const siteConfig = getSiteConfig();
     if (!siteConfig) {
       console.warn(`previewPV: site non supporté (${window.location.host})`);

@@ -101,7 +101,7 @@ class komodo {
     );
     this.worker.postMessage("setoption name UCI LimitStrength value true");
     this.worker.postMessage(`setoption name UCI Elo value ${this.elo}`);
-    this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
+    this.worker.postMessage(`setoption name MultiPV value ${config.lines}`);
   }
 
   updateConfig(lines, depth, style, elo) {
@@ -113,7 +113,7 @@ class komodo {
       `setoption name Personality value ${this.personality}`,
     );
     this.worker.postMessage(`setoption name UCI Elo value ${this.elo}`);
-    this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
+    this.worker.postMessage(`setoption name MultiPV value ${config.lines}`);
   }
 
   async getMovesByFen(fen, side) {
@@ -123,7 +123,7 @@ class komodo {
       `setoption name Personality value ${this.personality}`,
     );
     this.worker.postMessage(`setoption name UCI Elo value ${config.elo}`);
-    this.worker.postMessage(`setoption name MultiPV value ${this.multipv}`);
+    this.worker.postMessage(`setoption name MultiPV value ${config.lines}`);
 
     const results = [];
     const seenMoves = new Set();
@@ -184,7 +184,7 @@ class komodo {
 
             const mpvIndex = parts.indexOf("multipv");
             const mpv = mpvIndex !== -1 ? parseInt(parts[mpvIndex + 1], 10) : 1;
-            if (mpv > this.multipv) continue;
+            if (mpv > config.lines) continue;
 
             let evalScore = null;
             const scoreIndex = parts.indexOf("score");
@@ -546,7 +546,7 @@ class Stockfish6 {
 
             const mpvIndex = parts.indexOf("multipv");
             const mpv = mpvIndex !== -1 ? parseInt(parts[mpvIndex + 1], 10) : 1;
-            if (mpv > this.multipv) continue;
+            if (mpv > config.lines) continue;
 
             let evalScore = null;
             const scoreIndex = parts.indexOf("score");
