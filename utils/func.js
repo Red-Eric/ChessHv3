@@ -1,6 +1,34 @@
 
 // place move icon on the board
 
+
+/*
+
+(async () => {
+  const target = "XXXX";
+
+  const urls = [...document.scripts]
+    .map(s => s.src)
+    .filter(Boolean);
+
+  for (const url of urls) {
+    try {
+      const code = await fetch(url).then(r => r.text());
+
+      if (code.includes(target)) {
+        console.log("FOUND:", url);
+        console.log("Position:", code.indexOf(target));
+      }
+    } catch {}
+  }
+})();
+
+
+
+
+*/
+
+
 function placeSVGOnBoard(side, square, svgCode) {
   const board =
     document.querySelector("wc-chess-board") ||

@@ -1271,20 +1271,21 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
   let offsetLeft = null;
 
   // Détection du site et configuration spécifique
-  if (host === "www.chess.com" || host.includes("chess.com")) {
+  if (host === "www.chess.com") {
     boardSelector = ".board";
-  } else if (host === "lichess.org" || host.includes("lichess.org")) {
+  } else if (host === "lichess.org") {
     boardSelector = "cg-board";
     offsetLeft = "-50px";
-  } else if (host === "worldchess.com" || host.includes("worldchess.com")) {
-    boardSelector = "cg-board";
+  } else{
+    boardSelector = "div.cg-board";
     offsetLeft = "-10px";
-  } else {
-    // Sélecteur par défaut
-    boardSelector = "cg-board, .board";
   }
 
+  // console.clear()
+
   const boardContainer = document.querySelector(boardSelector);
+  // console.log(boardContainer)
+
   if (!boardContainer) return console.error("Plateau non trouvé !");
 
   let w_ = boardContainer.offsetWidth;

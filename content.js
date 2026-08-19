@@ -1385,7 +1385,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
             clearHighlightSquares();
             clearPreviewPV();
-            clearHighlights();
+            clearHighlightSquares();
 
             if (!config.showEval && document.querySelector("#customEval")) {
               document.querySelector("#customEval").remove();
