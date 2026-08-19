@@ -1657,9 +1657,3 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
   window.clearPreviewPV = clearPreviewPV;
 })();
 
-/*
-previewPV(
-  "w",
-  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-  ["","e2e4", "e7e5", "g1f3", "b8c6", "f1b5"]
-);*/
