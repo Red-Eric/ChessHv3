@@ -592,7 +592,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   if (moves.length > 0 && evalObj) {
                     evalObj.update(moves[0].eval, getSide());
                   }
-                  highlightMovesOnBoardChessCom(moves, getSide()[0]);
+                  highlightMovesOnBoard(moves, getSide()[0]);
                 });
               }
             }
@@ -645,7 +645,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   if (moves.length > 0 && evalObj) {
                     evalObj.update(moves[0].eval, getSide());
                   }
-                  highlightMovesOnBoardChessCom(moves, getSide()[0]);
+                  highlightMovesOnBoard(moves, getSide()[0]);
                 });
               }
             }
@@ -798,7 +798,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                           });
                         }
 
-                        highlightMovesOnBoardLichess(moves, getSide()[0]);
+                        highlightMovesOnBoard(moves, getSide()[0]);
                         keyMove = moves;
                         if (moves.length > 0 && evalObj) {
                           evalObj.update(moves[0].eval, getSide());
@@ -980,7 +980,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             ) {
               if (config.engine !== "None") {
                 engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
-                  highlightMovesOnBoardLichess(moves, getSide()[0]);
+                  highlightMovesOnBoard(moves, getSide()[0]);
                   keyMove = moves;
                   if (moves.length > 0 && evalObj) {
                     evalObj.update(moves[0].eval, getSide());
@@ -1416,7 +1416,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     type: "FROM_CONTENT",
                     data: moves,
                   });
-                  highlightMovesOnBoardWorld(moves, getSide()[0]);
+                  highlightMovesOnBoard(moves, getSide()[0]);
 
                   if (moves.length > 0 && evalObj) {
                     evalObj.update(moves[0].eval, getSide());
@@ -1476,7 +1476,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     type: "FROM_CONTENT",
                     data: moves,
                   });
-                  highlightMovesOnBoardWorld(moves, getSide()[0]);
+                  highlightMovesOnBoard(moves, getSide()[0]);
 
                   if (moves.length > 0 && evalObj) {
                     evalObj.update(moves[0].eval, getSide());

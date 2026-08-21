@@ -351,7 +351,11 @@ function createSimpleAccuracyDisplay(
   return { update };
 }
 
-function highlightMovesOnBoardChessCom(moves, side) {
+const queryChess_com = "wc-chess-board";
+const queryLichess_org = "cg-container";
+const queryWordChess_com = "div.cg-board";
+
+function highlightMovesOnBoard(moves, side) {
   if (config.hideArrow) return;
   if (config.onlyShowEval) return;
 
@@ -364,16 +368,27 @@ function highlightMovesOnBoardChessCom(moves, side) {
   ) {
     return;
   }
-  if (config.onlyShowEval) return;
 
-  const parent = document.querySelector("wc-chess-board");
+  let selector;
+  if (window.location.host === "www.chess.com") {
+    selector = queryChess_com;
+  } else if (window.location.host === "lichess.org") {
+    selector = queryLichess_org;
+  } else if (window.location.host === "worldchess.com") {
+    selector = queryWordChess_com;
+  } else {
+    return;
+  }
+
+  const parent = document.querySelector(selector);
   if (!parent) return;
 
-  const squareSize = parent.offsetWidth / 8;
+  const rect = parent.getBoundingClientRect();
+  const squareSize = rect.width / 8;
   const maxMoves = 5;
   let colors = config.colors;
 
-  parent.querySelectorAll(".customH").forEach((el) => el.remove());
+  document.querySelectorAll(".customH").forEach((el) => el.remove());
 
   function squareToPosition(square) {
     const fileChar = square[0];
@@ -400,14 +415,14 @@ function highlightMovesOnBoardChessCom(moves, side) {
 
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("class", "customH");
-    svg.setAttribute("width", parent.offsetWidth);
-    svg.setAttribute("height", parent.offsetWidth);
-    svg.style.position = "absolute";
-    svg.style.left = "0";
-    svg.style.top = "0";
+    svg.setAttribute("width", rect.width);
+    svg.setAttribute("height", rect.width);
+    svg.style.position = "fixed";
+    svg.style.left = rect.left + "px";
+    svg.style.top = rect.top + "px";
     svg.style.pointerEvents = "none";
     svg.style.overflow = "visible";
-    svg.style.zIndex = "10";
+    svg.style.zIndex = "999999";
 
     const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
     const marker = document.createElementNS(
@@ -502,33 +517,31 @@ function highlightMovesOnBoardChessCom(moves, side) {
           const paddingX = 2;
           const paddingY = 2;
 
-          const rect = document.createElementNS(
+          const rectEl = document.createElementNS(
             "http://www.w3.org/2000/svg",
             "rect",
           );
 
-          rect.setAttribute("x", bbox.x - paddingX);
-          rect.setAttribute("y", bbox.y - paddingY);
-          rect.setAttribute("width", bbox.width + paddingX * 2);
-          rect.setAttribute("height", bbox.height + paddingY * 2);
+          rectEl.setAttribute("x", bbox.x - paddingX);
+          rectEl.setAttribute("y", bbox.y - paddingY);
+          rectEl.setAttribute("width", bbox.width + paddingX * 2);
+          rectEl.setAttribute("height", bbox.height + paddingY * 2);
 
-          rect.setAttribute("rx", "8");
-          rect.setAttribute("ry", "8");
+          rectEl.setAttribute("rx", "8");
+          rectEl.setAttribute("ry", "8");
 
-          rect.setAttribute("fill", isNegative ? "#312e2b" : "#ffffff");
-          rect.setAttribute("fill-opacity", "0.85");
-          rect.setAttribute("stroke", isNegative ? "#000000" : "#cccccc");
-          rect.setAttribute("stroke-width", "1");
+          rectEl.setAttribute("fill", isNegative ? "#312e2b" : "#ffffff");
+          rectEl.setAttribute("fill-opacity", "0.85");
+          rectEl.setAttribute("stroke", isNegative ? "#000000" : "#cccccc");
+          rectEl.setAttribute("stroke-width", "1");
 
-          group.insertBefore(rect, text);
+          group.insertBefore(rectEl, text);
         });
       }
     }
 
-    parent.appendChild(svg);
+    document.body.appendChild(svg);
   }
-
-  parent.style.position = "relative";
 
   let filteredMoves = moves;
   if (config.winningMove) {
@@ -551,416 +564,8 @@ function highlightMovesOnBoardChessCom(moves, side) {
   filteredMoves.slice(0, maxMoves).forEach((move, index) => {
     const color = colors[index] || "red";
     drawArrow(move.from, move.to, color, move.eval);
-  });
-}
 
-function highlightMovesOnBoardLichess(moves, side) {
-  if (config.hideArrow) return;
-  if (config.onlyShowEval) return;
-
-  if (!Array.isArray(moves)) return;
-  if (
-    !(
-      (side === "w" && fen_.split(" ")[1] === "w") ||
-      (side === "b" && fen_.split(" ")[1] === "b")
-    )
-  ) {
-    return;
-  }
-  if (config.onlyShowEval) return;
-
-  const parent = document.querySelector("cg-container");
-  if (!parent) return;
-
-  const squareSize = parent.offsetWidth / 8;
-  const maxMoves = 5;
-  let colors = config.colors;
-
-  parent.querySelectorAll(".customH").forEach((el) => el.remove());
-
-  function squareToPosition(square) {
-    const fileChar = square[0];
-    const rankChar = square[1];
-    const rank = parseInt(rankChar, 10) - 1;
-
-    let file;
-    if (side === "w") {
-      file = fileChar.charCodeAt(0) - "a".charCodeAt(0);
-      const y = (7 - rank) * squareSize;
-      const x = file * squareSize;
-      return { x, y };
-    } else {
-      file = "h".charCodeAt(0) - fileChar.charCodeAt(0);
-      const y = rank * squareSize;
-      const x = file * squareSize;
-      return { x, y };
-    }
-  }
-
-  function drawArrow(fromSquare, toSquare, color, score) {
-    const from = squareToPosition(fromSquare);
-    const to = squareToPosition(toSquare);
-
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("class", "customH");
-    svg.setAttribute("width", parent.offsetWidth);
-    svg.setAttribute("height", parent.offsetWidth);
-    svg.style.position = "absolute";
-    svg.style.left = "0";
-    svg.style.top = "0";
-    svg.style.pointerEvents = "none";
-    svg.style.overflow = "visible";
-    svg.style.zIndex = "10";
-
-    const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
-    const marker = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "marker",
-    );
-    marker.setAttribute("id", `arrowhead-${color}`);
-    marker.setAttribute("markerWidth", "3.5");
-    marker.setAttribute("markerHeight", "2.5");
-    marker.setAttribute("refX", "1.75");
-    marker.setAttribute("refY", "1.25");
-    marker.setAttribute("orient", "auto");
-    marker.setAttribute("markerUnits", "strokeWidth");
-
-    const arrowPath = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "path",
-    );
-    arrowPath.setAttribute("d", "M0,0 L3.5,1.25 L0,2.5 Z");
-    arrowPath.setAttribute("fill", color);
-    marker.appendChild(arrowPath);
-    defs.appendChild(marker);
-    svg.appendChild(defs);
-
-    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    line.setAttribute("x1", from.x + squareSize / 2);
-    line.setAttribute("y1", from.y + squareSize / 2);
-    line.setAttribute("x2", to.x + squareSize / 2);
-    line.setAttribute("y2", to.y + squareSize / 2);
-    line.setAttribute("stroke", color);
-    line.setAttribute("stroke-width", "5");
-    line.setAttribute("marker-end", `url(#arrowhead-${color})`);
-    line.setAttribute("opacity", "0.6");
-    svg.appendChild(line);
-
-    if (score !== undefined) {
-      if (score === "book") {
-        const foreignObject = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "foreignObject",
-        );
-        foreignObject.setAttribute("x", to.x + squareSize - 12);
-        foreignObject.setAttribute("y", to.y - 12);
-        foreignObject.setAttribute("width", "24");
-        foreignObject.setAttribute("height", "24");
-
-        const div = document.createElement("div");
-        div.innerHTML = bookSVG;
-        foreignObject.appendChild(div);
-        svg.appendChild(foreignObject);
-      } else {
-        const group = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "g",
-        );
-
-        const text = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "text",
-        );
-
-        text.setAttribute("x", to.x + squareSize);
-        text.setAttribute("y", to.y);
-        text.setAttribute("font-size", "9");
-        text.setAttribute("font-weight", "bold");
-        text.setAttribute("text-anchor", "middle");
-        text.setAttribute("dominant-baseline", "middle");
-        text.setAttribute("fill", color);
-
-        let isNegative = false;
-        let displayScore = score;
-
-        const hasHash = score.startsWith("#");
-        let raw = hasHash ? score.slice(1) : score;
-
-        if (raw.startsWith("-")) {
-          isNegative = true;
-          raw = raw.slice(1);
-        } else if (raw.startsWith("+")) {
-          raw = raw.slice(1);
-        }
-
-        displayScore = hasHash ? "#" + raw : raw;
-        text.textContent = displayScore;
-
-        group.appendChild(text);
-        svg.appendChild(group);
-
-        requestAnimationFrame(() => {
-          const bbox = text.getBBox();
-
-          const paddingX = 2;
-          const paddingY = 2;
-
-          const rect = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "rect",
-          );
-
-          rect.setAttribute("x", bbox.x - paddingX);
-          rect.setAttribute("y", bbox.y - paddingY);
-          rect.setAttribute("width", bbox.width + paddingX * 2);
-          rect.setAttribute("height", bbox.height + paddingY * 2);
-
-          rect.setAttribute("rx", "8");
-          rect.setAttribute("ry", "8");
-
-          rect.setAttribute("fill", isNegative ? "#312e2b" : "#ffffff");
-          rect.setAttribute("fill-opacity", "0.85");
-          rect.setAttribute("stroke", isNegative ? "#000000" : "#cccccc");
-          rect.setAttribute("stroke-width", "1");
-
-          group.insertBefore(rect, text);
-        });
-      }
-    }
-
-    parent.appendChild(svg);
-  }
-
-  parent.style.position = "relative";
-
-  let filteredMoves = moves;
-  if (config.winningMove) {
-    filteredMoves = moves.filter((move) => {
-      const evalValue = parseFloat(move.eval);
-      if (side === "w") {
-        return (
-          evalValue >= 2 ||
-          (move.eval.startsWith("#") && parseInt(move.eval.slice(1)) > 0)
-        );
-      } else {
-        return (
-          evalValue <= -2 ||
-          (move.eval.startsWith("#-") && parseInt(move.eval.slice(2)) > 0)
-        );
-      }
-    });
-  }
-
-  filteredMoves.slice(0, maxMoves).forEach((move, index) => {
-    const color = colors[index] || "red";
-    // drawArrow(move.from, move.to, color, move.eval);
-    drawArrow(move.from, move.to, color, move.eval);
-  });
-}
-
-function highlightMovesOnBoardWorld(moves, side) {
-  if (config.hideArrow) return;
-  if (config.onlyShowEval) return;
-
-  if (!Array.isArray(moves)) return;
-  if (
-    !(
-      (side === "w" && fen_.split(" ")[1] === "w") ||
-      (side === "b" && fen_.split(" ")[1] === "b")
-    )
-  ) {
-    return;
-  }
-  if (config.onlyShowEval) return;
-
-  const parent = document.querySelector("div.cg-board");
-
-  if (!parent) return;
-
-  const squareSize = parent.offsetWidth / 8;
-  const maxMoves = 5;
-  let colors = config.colors;
-
-  // parent.querySelectorAll(".customH").forEach((el) => el.remove());
-
-  function squareToPosition(square) {
-    const fileChar = square[0];
-    const rankChar = square[1];
-    const rank = parseInt(rankChar, 10) - 1;
-
-    let file;
-    if (side === "w") {
-      file = fileChar.charCodeAt(0) - "a".charCodeAt(0);
-      const y = (7 - rank) * squareSize;
-      const x = file * squareSize;
-      return { x, y };
-    } else {
-      file = "h".charCodeAt(0) - fileChar.charCodeAt(0);
-      const y = rank * squareSize;
-      const x = file * squareSize;
-      return { x, y };
-    }
-  }
-
-  function drawArrow(fromSquare, toSquare, color, score) {
-    const from = squareToPosition(fromSquare);
-    const to = squareToPosition(toSquare);
-
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("class", "customH");
-    svg.setAttribute("width", parent.offsetWidth);
-    svg.setAttribute("height", parent.offsetWidth);
-    svg.style.position = "absolute";
-    svg.style.left = "0";
-    svg.style.top = "0";
-    svg.style.pointerEvents = "none";
-    svg.style.overflow = "visible";
-    svg.style.zIndex = "10";
-
-    const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
-    const marker = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "marker",
-    );
-    marker.setAttribute("id", `arrowhead-${color}`);
-    marker.setAttribute("markerWidth", "3.5");
-    marker.setAttribute("markerHeight", "2.5");
-    marker.setAttribute("refX", "1.75");
-    marker.setAttribute("refY", "1.25");
-    marker.setAttribute("orient", "auto");
-    marker.setAttribute("markerUnits", "strokeWidth");
-
-    const arrowPath = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "path",
-    );
-    arrowPath.setAttribute("d", "M0,0 L3.5,1.25 L0,2.5 Z");
-    arrowPath.setAttribute("fill", color);
-    marker.appendChild(arrowPath);
-    defs.appendChild(marker);
-    svg.appendChild(defs);
-
-    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    line.setAttribute("x1", from.x + squareSize / 2);
-    line.setAttribute("y1", from.y + squareSize / 2);
-    line.setAttribute("x2", to.x + squareSize / 2);
-    line.setAttribute("y2", to.y + squareSize / 2);
-    line.setAttribute("stroke", color);
-    line.setAttribute("stroke-width", "5");
-    line.setAttribute("marker-end", `url(#arrowhead-${color})`);
-    line.setAttribute("opacity", "0.6");
-    svg.appendChild(line);
-
-    if (score !== undefined) {
-      if (score === "book") {
-        const foreignObject = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "foreignObject",
-        );
-        foreignObject.setAttribute("x", to.x + squareSize - 12);
-        foreignObject.setAttribute("y", to.y - 12);
-        foreignObject.setAttribute("width", "24");
-        foreignObject.setAttribute("height", "24");
-
-        const div = document.createElement("div");
-        div.innerHTML = bookSVG;
-        foreignObject.appendChild(div);
-        svg.appendChild(foreignObject);
-      } else {
-        const group = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "g",
-        );
-
-        const text = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "text",
-        );
-
-        text.setAttribute("x", to.x + squareSize);
-        text.setAttribute("y", to.y);
-        text.setAttribute("font-size", "9");
-        text.setAttribute("font-weight", "bold");
-        text.setAttribute("text-anchor", "middle");
-        text.setAttribute("dominant-baseline", "middle");
-        text.setAttribute("fill", color);
-
-        let isNegative = false;
-        let displayScore = score;
-
-        const hasHash = score.startsWith("#");
-        let raw = hasHash ? score.slice(1) : score;
-
-        if (raw.startsWith("-")) {
-          isNegative = true;
-          raw = raw.slice(1);
-        } else if (raw.startsWith("+")) {
-          raw = raw.slice(1);
-        }
-
-        displayScore = hasHash ? "#" + raw : raw;
-        text.textContent = displayScore;
-
-        group.appendChild(text);
-        svg.appendChild(group);
-
-        requestAnimationFrame(() => {
-          const bbox = text.getBBox();
-
-          const paddingX = 2;
-          const paddingY = 2;
-
-          const rect = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "rect",
-          );
-
-          rect.setAttribute("x", bbox.x - paddingX);
-          rect.setAttribute("y", bbox.y - paddingY);
-          rect.setAttribute("width", bbox.width + paddingX * 2);
-          rect.setAttribute("height", bbox.height + paddingY * 2);
-
-          rect.setAttribute("rx", "8");
-          rect.setAttribute("ry", "8");
-
-          rect.setAttribute("fill", isNegative ? "#312e2b" : "#ffffff");
-          rect.setAttribute("fill-opacity", "0.85");
-          rect.setAttribute("stroke", isNegative ? "#000000" : "#cccccc");
-          rect.setAttribute("stroke-width", "1");
-
-          group.insertBefore(rect, text);
-        });
-      }
-    }
-
-    parent.appendChild(svg);
-  }
-
-  parent.style.position = "relative";
-
-  let filteredMoves = moves;
-  if (config.winningMove) {
-    filteredMoves = moves.filter((move) => {
-      const evalValue = parseFloat(move.eval);
-      if (side === "w") {
-        return (
-          evalValue >= 2 ||
-          (move.eval.startsWith("#") && parseInt(move.eval.slice(1)) > 0)
-        );
-      } else {
-        return (
-          evalValue <= -2 ||
-          (move.eval.startsWith("#-") && parseInt(move.eval.slice(2)) > 0)
-        );
-      }
-    });
-  }
-
-  filteredMoves.slice(0, maxMoves).forEach((move, index) => {
-    const color = colors[index] || "red";
-    // drawArrow(move.from, move.to, color, move.eval);
-    drawArrow(move.from, move.to, color, move.eval);
-    if (side === "b") {
+    if (window.location.host === "worldchess.com" && side === "b") {
       document
         .querySelectorAll(".customH")
         .forEach((el) => (el.style.transform = "rotate(360deg)"));
@@ -998,8 +603,8 @@ function HintGlobal(from, to, side, tags, mateIn) {
     }
   }
 
-  if (window.location.host === "worldchess.com"){
-    parent = document.querySelector("div.cg-board")
+  if (window.location.host === "worldchess.com") {
+    parent = document.querySelector("div.cg-board");
   }
 
   if (!parent) return;
@@ -1280,7 +885,7 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
   } else if (host === "lichess.org") {
     boardSelector = "cg-board";
     offsetLeft = "-50px";
-  } else{
+  } else {
     boardSelector = "div.cg-board";
     offsetLeft = "-10px";
   }
@@ -1477,8 +1082,7 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
   async function previewPV(side, startFen, pv) {
     if (!Array.isArray(pv) || pv.length === 0) return;
 
-    if(config.onlyShowEval) return;
-
+    if (config.onlyShowEval) return;
 
     const siteConfig = getSiteConfig();
     if (!siteConfig) {
@@ -1661,4 +1265,3 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
   window.previewPV = previewPV;
   window.clearPreviewPV = clearPreviewPV;
 })();
-
