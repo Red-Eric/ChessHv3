@@ -341,13 +341,13 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
           requestFen();
 
-          if (!config.showEval && document.querySelector("#customEval")) {
-            document.querySelector("#customEval").remove();
+          if (!config.showEval) {
+            document.querySelector("#customEval")?.remove();
             evalObj = null;
           }
 
-          if (config.onlyShowEval && document.querySelector("#customEval")) {
-            document.querySelector("#customEval").remove();
+          if (config.onlyShowEval) {
+            document.querySelector("#customEval")?.remove();
             evalObj = null;
           }
 
@@ -845,14 +845,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             userName = document.querySelector("#user_tag").innerText;
           }
 
-          if (!config.showEval && document.querySelector("#customEval")) {
-            document.querySelector("#customEval").remove();
+          if (!config.showEval) {
+            document.querySelector("#customEval")?.remove();
             // customEval = null;
             evalObj = null;
           }
 
-          if (config.onlyShowEval && document.querySelector("#customEval")) {
-            document.querySelector("#customEval").remove();
+          if (config.onlyShowEval) {
+            document.querySelector("#customEval")?.remove();
             evalObj = null;
           }
 
@@ -1260,6 +1260,15 @@ chrome.storage.local.get(["chessConfig"], (result) => {
         setInterval(async () => {
           BOARD_WIDTH = getBoardWidth();
 
+          if (!config.showEval) {
+            document.querySelector("#customEval")?.remove();
+            evalObj = null;
+          }
+          if (config.onlyShowEval) {
+            document.querySelector("#customEval")?.remove();
+            evalObj = null;
+          }
+
           if (config.floatingBtn) {
             if (!document.getElementById("rederic-float-wrap")) {
               const wrap = document.createElement("div");
@@ -1318,7 +1327,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               const playBalanced = makeBtn("Play Balanced", "balanced");
 
               playBest.onclick = () => {
-                console.log("playBest clicked");
+                // console.log("playBest clicked");
                 movePiece(keyMove[0].from, keyMove[0].to, 0);
               };
 
@@ -1387,15 +1396,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             clearPreviewPV();
             clearHighlightSquares();
 
-            if (!config.showEval && document.querySelector("#customEval")) {
-              document.querySelector("#customEval").remove();
-              evalObj = null;
-            }
-            if (config.onlyShowEval && document.querySelector("#customEval")) {
-              document.querySelector("#customEval").remove();
-              evalObj = null;
-            }
-
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
@@ -1442,7 +1442,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               }
             }
           }
-        
         }, interval);
 
         chrome.storage.onChanged.addListener((changes, area) => {
