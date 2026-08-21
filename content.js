@@ -1442,6 +1442,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               }
             }
           }
+        
         }, interval);
 
         chrome.storage.onChanged.addListener((changes, area) => {
