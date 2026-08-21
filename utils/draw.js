@@ -574,43 +574,26 @@ function highlightMovesOnBoard(moves, side) {
 }
 
 /* HINT*/
+
 function HintGlobal(from, to, side, tags, mateIn) {
-  let parent = null;
-  let platform = null;
-
-  const wcChessCom = document.querySelector("wc-chess-board");
-  if (wcChessCom) {
-    parent = wcChessCom;
-    platform = "chesscom";
+  let selector;
+  if (window.location.host === "www.chess.com") {
+    selector = queryChess_com;
+  } else if (window.location.host === "lichess.org") {
+    selector = queryLichess_org;
+  } else if (window.location.host === "worldchess.com") {
+    selector = queryWordChess_com;
   } else {
-    const host = window.location.hostname;
-    if (host.includes("lichess.org")) {
-      parent = document.querySelector("cg-container");
-      platform = "lichess";
-    } else if (host.includes("worldchess.com")) {
-      parent = document.querySelector("cg-board");
-      platform = "worldchess";
-    } else {
-      const cgContainer = document.querySelector("cg-container");
-      const cgBoard = document.querySelector("cg-board");
-      if (cgContainer) {
-        parent = cgContainer;
-        platform = "lichess";
-      } else if (cgBoard) {
-        parent = cgBoard;
-        platform = "worldchess";
-      }
-    }
+    return;
   }
 
-  if (window.location.host === "worldchess.com") {
-    parent = document.querySelector("div.cg-board");
-  }
-
+  const parent = document.querySelector(selector);
   if (!parent) return;
 
-  const squareSize = parent.offsetWidth / 8;
-  parent.querySelectorAll(".customHint").forEach((el) => el.remove());
+  const rect = parent.getBoundingClientRect();
+  const squareSize = rect.width / 8;
+
+  document.querySelectorAll(".customHint").forEach((el) => el.remove());
 
   function squareToPosition(square) {
     const fileChar = square[0];
@@ -637,14 +620,14 @@ function HintGlobal(from, to, side, tags, mateIn) {
 
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("class", "customHint");
-  svg.setAttribute("width", parent.offsetWidth);
-  svg.setAttribute("height", parent.offsetWidth);
-  svg.style.position = "absolute";
-  svg.style.left = "0";
-  svg.style.top = "0";
+  svg.setAttribute("width", rect.width);
+  svg.setAttribute("height", rect.width);
+  svg.style.position = "fixed";
+  svg.style.left = rect.left + "px";
+  svg.style.top = rect.top + "px";
   svg.style.pointerEvents = "none";
   svg.style.overflow = "visible";
-  svg.style.zIndex = "13";
+  svg.style.zIndex = "999999";
 
   const color = "rgba(159, 207, 63, 0.8)";
 
@@ -823,10 +806,9 @@ function HintGlobal(from, to, side, tags, mateIn) {
   }
   layoutStack(leftItems, leftAnchorX, topAnchorY, resolveLeftColors);
 
-  parent.style.position = "relative";
-  parent.appendChild(svg);
+  document.body.appendChild(svg);
 
-  if (platform === "worldchess" && side === "b") {
+  if (window.location.host === "worldchess.com" && side === "b") {
     svg.style.transform = "rotate(180deg)";
   }
 
@@ -874,43 +856,45 @@ function getBoardWidth() {
   }
 }
 
-function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
-  const host = window.location.host;
-  let boardSelector = "";
-  let offsetLeft = null;
 
-  // Détection du site et configuration spécifique
-  if (host === "www.chess.com") {
-    boardSelector = ".board";
-  } else if (host === "lichess.org") {
-    boardSelector = "cg-board";
-    offsetLeft = "-50px";
+function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
+  let selector;
+  let offsetLeftPx = 0;
+
+  if (window.location.host === "www.chess.com") {
+    selector = queryChess_com;
+    offsetLeftPx = 0;
+  } else if (window.location.host === "lichess.org") {
+    selector = queryLichess_org;
+    offsetLeftPx = -50;
+  } else if (window.location.host === "worldchess.com") {
+    selector = queryWordChess_com;
+    offsetLeftPx = -10;
   } else {
-    boardSelector = "div.cg-board";
-    offsetLeft = "-10px";
+    return;
   }
 
-  // console.clear()
-
-  const boardContainer = document.querySelector(boardSelector);
-  // console.log(boardContainer)
-
+  const boardContainer = document.querySelector(selector);
   if (!boardContainer) return console.error("Plateau non trouvé !");
 
-  let w_ = boardContainer.offsetWidth;
+  const rect = boardContainer.getBoundingClientRect();
+  const w_ = rect.width;
+  const barWidth = Math.max((w_ * 5.5) / 100, 24);
+  const margin = 12;
+
+  document.querySelectorAll("#customEval").forEach((el) => el.remove());
 
   // Conteneur principal - Design modernisé
   const evalContainer = document.createElement("div");
   evalContainer.id = "customEval";
-  evalContainer.style.zIndex = "9999";
-  evalContainer.style.width = `${Math.max((w_ * 5.5) / 100, 24)}px`;
-  evalContainer.style.height = `${w_}px`;
+  evalContainer.style.zIndex = "999999";
+  evalContainer.style.width = `${barWidth}px`;
+  evalContainer.style.height = `${rect.height}px`;
   evalContainer.style.background = "#1b1917";
-  evalContainer.style.marginLeft = "12px";
-  evalContainer.style.position = "relative";
-  if (offsetLeft) {
-    evalContainer.style.left = offsetLeft;
-  }
+  evalContainer.style.position = "fixed";
+  evalContainer.style.left = `${rect.left - barWidth - margin + offsetLeftPx}px`;
+  evalContainer.style.top = `${rect.top}px`;
+  evalContainer.style.pointerEvents = "none";
   evalContainer.style.borderRadius = "8px";
   evalContainer.style.overflow = "hidden";
   evalContainer.style.boxShadow = "0 4px 20px rgba(0, 0, 0, 0.25)";
@@ -972,8 +956,7 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
   scoreBadge.appendChild(scoreText);
   evalContainer.appendChild(scoreBadge);
 
-  boardContainer.parentNode.style.display = "flex";
-  boardContainer.parentNode.insertBefore(evalContainer, boardContainer);
+  document.body.appendChild(evalContainer);
 
   function parseScore(scoreStr) {
     if (!scoreStr) {
@@ -1036,6 +1019,7 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
   update(initialScore, initialColor);
   return { update };
 }
+
 
 (function () {
   const SITE_CONFIGS = {
