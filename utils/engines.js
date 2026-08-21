@@ -119,6 +119,12 @@ class komodo {
   async getMovesByFen(fen, side) {
     // this.worker.postMessage(`setoption name Auto Skill value true`);
 
+    await this.ready;
+
+    if (!this.worker) {
+      throw new Error("Worker Komodo non initialisé ou détruit");
+    }
+
     this.worker.postMessage(
       `setoption name Personality value ${this.personality}`,
     );
@@ -288,7 +294,6 @@ class CoachEngine {
   }
 
   async getChat(movesString, side = "white", whiteElo = 3200, blackElo = 3200) {
-    
     if (config.coach === 999) return null;
 
     await this.ready;
@@ -362,7 +367,7 @@ class CoachEngine {
             to: bestMove.slice(2, 4),
             classification: bestMove_classification,
             show: show_,
-            fen : _fen,
+            fen: _fen,
             info: {
               tags: last?.bestMove?.insightsTags,
               mateIn: last?.bestMove?.mateIn,
@@ -371,8 +376,6 @@ class CoachEngine {
           };
 
           // console.log(res_data)
-          
-
 
           if (!audioUrlHash) return;
 
