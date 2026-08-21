@@ -134,9 +134,7 @@ class komodo {
     return new Promise((resolve) => {
       const onMessage = (event) => {
         const line = event.data;
-        if (debugEngine) {
-          console.log(line);
-        }
+        
         //console.log(line);
         if (typeof line !== "string") return;
 
