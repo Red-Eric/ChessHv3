@@ -809,7 +809,7 @@ function HintGlobal(from, to, side, tags, mateIn) {
   document.body.appendChild(svg);
 
   if (window.location.host === "worldchess.com" && side === "b") {
-    svg.style.transform = "rotate(180deg)";
+    svg.style.transform = "rotate(360deg)";
   }
 
   requestAnimationFrame(() => {
@@ -1020,28 +1020,26 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
   return { update };
 }
 
-
 (function () {
-  const SITE_CONFIGS = {
-    "www.chess.com": {
-      parentSelector: "wc-chess-board",
-      nativePieceSelector: ".piece",
-      rotateOverlayForBlack: false,
-    },
-    "lichess.org": {
-      parentSelector: "cg-container",
-      nativePieceSelector: "piece",
-      rotateOverlayForBlack: false,
-    },
-    "worldchess.com": {
-      parentSelector: "div.cg-board",
-      nativePieceSelector: "cg-piece",
-      rotateOverlayForBlack: true,
-    },
-  };
-
   function getSiteConfig() {
-    return SITE_CONFIGS[window.location.host] || null;
+    if (window.location.host === "www.chess.com") {
+      return {
+        parentSelector: queryChess_com,
+        rotateOverlayForBlack: false,
+      };
+    } else if (window.location.host === "lichess.org") {
+      return {
+        parentSelector: queryLichess_org,
+        rotateOverlayForBlack: false,
+      };
+    } else if (window.location.host === "worldchess.com") {
+      return {
+        parentSelector: queryWordChess_com,
+        rotateOverlayForBlack: true,
+      };
+    } else {
+      return null;
+    }
   }
 
   function clearPreviewPV() {
@@ -1082,8 +1080,8 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
 
     clearPreviewPV();
 
-    const squareSize = parent.offsetWidth / 8;
-    parent.style.position = "relative";
+    const rect = parent.getBoundingClientRect();
+    const squareSize = rect.width / 8;
 
     function squareToPosition(square) {
       const fileChar = square[0];
@@ -1105,25 +1103,22 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
 
     const svg = document.createElementNS(SVG_NS, "svg");
     svg.setAttribute("class", "customPV");
-    svg.setAttribute("width", `${parent.offsetWidth}px`);
-    svg.setAttribute("height", `${parent.offsetWidth}px`);
-    svg.setAttribute(
-      "viewBox",
-      `0 0 ${parent.offsetWidth} ${parent.offsetWidth}`,
-    );
-    svg.style.position = "absolute";
-    svg.style.left = "0";
-    svg.style.top = "0";
+    svg.setAttribute("width", `${rect.width}px`);
+    svg.setAttribute("height", `${rect.width}px`);
+    svg.setAttribute("viewBox", `0 0 ${rect.width} ${rect.width}`);
+    svg.style.position = "fixed";
+    svg.style.left = `${rect.left}px`;
+    svg.style.top = `${rect.top}px`;
     svg.style.pointerEvents = "none";
-    svg.style.zIndex = "11";
+    svg.style.zIndex = "999999";
 
     const needsRotation = siteConfig.rotateOverlayForBlack && side === "b";
     if (needsRotation) {
-      svg.style.transform = "rotate(180deg)";
+      svg.style.transform = "rotate(360deg)";
       svg.style.transformOrigin = "center center";
     }
 
-    parent.appendChild(svg);
+    document.body.appendChild(svg);
 
     function pointAt(p1, p2, t) {
       return { x: p1.x + (p2.x - p1.x) * t, y: p1.y + (p2.y - p1.y) * t };
@@ -1208,7 +1203,7 @@ function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
       const mid = pointAt(lineStart, headBase, 0.5);
       const labelGroup = document.createElementNS(SVG_NS, "g");
       if (needsRotation) {
-        labelGroup.setAttribute("transform", `rotate(180 ${mid.x} ${mid.y})`);
+        labelGroup.setAttribute("transform", `rotate(360 ${mid.x} ${mid.y})`);
       }
 
       const circle = document.createElementNS(SVG_NS, "circle");
