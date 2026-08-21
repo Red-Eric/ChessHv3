@@ -119,12 +119,6 @@ class komodo {
   async getMovesByFen(fen, side) {
     // this.worker.postMessage(`setoption name Auto Skill value true`);
 
-    await this.ready;
-
-    if (!this.worker) {
-      throw new Error("Worker Komodo non initialisé ou détruit");
-    }
-
     this.worker.postMessage(
       `setoption name Personality value ${this.personality}`,
     );
