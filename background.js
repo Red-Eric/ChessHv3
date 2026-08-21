@@ -136,14 +136,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         BREAK_SEARCH = "s||";
       }
 
-      // if (host === "worldchess.com") {
-      //   TARGET = `i.on("history",e=>{this.clearAll()`;
-      //   BREAK_SEARCH = `this.clearAll()`;
-      // }
       if (host === "worldchess.com") {
-        TARGET = `e.on("history",(i,s)=>{if(i.length===s.length)`;
-        BREAK_SEARCH = `if(i.length===s.length)`;
+        TARGET = `i.on("history",e=>{this.clearAll()`;
+        BREAK_SEARCH = `this.clearAll()`;
       }
+      // if (host === "worldchess.com") {
+      //   TARGET = `e.on("history",(i,s)=>{if(i.length===s.length)`;
+      //   BREAK_SEARCH = `if(i.length===s.length)`;
+      // }
 
       let breakpointId = null;
 
@@ -343,7 +343,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                   "Debugger.evaluateOnCallFrame",
                   {
                     callFrameId: params.callFrames[0].callFrameId,
-                    expression: "i",
+                    expression: "e",
                     returnByValue: true,
                   },
                 );
