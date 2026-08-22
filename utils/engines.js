@@ -1257,8 +1257,14 @@ class CoachEngine {
 
         let raw = e.data;
         let cleanRaw = raw;
+        
+        if(raw === "Aborted(OOM)"){
+          console.clear()
+          console.log("crash")
 
-        // console.log(raw)
+        }
+
+        // Aborted(OOM)
 
         if (typeof cleanRaw === "string" && cleanRaw.startsWith("json ")) {
           cleanRaw = cleanRaw.slice(5).trim();
