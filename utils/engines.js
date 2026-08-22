@@ -782,6 +782,8 @@ const RANDOM64 = [
   0xf8d626aaaf278509n,
 ];
 
+let skip = false;
+
 const PIECE_KIND = {
   p: 0,
   P: 1,
@@ -1054,12 +1056,14 @@ class komodo {
   async getMovesByFen(fen, side) {
     // this.worker.postMessage(`setoption name Auto Skill value true`);
 
-    if (config.opening > 0) {
+    if (config.opening > 0 && skip === false) {
       const booksMove = await getBookMoves(fen, side);
       const result_book = booksMove.slice(0, config.opening);
 
-      if (result_book.length > 0) {
+      if (result_book.length !== 0) {
         return result_book;
+      } else {
+        skip = true;
       }
     }
 
@@ -1421,14 +1425,16 @@ class Stockfish6 {
   }
 
   async getMovesByFen(fen, side) {
-    await this.ready;
+    
 
-    if (config.opening > 0) {
+    if (config.opening > 0 && skip === false) {
       const booksMove = await getBookMoves(fen, side);
       const result_book = booksMove.slice(0, config.opening);
 
-      if (result_book.length > 0) {
+      if (result_book.length !== 0) {
         return result_book;
+      } else {
+        skip = true;
       }
     }
 
@@ -1576,14 +1582,16 @@ class Stockfish11 {
   }
 
   async getMovesByFen(fen, side = "white") {
-    await this.ready;
+    
 
-    if (config.opening > 0) {
+    if (config.opening > 0 && skip === false) {
       const booksMove = await getBookMoves(fen, side);
       const result_book = booksMove.slice(0, config.opening);
 
-      if (result_book.length > 0) {
+      if (result_book.length !== 0) {
         return result_book;
+      } else {
+        skip = true;
       }
     }
 
@@ -1742,14 +1750,16 @@ class Maia3 {
   }
 
   async getMovesByFen(fen) {
-    await this.ready;
+    
 
-    if (config.opening > 0) {
+    if (config.opening > 0 && skip === false) {
       const booksMove = await getBookMoves(fen, side);
       const result_book = booksMove.slice(0, config.opening);
 
-      if (result_book.length > 0) {
+      if (result_book.length !== 0) {
         return result_book;
+      } else {
+        skip = true;
       }
     }
 
@@ -1846,15 +1856,17 @@ class Lozza {
   }
 
   async getMovesByFen(fen, side) {
-    await this.ready;
+   
     // await this.createWorker();
 
-    if (config.opening > 0) {
+    if (config.opening > 0 && skip === false) {
       const booksMove = await getBookMoves(fen, side);
       const result_book = booksMove.slice(0, config.opening);
 
-      if (result_book.length > 0) {
+      if (result_book.length !== 0) {
         return result_book;
+      } else {
+        skip = true;
       }
     }
 
@@ -1911,15 +1923,17 @@ class Wukong {
   }
 
   async getMovesByFen(fen, side) {
-    await this.ready;
+   
     // await this.createWorker();
 
-    if (config.opening > 0) {
+    if (config.opening > 0 && skip === false) {
       const booksMove = await getBookMoves(fen, side);
       const result_book = booksMove.slice(0, config.opening);
 
-      if (result_book.length > 0) {
+      if (result_book.length !== 0) {
         return result_book;
+      } else {
+        skip = true;
       }
     }
 
