@@ -385,7 +385,7 @@ function highlightMovesOnBoard(moves, side) {
 
   const rect = parent.getBoundingClientRect();
   const squareSize = rect.width / 8;
-  const maxMoves = 5;
+  const maxMoves = moves.length;
   let colors = config.colors;
 
   document.querySelectorAll(".customH").forEach((el) => el.remove());
@@ -410,6 +410,7 @@ function highlightMovesOnBoard(moves, side) {
   }
 
   function drawArrow(fromSquare, toSquare, color, score) {
+    const arrowColor = score === "book" ? "#D5A47D" : color;
     const from = squareToPosition(fromSquare);
     const to = squareToPosition(toSquare);
 
@@ -429,7 +430,7 @@ function highlightMovesOnBoard(moves, side) {
       "http://www.w3.org/2000/svg",
       "marker",
     );
-    marker.setAttribute("id", `arrowhead-${color}`);
+    marker.setAttribute("id", `arrowhead-${arrowColor}`);
     marker.setAttribute("markerWidth", "3.5");
     marker.setAttribute("markerHeight", "2.5");
     marker.setAttribute("refX", "1.75");
@@ -442,7 +443,7 @@ function highlightMovesOnBoard(moves, side) {
       "path",
     );
     arrowPath.setAttribute("d", "M0,0 L3.5,1.25 L0,2.5 Z");
-    arrowPath.setAttribute("fill", color);
+    arrowPath.setAttribute("fill", arrowColor);
     marker.appendChild(arrowPath);
     defs.appendChild(marker);
     svg.appendChild(defs);
@@ -452,9 +453,9 @@ function highlightMovesOnBoard(moves, side) {
     line.setAttribute("y1", from.y + squareSize / 2);
     line.setAttribute("x2", to.x + squareSize / 2);
     line.setAttribute("y2", to.y + squareSize / 2);
-    line.setAttribute("stroke", color);
+    line.setAttribute("stroke", arrowColor);
     line.setAttribute("stroke-width", "5");
-    line.setAttribute("marker-end", `url(#arrowhead-${color})`);
+    line.setAttribute("marker-end", `url(#arrowhead-${arrowColor})`);
     line.setAttribute("opacity", "0.6");
     svg.appendChild(line);
 
