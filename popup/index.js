@@ -302,6 +302,7 @@ function updateChessUI() {
     "st6_passedPawnsMid",
     "st6_passedPawnsEnd",
     "st6_kingSafety",
+    "opening"
   ].forEach((k) => (el(k).value = chessConfig[k]));
   el("style").value = chessConfig.style;
   el("preview").value = chessConfig.preview;
@@ -328,6 +329,7 @@ function updateChessUI() {
 
   el("eloValue").textContent = chessConfig.elo;
   el("linesValue").textContent = chessConfig.lines;
+  el("openingValue").textContent = chessConfig.opening;
   el("depthValue").textContent = chessConfig.depth;
   el("depth2Value").textContent = chessConfig.depth2;
 
@@ -406,6 +408,7 @@ loadChessConfig(updateChessUI);
   "st6_passedPawnsMid",
   "st6_passedPawnsEnd",
   "st6_kingSafety",
+  "opening"
 ].forEach((k) => {
   el(k).oninput = (e) => {
     chessConfig[k] = +e.target.value;

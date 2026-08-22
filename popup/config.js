@@ -13,6 +13,7 @@ const defaultChessConfig = {
   style: "Default",
   autoMove: false,
   floatingBtn: false,
+  opening : 0,
   speach: false,
   moveClassification: false,
   accuracy: false,
