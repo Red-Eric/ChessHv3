@@ -1056,6 +1056,10 @@ class komodo {
   async getMovesByFen(fen, side) {
     // this.worker.postMessage(`setoption name Auto Skill value true`);
 
+    if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
+      skip = false;
+    }
+
     if (config.opening > 0 && skip === false) {
       const booksMove = await getBookMoves(fen, side);
       const result_book = booksMove.slice(0, config.opening);
@@ -1257,11 +1261,10 @@ class CoachEngine {
 
         let raw = e.data;
         let cleanRaw = raw;
-        
-        if(raw === "Aborted(OOM)"){
-          console.clear()
-          console.log("crash")
 
+        if (raw === "Aborted(OOM)") {
+          console.clear();
+          console.log("crash");
         }
 
         // Aborted(OOM)
@@ -1431,7 +1434,9 @@ class Stockfish6 {
   }
 
   async getMovesByFen(fen, side) {
-    
+    if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
+      skip = false;
+    }
 
     if (config.opening > 0 && skip === false) {
       const booksMove = await getBookMoves(fen, side);
@@ -1588,7 +1593,9 @@ class Stockfish11 {
   }
 
   async getMovesByFen(fen, side = "white") {
-    
+    if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
+      skip = false;
+    }
 
     if (config.opening > 0 && skip === false) {
       const booksMove = await getBookMoves(fen, side);
@@ -1756,8 +1763,9 @@ class Maia3 {
   }
 
   async getMovesByFen(fen) {
-    
-
+    if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
+      skip = false;
+    }
     if (config.opening > 0 && skip === false) {
       const booksMove = await getBookMoves(fen, side);
       const result_book = booksMove.slice(0, config.opening);
@@ -1862,8 +1870,11 @@ class Lozza {
   }
 
   async getMovesByFen(fen, side) {
-   
     // await this.createWorker();
+
+    if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
+      skip = false;
+    }
 
     if (config.opening > 0 && skip === false) {
       const booksMove = await getBookMoves(fen, side);
@@ -1929,8 +1940,11 @@ class Wukong {
   }
 
   async getMovesByFen(fen, side) {
-   
     // await this.createWorker();
+
+    if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
+      skip = false;
+    }
 
     if (config.opening > 0 && skip === false) {
       const booksMove = await getBookMoves(fen, side);
