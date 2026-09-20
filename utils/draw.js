@@ -355,6 +355,7 @@ const queryChess_com = "wc-chess-board";
 const queryLichess_org = "cg-container";
 const queryWordChess_com = "div.cg-board";
 
+
 function highlightMovesOnBoard(moves, side) {
   if (config.hideArrow) return;
   if (config.onlyShowEval) return;
@@ -410,7 +411,14 @@ function highlightMovesOnBoard(moves, side) {
   }
 
   function drawArrow(fromSquare, toSquare, color, score) {
-    const arrowColor = score === "book" ? "#D5A47D" : color;
+    // Eval inconnue (ex: "...."): ni nombre, ni mat (#3 / #-3), ni book
+    const isUnknownEval =
+      score !== undefined &&
+      score !== "book" &&
+      !/^#?[+-]?\d+(\.\d+)?$/.test(String(score));
+
+    const arrowColor =
+      score === "book" ? "#D5A47D" : isUnknownEval ? colors[0] : color;
     const from = squareToPosition(fromSquare);
     const to = squareToPosition(toSquare);
 
@@ -491,7 +499,7 @@ function highlightMovesOnBoard(moves, side) {
         text.setAttribute("font-weight", "bold");
         text.setAttribute("text-anchor", "middle");
         text.setAttribute("dominant-baseline", "middle");
-        text.setAttribute("fill", color);
+        text.setAttribute("fill", isUnknownEval ? colors[0] : color);
 
         let isNegative = false;
         let displayScore = score;
@@ -531,9 +539,12 @@ function highlightMovesOnBoard(moves, side) {
           rectEl.setAttribute("rx", "8");
           rectEl.setAttribute("ry", "8");
 
-          rectEl.setAttribute("fill", isNegative ? "#312e2b" : "#ffffff");
+          // Eval inconnue: le fond suit le side (blanc pour "w", noir pour "b")
+          const bgIsDark = isUnknownEval ? side === "b" : isNegative;
+
+          rectEl.setAttribute("fill", bgIsDark ? "#312e2b" : "#ffffff");
           rectEl.setAttribute("fill-opacity", "0.85");
-          rectEl.setAttribute("stroke", isNegative ? "#000000" : "#cccccc");
+          rectEl.setAttribute("stroke", bgIsDark ? "#000000" : "#cccccc");
           rectEl.setAttribute("stroke-width", "1");
 
           group.insertBefore(rectEl, text);
@@ -573,6 +584,7 @@ function highlightMovesOnBoard(moves, side) {
     }
   });
 }
+
 
 /* HINT*/
 

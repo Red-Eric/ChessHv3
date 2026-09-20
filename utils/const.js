@@ -898,3 +898,6 @@ let lichessFenHistory = [];
 
 // world chess com
 let currentFen = "";
+
+// page flag
+let pageFlag = "page_flag"

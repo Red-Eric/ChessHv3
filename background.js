@@ -108,7 +108,43 @@ function sendMovesToSite(type, moves, urlPattern) {
 
 const activeListeners = {};
 
-// fix both
+async function safeResume(source) {
+  try {
+    await chrome.debugger.sendCommand(source, "Debugger.resume");
+  } catch (e) {
+    
+    console.log("safeResume: resume ignoré:", e?.message || e);
+  }
+}
+
+self.addEventListener("unhandledrejection", (event) => {
+  const msg = event.reason?.message || "";
+  if (msg.includes("Can only perform operation while paused")) {
+    event.preventDefault();
+    return;
+  }
+
+  const isDebuggerError =
+    msg.includes("Debugger") || msg.includes("debugger") || msg.includes("Attaching");
+  if (isDebuggerError) {
+    event.preventDefault();
+    console.log("Erreur debugger inattendue, tentative de réattachement:", msg);
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const tab = tabs[0];
+      if (!tab || !tab.id) return;
+      const tabId = tab.id;
+      if (activeListeners[tabId]) {
+        chrome.debugger.onEvent.removeListener(activeListeners[tabId].scriptParsed);
+        chrome.debugger.onEvent.removeListener(activeListeners[tabId].debuggerEvent);
+        delete activeListeners[tabId];
+      }
+      chrome.debugger.detach({ tabId }, () => {
+        chrome.runtime.sendMessage({ type: "ATTACH_DEBUGGER" });
+      });
+    });
+  }
+});
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (!sender.tab || !sender.tab.id) return;
   const tabId = sender.tab.id;
@@ -255,12 +291,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               !breakpointId ||
               !params.hitBreakpoints.includes(breakpointId)
             ) {
-              chrome.debugger.sendCommand(source, "Debugger.resume");
+              await safeResume(source);
               return;
             }
 
             if (!params.callFrames || params.callFrames.length === 0) {
-              chrome.debugger.sendCommand(source, "Debugger.resume");
+              await safeResume(source);
               return;
             }
 
@@ -321,6 +357,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
                   fenhistory = pgnToFenArray(game.pgn());
                   uciHistory = pgnToUciString(game.pgn());
+
 
                   chrome.tabs.query({}, (tabs) => {
                     for (const tab of tabs) {
@@ -390,7 +427,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             } catch (e) {
               console.log(e);
             } finally {
-              chrome.debugger.sendCommand(source, "Debugger.resume");
+              await safeResume(source);
             }
           };
 
@@ -436,6 +473,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 });
+
+
 
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   if (message.type !== "DRAG_MOVE") return;

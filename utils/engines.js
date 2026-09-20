@@ -926,10 +926,18 @@ async function getBookMoves(fen, side) {
   if (first !== -1) {
     for (let i = first; i < entryCount; i++) {
       if (readKey(i) !== targetKey) break;
+
       const moveBits = view.getUint16(i * 16 + 8, false);
       if (moveBits === 0) continue;
+
       const { from, to } = decodeMove(moveBits);
-      moves.push({ from, to, eval: "book", fen, side });
+
+      const rank = moves.length;
+      const evalLabel = rank === 0 ? "bestLine opening" : `${rank + 1}nd line`;
+
+      moves.push({ from, to, eval: evalLabel, fen, side });
+
+      if (moves.length >= 10) break;
     }
   }
   return moves;
@@ -1058,6 +1066,10 @@ class komodo {
 
     if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
       skip = false;
+    }
+    if (pageFlag != window.location.href) {
+      skip = false;
+      pageFlag = window.localStorage.href;
     }
 
     if (config.opening > 0 && skip === false) {
@@ -1437,6 +1449,10 @@ class Stockfish6 {
     if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
       skip = false;
     }
+    if (pageFlag != window.location.href) {
+      skip = false;
+      pageFlag = window.localStorage.href;
+    }
 
     if (config.opening > 0 && skip === false) {
       const booksMove = await getBookMoves(fen, side);
@@ -1595,6 +1611,10 @@ class Stockfish11 {
   async getMovesByFen(fen, side = "white") {
     if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
       skip = false;
+    }
+    if (pageFlag != window.location.href) {
+      skip = false;
+      pageFlag = window.localStorage.href;
     }
 
     if (config.opening > 0 && skip === false) {
@@ -1766,6 +1786,10 @@ class Maia3 {
     if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
       skip = false;
     }
+    if (pageFlag != window.location.href) {
+      skip = false;
+      pageFlag = window.localStorage.href;
+    }
     if (config.opening > 0 && skip === false) {
       const booksMove = await getBookMoves(fen, side);
       const result_book = booksMove.slice(0, config.opening);
@@ -1875,6 +1899,10 @@ class Lozza {
     if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
       skip = false;
     }
+    if (pageFlag != window.location.href) {
+      skip = false;
+      pageFlag = window.localStorage.href;
+    }
 
     if (config.opening > 0 && skip === false) {
       const booksMove = await getBookMoves(fen, side);
@@ -1944,6 +1972,10 @@ class Wukong {
 
     if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
       skip = false;
+    }
+    if (pageFlag != window.location.href) {
+      skip = false;
+      pageFlag = window.localStorage.href;
     }
 
     if (config.opening > 0 && skip === false) {
