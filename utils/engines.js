@@ -933,7 +933,8 @@ async function getBookMoves(fen, side) {
       const { from, to } = decodeMove(moveBits);
 
       const rank = moves.length;
-      const evalLabel = rank === 0 ? "bestLine opening" : `${rank + 1}nd line`;
+      const evalLabel =
+        rank === 0 ? "Opening Main Line" : `Opening Variation ${rank + 1}`;
 
       moves.push({ from, to, eval: evalLabel, fen, side });
 
