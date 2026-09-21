@@ -593,7 +593,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               }
 
               if (config.opening > 0 && !skip) {
-                
                 getBookMoves(fen_, getSide()[0]).then((booksMove) => {
                   const resultBook = booksMove.slice(0, config.opening);
 
@@ -601,6 +600,37 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     highlightMovesOnBoard(booksMove, getSide()[0]);
                   } else {
                     skip = true;
+                    if (config.engine !== "None" && skip) {
+                      engine.getMovesByFen(fen_, getSide()).then((moves) => {
+                        if (config.onlyShowEval) {
+                          chrome.runtime.sendMessage({
+                            type: "STREAM",
+                            moves: moves,
+                            side: getSide(),
+                          });
+                        }
+
+                        chrome.runtime.sendMessage({
+                          type: "FROM_CONTENT",
+                          data: moves,
+                        });
+                        keyMove = moves;
+
+                        if (config.autoMove) {
+                          if (config.autoMoveBalanced) {
+                            const moveBalanced = extractNormalMove(
+                              moves,
+                              getSide(),
+                            );
+                            requestMove(moveBalanced.from, moveBalanced.to);
+                          } else {
+                            requestMove(moves[0].from, moves[0].to);
+                          }
+                        }
+
+                        highlightMovesOnBoard(moves, getSide()[0]);
+                      });
+                    }
                   }
                 });
               }
@@ -691,6 +721,29 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     highlightMovesOnBoard(booksMove, getSide()[0]);
                   } else {
                     skip = true;
+                    if (config.engine !== "None" && skip) {
+                      engine.getMovesByFen(fen_, getSide()).then((moves) => {
+                        chrome.runtime.sendMessage({
+                          type: "FROM_CONTENT",
+                          data: moves,
+                        });
+                        keyMove = moves;
+
+                        if (config.autoMove) {
+                          if (config.autoMoveBalanced) {
+                            const moveBalanced = extractNormalMove(
+                              moves,
+                              getSide(),
+                            );
+                            requestMove(moveBalanced.from, moveBalanced.to);
+                          } else {
+                            requestMove(moves[0].from, moves[0].to);
+                          }
+                        }
+
+                        highlightMovesOnBoard(moves, getSide()[0]);
+                      });
+                    }
                   }
                 });
               }
@@ -878,6 +931,53 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                         highlightMovesOnBoard(booksMove, getSide()[0]);
                       } else {
                         skip = true;
+                        if (config.engine !== "None" && skip) {
+                          engine
+                            .getMovesByFen(fen_, getSide())
+                            .then(async (moves) => {
+                              if (config.onlyShowEval) {
+                                chrome.runtime.sendMessage({
+                                  type: "STREAM",
+                                  moves: moves,
+                                  side: getSide(),
+                                });
+                              }
+
+                              highlightMovesOnBoard(moves, getSide()[0]);
+                              keyMove = moves;
+
+                              if (moves.length > 0 && config.autoMove) {
+                                if (config.autoMoveBalanced) {
+                                  const balancedMove = extractNormalMove(
+                                    moves,
+                                    getSide(),
+                                  );
+                                  await movePiece(
+                                    balancedMove.from,
+                                    balancedMove.to,
+                                    randomIntBetween(
+                                      config.delay0,
+                                      config.delay,
+                                    ),
+                                  );
+                                } else {
+                                  await movePiece(
+                                    moves[0].from,
+                                    moves[0].to,
+                                    randomIntBetween(
+                                      config.delay0,
+                                      config.delay,
+                                    ),
+                                  );
+                                }
+                              }
+
+                              chrome.runtime.sendMessage({
+                                type: "FROM_CONTENT",
+                                data: moves,
+                              });
+                            });
+                        }
                       }
                     });
                   }
@@ -1098,6 +1198,38 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     highlightMovesOnBoard(booksMove, getSide()[0]);
                   } else {
                     skip = true;
+                    if (config.engine !== "None" && skip) {
+                      engine
+                        .getMovesByFen(fen_, getSide())
+                        .then(async (moves) => {
+                          highlightMovesOnBoard(moves, getSide()[0]);
+                          keyMove = moves;
+
+                          if (moves.length > 0 && config.autoMove) {
+                            if (config.autoMoveBalanced) {
+                              const balancedMove = extractNormalMove(
+                                moves,
+                                getSide(),
+                              );
+                              await movePiece(
+                                balancedMove.from,
+                                balancedMove.to,
+                                randomIntBetween(config.delay0, config.delay),
+                              );
+                            } else {
+                              await movePiece(
+                                moves[0].from,
+                                moves[0].to,
+                                randomIntBetween(config.delay0, config.delay),
+                              );
+                            }
+                          }
+                          chrome.runtime.sendMessage({
+                            type: "FROM_CONTENT",
+                            data: moves,
+                          });
+                        });
+                    }
                   }
                 });
               }
@@ -1547,6 +1679,45 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     highlightMovesOnBoard(booksMove, getSide()[0]);
                   } else {
                     skip = true;
+                    if (config.engine !== "None" && skip) {
+                      engine.getMovesByFen(fen_, getSide()).then((moves) => {
+                        keyMove = moves;
+
+                        if (config.onlyShowEval) {
+                          chrome.runtime.sendMessage({
+                            type: "STREAM",
+                            moves: moves,
+                            side: getSide(),
+                          });
+                        }
+
+                        chrome.runtime.sendMessage({
+                          type: "FROM_CONTENT",
+                          data: moves,
+                        });
+                        highlightMovesOnBoard(moves, getSide()[0]);
+
+                        if (moves.length > 0 && config.autoMove) {
+                          if (config.autoMoveBalanced) {
+                            const balancedMove = extractNormalMove(
+                              moves,
+                              getSide(),
+                            );
+                            movePiece(
+                              balancedMove.from,
+                              balancedMove.to,
+                              randomIntBetween(config.delay0, config.delay),
+                            );
+                          } else {
+                            movePiece(
+                              moves[0].from,
+                              moves[0].to,
+                              randomIntBetween(config.delay0, config.delay),
+                            );
+                          }
+                        }
+                      });
+                    }
                   }
                 });
               }
@@ -1642,6 +1813,37 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     highlightMovesOnBoard(booksMove, getSide()[0]);
                   } else {
                     skip = true;
+                    if (config.engine !== "None" && skip) {
+                      engine.getMovesByFen(fen_, getSide()).then((moves) => {
+                        keyMove = moves;
+
+                        chrome.runtime.sendMessage({
+                          type: "FROM_CONTENT",
+                          data: moves,
+                        });
+                        highlightMovesOnBoard(moves, getSide()[0]);
+
+                        if (moves.length > 0 && config.autoMove) {
+                          if (config.autoMoveBalanced) {
+                            const balancedMove = extractNormalMove(
+                              moves,
+                              getSide(),
+                            );
+                            movePiece(
+                              balancedMove.from,
+                              balancedMove.to,
+                              randomIntBetween(config.delay0, config.delay),
+                            );
+                          } else {
+                            movePiece(
+                              moves[0].from,
+                              moves[0].to,
+                              randomIntBetween(config.delay0, config.delay),
+                            );
+                          }
+                        }
+                      });
+                    }
                   }
                 });
               }
