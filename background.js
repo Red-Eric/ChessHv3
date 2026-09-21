@@ -1,6 +1,5 @@
 importScripts("./lib/chess_min.js");
 
-
 chrome.action.onClicked.addListener(() => {
   chrome.tabs.create({ url: chrome.runtime.getURL("popup/index.html") });
 });
@@ -112,7 +111,6 @@ async function safeResume(source) {
   try {
     await chrome.debugger.sendCommand(source, "Debugger.resume");
   } catch (e) {
-    
     console.log("safeResume: resume ignoré:", e?.message || e);
   }
 }
@@ -125,7 +123,9 @@ self.addEventListener("unhandledrejection", (event) => {
   }
 
   const isDebuggerError =
-    msg.includes("Debugger") || msg.includes("debugger") || msg.includes("Attaching");
+    msg.includes("Debugger") ||
+    msg.includes("debugger") ||
+    msg.includes("Attaching");
   if (isDebuggerError) {
     event.preventDefault();
     console.log("Erreur debugger inattendue, tentative de réattachement:", msg);
@@ -134,8 +134,12 @@ self.addEventListener("unhandledrejection", (event) => {
       if (!tab || !tab.id) return;
       const tabId = tab.id;
       if (activeListeners[tabId]) {
-        chrome.debugger.onEvent.removeListener(activeListeners[tabId].scriptParsed);
-        chrome.debugger.onEvent.removeListener(activeListeners[tabId].debuggerEvent);
+        chrome.debugger.onEvent.removeListener(
+          activeListeners[tabId].scriptParsed,
+        );
+        chrome.debugger.onEvent.removeListener(
+          activeListeners[tabId].debuggerEvent,
+        );
         delete activeListeners[tabId];
       }
       chrome.debugger.detach({ tabId }, () => {
@@ -358,7 +362,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                   fenhistory = pgnToFenArray(game.pgn());
                   uciHistory = pgnToUciString(game.pgn());
 
-
                   chrome.tabs.query({}, (tabs) => {
                     for (const tab of tabs) {
                       if (tab.url && tab.url.includes("lichess")) {
@@ -474,8 +477,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-
-
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   if (message.type !== "DRAG_MOVE") return;
 
@@ -545,6 +546,35 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true;
   }
 
+  if (msg.type === "eval") {
+    currentEval = msg.eval;
+
+    console.log("Eval :", currentEval);
+    console.log("Side :", msg.side);
+
+    fetch("http://127.0.0.1:5000/api/eval", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        eval: msg.eval,
+        side: msg.side,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Réponse /api/eval :", data);
+        sendResponse(data);
+      })
+      .catch((err) => {
+        console.error("Erreur /api/eval :", err);
+        sendResponse({ error: err.message });
+      });
+
+    return true;
+  }
+
   if (msg.type === "STREAM") {
     fetch("http://127.0.0.1:5000/api/arrowEngine", {
       method: "POST",
@@ -576,7 +606,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       .then((res) => res.json())
       .then((data) => console.log(data))
       .catch((err) => console.log(err));
-
 
     fetch("http://127.0.0.1:5000/api/color", {
       method: "POST",
@@ -616,30 +645,29 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         from: msg.from, // Case de départ
         to: msg.to, // Case d'arrivée
         side: msg.side, // "w" pour Blancs, "b" pour Noirs
-        tags : msg.tags,
-        mateIn : msg.mateIn
+        tags: msg.tags,
+        mateIn: msg.mateIn,
       }),
     })
       .then((response) => response.json())
-      .then((data) => console.log("Réponse API:", data))
+      .then((data) => console.log("Réponse API:", data));
   }
 
-  if(msg.type ==="PV"){
+  if (msg.type === "PV") {
     fetch("http://127.0.0.1:5000/api/pv", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        side : msg.side,
-        fen : msg.fen,
-        pv : msg.pv
+        side: msg.side,
+        fen: msg.fen,
+        pv: msg.pv,
       }),
     })
       .then((response) => response.json())
-      .then((data) => console.log("Réponse API:", data))
+      .then((data) => console.log("Réponse API:", data));
   }
-
 
   if (msg.type === "SVG") {
     fetch("http://127.0.0.1:5000/api/placeSVG", {

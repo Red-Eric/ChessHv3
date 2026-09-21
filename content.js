@@ -525,16 +525,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                           statB: stat_0_black,
                           displayMode: 2,
                         });
-
-                        chrome.runtime.sendMessage({
-                          type: "FROM_CONTENT",
-                          result: {
-                            whiteAccuracy: result.whiteAccuracy,
-                            whiteElo: result.whiteElo,
-                            blackAccuracy: result.blackAccuracy,
-                            blackElo: result.blackElo,
-                          },
-                        });
                       }
 
                       if (config.moveClassification) {
@@ -564,13 +554,17 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             const blackElo = getElo(getSide())?.black || null;
 
             // fen
-            chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
             clearHighlightSquares();
             clearHighlighthints();
             clearPreviewPV();
 
-            if (config.showEval) {
+            if (st19) {
               st19.getEval(fen_).then((e) => {
+                chrome.runtime.sendMessage({
+                  type: "eval",
+                  eval: e,
+                  side: getSide(),
+                });
                 if (evalObj) {
                   evalObj.update(e, getSide());
                 }
@@ -598,6 +592,13 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
                   if (resultBook.length) {
                     highlightMovesOnBoard(booksMove, getSide()[0]);
+                    if (config.onlyShowEval) {
+                      chrome.runtime.sendMessage({
+                        type: "STREAM",
+                        moves: booksMove,
+                        side: getSide(),
+                      });
+                    }
                   } else {
                     skip = true;
                     if (config.engine !== "None" && skip) {
@@ -610,10 +611,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                           });
                         }
 
-                        chrome.runtime.sendMessage({
-                          type: "FROM_CONTENT",
-                          data: moves,
-                        });
                         keyMove = moves;
 
                         if (config.autoMove) {
@@ -645,10 +642,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     });
                   }
 
-                  chrome.runtime.sendMessage({
-                    type: "FROM_CONTENT",
-                    data: moves,
-                  });
                   keyMove = moves;
 
                   if (config.autoMove) {
@@ -719,14 +712,17 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
                   if (resultBook.length) {
                     highlightMovesOnBoard(booksMove, getSide()[0]);
+                    if (config.onlyShowEval) {
+                      chrome.runtime.sendMessage({
+                        type: "STREAM",
+                        moves: booksMove,
+                        side: getSide(),
+                      });
+                    }
                   } else {
                     skip = true;
                     if (config.engine !== "None" && skip) {
                       engine.getMovesByFen(fen_, getSide()).then((moves) => {
-                        chrome.runtime.sendMessage({
-                          type: "FROM_CONTENT",
-                          data: moves,
-                        });
                         keyMove = moves;
 
                         if (config.autoMove) {
@@ -750,10 +746,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
               if (config.engine !== "None" && skip) {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
-                  chrome.runtime.sendMessage({
-                    type: "FROM_CONTENT",
-                    data: moves,
-                  });
                   keyMove = moves;
 
                   if (config.autoMove) {
@@ -896,13 +888,16 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   colors: config.colors,
                 });
 
-                chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
-
                 clearHighlightSquares();
                 clearHighlighthints();
                 clearPreviewPV();
-                if (config.showEval) {
+                if (st19) {
                   st19.getEval(fen_).then((e) => {
+                    chrome.runtime.sendMessage({
+                      type: "eval",
+                      eval: e,
+                      side: getSide(),
+                    });
                     if (evalObj) {
                       evalObj.update(e, getSide());
                     }
@@ -929,6 +924,13 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
                       if (resultBook.length) {
                         highlightMovesOnBoard(booksMove, getSide()[0]);
+                        if (config.onlyShowEval) {
+                          chrome.runtime.sendMessage({
+                            type: "STREAM",
+                            moves: booksMove,
+                            side: getSide(),
+                          });
+                        }
                       } else {
                         skip = true;
                         if (config.engine !== "None" && skip) {
@@ -971,11 +973,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                                   );
                                 }
                               }
-
-                              chrome.runtime.sendMessage({
-                                type: "FROM_CONTENT",
-                                data: moves,
-                              });
                             });
                         }
                       }
@@ -1016,11 +1013,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                             );
                           }
                         }
-
-                        chrome.runtime.sendMessage({
-                          type: "FROM_CONTENT",
-                          data: moves,
-                        });
                       });
                   }
                 }
@@ -1196,6 +1188,13 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
                   if (resultBook.length) {
                     highlightMovesOnBoard(booksMove, getSide()[0]);
+                    if (config.onlyShowEval) {
+                      chrome.runtime.sendMessage({
+                        type: "STREAM",
+                        moves: booksMove,
+                        side: getSide(),
+                      });
+                    }
                   } else {
                     skip = true;
                     if (config.engine !== "None" && skip) {
@@ -1224,10 +1223,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                               );
                             }
                           }
-                          chrome.runtime.sendMessage({
-                            type: "FROM_CONTENT",
-                            data: moves,
-                          });
                         });
                     }
                   }
@@ -1254,10 +1249,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                       );
                     }
                   }
-                  chrome.runtime.sendMessage({
-                    type: "FROM_CONTENT",
-                    data: moves,
-                  });
                 });
               }
             }
@@ -1386,16 +1377,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                       statW: stat_0_white,
                       statB: stat_0_black,
                       displayMode: 2,
-                    });
-
-                    chrome.runtime.sendMessage({
-                      type: "FROM_CONTENT",
-                      result: {
-                        whiteAccuracy: result.whiteAccuracy,
-                        whiteElo: result.whiteElo,
-                        blackAccuracy: result.blackAccuracy,
-                        blackElo: result.blackElo,
-                      },
                     });
                   }
 
@@ -1642,14 +1623,18 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               colors: config.colors,
             });
 
-            chrome.runtime.sendMessage({ type: "FROM_CONTENT", fen: fen_ });
-
             clearHighlightSquares();
             clearPreviewPV();
             clearHighlightSquares();
 
-            if (config.showEval) {
+            if (st19) {
               st19.getEval(fen_).then((e) => {
+                chrome.runtime.sendMessage({
+                  type: "eval",
+                  eval: e,
+                  side: getSide(),
+                });
+
                 if (evalObj) {
                   evalObj.update(e, getSide());
                 }
@@ -1677,6 +1662,13 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
                   if (resultBook.length) {
                     highlightMovesOnBoard(booksMove, getSide()[0]);
+                    if (config.onlyShowEval) {
+                      chrome.runtime.sendMessage({
+                        type: "STREAM",
+                        moves: booksMove,
+                        side: getSide(),
+                      });
+                    }
                   } else {
                     skip = true;
                     if (config.engine !== "None" && skip) {
@@ -1691,10 +1683,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                           });
                         }
 
-                        chrome.runtime.sendMessage({
-                          type: "FROM_CONTENT",
-                          data: moves,
-                        });
                         highlightMovesOnBoard(moves, getSide()[0]);
 
                         if (moves.length > 0 && config.autoMove) {
@@ -1734,10 +1722,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     });
                   }
 
-                  chrome.runtime.sendMessage({
-                    type: "FROM_CONTENT",
-                    data: moves,
-                  });
                   highlightMovesOnBoard(moves, getSide()[0]);
 
                   if (moves.length > 0 && config.autoMove) {
@@ -1811,16 +1795,20 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
                   if (resultBook.length) {
                     highlightMovesOnBoard(booksMove, getSide()[0]);
+
+                    if (config.onlyShowEval) {
+                      chrome.runtime.sendMessage({
+                        type: "STREAM",
+                        moves: booksMove,
+                        side: getSide(),
+                      });
+                    }
                   } else {
                     skip = true;
                     if (config.engine !== "None" && skip) {
                       engine.getMovesByFen(fen_, getSide()).then((moves) => {
                         keyMove = moves;
 
-                        chrome.runtime.sendMessage({
-                          type: "FROM_CONTENT",
-                          data: moves,
-                        });
                         highlightMovesOnBoard(moves, getSide()[0]);
 
                         if (moves.length > 0 && config.autoMove) {
@@ -1852,10 +1840,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
                   keyMove = moves;
 
-                  chrome.runtime.sendMessage({
-                    type: "FROM_CONTENT",
-                    data: moves,
-                  });
                   highlightMovesOnBoard(moves, getSide()[0]);
 
                   if (moves.length > 0 && config.autoMove) {
@@ -2000,15 +1984,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                       statW: stat_0_white,
                       statB: stat_0_black,
                       displayMode: 2,
-                    });
-                    chrome.runtime.sendMessage({
-                      type: "FROM_CONTENT",
-                      result: {
-                        whiteAccuracy: result.whiteAccuracy,
-                        whiteElo: result.whiteElo,
-                        blackAccuracy: result.blackAccuracy,
-                        blackElo: result.blackElo,
-                      },
                     });
                   }
 
