@@ -581,23 +581,28 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
-              if (fen_.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
+              if (
+                fen_.includes("/pppppppp/8/8/8/8/PPPPPPPP/") ||
+                pageFlag !== window.location.href
+              ) {
                 skip = false;
-              }
-              if (pageFlag != window.location.href) {
-                skip = false;
-                pageFlag = window.localStorage.href;
-              }
 
-              if (config.opening > 0 && skip === false) {
-                const booksMove = await getBookMoves(fen, side);
-                const result_book = booksMove.slice(0, config.opening);
-
-                if (result_book.length !== 0) {
-                  highlightMovesOnBoard(booksMove, getSide()[0])
-                } else {
-                  skip = true;
+                if (pageFlag !== window.location.href) {
+                  pageFlag = window.location.href;
                 }
+              }
+
+              if (config.opening > 0 && !skip) {
+                
+                getBookMoves(fen_, getSide()[0]).then((booksMove) => {
+                  const resultBook = booksMove.slice(0, config.opening);
+
+                  if (resultBook.length) {
+                    highlightMovesOnBoard(booksMove, getSide()[0]);
+                  } else {
+                    skip = true;
+                  }
+                });
               }
 
               if (config.engine !== "None" && skip) {
@@ -667,6 +672,29 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
+              if (
+                fen_.includes("/pppppppp/8/8/8/8/PPPPPPPP/") ||
+                pageFlag !== window.location.href
+              ) {
+                skip = false;
+
+                if (pageFlag !== window.location.href) {
+                  pageFlag = window.location.href;
+                }
+              }
+
+              if (config.opening > 0 && !skip) {
+                getBookMoves(fen_, getSide()[0]).then((booksMove) => {
+                  const resultBook = booksMove.slice(0, config.opening);
+
+                  if (resultBook.length) {
+                    highlightMovesOnBoard(booksMove, getSide()[0]);
+                  } else {
+                    skip = true;
+                  }
+                });
+              }
+
               if (config.engine !== "None" && skip) {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
                   chrome.runtime.sendMessage({
@@ -831,6 +859,29 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
                   (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
                 ) {
+                  if (
+                    fen_.includes("/pppppppp/8/8/8/8/PPPPPPPP/") ||
+                    pageFlag !== window.location.href
+                  ) {
+                    skip = false;
+
+                    if (pageFlag !== window.location.href) {
+                      pageFlag = window.location.href;
+                    }
+                  }
+
+                  if (config.opening > 0 && !skip) {
+                    getBookMoves(fen_, getSide()[0]).then((booksMove) => {
+                      const resultBook = booksMove.slice(0, config.opening);
+
+                      if (resultBook.length) {
+                        highlightMovesOnBoard(booksMove, getSide()[0]);
+                      } else {
+                        skip = true;
+                      }
+                    });
+                  }
+
                   if (config.engine !== "None" && skip) {
                     engine
                       .getMovesByFen(fen_, getSide())
@@ -1028,6 +1079,28 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
+              if (
+                fen_.includes("/pppppppp/8/8/8/8/PPPPPPPP/") ||
+                pageFlag !== window.location.href
+              ) {
+                skip = false;
+
+                if (pageFlag !== window.location.href) {
+                  pageFlag = window.location.href;
+                }
+              }
+
+              if (config.opening > 0 && !skip) {
+                getBookMoves(fen_, getSide()[0]).then((booksMove) => {
+                  const resultBook = booksMove.slice(0, config.opening);
+
+                  if (resultBook.length) {
+                    highlightMovesOnBoard(booksMove, getSide()[0]);
+                  } else {
+                    skip = true;
+                  }
+                });
+              }
               if (config.engine !== "None" && skip) {
                 engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
                   highlightMovesOnBoard(moves, getSide()[0]);
@@ -1455,6 +1528,29 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
+              if (
+                fen_.includes("/pppppppp/8/8/8/8/PPPPPPPP/") ||
+                pageFlag !== window.location.href
+              ) {
+                skip = false;
+
+                if (pageFlag !== window.location.href) {
+                  pageFlag = window.location.href;
+                }
+              }
+
+              if (config.opening > 0 && !skip) {
+                getBookMoves(fen_, getSide()[0]).then((booksMove) => {
+                  const resultBook = booksMove.slice(0, config.opening);
+
+                  if (resultBook.length) {
+                    highlightMovesOnBoard(booksMove, getSide()[0]);
+                  } else {
+                    skip = true;
+                  }
+                });
+              }
+
               if (config.engine !== "None" && skip) {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
                   keyMove = moves;
@@ -1527,6 +1623,29 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
+              if (
+                fen_.includes("/pppppppp/8/8/8/8/PPPPPPPP/") ||
+                pageFlag !== window.location.href
+              ) {
+                skip = false;
+
+                if (pageFlag !== window.location.href) {
+                  pageFlag = window.location.href;
+                }
+              }
+
+              if (config.opening > 0 && !skip) {
+                getBookMoves(fen_, getSide()[0]).then((booksMove) => {
+                  const resultBook = booksMove.slice(0, config.opening);
+
+                  if (resultBook.length) {
+                    highlightMovesOnBoard(booksMove, getSide()[0]);
+                  } else {
+                    skip = true;
+                  }
+                });
+              }
+
               if (config.engine !== "None" && skip) {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
                   keyMove = moves;
