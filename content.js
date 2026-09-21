@@ -560,11 +560,13 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
             if (st19) {
               st19.getEval(fen_).then((e) => {
-                chrome.runtime.sendMessage({
-                  type: "eval",
-                  eval: e,
-                  side: getSide(),
-                });
+                if (config.onlyShowEval) {
+                  chrome.runtime.sendMessage({
+                    type: "eval",
+                    eval: e,
+                    side: getSide(),
+                  });
+                }
                 if (evalObj) {
                   evalObj.update(e, getSide());
                 }
@@ -893,11 +895,13 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                 clearPreviewPV();
                 if (st19) {
                   st19.getEval(fen_).then((e) => {
-                    chrome.runtime.sendMessage({
-                      type: "eval",
-                      eval: e,
-                      side: getSide(),
-                    });
+                    if (config.onlyShowEval) {
+                      chrome.runtime.sendMessage({
+                        type: "eval",
+                        eval: e,
+                        side: getSide(),
+                      });
+                    }
                     if (evalObj) {
                       evalObj.update(e, getSide());
                     }
@@ -1629,11 +1633,13 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
             if (st19) {
               st19.getEval(fen_).then((e) => {
-                chrome.runtime.sendMessage({
-                  type: "eval",
-                  eval: e,
-                  side: getSide(),
-                });
+                if (config.onlyShowEval) {
+                  chrome.runtime.sendMessage({
+                    type: "eval",
+                    eval: e,
+                    side: getSide(),
+                  });
+                }
 
                 if (evalObj) {
                   evalObj.update(e, getSide());
