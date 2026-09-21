@@ -76,6 +76,7 @@
         "lib/stockfish8.js",
         "lib/stockfish10.js",
         "lib/stockfish11.js",
+        "lib/stockfish19.js",
         "lib/torch.js",
         "lib/torch.wasm",
         "book/book.bin",

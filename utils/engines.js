@@ -976,6 +976,16 @@ async function createWorkerStockfish11() {
   return new Worker(URL.createObjectURL(blob));
 }
 
+async function createWorkerStockfish19() {
+  const code = await loadWorkerScript("lib/stockfish19.js");
+
+  const blob = new Blob([code], {
+    type: "application/javascript",
+  });
+
+  return new Worker(URL.createObjectURL(blob));
+}
+
 // create webworker for komodo
 async function createWorkerKomodo() {
   const code = await loadWorkerScript("lib/komodo.js");
@@ -1345,6 +1355,10 @@ class CoachEngine {
 
           this.worker.removeEventListener("message", onMessage);
           this.activeReject = null;
+
+          console.clear();
+          console.log(data)
+          
 
           resolve({
             classificationName,
@@ -2010,6 +2024,163 @@ class Wukong {
       this.worker.addEventListener("message", onMessage);
       this.worker.postMessage({ command: `position fen ${fen}` });
       this.worker.postMessage({ command: `go depth ${config.depth}` });
+    });
+  }
+}
+
+
+class Stockfish19 {
+  constructor() {
+    this.depth = config.depth;
+
+    this.worker = null;
+
+    this.initialized = this.init();
+
+    // État du moteur
+    this.running = false;
+    this.ready = false;
+
+    // Dernière FEN demandée pendant une analyse
+    this.pendingFen = null;
+
+    // Promise associée à la dernière demande
+    this.pendingResolve = null;
+  }
+
+  async init() {
+    this.worker = await createWorkerStockfish19();
+
+    return new Promise((resolve) => {
+      const onMessage = (event) => {
+        const msg = event.data;
+
+        if (msg === "uciok") {
+          this.worker.removeEventListener("message", onMessage);
+
+          this.worker.postMessage(
+            "setoption name Ponder value false"
+          );
+
+          this.ready = true;
+
+          resolve();
+        }
+      };
+
+      this.worker.addEventListener("message", onMessage);
+
+      this.worker.postMessage("uci");
+    });
+  }
+
+  async getEval(fen) {
+    await this.initialized;
+
+    /*
+     * Si Stockfish travaille déjà,
+     * on remplace simplement la FEN en attente.
+     */
+    if (this.running) {
+      this.pendingFen = fen;
+
+      return new Promise((resolve) => {
+        this.pendingResolve = resolve;
+      });
+    }
+
+    return this.analyze(fen);
+  }
+
+  analyze(fen) {
+    return new Promise((resolve) => {
+      this.running = true;
+      this.ready = false;
+
+      let evaluation = null;
+
+      const onMessage = (event) => {
+        const msg = event.data;
+
+        if (typeof msg !== "string") return;
+
+        /*
+         * Récupération de l'évaluation
+         * uniquement à la profondeur demandée.
+         */
+        const depthMatch = msg.match(
+          new RegExp(`info depth ${this.depth}\\b`)
+        );
+
+        if (depthMatch) {
+          const scoreMatch = msg.match(
+            /score (cp|mate) (-?\d+)/
+          );
+
+          if (scoreMatch) {
+            const scoreType = scoreMatch[1];
+            const scoreValue = parseInt(
+              scoreMatch[2],
+              10
+            );
+
+            if (scoreType === "cp") {
+              const value = +(scoreValue / 100).toFixed(2);
+
+              evaluation =
+                value > 0
+                  ? `+${value}`
+                  : `${value}`;
+            }
+
+            if (scoreType === "mate") {
+              evaluation =
+                scoreValue > 0
+                  ? `#${scoreValue}`
+                  : `#-${Math.abs(scoreValue)}`;
+            }
+          }
+        }
+
+        /*
+         * Stockfish a terminé.
+         */
+        if (msg.startsWith("bestmove")) {
+          this.worker.removeEventListener(
+            "message",
+            onMessage
+          );
+
+          this.running = false;
+          this.ready = true;
+
+         
+          if (this.pendingFen !== null) {
+            const nextFen = this.pendingFen;
+            const nextResolve = this.pendingResolve;
+
+            this.pendingFen = null;
+            this.pendingResolve = null;
+
+            resolve(evaluation);
+
+            this.analyze(nextFen).then(nextResolve);
+
+            return;
+          }
+          resolve(evaluation);
+        }
+      };
+
+      this.worker.addEventListener(
+        "message",
+        onMessage
+      );
+
+      this.worker.postMessage(`position fen ${fen}`);
+      this.worker.postMessage(
+        `go depth ${this.depth}`
+      );
     });
   }
 }
