@@ -549,8 +549,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === "eval") {
     currentEval = msg.eval;
 
-    console.log("Eval :", currentEval);
-    console.log("Side :", msg.side);
 
     fetch("http://127.0.0.1:5000/api/eval", {
       method: "POST",
@@ -576,6 +574,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 
   if (msg.type === "STREAM") {
+
+
     fetch("http://127.0.0.1:5000/api/arrowEngine", {
       method: "POST",
       headers: {
@@ -588,7 +588,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
         sendResponse(data);
       })
       .catch((err) => {
