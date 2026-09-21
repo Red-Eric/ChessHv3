@@ -581,7 +581,26 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
-              if (config.engine !== "None") {
+              if (fen_.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
+                skip = false;
+              }
+              if (pageFlag != window.location.href) {
+                skip = false;
+                pageFlag = window.localStorage.href;
+              }
+
+              if (config.opening > 0 && skip === false) {
+                const booksMove = await getBookMoves(fen, side);
+                const result_book = booksMove.slice(0, config.opening);
+
+                if (result_book.length !== 0) {
+                  highlightMovesOnBoard(booksMove, getSide()[0])
+                } else {
+                  skip = true;
+                }
+              }
+
+              if (config.engine !== "None" && skip) {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
                   if (config.onlyShowEval) {
                     chrome.runtime.sendMessage({
@@ -648,7 +667,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
-              if (config.engine !== "None") {
+              if (config.engine !== "None" && skip) {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
                   chrome.runtime.sendMessage({
                     type: "FROM_CONTENT",
@@ -664,7 +683,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                       requestMove(moves[0].from, moves[0].to);
                     }
                   }
-                  
+
                   highlightMovesOnBoard(moves, getSide()[0]);
                 });
               }
@@ -801,18 +820,18 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                 clearHighlightSquares();
                 clearHighlighthints();
                 clearPreviewPV();
-if (config.showEval) {
-              st19.getEval(fen_).then((e) => {
-                if (evalObj) {
-                  evalObj.update(e, getSide());
+                if (config.showEval) {
+                  st19.getEval(fen_).then((e) => {
+                    if (evalObj) {
+                      evalObj.update(e, getSide());
+                    }
+                  });
                 }
-              });
-            }
                 if (
                   (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
                   (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
                 ) {
-                  if (config.engine !== "None") {
+                  if (config.engine !== "None" && skip) {
                     engine
                       .getMovesByFen(fen_, getSide())
                       .then(async (moves) => {
@@ -826,7 +845,6 @@ if (config.showEval) {
 
                         highlightMovesOnBoard(moves, getSide()[0]);
                         keyMove = moves;
-                        
 
                         if (moves.length > 0 && config.autoMove) {
                           if (config.autoMoveBalanced) {
@@ -1010,11 +1028,10 @@ if (config.showEval) {
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
-              if (config.engine !== "None") {
+              if (config.engine !== "None" && skip) {
                 engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
                   highlightMovesOnBoard(moves, getSide()[0]);
                   keyMove = moves;
-                  
 
                   if (moves.length > 0 && config.autoMove) {
                     if (config.autoMoveBalanced) {
@@ -1438,7 +1455,7 @@ if (config.showEval) {
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
-              if (config.engine !== "None") {
+              if (config.engine !== "None" && skip) {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
                   keyMove = moves;
 
@@ -1456,7 +1473,6 @@ if (config.showEval) {
                   });
                   highlightMovesOnBoard(moves, getSide()[0]);
 
-                  
                   if (moves.length > 0 && config.autoMove) {
                     if (config.autoMoveBalanced) {
                       const balancedMove = extractNormalMove(moves, getSide());
@@ -1511,7 +1527,7 @@ if (config.showEval) {
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
-              if (config.engine !== "None") {
+              if (config.engine !== "None" && skip) {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
                   keyMove = moves;
 
@@ -1520,8 +1536,6 @@ if (config.showEval) {
                     data: moves,
                   });
                   highlightMovesOnBoard(moves, getSide()[0]);
-
-                  
 
                   if (moves.length > 0 && config.autoMove) {
                     if (config.autoMoveBalanced) {

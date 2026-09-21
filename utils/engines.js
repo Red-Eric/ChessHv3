@@ -782,7 +782,6 @@ const RANDOM64 = [
   0xf8d626aaaf278509n,
 ];
 
-let skip = false;
 
 const PIECE_KIND = {
   p: 0,
@@ -1075,24 +1074,24 @@ class komodo {
   async getMovesByFen(fen, side) {
     // this.worker.postMessage(`setoption name Auto Skill value true`);
 
-    if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
-      skip = false;
-    }
-    if (pageFlag != window.location.href) {
-      skip = false;
-      pageFlag = window.localStorage.href;
-    }
+    // if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
+    //   skip = false;
+    // }
+    // if (pageFlag != window.location.href) {
+    //   skip = false;
+    //   pageFlag = window.localStorage.href;
+    // }
 
-    if (config.opening > 0 && skip === false) {
-      const booksMove = await getBookMoves(fen, side);
-      const result_book = booksMove.slice(0, config.opening);
+    // if (config.opening > 0 && skip === false) {
+    //   const booksMove = await getBookMoves(fen, side);
+    //   const result_book = booksMove.slice(0, config.opening);
 
-      if (result_book.length !== 0) {
-        return result_book;
-      } else {
-        skip = true;
-      }
-    }
+    //   if (result_book.length !== 0) {
+    //     return result_book;
+    //   } else {
+    //     skip = true;
+    //   }
+    // }
 
     this.worker.postMessage(
       `setoption name Personality value ${this.personality}`,
@@ -1461,24 +1460,24 @@ class Stockfish6 {
   }
 
   async getMovesByFen(fen, side) {
-    if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
-      skip = false;
-    }
-    if (pageFlag != window.location.href) {
-      skip = false;
-      pageFlag = window.localStorage.href;
-    }
+    // if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
+    //   skip = false;
+    // }
+    // if (pageFlag != window.location.href) {
+    //   skip = false;
+    //   pageFlag = window.localStorage.href;
+    // }
 
-    if (config.opening > 0 && skip === false) {
-      const booksMove = await getBookMoves(fen, side);
-      const result_book = booksMove.slice(0, config.opening);
+    // if (config.opening > 0 && skip === false) {
+    //   const booksMove = await getBookMoves(fen, side);
+    //   const result_book = booksMove.slice(0, config.opening);
 
-      if (result_book.length !== 0) {
-        return result_book;
-      } else {
-        skip = true;
-      }
-    }
+    //   if (result_book.length !== 0) {
+    //     return result_book;
+    //   } else {
+    //     skip = true;
+    //   }
+    // }
 
     this.worker.postMessage(
       `setoption name Mobility (Midgame) value ${config.st6_mobilityMid}`,
@@ -1624,24 +1623,24 @@ class Stockfish11 {
   }
 
   async getMovesByFen(fen, side = "white") {
-    if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
-      skip = false;
-    }
-    if (pageFlag != window.location.href) {
-      skip = false;
-      pageFlag = window.localStorage.href;
-    }
+    // if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
+    //   skip = false;
+    // }
+    // if (pageFlag != window.location.href) {
+    //   skip = false;
+    //   pageFlag = window.localStorage.href;
+    // }
 
-    if (config.opening > 0 && skip === false) {
-      const booksMove = await getBookMoves(fen, side);
-      const result_book = booksMove.slice(0, config.opening);
+    // if (config.opening > 0 && skip === false) {
+    //   const booksMove = await getBookMoves(fen, side);
+    //   const result_book = booksMove.slice(0, config.opening);
 
-      if (result_book.length !== 0) {
-        return result_book;
-      } else {
-        skip = true;
-      }
-    }
+    //   if (result_book.length !== 0) {
+    //     return result_book;
+    //   } else {
+    //     skip = true;
+    //   }
+    // }
 
     this.worker.postMessage(`setoption name MultiPV value ${config.lines}`);
     this.worker.postMessage("setoption name Ponder value false");
@@ -1798,23 +1797,23 @@ class Maia3 {
   }
 
   async getMovesByFen(fen) {
-    if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
-      skip = false;
-    }
-    if (pageFlag != window.location.href) {
-      skip = false;
-      pageFlag = window.localStorage.href;
-    }
-    if (config.opening > 0 && skip === false) {
-      const booksMove = await getBookMoves(fen, side);
-      const result_book = booksMove.slice(0, config.opening);
+    // if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
+    //   skip = false;
+    // }
+    // if (pageFlag != window.location.href) {
+    //   skip = false;
+    //   pageFlag = window.localStorage.href;
+    // }
+    // if (config.opening > 0 && skip === false) {
+    //   const booksMove = await getBookMoves(fen, side);
+    //   const result_book = booksMove.slice(0, config.opening);
 
-      if (result_book.length !== 0) {
-        return result_book;
-      } else {
-        skip = true;
-      }
-    }
+    //   if (result_book.length !== 0) {
+    //     return result_book;
+    //   } else {
+    //     skip = true;
+    //   }
+    // }
 
     const turn = fen.split(" ")[1];
 
@@ -1911,24 +1910,24 @@ class Lozza {
   async getMovesByFen(fen, side) {
     // await this.createWorker();
 
-    if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
-      skip = false;
-    }
-    if (pageFlag != window.location.href) {
-      skip = false;
-      pageFlag = window.localStorage.href;
-    }
+    // if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
+    //   skip = false;
+    // }
+    // if (pageFlag != window.location.href) {
+    //   skip = false;
+    //   pageFlag = window.localStorage.href;
+    // }
 
-    if (config.opening > 0 && skip === false) {
-      const booksMove = await getBookMoves(fen, side);
-      const result_book = booksMove.slice(0, config.opening);
+    // if (config.opening > 0 && skip === false) {
+    //   const booksMove = await getBookMoves(fen, side);
+    //   const result_book = booksMove.slice(0, config.opening);
 
-      if (result_book.length !== 0) {
-        return result_book;
-      } else {
-        skip = true;
-      }
-    }
+    //   if (result_book.length !== 0) {
+    //     return result_book;
+    //   } else {
+    //     skip = true;
+    //   }
+    // }
 
     return new Promise((resolve) => {
       const onMessage = (e) => {
@@ -1985,24 +1984,24 @@ class Wukong {
   async getMovesByFen(fen, side) {
     // await this.createWorker();
 
-    if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
-      skip = false;
-    }
-    if (pageFlag != window.location.href) {
-      skip = false;
-      pageFlag = window.localStorage.href;
-    }
+    // if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
+    //   skip = false;
+    // }
+    // if (pageFlag != window.location.href) {
+    //   skip = false;
+    //   pageFlag = window.localStorage.href;
+    // }
 
-    if (config.opening > 0 && skip === false) {
-      const booksMove = await getBookMoves(fen, side);
-      const result_book = booksMove.slice(0, config.opening);
+    // if (config.opening > 0 && skip === false) {
+    //   const booksMove = await getBookMoves(fen, side);
+    //   const result_book = booksMove.slice(0, config.opening);
 
-      if (result_book.length !== 0) {
-        return result_book;
-      } else {
-        skip = true;
-      }
-    }
+    //   if (result_book.length !== 0) {
+    //     return result_book;
+    //   } else {
+    //     skip = true;
+    //   }
+    // }
 
     return new Promise((resolve) => {
       const onMessage = (e) => {

@@ -1,4 +1,5 @@
 let BOARD_WIDTH = 480;
+let skip = false;
 
 
 
