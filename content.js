@@ -71,8 +71,13 @@ chrome.storage.local.get(["chessConfig"], (result) => {
   };
 
   let engine = null;
+  let st19 = null;
 
   (() => {
+    if (config.showEval) {
+      st19 = new Stockfish19();
+    }
+
     if (config.engine === "komodo") {
       engine = new komodo({
         elo: config.elo,
@@ -564,6 +569,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             clearHighlighthints();
             clearPreviewPV();
 
+            if (config.showEval) {
+              st19.getEval(fen_).then((e) => {
+                if (evalObj) {
+                  evalObj.update(e, getSide());
+                }
+              });
+            }
+
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
@@ -592,9 +605,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                       requestMove(moves[0].from, moves[0].to);
                     }
                   }
-                  if (moves.length > 0 && evalObj) {
-                    evalObj.update(moves[0].eval, getSide());
-                  }
+
                   highlightMovesOnBoard(moves, getSide()[0]);
                 });
               }
@@ -625,6 +636,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             clearHighlighthints();
             clearPreviewPV();
 
+            if (config.showEval) {
+              st19.getEval(fen_).then((e) => {
+                if (evalObj) {
+                  evalObj.update(e, getSide());
+                }
+              });
+            }
+
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
@@ -645,9 +664,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                       requestMove(moves[0].from, moves[0].to);
                     }
                   }
-                  if (moves.length > 0 && evalObj) {
-                    evalObj.update(moves[0].eval, getSide());
-                  }
+                  
                   highlightMovesOnBoard(moves, getSide()[0]);
                 });
               }
@@ -784,7 +801,13 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                 clearHighlightSquares();
                 clearHighlighthints();
                 clearPreviewPV();
-
+if (config.showEval) {
+              st19.getEval(fen_).then((e) => {
+                if (evalObj) {
+                  evalObj.update(e, getSide());
+                }
+              });
+            }
                 if (
                   (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
                   (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
@@ -803,9 +826,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
                         highlightMovesOnBoard(moves, getSide()[0]);
                         keyMove = moves;
-                        if (moves.length > 0 && evalObj) {
-                          evalObj.update(moves[0].eval, getSide());
-                        }
+                        
 
                         if (moves.length > 0 && config.autoMove) {
                           if (config.autoMoveBalanced) {
@@ -977,6 +998,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             clearHighlighthints();
             clearPreviewPV();
 
+            if (config.showEval) {
+              st19.getEval(fen_).then((e) => {
+                if (evalObj) {
+                  evalObj.update(e, getSide());
+                }
+              });
+            }
+
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
@@ -985,9 +1014,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                 engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
                   highlightMovesOnBoard(moves, getSide()[0]);
                   keyMove = moves;
-                  if (moves.length > 0 && evalObj) {
-                    evalObj.update(moves[0].eval, getSide());
-                  }
+                  
 
                   if (moves.length > 0 && config.autoMove) {
                     if (config.autoMoveBalanced) {
@@ -1399,6 +1426,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             clearPreviewPV();
             clearHighlightSquares();
 
+            if (config.showEval) {
+              st19.getEval(fen_).then((e) => {
+                if (evalObj) {
+                  evalObj.update(e, getSide());
+                }
+              });
+            }
+
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
@@ -1421,10 +1456,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   });
                   highlightMovesOnBoard(moves, getSide()[0]);
 
-                  if (moves.length > 0 && evalObj) {
-                    evalObj.update(moves[0].eval, getSide());
-                  }
-
+                  
                   if (moves.length > 0 && config.autoMove) {
                     if (config.autoMoveBalanced) {
                       const balancedMove = extractNormalMove(moves, getSide());
@@ -1467,6 +1499,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             clearPreviewPV();
             clearHighlighthints();
 
+            if (config.showEval) {
+              st19.getEval(fen_).then((e) => {
+                if (evalObj) {
+                  evalObj.update(e, getSide());
+                }
+              });
+            }
+
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
@@ -1481,9 +1521,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   });
                   highlightMovesOnBoard(moves, getSide()[0]);
 
-                  if (moves.length > 0 && evalObj) {
-                    evalObj.update(moves[0].eval, getSide());
-                  }
+                  
 
                   if (moves.length > 0 && config.autoMove) {
                     if (config.autoMoveBalanced) {
