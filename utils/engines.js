@@ -2034,7 +2034,6 @@ class Stockfish19 {
     this.depth = config.depth3;
 
     this.worker = null;
-
     this.initialized = this.init();
 
     // État du moteur
@@ -2077,10 +2076,8 @@ class Stockfish19 {
   async getEval(fen) {
     await this.initialized;
 
-    /*
-     * Si Stockfish travaille déjà,
-     * on remplace simplement la FEN en attente.
-     */
+    // Si Stockfish travaille déjà,
+    // on garde uniquement la dernière FEN.
     if (this.running) {
       this.pendingFen = fen;
 
@@ -2099,15 +2096,16 @@ class Stockfish19 {
 
       let evaluation = null;
 
+      // w = blancs au trait
+      // b = noirs au trait
+      const sideToMove = fen.split(" ")[1];
+
       const onMessage = (event) => {
         const msg = event.data;
 
         if (typeof msg !== "string") return;
 
-        /*
-         * Récupération de l'évaluation
-         * uniquement à la profondeur demandée.
-         */
+        // Évaluation uniquement à la profondeur demandée
         const depthMatch = msg.match(
           new RegExp(`info depth ${config.depth3}\\b`)
         );
@@ -2119,10 +2117,27 @@ class Stockfish19 {
 
           if (scoreMatch) {
             const scoreType = scoreMatch[1];
-            const scoreValue = parseInt(
+
+            let scoreValue = parseInt(
               scoreMatch[2],
               10
             );
+
+            /*
+             * Stockfish donne le score du point de vue
+             * du joueur qui a le trait.
+             *
+             * On veut toujours :
+             *
+             * + = avantage Blanc
+             * - = avantage Noir
+             *
+             * Donc si les noirs ont le trait,
+             * on inverse le score.
+             */
+            if (sideToMove === "b") {
+              scoreValue = -scoreValue;
+            }
 
             if (scoreType === "cp") {
               const value = +(scoreValue / 100).toFixed(2);
@@ -2142,9 +2157,7 @@ class Stockfish19 {
           }
         }
 
-        /*
-         * Stockfish a terminé.
-         */
+        // Stockfish a terminé l'analyse
         if (msg.startsWith("bestmove")) {
           this.worker.removeEventListener(
             "message",
@@ -2154,7 +2167,7 @@ class Stockfish19 {
           this.running = false;
           this.ready = true;
 
-         
+          // Une nouvelle FEN est arrivée entre-temps
           if (this.pendingFen !== null) {
             const nextFen = this.pendingFen;
             const nextResolve = this.pendingResolve;
@@ -2162,12 +2175,15 @@ class Stockfish19 {
             this.pendingFen = null;
             this.pendingResolve = null;
 
+            // Résultat de la FEN actuelle
             resolve(evaluation);
 
+            // Analyse uniquement la dernière FEN reçue
             this.analyze(nextFen).then(nextResolve);
 
             return;
           }
+
           resolve(evaluation);
         }
       };
@@ -2178,6 +2194,7 @@ class Stockfish19 {
       );
 
       this.worker.postMessage(`position fen ${fen}`);
+
       this.worker.postMessage(
         `go depth ${this.depth}`
       );
