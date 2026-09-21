@@ -8,6 +8,7 @@ let config = {
   colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
   depth: 10,
   depth2: 10,
+  depth3: 10,
   delay0: 0,
   delay: 5000,
   style: "Default",

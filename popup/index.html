@@ -679,6 +679,33 @@
           </span>
         </div>
 
+        <div class="section-divider"><span>Evaluation Bar</span></div>
+
+        ```
+        <div class="setting">
+          <span id="showEvalLabel">Show Evaluation Bar (OFF)</span>
+          <label class="toggle"
+            ><input type="checkbox" id="showEval" /><span class="slider"></span
+          ></label>
+        </div>
+        <div class="setting-help">
+          Displays the engine's position evaluation bar.
+        </div>
+
+        <div class="setting">
+          <label
+            >Depth : <span class="value-badge" id="depth3Value">10</span></label
+          >
+          <input type="range" id="depth3" min="1" max="15" value="5" />
+        </div>
+        <div class="setting-help">
+          Sets the analysis depth used to calculate the evaluation.
+          <span style="color: #e74c3c; font-weight: 700">
+            Recommended for slower devices: 4–6 or lower.</span
+          >
+        </div>
+        ```
+
         <!-- ENGINE -->
         <!-- #region engine -->
         <div class="section-divider"><span>Engine</span></div>
@@ -984,7 +1011,7 @@
           </div>
           <div class="setting-help">hide Arrow</div>
 
-          <div class="setting">
+          <!-- <div class="setting">
             <span id="showEvalLabel">Show Eval Bar (OFF)</span>
             <label class="toggle"
               ><input type="checkbox" id="showEval" /><span
@@ -992,7 +1019,7 @@
               ></span
             ></label>
           </div>
-          <div class="setting-help">Displays the engine evaluation bar.</div>
+          <div class="setting-help">Displays the engine evaluation bar.</div> -->
 
           <!-- AUTOMATION -->
           <div class="section-divider"><span>Automation</span></div>

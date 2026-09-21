@@ -2031,7 +2031,7 @@ class Wukong {
 
 class Stockfish19 {
   constructor() {
-    this.depth = config.depth;
+    this.depth = config.depth3;
 
     this.worker = null;
 
@@ -2109,7 +2109,7 @@ class Stockfish19 {
          * uniquement à la profondeur demandée.
          */
         const depthMatch = msg.match(
-          new RegExp(`info depth ${this.depth}\\b`)
+          new RegExp(`info depth ${config.depth3}\\b`)
         );
 
         if (depthMatch) {

@@ -295,6 +295,7 @@ function updateChessUI() {
     "lines",
     "depth",
     "depth2",
+    "depth3",
     "st6_mobilityMid",
     "st6_mobilityEnd",
     "st6_pawnStructureMid",
@@ -332,6 +333,7 @@ function updateChessUI() {
   el("openingValue").textContent = chessConfig.opening;
   el("depthValue").textContent = chessConfig.depth;
   el("depth2Value").textContent = chessConfig.depth2;
+  el("depth3Value").textContent = chessConfig.depth3;
 
   el("delayMinValue").textContent = chessConfig.delay0;
   el("delayMaxValue").textContent = chessConfig.delay;
@@ -401,6 +403,7 @@ loadChessConfig(updateChessUI);
   "lines",
   "depth",
   "depth2",
+  "depth3",
   "st6_mobilityMid",
   "st6_mobilityEnd",
   "st6_pawnStructureMid",
