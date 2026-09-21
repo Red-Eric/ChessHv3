@@ -636,13 +636,13 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             clearHighlighthints();
             clearPreviewPV();
 
-            if (config.showEval) {
-              st19.getEval(fen_).then((e) => {
-                if (evalObj) {
-                  evalObj.update(e, getSide());
-                }
-              });
-            }
+            // if (config.showEval) {
+            //   st19.getEval(fen_).then((e) => {
+            //     if (evalObj) {
+            //       evalObj.update(e, getSide());
+            //     }
+            //   });
+            // }
 
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
@@ -998,13 +998,13 @@ if (config.showEval) {
             clearHighlighthints();
             clearPreviewPV();
 
-            if (config.showEval) {
-              st19.getEval(fen_).then((e) => {
-                if (evalObj) {
-                  evalObj.update(e, getSide());
-                }
-              });
-            }
+            // if (config.showEval) {
+            //   st19.getEval(fen_).then((e) => {
+            //     if (evalObj) {
+            //       evalObj.update(e, getSide());
+            //     }
+            //   });
+            // }
 
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
@@ -1499,13 +1499,13 @@ if (config.showEval) {
             clearPreviewPV();
             clearHighlighthints();
 
-            if (config.showEval) {
-              st19.getEval(fen_).then((e) => {
-                if (evalObj) {
-                  evalObj.update(e, getSide());
-                }
-              });
-            }
+            // if (config.showEval) {
+            //   st19.getEval(fen_).then((e) => {
+            //     if (evalObj) {
+            //       evalObj.update(e, getSide());
+            //     }
+            //   });
+            // }
 
             if (
               (getSide()[0] === "w" && fen_.split(" ")[1] === "w") ||
