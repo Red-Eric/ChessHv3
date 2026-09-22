@@ -308,7 +308,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               const playBalanced = makeBtn("Play Balanced", "balanced");
 
               playBest.onclick = () => {
-                console.log("playBest clicked");
+                // console.log("playBest clicked");
                 requestMove(keyMove[0].from, keyMove[0].to, "q", true);
               };
 
@@ -593,7 +593,20 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   const resultBook = booksMove.slice(0, config.opening);
 
                   if (resultBook.length) {
+                    keyMove = booksMove;
                     highlightMovesOnBoard(booksMove, getSide()[0]);
+                    if (config.autoMove) {
+                      if (config.autoMoveBalanced) {
+                        const moveBalanced = extractNormalMove(
+                          moves,
+                          getSide(),
+                        );
+                        requestMove(moveBalanced.from, moveBalanced.to);
+                      } else {
+                        requestMove(booksMove[0].from, booksMove[0].to);
+                      }
+                    }
+
                     if (config.onlyShowEval) {
                       chrome.runtime.sendMessage({
                         type: "STREAM",
@@ -713,7 +726,20 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   const resultBook = booksMove.slice(0, config.opening);
 
                   if (resultBook.length) {
+                    keyMove = booksMove;
+
                     highlightMovesOnBoard(booksMove, getSide()[0]);
+                    if (config.autoMove) {
+                      if (config.autoMoveBalanced) {
+                        const moveBalanced = extractNormalMove(
+                          moves,
+                          getSide(),
+                        );
+                        requestMove(moveBalanced.from, moveBalanced.to);
+                      } else {
+                        requestMove(booksMove[0].from, booksMove[0].to);
+                      }
+                    }
                     if (config.onlyShowEval) {
                       chrome.runtime.sendMessage({
                         type: "STREAM",
@@ -927,7 +953,19 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                       const resultBook = booksMove.slice(0, config.opening);
 
                       if (resultBook.length) {
+                        keyMove = booksMove;
                         highlightMovesOnBoard(booksMove, getSide()[0]);
+                        if (config.autoMove) {
+                          if (config.autoMoveBalanced) {
+                            const moveBalanced = extractNormalMove(
+                              moves,
+                              getSide(),
+                            );
+                            requestMove(moveBalanced.from, moveBalanced.to);
+                          } else {
+                            requestMove(booksMove[0].from, booksMove[0].to);
+                          }
+                        }
                         if (config.onlyShowEval) {
                           chrome.runtime.sendMessage({
                             type: "STREAM",
@@ -1191,7 +1229,19 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   const resultBook = booksMove.slice(0, config.opening);
 
                   if (resultBook.length) {
+                    keyMove = booksMove;
                     highlightMovesOnBoard(booksMove, getSide()[0]);
+                    if (config.autoMove) {
+                      if (config.autoMoveBalanced) {
+                        const moveBalanced = extractNormalMove(
+                          moves,
+                          getSide(),
+                        );
+                        requestMove(moveBalanced.from, moveBalanced.to);
+                      } else {
+                        requestMove(booksMove[0].from, booksMove[0].to);
+                      }
+                    }
                     if (config.onlyShowEval) {
                       chrome.runtime.sendMessage({
                         type: "STREAM",
@@ -1667,7 +1717,19 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   const resultBook = booksMove.slice(0, config.opening);
 
                   if (resultBook.length) {
+                    keyMove = booksMove;
                     highlightMovesOnBoard(booksMove, getSide()[0]);
+                    if (config.autoMove) {
+                      if (config.autoMoveBalanced) {
+                        const moveBalanced = extractNormalMove(
+                          moves,
+                          getSide(),
+                        );
+                        requestMove(moveBalanced.from, moveBalanced.to);
+                      } else {
+                        requestMove(booksMove[0].from, booksMove[0].to);
+                      }
+                    }
                     if (config.onlyShowEval) {
                       chrome.runtime.sendMessage({
                         type: "STREAM",
@@ -1800,8 +1862,19 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   const resultBook = booksMove.slice(0, config.opening);
 
                   if (resultBook.length) {
+                    keyMove = booksMove;
                     highlightMovesOnBoard(booksMove, getSide()[0]);
-
+                    if (config.autoMove) {
+                      if (config.autoMoveBalanced) {
+                        const moveBalanced = extractNormalMove(
+                          moves,
+                          getSide(),
+                        );
+                        requestMove(moveBalanced.from, moveBalanced.to);
+                      } else {
+                        requestMove(booksMove[0].from, booksMove[0].to);
+                      }
+                    }
                     if (config.onlyShowEval) {
                       chrome.runtime.sendMessage({
                         type: "STREAM",
