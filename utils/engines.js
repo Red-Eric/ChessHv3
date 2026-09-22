@@ -937,7 +937,7 @@ async function getBookMoves(fen, side) {
 
       moves.push({ from, to, eval: evalLabel, fen, side });
 
-      if (moves.length >= 10) break;
+      if (moves.length >= config.opening) break;
     }
   }
   return moves;
