@@ -151,6 +151,129 @@ function updateEngineAvatar(engineId) {
 
 var chessConfig = { ...defaultChessConfig };
 
+/* ================= AUTO MOVE FILTER (percentage) ================= */
+// Garantit un tableau de 5 nombres entre 0 et 100
+// (anciennes configs sauvegardées sans "percentage" -> valeurs par défaut)
+function sanitizePercentage(arr) {
+  const def = defaultChessConfig.percentage;
+  const clean = def.map((d, i) => {
+    const v = Array.isArray(arr) ? Number(arr[i]) : NaN;
+    return Number.isFinite(v) ? Math.min(100, Math.max(0, Math.round(v))) : d;
+  });
+  return capPercentage(clean, clean.length);
+}
+
+// Le total des N premières valeurs ne doit jamais dépasser 100 :
+// on remplit dans l'ordre (flèche 1 d'abord) jusqu'à épuisement du budget
+function capPercentage(arr, n) {
+  let remaining = 100;
+  for (let i = 0; i < n; i++) {
+    arr[i] = Math.min(arr[i], remaining);
+    remaining -= arr[i];
+  }
+  return arr;
+}
+
+// Reconstruit les lignes seulement si le nombre de lignes change
+// (sinon le slider en cours de drag serait détruit à chaque input)
+function renderPercentageUI() {
+  const wrap = el("pctFilter");
+  const list = el("pctList");
+  if (!wrap || !list) return;
+
+  const n = chessConfig.lines;
+
+  // Une seule flèche = rien à pondérer
+  wrap.style.display = n < 2 ? "none" : "";
+  if (n < 2) return;
+
+  if (list.children.length !== n) {
+    list.innerHTML = "";
+    for (let i = 0; i < n; i++) {
+      const row = document.createElement("div");
+      row.className = "pct-row";
+      row.innerHTML = `
+        <span class="pct-dot"></span>
+        <span class="pct-name">Move ${i + 1}</span>
+        <input type="range" class="pct-range" min="0" max="100" step="1" value="0" />
+        <span class="value-badge pct-value">0%</span>
+      `;
+      row.querySelector("input").oninput = (e) => {
+        // somme des autres flèches affichées
+        const others = chessConfig.percentage
+          .slice(0, chessConfig.lines)
+          .reduce((acc, v, idx) => (idx === i ? acc : acc + v), 0);
+        const maxAllowed = Math.max(0, 100 - others);
+
+        // le slider s'arrête quand le total atteint 100%
+        const value = Math.min(+e.target.value, maxAllowed);
+        e.target.value = value;
+        chessConfig.percentage[i] = value;
+        updateChessUI();
+        saveChessConfig();
+      };
+      list.appendChild(row);
+    }
+  }
+
+  // si on augmente "Arrows", des valeurs cachées peuvent faire dépasser 100
+  const before = chessConfig.percentage.slice(0, n).join();
+  capPercentage(chessConfig.percentage, n);
+  if (chessConfig.percentage.slice(0, n).join() !== before) saveChessConfig();
+
+  let total = 0;
+  list.querySelectorAll(".pct-row").forEach((row, i) => {
+    const v = chessConfig.percentage[i] ?? 0;
+    total += v;
+
+    // la couleur suit la flèche : colors[0] = meilleur coup, etc.
+    row.style.setProperty("--c", chessConfig.colors[i]);
+
+    const range = row.querySelector("input");
+    if (+range.value !== v) range.value = v;
+    row.querySelector(".pct-value").textContent = v + "%";
+  });
+
+  const totalEl = el("pctTotal");
+  totalEl.textContent = total + "%";
+  totalEl.classList.toggle("ok", total === 100);
+  totalEl.classList.toggle("bad", total !== 100);
+}
+
+// Répartition égale sur les N flèches affichées
+el("pctEqual").onclick = () => {
+  const n = chessConfig.lines;
+  const base = Math.floor(100 / n);
+  for (let i = 0; i < n; i++) chessConfig.percentage[i] = base;
+  chessConfig.percentage[0] += 100 - base * n;
+  updateChessUI();
+  saveChessConfig();
+};
+
+// Ramène la somme des N flèches affichées à 100 en gardant les proportions
+el("pctNormalize").onclick = () => {
+  const n = chessConfig.lines;
+  const sum = chessConfig.percentage.slice(0, n).reduce((a, b) => a + b, 0);
+
+  if (sum === 0) {
+    el("pctEqual").onclick();
+    return;
+  }
+
+  let acc = 0;
+  for (let i = 0; i < n; i++) {
+    chessConfig.percentage[i] = Math.round(
+      (chessConfig.percentage[i] / sum) * 100,
+    );
+    acc += chessConfig.percentage[i];
+  }
+  // corrige l'arrondi sur la première flèche
+  chessConfig.percentage[0] = Math.max(0, chessConfig.percentage[0] + 100 - acc);
+
+  updateChessUI();
+  saveChessConfig();
+};
+
 function applyEngineSettings(engine) {
   updateEngineAvatar(engine);
 
@@ -240,6 +363,8 @@ function loadChessConfig(callback) {
     chessConfig = savedConfig
       ? { ...defaultChessConfig, ...savedConfig }
       : { ...defaultChessConfig };
+
+    chessConfig.percentage = sanitizePercentage(chessConfig.percentage);
 
     el("coach-container").style.display =
       chessConfig.coach === 999 ? "none" : "";
@@ -393,6 +518,9 @@ function updateChessUI() {
   updateDelayTrack();
 
   updateHintsUI();
+
+  // Auto Move Filter
+  renderPercentageUI();
 }
 
 loadChessConfig(updateChessUI);
@@ -538,6 +666,7 @@ el("loadBtn").onclick = () => {
   try {
     const parsed = JSON.parse(raw);
     chessConfig = { ...defaultChessConfig, ...parsed };
+    chessConfig.percentage = sanitizePercentage(chessConfig.percentage);
     saveChessConfig();
     updateChessUI();
     feedback.textContent = "✓ Config loaded successfully!";

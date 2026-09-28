@@ -1024,6 +1024,56 @@
           <!-- AUTOMATION -->
           <div class="section-divider"><span>Automation</span></div>
 
+          <div class="setting">
+            <span id="autoMoveLabel">Auto Move (OFF)</span>
+            <label class="toggle"
+              ><input type="checkbox" id="autoMove" /><span
+                class="slider"
+              ></span
+            ></label>
+          </div>
+          <div class="setting-help">
+            Automatically plays the best move for you.<span
+              style="color: #e74c3c; font-weight: 700"
+            >
+              It’s easy to detect because the move is triggered by the extension
+              rather than an actual mouse click or touchscreen input.</span
+            >
+          </div>
+
+          <!-- AUTO MOVE FILTER -->
+          <div id="pctFilter">
+            <div class="setting pct-box">
+              <div class="pct-header">
+                <h2>Auto Move Filter</h2>
+                <span>
+                  Total :
+                  <span class="value-badge pct-total ok" id="pctTotal"
+                    >100%</span
+                  >
+                </span>
+              </div>
+
+              <div class="pct-list" id="pctList"></div>
+
+              <div class="pct-actions">
+                <button class="btn btn-small" id="pctEqual" type="button">
+                  Equal split
+                </button>
+                <button class="btn btn-small" id="pctNormalize" type="button">
+                  Normalize to 100%
+                </button>
+              </div>
+            </div>
+            <div class="setting-help">
+              Probability of playing each arrow when Auto Move is ON. One row
+              per arrow (see "Arrows" above), with the same color as the arrow.
+              <span style="color: #e74c3c; font-weight: 700">
+                The total should be 100%.
+              </span>
+            </div>
+          </div>
+
           <div class="setting dual">
             <label>
               Auto Move Delay :
@@ -1194,23 +1244,6 @@
           <div class="setting-help">
             Display a floating button to instantly play the best move or a
             balanced move.<span style="color: #e74c3c; font-weight: 700">
-              It’s easy to detect because the move is triggered by the extension
-              rather than an actual mouse click or touchscreen input.</span
-            >
-          </div>
-
-          <div class="setting">
-            <span id="autoMoveLabel">Auto Move (OFF)</span>
-            <label class="toggle"
-              ><input type="checkbox" id="autoMove" /><span
-                class="slider"
-              ></span
-            ></label>
-          </div>
-          <div class="setting-help">
-            Automatically plays the best move for you.<span
-              style="color: #e74c3c; font-weight: 700"
-            >
               It’s easy to detect because the move is triggered by the extension
               rather than an actual mouse click or touchscreen input.</span
             >

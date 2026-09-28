@@ -6,6 +6,7 @@ const defaultChessConfig = {
   hideArrow: false,
   lines: 5,
   colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
+  percentage: [50, 25, 15, 7, 3],
   depth: 10,
   depth2: 10,
   depth3: 10,

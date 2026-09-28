@@ -678,3 +678,120 @@ input:focus, select:focus { outline: none; border-color: var(--olive-vivid); box
     font-size: 10px;
   }
 }
+
+
+/* ================= AUTO MOVE FILTER ================= */
+.setting.pct-box {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.pct-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.pct-header > span {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+
+.pct-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pct-row {
+  --c: var(--olive-vivid);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pct-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--c);
+  border: 2px solid var(--bg-card);
+  box-shadow: 0 0 0 1px var(--border-strong), 0 0 8px rgba(0, 0, 0, 0.12);
+}
+
+.pct-name {
+  width: 64px;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+/* override de ".setting input[type=range] { width: 58% }" */
+.setting .pct-row input.pct-range {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+}
+.setting .pct-row input.pct-range::-webkit-slider-thumb {
+  background: var(--c);
+  box-shadow: 0 0 0 1px var(--border-strong), 0 0 8px rgba(0, 0, 0, 0.2);
+}
+.setting .pct-row input.pct-range::-moz-range-thumb {
+  background: var(--c);
+  border: 2px solid var(--bg-deep);
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+}
+
+.pct-value {
+  min-width: 52px;
+}
+
+.pct-total.ok {
+  color: var(--olive-vivid);
+  background: rgba(74, 124, 31, 0.1);
+  border-color: var(--olive-border);
+}
+.pct-total.bad {
+  color: #c0392b;
+  background: rgba(192, 57, 43, 0.08);
+  border-color: rgba(192, 57, 43, 0.3);
+}
+
+.pct-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.btn.btn-small {
+  padding: 7px 14px;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+@media (max-width: 600px) {
+  .pct-row {
+    gap: 8px;
+  }
+  .pct-name {
+    width: 52px;
+    font-size: 10px;
+  }
+  .setting .pct-row input.pct-range {
+    width: auto;
+    order: 0;
+  }
+  .pct-actions .btn.btn-small {
+    flex: 1;
+    width: auto;
+  }
+}
