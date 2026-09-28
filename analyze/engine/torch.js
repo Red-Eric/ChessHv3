@@ -374,7 +374,6 @@ var KOMODO_TEP = (function () {
     function isFileURI(filename) {
       return filename.startsWith("file://");
     }
-    // var wasmBinaryFile = `./torch.wasm`;
     var wasmBinaryFile = `./torch.wasm`;
     function getBinary(file) {
       try {
@@ -3417,6 +3416,11 @@ var KOMODO_TEP = (function () {
       }
       return name;
     }
+    // function createNamedFunction(name, body) {
+    //         name = makeLegalFunctionName(name);
+    //         return new Function("body","return function " + name + "() {\n" + '    "use strict";' + "    return body.apply(this, arguments);\n" + "};\n")(body)
+    // }
+
     function createNamedFunction(name, body) {
       name = makeLegalFunctionName(name);
       return {
@@ -3425,6 +3429,7 @@ var KOMODO_TEP = (function () {
         },
       }[name];
     }
+
     function extendError(baseErrorType, errorName) {
       var errorClass = createNamedFunction(errorName, function (message) {
         this.name = errorName;
