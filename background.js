@@ -549,7 +549,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === "eval") {
     currentEval = msg.eval;
 
-
     fetch("http://127.0.0.1:5000/api/eval", {
       method: "POST",
       headers: {
@@ -574,8 +573,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 
   if (msg.type === "STREAM") {
-
-
     fetch("http://127.0.0.1:5000/api/arrowEngine", {
       method: "POST",
       headers: {
@@ -632,6 +629,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       .then((response) => response.json())
       .then((data) => console.log("Succès:", data))
       .catch((error) => console.log("Erreur:", error));
+  }
+
+  if (msg.type === "open_review") {
+    chrome.tabs.create({ url: chrome.runtime.getURL("analyze/index.html") });
   }
 
   if (msg.type === "HINT") {

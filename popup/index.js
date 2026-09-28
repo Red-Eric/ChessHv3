@@ -268,7 +268,10 @@ el("pctNormalize").onclick = () => {
     acc += chessConfig.percentage[i];
   }
   // corrige l'arrondi sur la première flèche
-  chessConfig.percentage[0] = Math.max(0, chessConfig.percentage[0] + 100 - acc);
+  chessConfig.percentage[0] = Math.max(
+    0,
+    chessConfig.percentage[0] + 100 - acc,
+  );
 
   updateChessUI();
   saveChessConfig();
@@ -428,7 +431,7 @@ function updateChessUI() {
     "st6_passedPawnsMid",
     "st6_passedPawnsEnd",
     "st6_kingSafety",
-    "opening"
+    "opening",
   ].forEach((k) => (el(k).value = chessConfig[k]));
   el("style").value = chessConfig.style;
   el("preview").value = chessConfig.preview;
@@ -539,7 +542,7 @@ loadChessConfig(updateChessUI);
   "st6_passedPawnsMid",
   "st6_passedPawnsEnd",
   "st6_kingSafety",
-  "opening"
+  "opening",
 ].forEach((k) => {
   el(k).oninput = (e) => {
     chessConfig[k] = +e.target.value;
@@ -681,6 +684,12 @@ el("loadBtn").onclick = () => {
 el("reset").onclick = async () => {
   await chrome?.storage?.local?.clear();
   location.reload();
+};
+
+el("review").onclick = async () => {
+  chrome.runtime.sendMessage({
+    type: "open_review"
+  });
 };
 
 /* ================= EXPORT ================= */

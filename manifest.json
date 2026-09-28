@@ -98,7 +98,9 @@
         "lib/ort/ort-wasm-threaded.worker.js",
         "lib/ort/ort-wasm.wasm",
         "lib/ort/ort.min.js",
-        "lib/ort/ort.wasm.min.js"
+        "lib/ort/ort.wasm.min.js",
+
+        "analyze/index.html"
         
       ],
       "matches": [
