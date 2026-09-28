@@ -687,8 +687,9 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             }
 
             if (!oldConfig || oldConfig.engine !== newConfig.engine) {
-              // onCoachChanged(newConfig.coach);
-
+              location.reload(true);
+            }
+            if (!oldConfig || oldConfig.showEval !== newConfig.showEval) {
               location.reload(true);
             }
 
@@ -1192,6 +1193,9 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
             if (!oldConfig || oldConfig.engine !== newConfig.engine) {
               // onCoachChanged(newConfig.coach);
+              location.reload(true);
+            }
+            if (!oldConfig || oldConfig.showEval !== newConfig.showEval) {
               location.reload(true);
             }
 
@@ -1825,6 +1829,9 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
             if (!oldConfig || oldConfig.engine !== newConfig.engine) {
               // onCoachChanged(newConfig.coach);
+              location.reload(true);
+            }
+            if (!oldConfig || oldConfig.showEval !== newConfig.showEval) {
               location.reload(true);
             }
 
