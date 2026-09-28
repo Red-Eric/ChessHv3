@@ -637,7 +637,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                             );
                             requestMove(moveBalanced.from, moveBalanced.to);
                           } else {
-                            requestMove(moves[0].from, moves[0].to);
+                            const move_temp = weightedRandom(
+                              moves,
+                              config.percentage.slice(0, config.lines),
+                            );
+                            requestMove(move_temp.from, move_temp.to);
                           }
                         }
 
@@ -665,7 +669,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                       const moveBalanced = extractNormalMove(moves, getSide());
                       requestMove(moveBalanced.from, moveBalanced.to);
                     } else {
-                      requestMove(moves[0].from, moves[0].to);
+                      const move_temp = weightedRandom(
+                        moves,
+                        config.percentage.slice(0, config.lines),
+                      );
+                      requestMove(move_temp.from, move_temp.to);
                     }
                   }
 
@@ -763,7 +771,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                             );
                             requestMove(moveBalanced.from, moveBalanced.to);
                           } else {
-                            requestMove(moves[0].from, moves[0].to);
+                            const move_temp = weightedRandom(
+                              moves,
+                              config.percentage.slice(0, config.lines),
+                            );
+                            requestMove(move_temp.from, move_temp.to);
                           }
                         }
 
@@ -783,7 +795,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                       const moveBalanced = extractNormalMove(moves, getSide());
                       requestMove(moveBalanced.from, moveBalanced.to);
                     } else {
-                      requestMove(moves[0].from, moves[0].to);
+                      const move_temp = weightedRandom(
+                        moves,
+                        config.percentage.slice(0, config.lines),
+                      );
+                      requestMove(move_temp.from, move_temp.to);
                     }
                   }
 
@@ -1007,9 +1023,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                                     ),
                                   );
                                 } else {
+                                  const move_temp = weightedRandom(
+                                    moves,
+                                    config.percentage.slice(0, config.lines),
+                                  );
+
                                   await movePiece(
-                                    moves[0].from,
-                                    moves[0].to,
+                                    move_temp.from,
+                                    move_temp.to,
                                     randomIntBetween(
                                       config.delay0,
                                       config.delay,
@@ -1050,9 +1071,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                               randomIntBetween(config.delay0, config.delay),
                             );
                           } else {
+                            const move_temp = weightedRandom(
+                              moves,
+                              config.percentage.slice(0, config.lines),
+                            );
+
                             await movePiece(
-                              moves[0].from,
-                              moves[0].to,
+                              move_temp.from,
+                              move_temp.to,
                               randomIntBetween(config.delay0, config.delay),
                             );
                           }
@@ -1275,9 +1301,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                                 randomIntBetween(config.delay0, config.delay),
                               );
                             } else {
+                              const move_temp = weightedRandom(
+                                moves,
+                                config.percentage.slice(0, config.lines),
+                              );
+
                               await movePiece(
-                                moves[0].from,
-                                moves[0].to,
+                                move_temp.from,
+                                move_temp.to,
                                 randomIntBetween(config.delay0, config.delay),
                               );
                             }
@@ -1301,9 +1332,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                         randomIntBetween(config.delay0, config.delay),
                       );
                     } else {
+                      const move_temp = weightedRandom(
+                        moves,
+                        config.percentage.slice(0, config.lines),
+                      );
+
                       await movePiece(
-                        moves[0].from,
-                        moves[0].to,
+                        move_temp.from,
+                        move_temp.to,
                         randomIntBetween(config.delay0, config.delay),
                       );
                     }
@@ -1770,9 +1806,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                               randomIntBetween(config.delay0, config.delay),
                             );
                           } else {
+                            const move_temp = weightedRandom(
+                              moves,
+                              config.percentage.slice(0, config.lines),
+                            );
+
                             movePiece(
-                              moves[0].from,
-                              moves[0].to,
+                              move_temp.from,
+                              move_temp.to,
                               randomIntBetween(config.delay0, config.delay),
                             );
                           }
@@ -1806,9 +1847,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                         randomIntBetween(config.delay0, config.delay),
                       );
                     } else {
+                      const move_temp = weightedRandom(
+                        moves,
+                        config.percentage.slice(0, config.lines),
+                      );
+
                       movePiece(
-                        moves[0].from,
-                        moves[0].to,
+                        move_temp.from,
+                        move_temp.to,
                         randomIntBetween(config.delay0, config.delay),
                       );
                     }
@@ -1910,9 +1956,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                               randomIntBetween(config.delay0, config.delay),
                             );
                           } else {
+                            const move_temp = weightedRandom(
+                              moves,
+                              config.percentage.slice(0, config.lines),
+                            );
+
                             movePiece(
-                              moves[0].from,
-                              moves[0].to,
+                              move_temp.from,
+                              move_temp.to,
                               randomIntBetween(config.delay0, config.delay),
                             );
                           }
@@ -1938,9 +1989,14 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                         randomIntBetween(config.delay0, config.delay),
                       );
                     } else {
+                      const move_temp = weightedRandom(
+                        moves,
+                        config.percentage.slice(0, config.lines),
+                      );
+
                       movePiece(
-                        moves[0].from,
-                        moves[0].to,
+                        move_temp.from,
+                        move_temp.to,
                         randomIntBetween(config.delay0, config.delay),
                       );
                     }

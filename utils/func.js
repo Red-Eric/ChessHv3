@@ -324,3 +324,18 @@ async function findInScripts(search) {
 
   console.log("NOT FOUND");
 }
+
+function weightedRandom(items, percentages) {
+  const weights = percentages.slice(0, items.length);
+  const total = weights.reduce((a, b) => a + b, 0);
+  if (total <= 0) return items[0];
+
+  let random = Math.random() * total;
+  for (let i = 0; i < items.length; i++) {
+    random -= weights[i];
+    if (random < 0) return items[i];
+  }
+  return items[items.length - 1];
+}
+
+// const move = weightedRandom(items, chessConfig.percentage.slice(0, chessConfig.lines));
