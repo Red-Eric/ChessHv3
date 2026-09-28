@@ -27,6 +27,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
     hideArrow: false,
     lines: 5,
     colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
+    percentage: [100, 0, 0, 0, 0],
     depth: 10,
     depth2: 10,
     depth3: 10,
