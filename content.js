@@ -617,7 +617,10 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     }
                   } else {
                     skip = true;
-                    if ((config.engine !== "None" && skip) || config.opening === 0) {
+                    if (
+                      (config.engine !== "None" && skip) ||
+                      config.opening === 0
+                    ) {
                       engine.getMovesByFen(fen_, getSide()).then((moves) => {
                         if (config.onlyShowEval) {
                           chrome.runtime.sendMessage({
@@ -759,7 +762,10 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     }
                   } else {
                     skip = true;
-                    if ((config.engine !== "None" && skip) || config.opening === 0) {
+                    if (
+                      (config.engine !== "None" && skip) ||
+                      config.opening === 0
+                    ) {
                       engine.getMovesByFen(fen_, getSide()).then((moves) => {
                         keyMove = moves;
 
@@ -979,9 +985,21 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                               moves,
                               getSide(),
                             );
-                            requestMove(moveBalanced.from, moveBalanced.to);
+                            (async () => {
+                              await movePiece(
+                                moveBalanced.from,
+                                moveBalanced.to,
+                                randomIntBetween(config.delay0, config.delay),
+                              );
+                            })();
                           } else {
-                            requestMove(booksMove[0].from, booksMove[0].to);
+                            (async () => {
+                              await movePiece(
+                                booksMove[0].from,
+                                booksMove[0].to,
+                                randomIntBetween(config.delay0, config.delay),
+                              );
+                            })();
                           }
                         }
                         if (config.onlyShowEval) {
@@ -993,7 +1011,10 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                         }
                       } else {
                         skip = true;
-                        if ((config.engine !== "None" && skip) || config.opening === 0) {
+                        if (
+                          (config.engine !== "None" && skip) ||
+                          config.opening === 0
+                        ) {
                           engine
                             .getMovesByFen(fen_, getSide())
                             .then(async (moves) => {
@@ -1044,7 +1065,10 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     });
                   }
 
-                  if ((config.engine !== "None" && skip) || config.opening === 0) {
+                  if (
+                    (config.engine !== "None" && skip) ||
+                    config.opening === 0
+                  ) {
                     engine
                       .getMovesByFen(fen_, getSide())
                       .then(async (moves) => {
@@ -1268,9 +1292,21 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                           moves,
                           getSide(),
                         );
-                        requestMove(moveBalanced.from, moveBalanced.to);
+                        (async () => {
+                          await movePiece(
+                            moveBalanced.from,
+                            moveBalanced.to,
+                            randomIntBetween(config.delay0, config.delay),
+                          );
+                        })();
                       } else {
-                        requestMove(booksMove[0].from, booksMove[0].to);
+                        (async () => {
+                          await movePiece(
+                            booksMove[0].from,
+                            booksMove[0].to,
+                            randomIntBetween(config.delay0, config.delay),
+                          );
+                        })();
                       }
                     }
                     if (config.onlyShowEval) {
@@ -1282,7 +1318,10 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     }
                   } else {
                     skip = true;
-                    if ((config.engine !== "None" && skip) || config.opening === 0) {
+                    if (
+                      (config.engine !== "None" && skip) ||
+                      config.opening === 0
+                    ) {
                       engine
                         .getMovesByFen(fen_, getSide())
                         .then(async (moves) => {
@@ -1549,7 +1588,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
           const toSquare = to;
           const moveDelay = delay;
 
-          const board = document.querySelector("cg-board");
+          const board = document.querySelector("div.cg-board");
           const rect = board.getBoundingClientRect();
 
           const boardInfo = {
@@ -1766,9 +1805,17 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                           moves,
                           getSide(),
                         );
-                        requestMove(moveBalanced.from, moveBalanced.to);
+                        movePiece(
+                          moveBalanced.from,
+                          moveBalanced.to,
+                          randomIntBetween(config.delay0, config.delay),
+                        );
                       } else {
-                        requestMove(booksMove[0].from, booksMove[0].to);
+                        movePiece(
+                          booksMove[0].from,
+                          booksMove[0].to,
+                          randomIntBetween(config.delay0, config.delay),
+                        );
                       }
                     }
                     if (config.onlyShowEval) {
@@ -1780,7 +1827,10 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     }
                   } else {
                     skip = true;
-                    if ((config.engine !== "None" && skip) || config.opening === 0) {
+                    if (
+                      (config.engine !== "None" && skip) ||
+                      config.opening === 0
+                    ) {
                       engine.getMovesByFen(fen_, getSide()).then((moves) => {
                         keyMove = moves;
 
@@ -1924,9 +1974,17 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                           moves,
                           getSide(),
                         );
-                        requestMove(moveBalanced.from, moveBalanced.to);
+                        movePiece(
+                          moveBalanced.from,
+                          moveBalanced.to,
+                          randomIntBetween(config.delay0, config.delay),
+                        );
                       } else {
-                        requestMove(booksMove[0].from, booksMove[0].to);
+                        movePiece(
+                          booksMove[0].from,
+                          booksMove[0].to,
+                          randomIntBetween(config.delay0, config.delay),
+                        );
                       }
                     }
                     if (config.onlyShowEval) {
@@ -1938,7 +1996,10 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     }
                   } else {
                     skip = true;
-                    if ((config.engine !== "None" && skip) || config.opening === 0) {
+                    if (
+                      (config.engine !== "None" && skip) ||
+                      config.opening === 0
+                    ) {
                       engine.getMovesByFen(fen_, getSide()).then((moves) => {
                         keyMove = moves;
 
