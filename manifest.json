@@ -100,6 +100,8 @@
         "lib/ort/ort.min.js",
         "lib/ort/ort.wasm.min.js",
 
+        "analyze/engine/torch.js",
+        "analyze/engine/torch.wasm",
         "analyze/index.html"
         
       ],
