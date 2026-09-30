@@ -1204,9 +1204,12 @@ class Komodo_Auto {
     return (minutes * 60 + seconds) * 1000;
   }
 
-  // "e2e4" -> { from: "e2", to: "e4" } ; "e7e8q" -> { from: "e7", to: "e8", promotion: "q" }
+  // "e2e4" -> { from: "e2", to: "e4" }
+  // "e7e8q" -> { from: "e7", to: "e8", promotion: "q" }
   parseMove(move) {
-    if (!move || move === "(none)" || move.length < 4) return null;
+    if (!move || move === "(none)" || move.length < 4) {
+      return null;
+    }
 
     const result = {
       from: move.slice(0, 2),
@@ -1220,41 +1223,29 @@ class Komodo_Auto {
     return result;
   }
 
-  // Force le trait (w/b) dans le FEN pour qu'il corresponde à `side`
-  normalizeFen(fen, side) {
-    const parts = fen.trim().split(/\s+/);
-    if (parts.length < 4) return fen; // FEN incomplet, on ne touche pas
+  async getBestMove(fen, timeToThink) {
+    const time = this.timeToMs(timeToThink);
 
-    if (parts[1] !== side) {
-      parts[1] = side;
-      parts[3] = "-"; // la case en passant n'est plus valide si le trait change
-    }
+    console.clear()
+    console.log(timeToThink)
+    console.log("---------------")
+    console.log(time)
 
-    return parts.join(" ");
-  }
-
-  async getBestMove(fen, side, whiteTime, blackTime) {
-    // await this.ready;
-
-    // if (!this.worker) return null;
-
-    if (side !== "w" && side !== "b") {
-      throw new Error(`Komodo: side invalide "${side}" (attendu "w" ou "b")`);
-    }
     this.worker.postMessage("setoption name UCI LimitStrength value true");
 
     this.worker.postMessage(`setoption name Personality value ${config.style}`);
-    this.worker.postMessage(`setoption name UCI Elo value ${config.elo}`);
 
-    const wtime = this.timeToMs(whiteTime);
-    const btime = this.timeToMs(blackTime);
-    const finalFen = this.normalizeFen(fen, side);
+    this.worker.postMessage(`setoption name UCI Elo value ${config.elo}`);
 
     return new Promise((resolve) => {
       const onMessage = (event) => {
         const line = event.data;
 
-        if (typeof line !== "string") return;
+        // console.log(line);
+
+        if (typeof line !== "string") {
+          return;
+        }
 
         if (line.startsWith("bestmove")) {
           const parts = line.split(" ");
@@ -1268,9 +1259,9 @@ class Komodo_Auto {
 
       this.worker.addEventListener("message", onMessage);
 
-      this.worker.postMessage(`position fen ${finalFen}`);
+      this.worker.postMessage(`position fen ${fen}`);
 
-      this.worker.postMessage(`go wtime ${wtime} btime ${btime} winc 0 binc 0`);
+      this.worker.postMessage(`go movetime ${time}`);
     });
   }
 }

@@ -575,34 +575,13 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
               if (config.engine === "auto") {
-                if (getSide()[0] === "w") {
-                  const blackTime = document.querySelectorAll(
-                    "div.clock-component",
-                  )[0]?.innerText;
-                  const whiteTime = document.querySelectorAll(
-                    "div.clock-component",
-                  )[1]?.innerText;
+                const time_ = document.querySelectorAll(
+                  "div.clock-component",
+                )[1]?.innerText;
 
-                  engine
-                    .getBestMove(fen_, getSide()[0], whiteTime, blackTime)
-                    .then((move) => {
-                      requestMove(move.from, move.to, "q", true);
-                    });
-                }
-                if (getSide()[0] === "b") {
-                  const blackTime = document.querySelectorAll(
-                    "div.clock-component",
-                  )[1]?.innerText;
-                  const whiteTime = document.querySelectorAll(
-                    "div.clock-component",
-                  )[0]?.innerText;
-
-                  engine
-                    .getBestMove(fen_, getSide()[0], whiteTime, blackTime)
-                    .then((move) => {
-                      requestMove(move.from, move.to, "q", true);
-                    });
-                }
+                engine.getBestMove(fen_, time_).then((move) => {
+                  requestMove(move.from, move.to, "q", true);
+                });
               } else {
                 if (
                   fen_.includes("/pppppppp/8/8/8/8/PPPPPPPP/") ||
@@ -757,34 +736,13 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               (getSide()[0] === "b" && fen_.split(" ")[1] === "b")
             ) {
               if (config.engine === "auto") {
-                if (getSide()[0] === "w") {
-                  const blackTime = document.querySelectorAll(
-                    "div.clock-component",
-                  )[0]?.innerText;
-                  const whiteTime = document.querySelectorAll(
-                    "div.clock-component",
-                  )[1]?.innerText;
+                const time_ = document.querySelectorAll(
+                  "div.clock-component",
+                )[1]?.innerText;
 
-                  engine
-                    .getBestMove(fen_, getSide()[0], whiteTime, blackTime)
-                    .then((move) => {
-                      requestMove(move.from, move.to, "q", true);
-                    });
-                }
-                if (getSide()[0] === "b") {
-                  const blackTime = document.querySelectorAll(
-                    "div.clock-component",
-                  )[1]?.innerText;
-                  const whiteTime = document.querySelectorAll(
-                    "div.clock-component",
-                  )[0]?.innerText;
-
-                  engine
-                    .getBestMove(fen_, getSide()[0], whiteTime, blackTime)
-                    .then((move) => {
-                      requestMove(move.from, move.to, "q", true);
-                    });
-                }
+                engine.getBestMove(fen_, time_).then((move) => {
+                  requestMove(move.from, move.to, "q", true);
+                });
               } else {
                 if (
                   fen_.includes("/pppppppp/8/8/8/8/PPPPPPPP/") ||
