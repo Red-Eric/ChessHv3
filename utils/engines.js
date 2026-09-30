@@ -782,7 +782,6 @@ const RANDOM64 = [
   0xf8d626aaaf278509n,
 ];
 
-
 const PIECE_KIND = {
   p: 0,
   P: 1,
@@ -1072,11 +1071,7 @@ class komodo {
   }
 
   async getMovesByFen(fen, side) {
-    
-
-    this.worker.postMessage(
-      `setoption name Personality value ${config.style}`,
-    );
+    this.worker.postMessage(`setoption name Personality value ${config.style}`);
     this.worker.postMessage(`setoption name UCI Elo value ${config.elo}`);
     this.worker.postMessage(`setoption name MultiPV value ${config.lines}`);
 
@@ -1186,7 +1181,6 @@ class komodo {
   }
 }
 
-
 class Komodo_Auto {
   constructor() {
     this.worker = null;
@@ -1202,26 +1196,6 @@ class Komodo_Auto {
       console.error("Komodo: échec de l'initialisation du worker", err);
       throw err;
     }
-  }
-
-  hardStop() {
-    if (this.worker) {
-      this.worker.terminate();
-      this.worker = null;
-    }
-  }
-
-  quit() {
-    if (this.worker) {
-      this.worker.postMessage("quit");
-      this.hardStop();
-    }
-  }
-
-  restartWorker() {
-    this.hardStop();
-    this.ready = this.init();
-    return this.ready;
   }
 
   // "05:30" -> 330000 ms
@@ -1246,19 +1220,35 @@ class Komodo_Auto {
     return result;
   }
 
-  async getBestMove(fen, time) {
-    // Attendre l'init en cours ; si le worker a été arrêté, le relancer
-    await this.ready;
-    if (!this.worker) {
-      await this.restartWorker();
+  // Force le trait (w/b) dans le FEN pour qu'il corresponde à `side`
+  normalizeFen(fen, side) {
+    const parts = fen.trim().split(/\s+/);
+    if (parts.length < 4) return fen; // FEN incomplet, on ne touche pas
+
+    if (parts[1] !== side) {
+      parts[1] = side;
+      parts[3] = "-"; // la case en passant n'est plus valide si le trait change
     }
 
-    this.worker.postMessage(
-      `setoption name Personality value ${config.style}`,
-    );
+    return parts.join(" ");
+  }
+
+  async getBestMove(fen, side, whiteTime, blackTime) {
+    // await this.ready;
+
+    // if (!this.worker) return null;
+
+    if (side !== "w" && side !== "b") {
+      throw new Error(`Komodo: side invalide "${side}" (attendu "w" ou "b")`);
+    }
+    this.worker.postMessage("setoption name UCI LimitStrength value true");
+
+    this.worker.postMessage(`setoption name Personality value ${config.style}`);
     this.worker.postMessage(`setoption name UCI Elo value ${config.elo}`);
 
-    const timeMs = this.timeToMs(time);
+    const wtime = this.timeToMs(whiteTime);
+    const btime = this.timeToMs(blackTime);
+    const finalFen = this.normalizeFen(fen, side);
 
     return new Promise((resolve) => {
       const onMessage = (event) => {
@@ -1278,16 +1268,12 @@ class Komodo_Auto {
 
       this.worker.addEventListener("message", onMessage);
 
-      this.worker.postMessage(`position fen ${fen}`);
+      this.worker.postMessage(`position fen ${finalFen}`);
 
-      this.worker.postMessage(
-        `go wtime ${timeMs} btime ${timeMs} winc 1000 binc 1000`
-      );
+      this.worker.postMessage(`go wtime ${wtime} btime ${btime} winc 0 binc 0`);
     });
   }
 }
-
-
 
 class CoachEngine {
   constructor() {
@@ -1438,9 +1424,6 @@ class CoachEngine {
 
           this.worker.removeEventListener("message", onMessage);
           this.activeReject = null;
-
-          
-          
 
           resolve({
             classificationName,
@@ -2110,7 +2093,6 @@ class Wukong {
   }
 }
 
-
 class Stockfish19 {
   constructor() {
     this.depth = config.depth3;
@@ -2139,9 +2121,7 @@ class Stockfish19 {
         if (msg === "uciok") {
           this.worker.removeEventListener("message", onMessage);
 
-          this.worker.postMessage(
-            "setoption name Ponder value false"
-          );
+          this.worker.postMessage("setoption name Ponder value false");
 
           this.ready = true;
 
@@ -2189,21 +2169,16 @@ class Stockfish19 {
 
         // Évaluation uniquement à la profondeur demandée
         const depthMatch = msg.match(
-          new RegExp(`info depth ${config.depth3}\\b`)
+          new RegExp(`info depth ${config.depth3}\\b`),
         );
 
         if (depthMatch) {
-          const scoreMatch = msg.match(
-            /score (cp|mate) (-?\d+)/
-          );
+          const scoreMatch = msg.match(/score (cp|mate) (-?\d+)/);
 
           if (scoreMatch) {
             const scoreType = scoreMatch[1];
 
-            let scoreValue = parseInt(
-              scoreMatch[2],
-              10
-            );
+            let scoreValue = parseInt(scoreMatch[2], 10);
 
             /*
              * Stockfish donne le score du point de vue
@@ -2224,27 +2199,19 @@ class Stockfish19 {
             if (scoreType === "cp") {
               const value = +(scoreValue / 100).toFixed(2);
 
-              evaluation =
-                value > 0
-                  ? `+${value}`
-                  : `${value}`;
+              evaluation = value > 0 ? `+${value}` : `${value}`;
             }
 
             if (scoreType === "mate") {
               evaluation =
-                scoreValue > 0
-                  ? `#${scoreValue}`
-                  : `#-${Math.abs(scoreValue)}`;
+                scoreValue > 0 ? `#${scoreValue}` : `#-${Math.abs(scoreValue)}`;
             }
           }
         }
 
         // Stockfish a terminé l'analyse
         if (msg.startsWith("bestmove")) {
-          this.worker.removeEventListener(
-            "message",
-            onMessage
-          );
+          this.worker.removeEventListener("message", onMessage);
 
           this.running = false;
           this.ready = true;
@@ -2270,16 +2237,11 @@ class Stockfish19 {
         }
       };
 
-      this.worker.addEventListener(
-        "message",
-        onMessage
-      );
+      this.worker.addEventListener("message", onMessage);
 
       this.worker.postMessage(`position fen ${fen}`);
 
-      this.worker.postMessage(
-        `go depth ${this.depth}`
-      );
+      this.worker.postMessage(`go depth ${this.depth}`);
     });
   }
 }
