@@ -1072,29 +1072,10 @@ class komodo {
   }
 
   async getMovesByFen(fen, side) {
-    // this.worker.postMessage(`setoption name Auto Skill value true`);
-
-    // if (fen.includes("/pppppppp/8/8/8/8/PPPPPPPP/")) {
-    //   skip = false;
-    // }
-    // if (pageFlag != window.location.href) {
-    //   skip = false;
-    //   pageFlag = window.localStorage.href;
-    // }
-
-    // if (config.opening > 0 && skip === false) {
-    //   const booksMove = await getBookMoves(fen, side);
-    //   const result_book = booksMove.slice(0, config.opening);
-
-    //   if (result_book.length !== 0) {
-    //     return result_book;
-    //   } else {
-    //     skip = true;
-    //   }
-    // }
+    
 
     this.worker.postMessage(
-      `setoption name Personality value ${this.personality}`,
+      `setoption name Personality value ${config.style}`,
     );
     this.worker.postMessage(`setoption name UCI Elo value ${config.elo}`);
     this.worker.postMessage(`setoption name MultiPV value ${config.lines}`);
@@ -1204,6 +1185,109 @@ class komodo {
     });
   }
 }
+
+
+class Komodo_Auto {
+  constructor() {
+    this.worker = null;
+    this.ready = this.init();
+  }
+
+  async init() {
+    try {
+      this.worker = await createWorkerKomodo();
+      this.worker.postMessage("uci");
+    } catch (err) {
+      this.worker = null;
+      console.error("Komodo: échec de l'initialisation du worker", err);
+      throw err;
+    }
+  }
+
+  hardStop() {
+    if (this.worker) {
+      this.worker.terminate();
+      this.worker = null;
+    }
+  }
+
+  quit() {
+    if (this.worker) {
+      this.worker.postMessage("quit");
+      this.hardStop();
+    }
+  }
+
+  restartWorker() {
+    this.hardStop();
+    this.ready = this.init();
+    return this.ready;
+  }
+
+  // "05:30" -> 330000 ms
+  timeToMs(time) {
+    const [minutes, seconds] = time.split(":").map(Number);
+    return (minutes * 60 + seconds) * 1000;
+  }
+
+  // "e2e4" -> { from: "e2", to: "e4" } ; "e7e8q" -> { from: "e7", to: "e8", promotion: "q" }
+  parseMove(move) {
+    if (!move || move === "(none)" || move.length < 4) return null;
+
+    const result = {
+      from: move.slice(0, 2),
+      to: move.slice(2, 4),
+    };
+
+    if (move.length === 5) {
+      result.promotion = move[4];
+    }
+
+    return result;
+  }
+
+  async getBestMove(fen, time) {
+    // Attendre l'init en cours ; si le worker a été arrêté, le relancer
+    await this.ready;
+    if (!this.worker) {
+      await this.restartWorker();
+    }
+
+    this.worker.postMessage(
+      `setoption name Personality value ${config.style}`,
+    );
+    this.worker.postMessage(`setoption name UCI Elo value ${config.elo}`);
+
+    const timeMs = this.timeToMs(time);
+
+    return new Promise((resolve) => {
+      const onMessage = (event) => {
+        const line = event.data;
+
+        if (typeof line !== "string") return;
+
+        if (line.startsWith("bestmove")) {
+          const parts = line.split(" ");
+          const move = parts[1];
+
+          this.worker.removeEventListener("message", onMessage);
+
+          resolve(this.parseMove(move));
+        }
+      };
+
+      this.worker.addEventListener("message", onMessage);
+
+      this.worker.postMessage(`position fen ${fen}`);
+
+      this.worker.postMessage(
+        `go wtime ${timeMs} btime ${timeMs} winc 0 binc 0`
+      );
+    });
+  }
+}
+
+
 
 class CoachEngine {
   constructor() {

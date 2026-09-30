@@ -2,6 +2,12 @@ document.addEventListener("DOMContentLoaded", () => {
   chrome?.runtime?.sendMessage({ type: "popupReady" });
 });
 
+/* ================= ENGINE HELPERS ================= */
+// "auto" = Komodo Auto (accepte aussi "komodo_auto")
+function isAutoEngine(engine) {
+  return engine === "auto" || engine === "komodo_auto";
+}
+
 function hideAllSetting() {
   document.getElementById("main").style.display = "none";
 }
@@ -12,6 +18,12 @@ function showAllSetting() {
 
 function hideEngineSettings() {
   showAllSetting();
+
+  // Réinitialise les blocs éventuellement cachés par le mode Komodo Auto
+  Array.from(document.getElementById("main").children).forEach((child) => {
+    child.style.display = "";
+  });
+
   document
     .querySelectorAll(".komodo, .maia3, .stockfish6, .stockfish11")
     .forEach((el) => {
@@ -24,6 +36,24 @@ function showKomodoSetting() {
   document.querySelectorAll(".komodo").forEach((el) => {
     el.style.display = "";
   });
+}
+
+// Komodo Auto : on garde seulement ELO + Style
+function showAutoSetting() {
+  hideEngineSettings();
+
+  const main = document.getElementById("main");
+
+  // Cache tous les blocs de #main (depth, display, automation, ...)
+  Array.from(main.children).forEach((child) => {
+    child.style.display = "none";
+  });
+
+  // Réaffiche uniquement le bloc ELO et le bloc Style
+  const eloBlock = document.getElementById("elo")?.closest(".komodo");
+  const styleBlock = document.getElementById("style")?.closest(".komodo");
+  if (eloBlock) eloBlock.style.display = "";
+  if (styleBlock) styleBlock.style.display = "";
 }
 
 function showMaiaSetting() {
@@ -131,16 +161,18 @@ function updateEngineAvatar(engineId) {
     return;
   }
 
-  const data = engineData[engineId];
+  // Komodo Auto : on garde l'image (et l'elo affiché) de Komodo
+  const isAuto = isAutoEngine(engineId);
+  const data = isAuto ? engineData["komodo"] : engineData[engineId];
   if (!data) return;
 
   nameEl.className = "coach-name";
-  nameEl.textContent = data.label;
+  nameEl.textContent = isAuto ? "Komodo Auto" : data.label;
   langEl.textContent = data.elo;
   badge.style.display = "flex";
 
   img.src = data.pic;
-  img.alt = data.label;
+  img.alt = isAuto ? "Komodo Auto" : data.label;
   img.style.display = "block";
   none.style.display = "none";
   img.onerror = () => {
@@ -184,8 +216,12 @@ function renderPercentageUI() {
   const n = chessConfig.lines;
 
   // Une seule flèche = rien à pondérer
-  wrap.style.display = n < 2 ? "none" : "";
-  if (n < 2) return;
+  // Komodo Auto = pas d'automatisation, donc pas de filtre
+  if (n < 2 || isAutoEngine(chessConfig.engine)) {
+    wrap.style.display = "none";
+    return;
+  }
+  wrap.style.display = "";
 
   if (list.children.length !== n) {
     list.innerHTML = "";
@@ -281,6 +317,27 @@ function applyEngineSettings(engine) {
   updateEngineAvatar(engine);
 
   hideAllSetting();
+
+  // Komodo Auto : mêmes réglages de base que Komodo, mais affichage réduit
+  if (isAutoEngine(engine)) {
+    showAutoSetting();
+
+    el("elo").min = 100;
+    el("elo").max = 3500;
+    el("elo").step = 10;
+    chessConfig.lines = Math.max(chessConfig.lines, 2);
+
+    el("lines").min = 2;
+    el("lines").max = 5;
+    el("lines").value = chessConfig.lines;
+
+    if (chessConfig.elo > 3500 || chessConfig.elo < 100) {
+      chessConfig.elo = 3500;
+    }
+
+    updateChessUI();
+    return;
+  }
 
   switch (engine) {
     case "komodo":
