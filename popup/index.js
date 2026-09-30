@@ -38,7 +38,7 @@ function showKomodoSetting() {
   });
 }
 
-// Komodo Auto : on garde seulement ELO + Style
+// Komodo Auto : on garde seulement ELO + Style + Auto Start Game
 function showAutoSetting() {
   hideEngineSettings();
 
@@ -54,6 +54,16 @@ function showAutoSetting() {
   const styleBlock = document.getElementById("style")?.closest(".komodo");
   if (eloBlock) eloBlock.style.display = "";
   if (styleBlock) styleBlock.style.display = "";
+
+  // Réaffiche Auto Start Game (le toggle + son texte d'aide juste en dessous)
+  const autoStartBlock = document.getElementById("autoStart")?.closest(".setting");
+  if (autoStartBlock) {
+    autoStartBlock.style.display = "";
+    const help = autoStartBlock.nextElementSibling;
+    if (help && help.classList.contains("setting-help")) {
+      help.style.display = "";
+    }
+  }
 }
 
 function showMaiaSetting() {
