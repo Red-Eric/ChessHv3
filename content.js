@@ -619,7 +619,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     skip = true;
                     if (
                       (config.engine !== "None" && skip) ||
-                      config.opening === 0
+                      (config.opening === 0 && config.engine !== "None")
                     ) {
                       engine.getMovesByFen(fen_, getSide()).then((moves) => {
                         if (config.onlyShowEval) {
@@ -655,7 +655,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                 });
               }
 
-              if ((config.engine !== "None" && skip) || config.opening === 0) {
+              if ((config.engine !== "None" && skip) || (config.opening === 0 && config.engine !== "None")) {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
                   if (config.onlyShowEval) {
                     chrome.runtime.sendMessage({
@@ -764,7 +764,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     skip = true;
                     if (
                       (config.engine !== "None" && skip) ||
-                      config.opening === 0
+                      (config.opening === 0 && config.engine !== "None")
                     ) {
                       engine.getMovesByFen(fen_, getSide()).then((moves) => {
                         keyMove = moves;
@@ -792,7 +792,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                 });
               }
 
-              if ((config.engine !== "None" && skip) || config.opening === 0) {
+              if ((config.engine !== "None" && skip) || (config.opening === 0 && config.engine !== "None")) {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
                   keyMove = moves;
 
@@ -1013,7 +1013,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                         skip = true;
                         if (
                           (config.engine !== "None" && skip) ||
-                          config.opening === 0
+                          (config.opening === 0 && config.engine !== "None")
                         ) {
                           engine
                             .getMovesByFen(fen_, getSide())
@@ -1067,7 +1067,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
                   if (
                     (config.engine !== "None" && skip) ||
-                    config.opening === 0
+                    (config.opening === 0 && config.engine !== "None")
                   ) {
                     engine
                       .getMovesByFen(fen_, getSide())
@@ -1320,7 +1320,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     skip = true;
                     if (
                       (config.engine !== "None" && skip) ||
-                      config.opening === 0
+                      (config.opening === 0 && config.engine !== "None")
                     ) {
                       engine
                         .getMovesByFen(fen_, getSide())
@@ -1357,7 +1357,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   }
                 });
               }
-              if ((config.engine !== "None" && skip) || config.opening === 0) {
+              if ((config.engine !== "None" && skip) || (config.opening === 0 && config.engine !== "None")) {
                 engine.getMovesByFen(fen_, getSide()).then(async (moves) => {
                   highlightMovesOnBoard(moves, getSide()[0]);
                   keyMove = moves;
@@ -1829,7 +1829,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     skip = true;
                     if (
                       (config.engine !== "None" && skip) ||
-                      config.opening === 0
+                      (config.opening === 0 && config.engine !== "None")
                     ) {
                       engine.getMovesByFen(fen_, getSide()).then((moves) => {
                         keyMove = moves;
@@ -1874,7 +1874,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                 });
               }
 
-              if ((config.engine !== "None" && skip) || config.opening === 0) {
+              if ((config.engine !== "None" && skip) || (config.opening === 0 && config.engine !== "None")) {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
                   keyMove = moves;
 
@@ -1998,7 +1998,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                     skip = true;
                     if (
                       (config.engine !== "None" && skip) ||
-                      config.opening === 0
+                      (config.opening === 0 && config.engine !== "None")
                     ) {
                       engine.getMovesByFen(fen_, getSide()).then((moves) => {
                         keyMove = moves;
@@ -2035,7 +2035,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                 });
               }
 
-              if ((config.engine !== "None" && skip) || config.opening === 0) {
+              if ((config.engine !== "None" && skip) || (config.opening === 0 && config.engine !== "None")) {
                 engine.getMovesByFen(fen_, getSide()).then((moves) => {
                   keyMove = moves;
 
