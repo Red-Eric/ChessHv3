@@ -1439,8 +1439,7 @@ class CoachEngine {
           this.worker.removeEventListener("message", onMessage);
           this.activeReject = null;
 
-          console.clear();
-          console.log(data)
+          
           
 
           resolve({
