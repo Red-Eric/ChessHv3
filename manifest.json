@@ -65,7 +65,6 @@
       "resources": [
         "a.js",
         "b.js",
-        
         "lib/chess_min.js",
         "lib/komodo.js",
         "lib/komodo.wasm",
