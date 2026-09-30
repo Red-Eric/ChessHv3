@@ -1181,9 +1181,7 @@ class komodo {
   }
 }
 
-
 class Komodo_Auto {
-
   constructor() {
     this.worker = null;
     this.ready = this.init();
@@ -1209,7 +1207,7 @@ class Komodo_Auto {
   // Détermine le temps de réflexion pour le coup actuel
   // Formule : temps restant / 40
   extractThinkingTime(time) {
-    let thinkingTime = time / 18;
+    let thinkingTime = time / 20;
 
     // Ne jamais utiliser plus que le temps restant - 500 ms
     if (thinkingTime >= time) {
@@ -1247,26 +1245,19 @@ class Komodo_Auto {
     const time = this.timeToMs(timeToThink);
     const thinkingtime = this.extractThinkingTime(time);
 
+    const startTime = Date.now();
 
-    console.clear()
-
+    console.clear();
     console.log("Time left:", time, "ms");
     console.log("Thinking time:", thinkingtime, "ms");
 
-    this.worker.postMessage(
-      "setoption name UCI LimitStrength value true"
-    );
+    this.worker.postMessage("setoption name UCI LimitStrength value true");
 
-    this.worker.postMessage(
-      `setoption name Personality value ${config.style}`
-    );
+    this.worker.postMessage(`setoption name Personality value ${config.style}`);
 
-    this.worker.postMessage(
-      `setoption name UCI Elo value ${config.elo}`
-    );
+    this.worker.postMessage(`setoption name UCI Elo value ${config.elo}`);
 
     return new Promise((resolve) => {
-
       const onMessage = (event) => {
         const line = event.data;
 
@@ -1278,27 +1269,29 @@ class Komodo_Auto {
           const parts = line.split(" ");
           const move = parts[1];
 
-          this.worker.removeEventListener(
-            "message",
-            onMessage
-          );
+          this.worker.removeEventListener("message", onMessage);
 
-          resolve(this.parseMove(move));
+          const elapsed = Date.now() - startTime;
+          const remaining = thinkingtime - elapsed;
+
+          console.log("Engine calculation:", elapsed, "ms");
+          console.log("Remaining wait:", remaining, "ms");
+
+          if (remaining > 0) {
+            setTimeout(() => {
+              resolve(this.parseMove(move));
+            }, remaining);
+          } else {
+            resolve(this.parseMove(move));
+          }
         }
       };
 
-      this.worker.addEventListener(
-        "message",
-        onMessage
-      );
+      this.worker.addEventListener("message", onMessage);
 
-      this.worker.postMessage(
-        `position fen ${fen}`
-      );
+      this.worker.postMessage(`position fen ${fen}`);
 
-      this.worker.postMessage(
-        `go movetime ${thinkingtime}`
-      );
+      this.worker.postMessage(`go movetime ${thinkingtime}`);
     });
   }
 }
