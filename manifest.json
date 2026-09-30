@@ -65,6 +65,7 @@
       "resources": [
         "a.js",
         "b.js",
+        
         "lib/chess_min.js",
         "lib/komodo.js",
         "lib/komodo.wasm",
@@ -84,7 +85,7 @@
         "book/*",
         "audio.html",
         "popup/index.html",
-        
+    
         "lib/maia3/all_moves.json",
         "lib/maia3/all_moves_reversed.json",
         "lib/maia3/maia3-5m.onnx",
