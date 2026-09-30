@@ -739,8 +739,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                   document.querySelectorAll("div.clock-component")[1]
                     ?.innerText;
                 engine.getBestMove(fen_, time_).then((move) => {
-                  console.clear()
-                  console.log(move)
+                  
                   requestMove(move.from, move.to, "q", true);
                 });
               } else {

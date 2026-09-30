@@ -1281,7 +1281,7 @@ class Komodo_Auto {
       this.worker.postMessage(`position fen ${fen}`);
 
       this.worker.postMessage(
-        `go wtime ${timeMs} btime ${timeMs} winc 0 binc 0`
+        `go wtime ${timeMs} btime ${timeMs} winc 1000 binc 1000`
       );
     });
   }
