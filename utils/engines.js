@@ -1204,17 +1204,14 @@ class Komodo_Auto {
     return (minutes * 60 + seconds) * 1000;
   }
 
-  // Détermine le temps de réflexion pour le coup actuel
-  // Formule : temps restant / 40
+
   extractThinkingTime(time) {
     let thinkingTime = time / 20;
 
-    // Ne jamais utiliser plus que le temps restant - 500 ms
     if (thinkingTime >= time) {
       thinkingTime = time - 500;
     }
 
-    // Minimum de 100 ms
     if (thinkingTime < 0) {
       thinkingTime = 100;
     }
@@ -1222,8 +1219,6 @@ class Komodo_Auto {
     return Math.floor(thinkingTime);
   }
 
-  // "e2e4" -> { from: "e2", to: "e4" }
-  // "e7e8q" -> { from: "e7", to: "e8", promotion: "q" }
   parseMove(move) {
     if (!move || move === "(none)" || move.length < 4) {
       return null;
@@ -1301,7 +1296,6 @@ class CoachEngine {
     this.worker = null;
     this.ready = this.init();
 
-    // Garde en mémoire la promesse du calcul en cours et un ID unique
     this.currentRequestId = 0;
     this.activeReject = null;
   }

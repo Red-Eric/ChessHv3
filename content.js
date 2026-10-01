@@ -10,6 +10,7 @@ const chessComAudio = new Audio();
 let lastUrl = window.location.pathname;
 let debugEngine = false;
 let url = window.location.href;
+let startY = 0;
 
 const chess2 = new Chess();
 // Inject a.js
@@ -36,6 +37,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
     style: "Default",
     autoMove: false,
     floatingBtn: false,
+    special: false,
     opening: 0,
     speach: false,
     moveClassification: false,
@@ -206,6 +208,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
           window.postMessage({ type: "GET_FEN" }, "*");
         }
         function requestMove(from, to, promotion = "q", key = false) {
+
           key
             ? (moveDelay = 0)
             : (moveDelay = randomIntBetween(config.delay0, config.delay));
@@ -219,6 +222,9 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             },
             "*",
           );
+
+          keyMove = []
+
         }
 
         function squareToIndex(square) {
@@ -241,6 +247,22 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             requestMove(balancedMove.from, balancedMove.to, "q", true);
           }
         };
+
+        document.addEventListener("touchstart", (e) => {
+          startY = e.touches[0].clientY;
+        });
+
+        document.addEventListener("touchend", (e) => {
+          const endY = e.changedTouches[0].clientY;
+          const distance = startY - endY;
+          if (distance > 50 && config.special) {
+            requestMove(keyMove[0].from, keyMove[0].to, "q", true);
+          }
+          else if (distance < -50 && config.special) {
+            const balancedMove = extractNormalMove(keyMove, getSide());
+            requestMove(balancedMove.from, balancedMove.to, "q", true);
+          }
+        });
 
         async function checkAndSendMoves() {
           BOARD_WIDTH = getBoardWidth();

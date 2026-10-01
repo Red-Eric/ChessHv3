@@ -521,6 +521,7 @@ function updateChessUI() {
     "accuracy",
     "speach",
     "floatingBtn",
+    "special"
   ].forEach((k) => (el(k).checked = chessConfig[k]));
 
   el("eloValue").textContent = chessConfig.elo;
@@ -547,6 +548,8 @@ function updateChessUI() {
     `Auto Move (${chessConfig.autoMove ? "ON" : "OFF"})`;
   el("floatingBtnLabel").textContent =
     `Android FLoating BTN (${chessConfig.floatingBtn ? "ON" : "OFF"})`;
+  el("specialLabel").textContent =
+    `Special Swipe (${chessConfig.special ? "ON" : "OFF"})`;
   el("autoStartLabel").textContent =
     `Auto Start Game (${chessConfig.autoStart ? "ON" : "OFF"})`;
   el("moveClassificationStartLabel").textContent =
@@ -666,6 +669,7 @@ el("delayMax").oninput = handleDelayInput;
   "accuracy",
   "speach",
   "floatingBtn",
+  "special"
 ].forEach((k) => {
   el(k).onchange = (e) => {
     chessConfig[k] = e.target.checked;

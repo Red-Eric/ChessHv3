@@ -15,6 +15,7 @@ const defaultChessConfig = {
   style: "Default",
   autoMove: false,
   floatingBtn: false,
+  special: false,
   opening : 0,
   speach: false,
   moveClassification: false,
