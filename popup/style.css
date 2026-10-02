@@ -823,22 +823,35 @@ input:focus, select:focus { outline: none; border-color: var(--olive-vivid); box
   width: 100%;
 }
 
+/* ligne : [ input (extensible) ] [ Generate (taille fixe) ] */
 .acc-input-wrap {
-  position: relative;
   display: flex;
   align-items: center;
+  gap: 10px;
   width: 100%;
+}
+
+/* conteneur de l'input : prend tout l'espace restant */
+.acc-input-box {
+  position: relative;          /* référence pour le bouton Show/Hide */
+  flex: 1 1 auto;
+  min-width: 0;                /* évite le débordement de l'input */
+  display: flex;
+  align-items: center;
 }
 
 .acc-input {
   width: 100%;
-  padding: 10px 14px;
+  min-width: 0;
+  height: 40px;
+  padding: 0 14px;
   background: var(--bg-deep);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   color: var(--grey-fish);
   font-family: var(--font-mono);
   font-size: 13px;
+  text-overflow: ellipsis;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 .acc-input::placeholder { color: var(--text-dim); }
@@ -846,12 +859,27 @@ input:focus, select:focus { outline: none; border-color: var(--olive-vivid); box
 .acc-input.bad { border-color: #c0392b; }
 .acc-input.bad:focus { box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.15); }
 
-#accPassword { padding-right: 64px; }
+/* place pour le bouton Show/Hide à l'intérieur du champ */
+#accPassword { padding-right: 68px; }
 
+/* bouton Generate : même taille sur les 3 lignes, jamais écrasé */
+.btn.acc-gen-btn {
+  flex: 0 0 auto;
+  width: 110px;
+  height: 40px;
+  padding: 0 12px;
+  white-space: nowrap;
+  text-align: center;
+}
+
+/* Show / Hide dans le champ mot de passe */
 .acc-toggle-pw {
   position: absolute;
   right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
   padding: 5px 9px;
+  line-height: 1;
   background: transparent;
   border: 1px solid var(--border-strong);
   border-radius: 6px;
@@ -893,9 +921,23 @@ input:focus, select:focus { outline: none; border-color: var(--olive-vivid); box
 .acc-rules li.ok { color: var(--olive-vivid); }
 .acc-rules li.ok::before { content: '✓ '; }
 
-#createAccBtn { min-width: 220px; }
+/* bas du panel */
+#account .bottom-actions { align-items: stretch; }
+#genAllBtn,
+#createAccBtn { width: 100%; min-width: 0; }
+#account .load-feedback { text-align: center; }
 
 @media (max-width: 600px) {
+  .acc-input-wrap { gap: 8px; }
+
+  /* annule le ".btn { width: 100% }" global pour ce bouton */
+  .btn.acc-gen-btn {
+    width: 88px;
+    padding: 0 8px;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+  }
+
+  .acc-input { font-size: 12px; }
   .acc-rules { grid-template-columns: 1fr; }
-  #createAccBtn { min-width: 0; }
 }
