@@ -941,3 +941,6 @@ input:focus, select:focus { outline: none; border-color: var(--olive-vivid); box
   .acc-input { font-size: 12px; }
   .acc-rules { grid-template-columns: 1fr; }
 }
+
+
+/* https://www.chess.com/analysis/game/live/80428793827/review */

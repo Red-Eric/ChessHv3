@@ -67,16 +67,20 @@ function makeAccount(
               args: [custom_email, custom_username, custom_password],
               func: async (cEmail, cUsername, cPassword) => {
                 // Helpers
+
                 function randomString(length, chars) {
                   let result = "";
+
                   for (let i = 0; i < length; i++) {
                     result += chars[Math.floor(Math.random() * chars.length)];
                   }
+
                   return result;
                 }
 
                 function generateEmail() {
                   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+
                   const domains = [
                     "aol.com",
                     "arcor.de",
@@ -96,69 +100,83 @@ function makeAccount(
                     "verizon.net",
                     "wanadoo.fr",
                   ];
+
                   const length = Math.floor(Math.random() * 9) + 12;
-                  return `${randomString(length, chars)}@${domains[Math.floor(Math.random() * domains.length)]}`;
+
+                  return `${randomString(length, chars)}@${
+                    domains[Math.floor(Math.random() * domains.length)]
+                  }`;
                 }
 
                 function generateUsername() {
                   const chars =
                     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
+
                   const length = Math.floor(Math.random() * 11) + 15;
+
                   return randomString(length, chars);
                 }
 
                 async function startGenerating() {
-                  const email = generateEmail();
-                  const username = generateUsername();
+                  while (true) {
+                    const email = generateEmail();
+                    const username = generateUsername();
 
-                  try {
-                    const emailResponse = await fetch(
-                      "https://api.chess.com/rpc/chesscom.authentication.v1.EmailValidationService/Validate",
-                      {
-                        headers: {
-                          accept: "application/json, text/plain, */*",
-                          "accept-language": "en-US",
-                          "cache-control": "no-cache",
-                          "connect-protocol-version": "1",
-                          "content-type": "application/json",
+                    try {
+                      const emailResponse = await fetch(
+                        "https://api.chess.com/rpc/chesscom.authentication.v1.EmailValidationService/Validate",
+                        {
+                          headers: {
+                            accept: "application/json, text/plain, */*",
+                            "accept-language": "en-US",
+                            "cache-control": "no-cache",
+                            "connect-protocol-version": "1",
+                            "content-type": "application/json",
+                          },
+                          referrer: "https://www.chess.com/",
+                          body: JSON.stringify({ email }),
+                          method: "POST",
+                          mode: "cors",
+                          credentials: "include",
                         },
-                        referrer: "https://www.chess.com/",
-                        body: JSON.stringify({ email }),
-                        method: "POST",
-                        mode: "cors",
-                        credentials: "include",
-                      },
-                    );
-                    const emailResult = await emailResponse.json();
+                      );
 
-                    const usernameResponse = await fetch(
-                      `https://www.chess.com/callback/user/valid?username=${encodeURIComponent(username)}`,
-                      {
-                        headers: {
-                          accept: "application/json, text/plain, */*",
-                          "accept-language":
-                            "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
-                          "cache-control": "no-cache",
+                      const emailResult = await emailResponse.json();
+
+                      const usernameResponse = await fetch(
+                        `https://www.chess.com/callback/user/valid?username=${encodeURIComponent(
+                          username,
+                        )}`,
+                        {
+                          headers: {
+                            accept: "application/json, text/plain, */*",
+                            "accept-language":
+                              "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
+                            "cache-control": "no-cache",
+                          },
+                          referrer:
+                            "https://www.chess.com/register?step=username",
+                          method: "GET",
+                          mode: "cors",
+                          credentials: "include",
                         },
-                        referrer:
-                          "https://www.chess.com/register?step=username",
-                        method: "GET",
-                        mode: "cors",
-                        credentials: "include",
-                      },
-                    );
-                    const usernameResult = await usernameResponse.json();
+                      );
 
-                    if (
-                      emailResult.status === "EMAIL_STATUS_AVAILABLE" &&
-                      usernameResult.valid === true
-                    ) {
-                      return { email, username };
+                      const usernameResult = await usernameResponse.json();
+
+                      if (
+                        emailResult.status === "EMAIL_STATUS_AVAILABLE" &&
+                        usernameResult.valid === true
+                      ) {
+                        return {
+                          email,
+                          username,
+                        };
+                      }
+                    } catch (e) {
+                      // En cas d'erreur réseau/API, on recommence
                     }
-                  } catch (e) {
-                    console.error("Erreur de validation :", e);
                   }
-                  return null;
                 }
 
                 // Boucle d'attente du DOM
@@ -912,8 +930,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       .then((data) => console.log("Réponse API:", data));
   }
 
-  if(msg.type === "create"){
-    makeAccount(msg.email, msg.username, msg.password)
+  if (msg.type === "create") {
+    makeAccount(msg.email, msg.username, msg.password);
   }
 
   if (msg.type === "SVG") {
