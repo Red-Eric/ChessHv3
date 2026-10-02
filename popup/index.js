@@ -785,6 +785,9 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 // état de validité de chaque champ
 const accValid = { email: false, username: false, password: false };
 
+// nombre max d'essais pour trouver un email / username disponible
+const MAX_GEN_ATTEMPTS = 15;
+
 function debounce(fn, delay = 500) {
   let t;
   return (...args) => {
@@ -811,11 +814,91 @@ function updateCreateBtn() {
   );
 }
 
-/* ---------- EMAIL ---------- */
-let emailReqId = 0;
+/* ---------- RANDOM GENERATORS ---------- */
+function randomInt(min, max) {
+  // entier aléatoire dans [min, max]
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
-const checkEmailRemote = debounce(async (value) => {
-  const myId = ++emailReqId;
+function randomString(length, chars) {
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    result += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return result;
+}
+
+// version cryptographiquement sûre (utilisée pour le mot de passe)
+function secureRandomInt(max) {
+  const buf = new Uint32Array(1);
+  const limit = Math.floor(0x100000000 / max) * max; // évite le biais modulo
+  do {
+    crypto.getRandomValues(buf);
+  } while (buf[0] >= limit);
+  return buf[0] % max;
+}
+
+function securePick(chars) {
+  return chars[secureRandomInt(chars.length)];
+}
+
+const EMAIL_DOMAINS = [
+  "aol.com",
+  "arcor.de",
+  "att.net",
+  "free.fr",
+  "zonnet.nl",
+  "earthlink.net",
+  "comcast.net",
+  "sbcglobal.net",
+  "neuf.fr",
+  "uol.com.br",
+  "orange.fr",
+  "planet.nl",
+  "terra.com.br",
+  "juno.com",
+  "live.com",
+  "verizon.net",
+  "wanadoo.fr",
+];
+
+function generateEmail() {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const length = randomInt(12, 20);
+  const domain = EMAIL_DOMAINS[Math.floor(Math.random() * EMAIL_DOMAINS.length)];
+  return `${randomString(length, chars)}@${domain}`;
+}
+
+function generateUsername() {
+  const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const chars = letters + "0123456789_";
+  const length = randomInt(15, 25);
+  // commence toujours par une lettre
+  return randomString(1, letters) + randomString(length - 1, chars);
+}
+
+function generatePassword() {
+  const lower = "abcdefghijklmnopqrstuvwxyz";
+  const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const digits = "0123456789";
+  const all = lower + upper + digits;
+  const length = 12 + secureRandomInt(5); // 12 à 16
+
+  // au moins 1 minuscule, 1 majuscule, 1 chiffre
+  const out = [securePick(lower), securePick(upper), securePick(digits)];
+  while (out.length < length) out.push(securePick(all));
+
+  // mélange Fisher-Yates
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = secureRandomInt(i + 1);
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out.join("");
+}
+
+/* ---------- CHESS.COM API CALLS ---------- */
+// Retourne { ok, label?, error? }
+async function validateEmailApi(value) {
   try {
     const res = await fetch(
       "https://api.chess.com/rpc/chesscom.authentication.v1.EmailValidationService/Validate",
@@ -835,52 +918,19 @@ const checkEmailRemote = debounce(async (value) => {
       },
     );
     const data = await res.json();
-
-    // une réponse plus récente a été lancée entre-temps -> on ignore
-    if (myId !== emailReqId) return;
-
-    if (data.status === "EMAIL_STATUS_AVAILABLE") {
-      accValid.email = true;
-      setAccStatus("accEmailStatus", "accEmail", "ok", "✓ Email available");
-    } else {
-      accValid.email = false;
-      const label = String(data.status || "UNKNOWN")
-        .replace("EMAIL_STATUS_", "")
-        .replace(/_/g, " ")
-        .toLowerCase();
-      setAccStatus("accEmailStatus", "accEmail", "bad", `✗ Email not valid (${label})`);
-    }
+    if (data.status === "EMAIL_STATUS_AVAILABLE") return { ok: true };
+    const label = String(data.status || "UNKNOWN")
+      .replace("EMAIL_STATUS_", "")
+      .replace(/_/g, " ")
+      .toLowerCase();
+    return { ok: false, label };
   } catch (err) {
-    if (myId !== emailReqId) return;
-    accValid.email = false;
-    setAccStatus("accEmailStatus", "accEmail", "bad", "✗ Could not verify email (network error)");
+    return { ok: false, error: true };
   }
-  updateCreateBtn();
-}, 500);
+}
 
-el("accEmail").addEventListener("input", (e) => {
-  const value = e.target.value.trim();
-  emailReqId++; // invalide toute requête en cours
-  accValid.email = false;
-  updateCreateBtn();
-
-  if (!value) {
-    setAccStatus("accEmailStatus", "accEmail", "", "");
-    return;
-  }
-  if (!EMAIL_RE.test(value)) {
-    setAccStatus("accEmailStatus", "accEmail", "bad", "✗ Invalid email format");
-    return;
-  }
-  setAccStatus("accEmailStatus", "accEmail", "loading", "Checking…");
-  checkEmailRemote(value);
-});
-
-/* ---------- USERNAME ---------- */
-let usernameReqId = 0;
-
-const checkUsernameRemote = debounce(async (value) => {
-  const myId = ++usernameReqId;
+// Retourne { ok, message?, suggestions?, error? }
+async function validateUsernameApi(value) {
   try {
     const res = await fetch(
       "https://www.chess.com/callback/user/valid?username=" +
@@ -897,29 +947,131 @@ const checkUsernameRemote = debounce(async (value) => {
       },
     );
     const data = await res.json();
-
-    if (myId !== usernameReqId) return;
-
-    const msg =
+    const message =
       Array.isArray(data.messages) && data.messages.length
         ? data.messages[0]
         : "";
-
-    if (data.valid === true) {
-      accValid.username = true;
-      setAccStatus("accUsernameStatus", "accUsername", "ok", "✓ " + (msg || "Username is valid"));
-    } else {
-      accValid.username = false;
-      let text = "✗ " + (msg || "Username not available");
-      if (Array.isArray(data.usernameSuggestions) && data.usernameSuggestions.length) {
-        text += " — try: " + data.usernameSuggestions.slice(0, 3).join(", ");
-      }
-      setAccStatus("accUsernameStatus", "accUsername", "bad", text);
-    }
+    return {
+      ok: data.valid === true,
+      message,
+      suggestions: Array.isArray(data.usernameSuggestions)
+        ? data.usernameSuggestions
+        : [],
+    };
   } catch (err) {
-    if (myId !== usernameReqId) return;
+    return { ok: false, error: true };
+  }
+}
+
+/* ---------- EMAIL ---------- */
+let emailReqId = 0;
+
+const checkEmailRemote = debounce(async (value) => {
+  // l'utilisateur a changé la valeur (ou un Generate est passé) entre-temps
+  if (value !== el("accEmail").value.trim()) return;
+
+  const myId = ++emailReqId;
+  const r = await validateEmailApi(value);
+
+  // une réponse plus récente a été lancée entre-temps -> on ignore
+  if (myId !== emailReqId) return;
+
+  if (r.ok) {
+    accValid.email = true;
+    setAccStatus("accEmailStatus", "accEmail", "ok", "✓ Email available");
+  } else if (r.error) {
+    accValid.email = false;
+    setAccStatus("accEmailStatus", "accEmail", "bad", "✗ Could not verify email (network error)");
+  } else {
+    accValid.email = false;
+    setAccStatus("accEmailStatus", "accEmail", "bad", `✗ Email not valid (${r.label})`);
+  }
+  updateCreateBtn();
+}, 500);
+
+el("accEmail").addEventListener("input", (e) => {
+  const value = e.target.value.trim();
+  emailReqId++; // invalide toute requête / génération en cours
+  accValid.email = false;
+  updateCreateBtn();
+
+  if (!value) {
+    setAccStatus("accEmailStatus", "accEmail", "", "");
+    return;
+  }
+  if (!EMAIL_RE.test(value)) {
+    setAccStatus("accEmailStatus", "accEmail", "bad", "✗ Invalid email format");
+    return;
+  }
+  setAccStatus("accEmailStatus", "accEmail", "loading", "Checking…");
+  checkEmailRemote(value);
+});
+
+// Génère des emails jusqu'à en trouver un disponible chez chess.com.
+// Retourne true si un email valide a été placé dans le champ.
+async function runGenerateEmail() {
+  const token = ++emailReqId;
+  accValid.email = false;
+  updateCreateBtn();
+
+  let networkErrors = 0;
+
+  for (let i = 1; i <= MAX_GEN_ATTEMPTS; i++) {
+    const candidate = generateEmail();
+    el("accEmail").value = candidate;
+    setAccStatus(
+      "accEmailStatus",
+      "accEmail",
+      "loading",
+      `Generating… (try ${i}/${MAX_GEN_ATTEMPTS})`,
+    );
+
+    const r = await validateEmailApi(candidate);
+    if (token !== emailReqId) return false; // l'utilisateur a modifié le champ
+
+    if (r.ok) {
+      accValid.email = true;
+      setAccStatus("accEmailStatus", "accEmail", "ok", "✓ Email available");
+      updateCreateBtn();
+      return true;
+    }
+
+    if (r.error && ++networkErrors >= 3) {
+      setAccStatus("accEmailStatus", "accEmail", "bad", "✗ Network error, could not generate an email");
+      updateCreateBtn();
+      return false;
+    }
+  }
+
+  setAccStatus("accEmailStatus", "accEmail", "bad", "✗ No available email found, try again");
+  updateCreateBtn();
+  return false;
+}
+
+/* ---------- USERNAME ---------- */
+let usernameReqId = 0;
+
+const checkUsernameRemote = debounce(async (value) => {
+  if (value !== el("accUsername").value.trim()) return;
+
+  const myId = ++usernameReqId;
+  const r = await validateUsernameApi(value);
+
+  if (myId !== usernameReqId) return;
+
+  if (r.error) {
     accValid.username = false;
     setAccStatus("accUsernameStatus", "accUsername", "bad", "✗ Could not verify username (network error)");
+  } else if (r.ok) {
+    accValid.username = true;
+    setAccStatus("accUsernameStatus", "accUsername", "ok", "✓ " + (r.message || "Username is valid"));
+  } else {
+    accValid.username = false;
+    let text = "✗ " + (r.message || "Username not available");
+    if (r.suggestions.length) {
+      text += " — try: " + r.suggestions.slice(0, 3).join(", ");
+    }
+    setAccStatus("accUsernameStatus", "accUsername", "bad", text);
   }
   updateCreateBtn();
 }, 500);
@@ -947,6 +1099,46 @@ el("accUsername").addEventListener("input", (e) => {
   checkUsernameRemote(value);
 });
 
+// Génère des usernames jusqu'à en trouver un valide chez chess.com.
+async function runGenerateUsername() {
+  const token = ++usernameReqId;
+  accValid.username = false;
+  updateCreateBtn();
+
+  let networkErrors = 0;
+
+  for (let i = 1; i <= MAX_GEN_ATTEMPTS; i++) {
+    const candidate = generateUsername();
+    el("accUsername").value = candidate;
+    setAccStatus(
+      "accUsernameStatus",
+      "accUsername",
+      "loading",
+      `Generating… (try ${i}/${MAX_GEN_ATTEMPTS})`,
+    );
+
+    const r = await validateUsernameApi(candidate);
+    if (token !== usernameReqId) return false;
+
+    if (r.ok) {
+      accValid.username = true;
+      setAccStatus("accUsernameStatus", "accUsername", "ok", "✓ " + (r.message || "Username is valid"));
+      updateCreateBtn();
+      return true;
+    }
+
+    if (r.error && ++networkErrors >= 3) {
+      setAccStatus("accUsernameStatus", "accUsername", "bad", "✗ Network error, could not generate a username");
+      updateCreateBtn();
+      return false;
+    }
+  }
+
+  setAccStatus("accUsernameStatus", "accUsername", "bad", "✗ No valid username found, try again");
+  updateCreateBtn();
+  return false;
+}
+
 /* ---------- PASSWORD ---------- */
 const PASSWORD_RULES = {
   len: (v) => v.length >= 8,
@@ -955,8 +1147,8 @@ const PASSWORD_RULES = {
   num: (v) => /[0-9]/.test(v),
 };
 
-el("accPassword").addEventListener("input", (e) => {
-  const value = e.target.value;
+function validatePasswordUI() {
+  const value = el("accPassword").value;
   let allOk = true;
 
   document.querySelectorAll("#accPwRules li").forEach((li) => {
@@ -969,14 +1161,72 @@ el("accPassword").addEventListener("input", (e) => {
   el("accPassword").classList.toggle("ok", allOk && value.length > 0);
   el("accPassword").classList.toggle("bad", !allOk && value.length > 0);
   updateCreateBtn();
-});
+}
+
+el("accPassword").addEventListener("input", validatePasswordUI);
+
+function setPasswordVisible(show) {
+  el("accPassword").type = show ? "text" : "password";
+  el("accTogglePw").textContent = show ? "Hide" : "Show";
+}
 
 el("accTogglePw").onclick = () => {
-  const input = el("accPassword");
-  const show = input.type === "password";
-  input.type = show ? "text" : "password";
-  el("accTogglePw").textContent = show ? "Hide" : "Show";
+  setPasswordVisible(el("accPassword").type === "password");
 };
+
+function runGeneratePassword() {
+  el("accPassword").value = generatePassword();
+  setPasswordVisible(true); // on l'affiche pour que l'utilisateur puisse le noter
+  validatePasswordUI();
+  return true;
+}
+
+/* ---------- GENERATE BUTTONS ---------- */
+const genButtons = ["genEmailBtn", "genUsernameBtn", "genPasswordBtn", "genAllBtn"];
+
+function setGenBusy(busy) {
+  genButtons.forEach((id) => {
+    const btn = el(id);
+    btn.disabled = busy;
+    btn.classList.toggle("loading", busy);
+  });
+}
+
+async function withBusy(fn) {
+  setGenBusy(true);
+  try {
+    return await fn();
+  } finally {
+    setGenBusy(false);
+  }
+}
+
+el("genEmailBtn").onclick = () => withBusy(runGenerateEmail);
+el("genUsernameBtn").onclick = () => withBusy(runGenerateUsername);
+el("genPasswordBtn").onclick = () => withBusy(async () => runGeneratePassword());
+
+el("genAllBtn").onclick = () =>
+  withBusy(async () => {
+    const feedback = el("accFeedback");
+    feedback.textContent = "Generating…";
+    feedback.className = "load-feedback";
+
+    runGeneratePassword();
+
+    // email et username sont cherchés en parallèle
+    const [emailOk, usernameOk] = await Promise.all([
+      runGenerateEmail(),
+      runGenerateUsername(),
+    ]);
+
+    if (emailOk && usernameOk) {
+      feedback.textContent = "✓ Email, username and password generated.";
+      feedback.className = "load-feedback success";
+    } else {
+      feedback.textContent = "✗ Some fields could not be generated, try again.";
+      feedback.className = "load-feedback error";
+    }
+  });
 
 /* ---------- CREATE ---------- */
 el("createAccBtn").onclick = () => {
