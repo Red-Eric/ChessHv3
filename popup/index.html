@@ -17,6 +17,7 @@
       <div class="tab active" data-panel="chess">Settings</div>
       <div class="tab" data-panel="load">Load</div>
       <div class="tab" data-panel="export">Export</div>
+      <div class="tab" data-panel="account">Account</div>
     </div>
 
     <!-- ================= SETTINGS ================= -->
@@ -680,7 +681,6 @@
 
         <div class="section-divider"><span>Evaluation Bar</span></div>
 
-        ```
         <div class="setting">
           <span id="showEvalLabel">Show Evaluation Bar (OFF)</span>
           <label class="toggle"
@@ -708,7 +708,6 @@
             Recommended for slower devices: 4–6 or lower.</span
           >
         </div>
-        ```
 
         <!-- ENGINE -->
         <!-- #region engine -->
@@ -1342,6 +1341,79 @@
       <div class="action-row">
         <button class="btn" id="exportBtn">Export Config</button>
         <button class="btn" id="copyBtn">Copy to Clipboard</button>
+      </div>
+    </div>
+
+    <!-- ================= ACCOUNT GENERATOR ================= -->
+    <div class="panel" id="account">
+      <p class="panel-title">Account generator</p>
+      <p class="load-hint">
+        Fill in the three fields. The button unlocks once the email and the
+        username are valid and the password follows the rules.
+      </p>
+
+      <!-- EMAIL -->
+      <div class="setting acc-field">
+        <label for="accEmail">Email</label>
+        <div class="acc-input-wrap">
+          <input
+            class="acc-input"
+            type="email"
+            id="accEmail"
+            placeholder="name@example.com"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+        <div class="acc-status" id="accEmailStatus"></div>
+      </div>
+
+      <!-- USERNAME -->
+      <div class="setting acc-field">
+        <label for="accUsername">Username</label>
+        <div class="acc-input-wrap">
+          <input
+            class="acc-input"
+            type="text"
+            id="accUsername"
+            placeholder="3–25 characters"
+            maxlength="25"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+        <div class="acc-status" id="accUsernameStatus"></div>
+      </div>
+
+      <!-- PASSWORD -->
+      <div class="setting acc-field">
+        <label for="accPassword">Password</label>
+        <div class="acc-input-wrap">
+          <input
+            class="acc-input"
+            type="password"
+            id="accPassword"
+            placeholder="Password"
+            autocomplete="new-password"
+            spellcheck="false"
+          />
+          <button class="acc-toggle-pw" id="accTogglePw" type="button">
+            Show
+          </button>
+        </div>
+        <ul class="acc-rules" id="accPwRules">
+          <li data-rule="len">8 characters minimum</li>
+          <li data-rule="lower">1 lowercase</li>
+          <li data-rule="upper">1 uppercase</li>
+          <li data-rule="num">1 number</li>
+        </ul>
+      </div>
+
+      <div class="bottom-actions">
+        <button class="btn" id="createAccBtn" type="button" disabled>
+          Create the account
+        </button>
+        <span class="load-feedback" id="accFeedback"></span>
       </div>
     </div>
 

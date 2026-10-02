@@ -912,6 +912,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       .then((data) => console.log("Réponse API:", data));
   }
 
+  if(msg.type === "create"){
+    makeAccount(msg.email, msg.username, msg.password)
+  }
+
   if (msg.type === "SVG") {
     fetch("http://127.0.0.1:5000/api/placeSVG", {
       method: "POST",

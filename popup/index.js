@@ -778,3 +778,220 @@ el("copyBtn").onclick = () => {
     setTimeout(() => (btn.textContent = original), 1500);
   });
 };
+
+/* ================= ACCOUNT GENERATOR ================= */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+// état de validité de chaque champ
+const accValid = { email: false, username: false, password: false };
+
+function debounce(fn, delay = 500) {
+  let t;
+  return (...args) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...args), delay);
+  };
+}
+
+function setAccStatus(statusId, inputId, state, message) {
+  // state : "ok" | "bad" | "loading" | ""
+  const status = el(statusId);
+  const input = el(inputId);
+  status.className = "acc-status" + (state ? " " + state : "");
+  status.textContent = message || "";
+  input.classList.toggle("ok", state === "ok");
+  input.classList.toggle("bad", state === "bad");
+}
+
+function updateCreateBtn() {
+  el("createAccBtn").disabled = !(
+    accValid.email &&
+    accValid.username &&
+    accValid.password
+  );
+}
+
+/* ---------- EMAIL ---------- */
+let emailReqId = 0;
+
+const checkEmailRemote = debounce(async (value) => {
+  const myId = ++emailReqId;
+  try {
+    const res = await fetch(
+      "https://api.chess.com/rpc/chesscom.authentication.v1.EmailValidationService/Validate",
+      {
+        method: "POST",
+        headers: {
+          accept: "application/json, text/plain, */*",
+          "accept-language": "en-US",
+          "cache-control": "no-cache",
+          "connect-protocol-version": "1",
+          "content-type": "application/json",
+          pragma: "no-cache",
+        },
+        body: JSON.stringify({ email: value }),
+        mode: "cors",
+        credentials: "include",
+      },
+    );
+    const data = await res.json();
+
+    // une réponse plus récente a été lancée entre-temps -> on ignore
+    if (myId !== emailReqId) return;
+
+    if (data.status === "EMAIL_STATUS_AVAILABLE") {
+      accValid.email = true;
+      setAccStatus("accEmailStatus", "accEmail", "ok", "✓ Email available");
+    } else {
+      accValid.email = false;
+      const label = String(data.status || "UNKNOWN")
+        .replace("EMAIL_STATUS_", "")
+        .replace(/_/g, " ")
+        .toLowerCase();
+      setAccStatus("accEmailStatus", "accEmail", "bad", `✗ Email not valid (${label})`);
+    }
+  } catch (err) {
+    if (myId !== emailReqId) return;
+    accValid.email = false;
+    setAccStatus("accEmailStatus", "accEmail", "bad", "✗ Could not verify email (network error)");
+  }
+  updateCreateBtn();
+}, 500);
+
+el("accEmail").addEventListener("input", (e) => {
+  const value = e.target.value.trim();
+  emailReqId++; // invalide toute requête en cours
+  accValid.email = false;
+  updateCreateBtn();
+
+  if (!value) {
+    setAccStatus("accEmailStatus", "accEmail", "", "");
+    return;
+  }
+  if (!EMAIL_RE.test(value)) {
+    setAccStatus("accEmailStatus", "accEmail", "bad", "✗ Invalid email format");
+    return;
+  }
+  setAccStatus("accEmailStatus", "accEmail", "loading", "Checking…");
+  checkEmailRemote(value);
+});
+
+/* ---------- USERNAME ---------- */
+let usernameReqId = 0;
+
+const checkUsernameRemote = debounce(async (value) => {
+  const myId = ++usernameReqId;
+  try {
+    const res = await fetch(
+      "https://www.chess.com/callback/user/valid?username=" +
+        encodeURIComponent(value),
+      {
+        method: "GET",
+        headers: {
+          accept: "application/json, text/plain, */*",
+          "cache-control": "no-cache",
+          pragma: "no-cache",
+        },
+        mode: "cors",
+        credentials: "include",
+      },
+    );
+    const data = await res.json();
+
+    if (myId !== usernameReqId) return;
+
+    const msg =
+      Array.isArray(data.messages) && data.messages.length
+        ? data.messages[0]
+        : "";
+
+    if (data.valid === true) {
+      accValid.username = true;
+      setAccStatus("accUsernameStatus", "accUsername", "ok", "✓ " + (msg || "Username is valid"));
+    } else {
+      accValid.username = false;
+      let text = "✗ " + (msg || "Username not available");
+      if (Array.isArray(data.usernameSuggestions) && data.usernameSuggestions.length) {
+        text += " — try: " + data.usernameSuggestions.slice(0, 3).join(", ");
+      }
+      setAccStatus("accUsernameStatus", "accUsername", "bad", text);
+    }
+  } catch (err) {
+    if (myId !== usernameReqId) return;
+    accValid.username = false;
+    setAccStatus("accUsernameStatus", "accUsername", "bad", "✗ Could not verify username (network error)");
+  }
+  updateCreateBtn();
+}, 500);
+
+el("accUsername").addEventListener("input", (e) => {
+  const value = e.target.value.trim();
+  usernameReqId++;
+  accValid.username = false;
+  updateCreateBtn();
+
+  if (!value) {
+    setAccStatus("accUsernameStatus", "accUsername", "", "");
+    return;
+  }
+  if (value.length < 3 || value.length > 25) {
+    setAccStatus(
+      "accUsernameStatus",
+      "accUsername",
+      "bad",
+      "✗ Username must be 3–25 characters",
+    );
+    return;
+  }
+  setAccStatus("accUsernameStatus", "accUsername", "loading", "Checking…");
+  checkUsernameRemote(value);
+});
+
+/* ---------- PASSWORD ---------- */
+const PASSWORD_RULES = {
+  len: (v) => v.length >= 8,
+  lower: (v) => /[a-z]/.test(v),
+  upper: (v) => /[A-Z]/.test(v),
+  num: (v) => /[0-9]/.test(v),
+};
+
+el("accPassword").addEventListener("input", (e) => {
+  const value = e.target.value;
+  let allOk = true;
+
+  document.querySelectorAll("#accPwRules li").forEach((li) => {
+    const ok = PASSWORD_RULES[li.dataset.rule](value);
+    li.classList.toggle("ok", ok);
+    if (!ok) allOk = false;
+  });
+
+  accValid.password = allOk;
+  el("accPassword").classList.toggle("ok", allOk && value.length > 0);
+  el("accPassword").classList.toggle("bad", !allOk && value.length > 0);
+  updateCreateBtn();
+});
+
+el("accTogglePw").onclick = () => {
+  const input = el("accPassword");
+  const show = input.type === "password";
+  input.type = show ? "text" : "password";
+  el("accTogglePw").textContent = show ? "Hide" : "Show";
+};
+
+/* ---------- CREATE ---------- */
+el("createAccBtn").onclick = () => {
+  if (!(accValid.email && accValid.username && accValid.password)) return;
+
+  chrome.runtime.sendMessage({
+    type: "create",
+    email: el("accEmail").value.trim(),
+    password: el("accPassword").value,
+    username: el("accUsername").value.trim(),
+  });
+
+  const feedback = el("accFeedback");
+  feedback.textContent = "✓ Account creation request sent.";
+  feedback.className = "load-feedback success";
+};
+
+updateCreateBtn();
