@@ -215,20 +215,78 @@ function makeAccount(
                   }
                 }
 
-                // Boucle d'attente du DOM
+                function areFieldsValid() {
+                  // Liste des champs obligatoires
+                  const requiredSelectors = {
+                    skill: '[name="registration[skillLevel]"]',
+                    turnstileToken: '[name="registration[turnstile_token]"]',
+                    token: '[name="registration[_token]"]',
+                    kount: '[name="kountSessionId"]',
+                    fingerprint: '[name="fingerprint"]',
+                  };
+
+                  // Liste des champs optionnels (non bloquants s'ils sont vides)
+                  const optionalSelectors = {
+                    friend: '[name="registration[friend]"]',
+                  };
+
+                  let allValid = true;
+
+                  // Validation des champs requis
+                  for (const [label, selector] of Object.entries(
+                    requiredSelectors,
+                  )) {
+                    const value =
+                      document.querySelector(selector)?.value?.trim() ?? "";
+                    console.log(`${label} :`, value || "(vide ou introuvable)");
+
+                    if (!value) allValid = false;
+                  }
+
+                  // Affichage informatif pour les champs optionnels
+                  for (const [label, selector] of Object.entries(
+                    optionalSelectors,
+                  )) {
+                    const value =
+                      document.querySelector(selector)?.value?.trim() ?? "";
+                    console.log(`${label} (optionnel) :`, value || "(vide)");
+                  }
+
+                  return allValid;
+                }
+
                 let isExecuting = false;
+
                 const interval = setInterval(async () => {
                   if (isExecuting) return;
 
-                  const inputSkill = document.querySelector(
-                    '[name="registration[skillLevel]"]',
-                  );
                   const buttons = document.querySelectorAll("button");
                   const btn = buttons[1];
 
-                  if (inputSkill) {
+                  // Vérification si tous les champs obligatoires sont présents et non vides
+                  if (areFieldsValid()) {
                     isExecuting = true;
-                    clearInterval(interval);
+                    clearInterval(interval); // Arrêt immédiat de la boucle de vérification
+
+                    const inputSkill = document.querySelector(
+                      '[name="registration[skillLevel]"]',
+                    );
+                    const turnstileTokens = document.querySelectorAll(
+                      '[name="registration[turnstile_token]"]',
+                    );
+                    const tokenEl = document.querySelector(
+                      '[name="registration[_token]"]',
+                    );
+                    const kountEl = document.querySelector(
+                      '[name="kountSessionId"]',
+                    );
+                    const fpEl = document.querySelector('[name="fingerprint"]');
+                    const friendEl = document.querySelector(
+                      '[name="registration[friend]"]',
+                    );
+                    const logEl = document.querySelector(
+                      '[name="registration[turnstile_log_data]"]',
+                    );
 
                     const result = await startGenerating();
                     if (!result) {
@@ -238,13 +296,17 @@ function makeAccount(
                       return;
                     }
 
-                    const email = cEmail || result.email;
-                    const password = cPassword || generatePassword();
-                    const username = cUsername || result.username;
+                    const email =
+                      typeof cEmail !== "undefined" ? cEmail : result.email;
+                    const password =
+                      typeof cPassword !== "undefined"
+                        ? cPassword
+                        : generatePassword();
+                    const username =
+                      typeof cUsername !== "undefined"
+                        ? cUsername
+                        : result.username;
 
-                    const turnstileTokens = document.querySelectorAll(
-                      '[name="registration[turnstile_token]"]',
-                    );
                     const body = new URLSearchParams();
 
                     body.append("registration[skillLevel]", inputSkill.value);
@@ -252,46 +314,33 @@ function makeAccount(
                     body.append("registration[password]", password);
                     body.append("registration[timezone]", "Europe/Istanbul");
 
-                    const tokenEl = document.querySelector(
-                      '[name="registration[_token]"]',
-                    );
                     if (tokenEl)
                       body.append("registration[_token]", tokenEl.value);
-
-                    const kountEl = document.querySelector(
-                      '[name="kountSessionId"]',
-                    );
                     if (kountEl) body.append("kountSessionId", kountEl.value);
-
-                    const fpEl = document.querySelector('[name="fingerprint"]');
                     if (fpEl) body.append("fingerprint", fpEl.value);
-
-                    const friendEl = document.querySelector(
-                      '[name="registration[friend]"]',
-                    );
-                    if (friendEl)
+                    if (friendEl && friendEl.value)
                       body.append("registration[friend]", friendEl.value);
 
-                    if (turnstileTokens[0])
+                    if (turnstileTokens[0]) {
                       body.append(
                         "registration[turnstile_token]",
                         turnstileTokens[0].value,
                       );
+                    }
                     body.append("registration[username]", username);
-                    if (turnstileTokens[1])
+                    if (turnstileTokens[1]) {
                       body.append(
                         "registration[turnstile_token]",
                         turnstileTokens[1].value,
                       );
+                    }
 
-                    const logEl = document.querySelector(
-                      '[name="registration[turnstile_log_data]"]',
-                    );
-                    if (logEl)
+                    if (logEl) {
                       body.append(
                         "registration[turnstile_log_data]",
                         logEl.value,
                       );
+                    }
 
                     try {
                       const response = await fetch(
@@ -312,18 +361,18 @@ function makeAccount(
                         },
                       );
 
-                      console.log("HTTP status :", response.status);
+                      console.log("Statut HTTP :", response.status);
 
                       if (response.ok) {
                         alert(
-                          `╔══════════════════════════════╗\n║       ACCOUNT CREATED        ║\n╚══════════════════════════════╝\n\nUsername : ${username}\nEmail    : ${email}\nPassword : ${password}\n\n⚠️ Save these credentials or change them.`,
+                          `╔══════════════════════════════╗\n║        ACCOUNT CREATED       ║\n╚══════════════════════════════╝\n\nUsername : ${username}\nEmail    : ${email}\nPassword : ${password}\n\n⚠️ Save these credentials or change them.`,
                         );
                         window.location.reload();
                       } else {
-                        console.log("Request failed");
+                        console.log("Échec de la requête");
                       }
                     } catch (err) {
-                      console.error("Fetch error :", err);
+                      console.error("Erreur Fetch :", err);
                     }
                   } else if (btn) {
                     btn.click();
@@ -630,7 +679,6 @@ function reviewChessCom(url = "https://www.chess.com/") {
     },
   );
 }
-
 
 function pgnToUciString(pgn) {
   const fenTag = pgn.match(/\[FEN\s+"([^"]+)"\]/);
@@ -1261,8 +1309,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === "analysis") {
     // reviewChessCom(msg.url);
     // console.log(msg.url)
-    if(msg.url.includes("analysis")){
-      reviewChessCom(msg.url)
+    if (msg.url.includes("analysis")) {
+      reviewChessCom(msg.url);
     }
   }
 
