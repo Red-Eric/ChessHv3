@@ -46,12 +46,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
     winningMove: false,
     showEval: false,
     preview: "None",
-    review: false,
+    review2: false,
     onlyShowEval: false,
     key: "a",
     key2: "z",
-    hints: [
-    ],
+    hints: [],
 
     // special stockfish 6
     st6_mobilityMid: 100,
@@ -228,6 +227,30 @@ chrome.storage.local.get(["chessConfig"], (result) => {
         function getSide() {
           return side_index === 1 ? "white" : "black";
         }
+
+        // game review
+
+        document
+          .querySelectorAll(
+            "a.game-accuracy-accuracy-link, " +
+              "a.game-accuracy-review-button, " +
+              "a.game-over-primary-cta-game-over-primary-cta.cc-button-component.cc-button-primary.cc-button-x-large.cc-bg-primary, " +
+              "a.cc-button-component.cc-button-primary.cc-button-xx-large.cc-bg-primary.cc-button-full",
+          )
+          .forEach((link) => {
+            link.addEventListener("click", (e) => {
+              e.preventDefault();
+              if (config.review) {
+                const url = link.href;
+                console.clear();
+                console.log(url);
+                chrome.runtime.sendMessage({
+                  type: "analysis",
+                  url: url,
+                });
+              }
+            });
+          });
 
         // key press
         window.onkeyup = (e) => {

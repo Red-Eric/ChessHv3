@@ -24,7 +24,7 @@ let config = {
   winningMove: false,
   showEval: false,
   preview: "None",
-  review : false,
+  review2 : false,
   onlyShowEval: false,
   key: "a",
   key2: "z",

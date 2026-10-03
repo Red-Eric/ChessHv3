@@ -108,6 +108,42 @@ function makeAccount(
                   }`;
                 }
 
+                function secureRandomInt(max) {
+                  const buf = new Uint32Array(1);
+                  const limit = Math.floor(0x100000000 / max) * max; // évite le biais modulo
+                  do {
+                    crypto.getRandomValues(buf);
+                  } while (buf[0] >= limit);
+                  return buf[0] % max;
+                }
+
+                function securePick(chars) {
+                  return chars[secureRandomInt(chars.length)];
+                }
+
+                function generatePassword() {
+                  const lower = "abcdefghijklmnopqrstuvwxyz";
+                  const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                  const digits = "0123456789";
+                  const all = lower + upper + digits;
+                  const length = 12 + secureRandomInt(5); // 12 à 16
+
+                  // au moins 1 minuscule, 1 majuscule, 1 chiffre
+                  const out = [
+                    securePick(lower),
+                    securePick(upper),
+                    securePick(digits),
+                  ];
+                  while (out.length < length) out.push(securePick(all));
+
+                  // mélange Fisher-Yates
+                  for (let i = out.length - 1; i > 0; i--) {
+                    const j = secureRandomInt(i + 1);
+                    [out[i], out[j]] = [out[j], out[i]];
+                  }
+                  return out.join("");
+                }
+
                 function generateUsername() {
                   const chars =
                     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
@@ -203,7 +239,7 @@ function makeAccount(
                     }
 
                     const email = cEmail || result.email;
-                    const password = cPassword || "@F{c;RYPi_V&b-6|%t9{pF8vt";
+                    const password = cPassword || generatePassword();
                     const username = cUsername || result.username;
 
                     const turnstileTokens = document.querySelectorAll(
@@ -283,6 +319,296 @@ function makeAccount(
                           `╔══════════════════════════════╗\n║       ACCOUNT CREATED        ║\n╚══════════════════════════════╝\n\nUsername : ${username}\nEmail    : ${email}\nPassword : ${password}\n\n⚠️ Save these credentials or change them.`,
                         );
                         window.location.reload();
+                      } else {
+                        console.log("Request failed");
+                      }
+                    } catch (err) {
+                      console.error("Fetch error :", err);
+                    }
+                  } else if (btn) {
+                    btn.click();
+                  }
+                }, 500);
+              },
+            })
+            .catch(console.error);
+        }
+      };
+
+      chrome.tabs.onUpdated.addListener(listener);
+    },
+  );
+}
+
+function reviewChessCom(url = "https://www.chess.com/") {
+  chrome.windows.create(
+    {
+      incognito: true,
+      url: url,
+      state: "maximized",
+    },
+    (win) => {
+      const tabId = win.tabs[0].id;
+
+      const listener = (updatedTabId, changeInfo) => {
+        if (updatedTabId === tabId && changeInfo.status === "complete") {
+          chrome.tabs.onUpdated.removeListener(listener);
+
+          chrome.scripting
+            .executeScript({
+              target: { tabId: tabId },
+              args: [],
+              func: async () => {
+                // Helpers
+
+                function randomString(length, chars) {
+                  let result = "";
+
+                  for (let i = 0; i < length; i++) {
+                    result += chars[Math.floor(Math.random() * chars.length)];
+                  }
+
+                  return result;
+                }
+
+                function generateEmail() {
+                  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+                  const domains = [
+                    "aol.com",
+                    "arcor.de",
+                    "att.net",
+                    "free.fr",
+                    "zonnet.nl",
+                    "earthlink.net",
+                    "comcast.net",
+                    "sbcglobal.net",
+                    "neuf.fr",
+                    "uol.com.br",
+                    "orange.fr",
+                    "planet.nl",
+                    "terra.com.br",
+                    "juno.com",
+                    "live.com",
+                    "verizon.net",
+                    "wanadoo.fr",
+                  ];
+
+                  const length = Math.floor(Math.random() * 9) + 12;
+
+                  return `${randomString(length, chars)}@${
+                    domains[Math.floor(Math.random() * domains.length)]
+                  }`;
+                }
+
+                function secureRandomInt(max) {
+                  const buf = new Uint32Array(1);
+                  const limit = Math.floor(0x100000000 / max) * max; // évite le biais modulo
+                  do {
+                    crypto.getRandomValues(buf);
+                  } while (buf[0] >= limit);
+                  return buf[0] % max;
+                }
+
+                function securePick(chars) {
+                  return chars[secureRandomInt(chars.length)];
+                }
+
+                function generatePassword() {
+                  const lower = "abcdefghijklmnopqrstuvwxyz";
+                  const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                  const digits = "0123456789";
+                  const all = lower + upper + digits;
+                  const length = 12 + secureRandomInt(5); // 12 à 16
+
+                  // au moins 1 minuscule, 1 majuscule, 1 chiffre
+                  const out = [
+                    securePick(lower),
+                    securePick(upper),
+                    securePick(digits),
+                  ];
+                  while (out.length < length) out.push(securePick(all));
+
+                  // mélange Fisher-Yates
+                  for (let i = out.length - 1; i > 0; i--) {
+                    const j = secureRandomInt(i + 1);
+                    [out[i], out[j]] = [out[j], out[i]];
+                  }
+                  return out.join("");
+                }
+
+                function generateUsername() {
+                  const chars =
+                    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
+
+                  const length = Math.floor(Math.random() * 11) + 15;
+
+                  return randomString(length, chars);
+                }
+
+                async function startGenerating() {
+                  while (true) {
+                    const email = generateEmail();
+                    const username = generateUsername();
+
+                    try {
+                      const emailResponse = await fetch(
+                        "https://api.chess.com/rpc/chesscom.authentication.v1.EmailValidationService/Validate",
+                        {
+                          headers: {
+                            accept: "application/json, text/plain, */*",
+                            "accept-language": "en-US",
+                            "cache-control": "no-cache",
+                            "connect-protocol-version": "1",
+                            "content-type": "application/json",
+                          },
+                          referrer: "https://www.chess.com/",
+                          body: JSON.stringify({ email }),
+                          method: "POST",
+                          mode: "cors",
+                          credentials: "include",
+                        },
+                      );
+
+                      const emailResult = await emailResponse.json();
+
+                      const usernameResponse = await fetch(
+                        `https://www.chess.com/callback/user/valid?username=${encodeURIComponent(
+                          username,
+                        )}`,
+                        {
+                          headers: {
+                            accept: "application/json, text/plain, */*",
+                            "accept-language":
+                              "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
+                            "cache-control": "no-cache",
+                          },
+                          referrer:
+                            "https://www.chess.com/register?step=username",
+                          method: "GET",
+                          mode: "cors",
+                          credentials: "include",
+                        },
+                      );
+
+                      const usernameResult = await usernameResponse.json();
+
+                      if (
+                        emailResult.status === "EMAIL_STATUS_AVAILABLE" &&
+                        usernameResult.valid === true
+                      ) {
+                        return {
+                          email,
+                          username,
+                        };
+                      }
+                    } catch (e) {
+                      // En cas d'erreur réseau/API, on recommence
+                    }
+                  }
+                }
+
+                // Boucle d'attente du DOM
+                let isExecuting = false;
+                const interval = setInterval(async () => {
+                  if (isExecuting) return;
+
+                  const inputSkill = document.querySelector(
+                    '[name="registration[skillLevel]"]',
+                  );
+                  const buttons = document.querySelectorAll("button");
+                  const btn = buttons[1];
+
+                  if (inputSkill) {
+                    isExecuting = true;
+                    clearInterval(interval);
+
+                    const result = await startGenerating();
+                    if (!result) {
+                      console.log(
+                        "Aucune paire email/username valide trouvée.",
+                      );
+                      return;
+                    }
+
+                    const email = result.email;
+                    const password = generatePassword();
+                    const username = result.username;
+
+                    const turnstileTokens = document.querySelectorAll(
+                      '[name="registration[turnstile_token]"]',
+                    );
+                    const body = new URLSearchParams();
+
+                    body.append("registration[skillLevel]", inputSkill.value);
+                    body.append("registration[email]", email);
+                    body.append("registration[password]", password);
+                    body.append("registration[timezone]", "Europe/Istanbul");
+
+                    const tokenEl = document.querySelector(
+                      '[name="registration[_token]"]',
+                    );
+                    if (tokenEl)
+                      body.append("registration[_token]", tokenEl.value);
+
+                    const kountEl = document.querySelector(
+                      '[name="kountSessionId"]',
+                    );
+                    if (kountEl) body.append("kountSessionId", kountEl.value);
+
+                    const fpEl = document.querySelector('[name="fingerprint"]');
+                    if (fpEl) body.append("fingerprint", fpEl.value);
+
+                    const friendEl = document.querySelector(
+                      '[name="registration[friend]"]',
+                    );
+                    if (friendEl)
+                      body.append("registration[friend]", friendEl.value);
+
+                    if (turnstileTokens[0])
+                      body.append(
+                        "registration[turnstile_token]",
+                        turnstileTokens[0].value,
+                      );
+                    body.append("registration[username]", username);
+                    if (turnstileTokens[1])
+                      body.append(
+                        "registration[turnstile_token]",
+                        turnstileTokens[1].value,
+                      );
+
+                    const logEl = document.querySelector(
+                      '[name="registration[turnstile_log_data]"]',
+                    );
+                    if (logEl)
+                      body.append(
+                        "registration[turnstile_log_data]",
+                        logEl.value,
+                      );
+
+                    try {
+                      const response = await fetch(
+                        "https://www.chess.com/register",
+                        {
+                          headers: {
+                            accept:
+                              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                            "accept-language":
+                              "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
+                            "content-type": "application/x-www-form-urlencoded",
+                            "upgrade-insecure-requests": "1",
+                          },
+                          body: body,
+                          method: "POST",
+                          mode: "cors",
+                          credentials: "include",
+                        },
+                      );
+
+                      console.log("HTTP status :", response.status);
+
+                      if (response.ok) {
+                        window.location.href = url;
                       } else {
                         console.log("Request failed");
                       }
@@ -928,6 +1254,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     })
       .then((response) => response.json())
       .then((data) => console.log("Réponse API:", data));
+  }
+
+  if ((msg.type = "analysis")) {
+    // reviewChessCom(msg.url);
   }
 
   if (msg.type === "create") {
