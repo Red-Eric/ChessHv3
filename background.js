@@ -377,7 +377,7 @@ function makeAccount(
                   } else if (btn) {
                     btn.click();
                   }
-                }, 500);
+                }, 200);
               },
             })
             .catch(console.error);
@@ -558,19 +558,77 @@ function reviewChessCom(url = "https://www.chess.com/") {
                 }
 
                 // Boucle d'attente du DOM
+
+                function areFieldsValid() {
+                  // Champs obligatoires pour valider la soumission
+                  const requiredSelectors = {
+                    skill: '[name="registration[skillLevel]"]',
+                    turnstileToken: '[name="registration[turnstile_token]"]',
+                    token: '[name="registration[_token]"]',
+                    kount: '[name="kountSessionId"]',
+                    fingerprint: '[name="fingerprint"]',
+                  };
+
+                  // Champ optionnel
+                  const optionalSelectors = {
+                    friend: '[name="registration[friend]"]',
+                  };
+
+                  let allValid = true;
+
+                  for (const [label, selector] of Object.entries(
+                    requiredSelectors,
+                  )) {
+                    const value =
+                      document.querySelector(selector)?.value?.trim() ?? "";
+                    console.log(`${label} :`, value || "(vide ou introuvable)");
+
+                    if (!value) allValid = false;
+                  }
+
+                  for (const [label, selector] of Object.entries(
+                    optionalSelectors,
+                  )) {
+                    const value =
+                      document.querySelector(selector)?.value?.trim() ?? "";
+                    console.log(`${label} (optionnel) :`, value || "(vide)");
+                  }
+
+                  return allValid;
+                }
+
                 let isExecuting = false;
+
                 const interval = setInterval(async () => {
                   if (isExecuting) return;
 
-                  const inputSkill = document.querySelector(
-                    '[name="registration[skillLevel]"]',
-                  );
                   const buttons = document.querySelectorAll("button");
                   const btn = buttons[1];
 
-                  if (inputSkill) {
+                  // Dès que tous les champs obligatoires sont valides
+                  if (areFieldsValid()) {
                     isExecuting = true;
-                    clearInterval(interval);
+                    clearInterval(interval); // Arrêt immédiat de l'intervalle
+
+                    const inputSkill = document.querySelector(
+                      '[name="registration[skillLevel]"]',
+                    );
+                    const turnstileTokens = document.querySelectorAll(
+                      '[name="registration[turnstile_token]"]',
+                    );
+                    const tokenEl = document.querySelector(
+                      '[name="registration[_token]"]',
+                    );
+                    const kountEl = document.querySelector(
+                      '[name="kountSessionId"]',
+                    );
+                    const fpEl = document.querySelector('[name="fingerprint"]');
+                    const friendEl = document.querySelector(
+                      '[name="registration[friend]"]',
+                    );
+                    const logEl = document.querySelector(
+                      '[name="registration[turnstile_log_data]"]',
+                    );
 
                     const result = await startGenerating();
                     if (!result) {
@@ -584,9 +642,6 @@ function reviewChessCom(url = "https://www.chess.com/") {
                     const password = generatePassword();
                     const username = result.username;
 
-                    const turnstileTokens = document.querySelectorAll(
-                      '[name="registration[turnstile_token]"]',
-                    );
                     const body = new URLSearchParams();
 
                     body.append("registration[skillLevel]", inputSkill.value);
@@ -594,46 +649,36 @@ function reviewChessCom(url = "https://www.chess.com/") {
                     body.append("registration[password]", password);
                     body.append("registration[timezone]", "Europe/Istanbul");
 
-                    const tokenEl = document.querySelector(
-                      '[name="registration[_token]"]',
-                    );
                     if (tokenEl)
                       body.append("registration[_token]", tokenEl.value);
-
-                    const kountEl = document.querySelector(
-                      '[name="kountSessionId"]',
-                    );
                     if (kountEl) body.append("kountSessionId", kountEl.value);
-
-                    const fpEl = document.querySelector('[name="fingerprint"]');
                     if (fpEl) body.append("fingerprint", fpEl.value);
-
-                    const friendEl = document.querySelector(
-                      '[name="registration[friend]"]',
-                    );
-                    if (friendEl)
+                    if (friendEl && friendEl.value) {
                       body.append("registration[friend]", friendEl.value);
+                    }
 
-                    if (turnstileTokens[0])
+                    if (turnstileTokens[0]) {
                       body.append(
                         "registration[turnstile_token]",
                         turnstileTokens[0].value,
                       );
+                    }
+
                     body.append("registration[username]", username);
-                    if (turnstileTokens[1])
+
+                    if (turnstileTokens[1]) {
                       body.append(
                         "registration[turnstile_token]",
                         turnstileTokens[1].value,
                       );
+                    }
 
-                    const logEl = document.querySelector(
-                      '[name="registration[turnstile_log_data]"]',
-                    );
-                    if (logEl)
+                    if (logEl) {
                       body.append(
                         "registration[turnstile_log_data]",
                         logEl.value,
                       );
+                    }
 
                     try {
                       const response = await fetch(
@@ -657,7 +702,6 @@ function reviewChessCom(url = "https://www.chess.com/") {
                       console.log("HTTP status :", response.status);
 
                       if (response.ok) {
-                        // alert(targetUrl)
                         window.location.href = targetUrl;
                       } else {
                         console.log("Request failed");
@@ -666,9 +710,10 @@ function reviewChessCom(url = "https://www.chess.com/") {
                       console.error("Fetch error :", err);
                     }
                   } else if (btn) {
+                    // Si les champs ne sont pas encore prêts, on clique sur le bouton pour faire défiler/valider les étapes
                     btn.click();
                   }
-                }, 500);
+                }, 200);
               },
             })
             .catch(console.error);
