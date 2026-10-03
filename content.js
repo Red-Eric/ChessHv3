@@ -46,21 +46,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
     winningMove: false,
     showEval: false,
     preview: "None",
+    review: false,
     onlyShowEval: false,
     key: "a",
     key2: "z",
     hints: [
-      "brilliant",
-      "greatFind",
-      "best",
-      "excellent",
-      "good",
-      "book",
-      "inaccuracy",
-      "mistake",
-      "miss",
-      "blunder",
-      "forced",
     ],
 
     // special stockfish 6
@@ -160,6 +150,10 @@ chrome.storage.local.get(["chessConfig"], (result) => {
     }
     const start = () => {
       if (window.location.host === "www.chess.com") {
+        if (window.location.href.includes("analysis/game/live")) {
+          return;
+        }
+
         lastFEN = "";
         uciHistory = "";
         fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -208,7 +202,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
           window.postMessage({ type: "GET_FEN" }, "*");
         }
         function requestMove(from, to, promotion = "q", key = false) {
-
           key
             ? (moveDelay = 0)
             : (moveDelay = randomIntBetween(config.delay0, config.delay));
@@ -223,8 +216,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             "*",
           );
 
-          keyMove = []
-
+          keyMove = [];
         }
 
         function squareToIndex(square) {
@@ -257,8 +249,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
           const distance = startY - endY;
           if (distance > 50 && config.special) {
             requestMove(keyMove[0].from, keyMove[0].to, "q", true);
-          }
-          else if (distance < -50 && config.special) {
+          } else if (distance < -50 && config.special) {
             const balancedMove = extractNormalMove(keyMove, getSide());
             requestMove(balancedMove.from, balancedMove.to, "q", true);
           }

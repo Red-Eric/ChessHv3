@@ -24,21 +24,11 @@ const defaultChessConfig = {
   winningMove: false,
   showEval: false,
   preview: "None",
+  review : false,
   onlyShowEval: false,
   key: "a",
   key2: "z",
   hints: [
-    "brilliant",
-    "greatFind",
-    "best",
-    "excellent",
-    "good",
-    "book",
-    "inaccuracy",
-    "mistake",
-    "miss",
-    "blunder",
-    "forced",
   ],
 
   // special stockfish 6

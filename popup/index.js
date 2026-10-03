@@ -56,7 +56,9 @@ function showAutoSetting() {
   if (styleBlock) styleBlock.style.display = "";
 
   // Réaffiche Auto Start Game (le toggle + son texte d'aide juste en dessous)
-  const autoStartBlock = document.getElementById("autoStart")?.closest(".setting");
+  const autoStartBlock = document
+    .getElementById("autoStart")
+    ?.closest(".setting");
   if (autoStartBlock) {
     autoStartBlock.style.display = "";
     const help = autoStartBlock.nextElementSibling;
@@ -521,7 +523,7 @@ function updateChessUI() {
     "accuracy",
     "speach",
     "floatingBtn",
-    "special"
+    "special",
   ].forEach((k) => (el(k).checked = chessConfig[k]));
 
   el("eloValue").textContent = chessConfig.elo;
@@ -546,6 +548,8 @@ function updateChessUI() {
 
   el("autoMoveLabel").textContent =
     `Auto Move (${chessConfig.autoMove ? "ON" : "OFF"})`;
+  el("reviewLabel").textContent =
+    `Unlock Game Review (${chessConfig.review ? "ON" : "OFF"})`;
   el("floatingBtnLabel").textContent =
     `Android FLoating BTN (${chessConfig.floatingBtn ? "ON" : "OFF"})`;
   el("specialLabel").textContent =
@@ -669,7 +673,7 @@ el("delayMax").oninput = handleDelayInput;
   "accuracy",
   "speach",
   "floatingBtn",
-  "special"
+  "special",
 ].forEach((k) => {
   el(k).onchange = (e) => {
     chessConfig[k] = e.target.checked;
@@ -759,7 +763,7 @@ el("reset").onclick = async () => {
 
 el("review").onclick = async () => {
   chrome.runtime.sendMessage({
-    type: "open_review"
+    type: "open_review",
   });
 };
 
@@ -865,7 +869,8 @@ const EMAIL_DOMAINS = [
 function generateEmail() {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
   const length = randomInt(12, 20);
-  const domain = EMAIL_DOMAINS[Math.floor(Math.random() * EMAIL_DOMAINS.length)];
+  const domain =
+    EMAIL_DOMAINS[Math.floor(Math.random() * EMAIL_DOMAINS.length)];
   return `${randomString(length, chars)}@${domain}`;
 }
 
@@ -981,10 +986,20 @@ const checkEmailRemote = debounce(async (value) => {
     setAccStatus("accEmailStatus", "accEmail", "ok", "✓ Email available");
   } else if (r.error) {
     accValid.email = false;
-    setAccStatus("accEmailStatus", "accEmail", "bad", "✗ Could not verify email (network error)");
+    setAccStatus(
+      "accEmailStatus",
+      "accEmail",
+      "bad",
+      "✗ Could not verify email (network error)",
+    );
   } else {
     accValid.email = false;
-    setAccStatus("accEmailStatus", "accEmail", "bad", `✗ Email not valid (${r.label})`);
+    setAccStatus(
+      "accEmailStatus",
+      "accEmail",
+      "bad",
+      `✗ Email not valid (${r.label})`,
+    );
   }
   updateCreateBtn();
 }, 500);
@@ -1037,13 +1052,23 @@ async function runGenerateEmail() {
     }
 
     if (r.error && ++networkErrors >= 3) {
-      setAccStatus("accEmailStatus", "accEmail", "bad", "✗ Network error, could not generate an email");
+      setAccStatus(
+        "accEmailStatus",
+        "accEmail",
+        "bad",
+        "✗ Network error, could not generate an email",
+      );
       updateCreateBtn();
       return false;
     }
   }
 
-  setAccStatus("accEmailStatus", "accEmail", "bad", "✗ No available email found, try again");
+  setAccStatus(
+    "accEmailStatus",
+    "accEmail",
+    "bad",
+    "✗ No available email found, try again",
+  );
   updateCreateBtn();
   return false;
 }
@@ -1061,10 +1086,20 @@ const checkUsernameRemote = debounce(async (value) => {
 
   if (r.error) {
     accValid.username = false;
-    setAccStatus("accUsernameStatus", "accUsername", "bad", "✗ Could not verify username (network error)");
+    setAccStatus(
+      "accUsernameStatus",
+      "accUsername",
+      "bad",
+      "✗ Could not verify username (network error)",
+    );
   } else if (r.ok) {
     accValid.username = true;
-    setAccStatus("accUsernameStatus", "accUsername", "ok", "✓ " + (r.message || "Username is valid"));
+    setAccStatus(
+      "accUsernameStatus",
+      "accUsername",
+      "ok",
+      "✓ " + (r.message || "Username is valid"),
+    );
   } else {
     accValid.username = false;
     let text = "✗ " + (r.message || "Username not available");
@@ -1122,19 +1157,34 @@ async function runGenerateUsername() {
 
     if (r.ok) {
       accValid.username = true;
-      setAccStatus("accUsernameStatus", "accUsername", "ok", "✓ " + (r.message || "Username is valid"));
+      setAccStatus(
+        "accUsernameStatus",
+        "accUsername",
+        "ok",
+        "✓ " + (r.message || "Username is valid"),
+      );
       updateCreateBtn();
       return true;
     }
 
     if (r.error && ++networkErrors >= 3) {
-      setAccStatus("accUsernameStatus", "accUsername", "bad", "✗ Network error, could not generate a username");
+      setAccStatus(
+        "accUsernameStatus",
+        "accUsername",
+        "bad",
+        "✗ Network error, could not generate a username",
+      );
       updateCreateBtn();
       return false;
     }
   }
 
-  setAccStatus("accUsernameStatus", "accUsername", "bad", "✗ No valid username found, try again");
+  setAccStatus(
+    "accUsernameStatus",
+    "accUsername",
+    "bad",
+    "✗ No valid username found, try again",
+  );
   updateCreateBtn();
   return false;
 }
@@ -1182,7 +1232,12 @@ function runGeneratePassword() {
 }
 
 /* ---------- GENERATE BUTTONS ---------- */
-const genButtons = ["genEmailBtn", "genUsernameBtn", "genPasswordBtn", "genAllBtn"];
+const genButtons = [
+  "genEmailBtn",
+  "genUsernameBtn",
+  "genPasswordBtn",
+  "genAllBtn",
+];
 
 function setGenBusy(busy) {
   genButtons.forEach((id) => {
@@ -1203,7 +1258,8 @@ async function withBusy(fn) {
 
 el("genEmailBtn").onclick = () => withBusy(runGenerateEmail);
 el("genUsernameBtn").onclick = () => withBusy(runGenerateUsername);
-el("genPasswordBtn").onclick = () => withBusy(async () => runGeneratePassword());
+el("genPasswordBtn").onclick = () =>
+  withBusy(async () => runGeneratePassword());
 
 el("genAllBtn").onclick = () =>
   withBusy(async () => {
