@@ -1258,9 +1258,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       .then((data) => console.log("Réponse API:", data));
   }
 
-  if ((msg.type = "analysis")) {
+  if (msg.type === "analysis") {
     // reviewChessCom(msg.url);
-    console.log(msg.url)
+    // console.log(msg.url)
+    if(msg.url.includes("analysis")){
+      reviewChessCom(msg.url)
+    }
   }
 
   if (msg.type === "create") {
