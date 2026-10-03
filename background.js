@@ -357,8 +357,8 @@ function reviewChessCom(url = "https://www.chess.com/") {
           chrome.scripting
             .executeScript({
               target: { tabId: tabId },
-              args: [],
-              func: async () => {
+              args: [url],
+              func: async (targetUrl) => {
                 // Helpers
 
                 function randomString(length, chars) {
@@ -608,8 +608,8 @@ function reviewChessCom(url = "https://www.chess.com/") {
                       console.log("HTTP status :", response.status);
 
                       if (response.ok) {
-                        alert(url)
-                        window.location.href = url;
+                        // alert(targetUrl)
+                        window.location.href = targetUrl;
                       } else {
                         console.log("Request failed");
                       }
@@ -631,7 +631,6 @@ function reviewChessCom(url = "https://www.chess.com/") {
   );
 }
 
-reviewChessCom("https://www.chess.com/analysis/game/live/80428793827/review")
 
 function pgnToUciString(pgn) {
   const fenTag = pgn.match(/\[FEN\s+"([^"]+)"\]/);
@@ -1261,6 +1260,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
   if ((msg.type = "analysis")) {
     // reviewChessCom(msg.url);
+    console.log(msg.url)
   }
 
   if (msg.type === "create") {
