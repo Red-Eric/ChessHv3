@@ -230,27 +230,28 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
         // game review
 
-        document
-          .querySelectorAll(
-            "a.game-accuracy-accuracy-link, " +
-              "a.game-accuracy-review-button, " +
-              "a.game-over-primary-cta-game-over-primary-cta.cc-button-component.cc-button-primary.cc-button-x-large.cc-bg-primary, " +
-              "a.cc-button-component.cc-button-primary.cc-button-xx-large.cc-bg-primary.cc-button-full",
-          )
-          .forEach((link) => {
-            link.addEventListener("click", (e) => {
+        const ANALYSIS_SELECTOR = [
+          "a.game-accuracy-accuracy-link",
+          "a.game-accuracy-review-button",
+          "a.game-over-primary-cta-game-over-primary-cta.cc-button-component.cc-button-primary.cc-button-x-large.cc-bg-primary",
+          "a.cc-button-component.cc-button-primary.cc-button-xx-large.cc-bg-primary.cc-button-full",
+        ].join(", ");
+
+        document.addEventListener(
+          "click",
+          (e) => {
+            if (config.review2) {
+              const link = e.target.closest(ANALYSIS_SELECTOR);
+              if (!link) return;
+
               e.preventDefault();
-              if (config.review) {
-                const url = link.href;
-                console.clear();
-                console.log(url);
-                chrome.runtime.sendMessage({
-                  type: "analysis",
-                  url: url,
-                });
-              }
-            });
-          });
+              e.stopPropagation();
+              e.stopImmediatePropagation();
+              chrome.runtime.sendMessage({ type: "analysis", url: link.href });
+            }
+          },
+          true,
+        );
 
         // key press
         window.onkeyup = (e) => {

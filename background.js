@@ -344,7 +344,7 @@ function reviewChessCom(url = "https://www.chess.com/") {
   chrome.windows.create(
     {
       incognito: true,
-      url: url,
+      url: "https://www.chess.com/register",
       state: "maximized",
     },
     (win) => {
@@ -608,6 +608,7 @@ function reviewChessCom(url = "https://www.chess.com/") {
                       console.log("HTTP status :", response.status);
 
                       if (response.ok) {
+                        alert(url)
                         window.location.href = url;
                       } else {
                         console.log("Request failed");
@@ -629,6 +630,8 @@ function reviewChessCom(url = "https://www.chess.com/") {
     },
   );
 }
+
+reviewChessCom("https://www.chess.com/analysis/game/live/80428793827/review")
 
 function pgnToUciString(pgn) {
   const fenTag = pgn.match(/\[FEN\s+"([^"]+)"\]/);
