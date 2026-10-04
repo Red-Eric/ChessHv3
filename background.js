@@ -66,7 +66,124 @@ function makeAccount(
               target: { tabId: tabId },
               args: [custom_email, custom_username, custom_password],
               func: async (cEmail, cUsername, cPassword) => {
-                // Helpers
+                // ================= OVERLAY =================
+                const OVERLAY_ID = "__ext_overlay";
+
+                function getRoot() {
+                  return document.getElementById(OVERLAY_ID)?.shadowRoot;
+                }
+
+                function showOverlay(label = "Loading…") {
+                  if (document.getElementById(OVERLAY_ID)) return;
+                  const host = document.createElement("div");
+                  host.id = OVERLAY_ID;
+                  const root = host.attachShadow({ mode: "open" });
+                  root.innerHTML = `
+                    <style>
+                      .wrap{position:fixed;inset:0;z-index:2147483647;display:flex;
+                        flex-direction:column;align-items:center;justify-content:center;gap:16px;
+                        background:rgba(0,0,0,.65);font-family:system-ui,sans-serif;color:#fff;
+                        pointer-events:none}
+                      .wrap.interactive{pointer-events:auto}
+                      .spin{width:48px;height:48px;border:4px solid rgba(255,255,255,.25);
+                        border-top-color:#5a8a30;border-radius:50%;animation:r .8s linear infinite}
+                      .spin.error{animation:none;border-color:#c0392b}
+                      @keyframes r{to{transform:rotate(360deg)}}
+                      .bar{width:260px;height:6px;background:rgba(255,255,255,.2);
+                        border-radius:6px;overflow:hidden}
+                      .fill{height:100%;width:0;background:#5a8a30;transition:width .25s}
+                      .fill.error{background:#c0392b}
+                      .txt{font-size:13px}
+                      .card{background:#faf8f5;color:#2e2a24;border-radius:14px;padding:24px 28px;
+                        min-width:320px;max-width:90vw;box-shadow:0 24px 70px rgba(0,0,0,.35);
+                        border:1px solid rgba(74,124,31,.3)}
+                      .card h1{font-family:ui-monospace,monospace;font-size:14px;letter-spacing:3px;
+                        text-transform:uppercase;text-align:center;margin:0 0 18px;color:#4a7c1f}
+                      .row{display:flex;gap:10px;margin-bottom:8px;font-size:13px;align-items:baseline}
+                      .row b{font-family:ui-monospace,monospace;font-size:11px;letter-spacing:1px;
+                        text-transform:uppercase;color:#7a7060;min-width:78px}
+                      .row span{font-family:ui-monospace,monospace;word-break:break-all;
+                        user-select:all}
+                      .warn{font-size:11px;color:#7a7060;margin:14px 0 18px;text-align:center}
+                      .btns{display:flex;gap:10px}
+                      button{flex:1;padding:10px 22px;font-family:ui-monospace,monospace;
+                        font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+                        border-radius:8px;border:1px solid #5a8a30;background:#4a7c1f;color:#fff;
+                        cursor:pointer}
+                      button.ghost{background:rgba(74,124,31,.1);color:#4a7c1f}
+                      button:hover{filter:brightness(1.08)}
+                    </style>
+                    <div class="wrap" id="wrap">
+                      <div class="spin" id="spin"></div>
+                      <div class="bar" id="bar"><div class="fill"></div></div>
+                      <div class="txt">${label}</div>
+                    </div>`;
+                  document.documentElement.appendChild(host);
+                }
+
+                function setOverlay(pct, label) {
+                  const root = getRoot();
+                  if (!root) return;
+                  const fill = root.querySelector(".fill");
+                  if (fill) fill.style.width = `${pct}%`;
+                  const txt = root.querySelector(".txt");
+                  if (label && txt) txt.textContent = label;
+                }
+
+                function errorOverlay(label) {
+                  const root = getRoot();
+                  if (!root) return;
+                  root.querySelector(".spin")?.classList.add("error");
+                  root.querySelector(".fill")?.classList.add("error");
+                  const txt = root.querySelector(".txt");
+                  if (txt) txt.textContent = label;
+                  setTimeout(hideOverlay, 3000);
+                }
+
+                function hideOverlay() {
+                  document.getElementById(OVERLAY_ID)?.remove();
+                }
+
+                // Result card: replaces the alert, resolves when OK is clicked
+                function showResult({ username, email, password }) {
+                  return new Promise((resolve) => {
+                    const root = getRoot();
+                    if (!root) return resolve();
+                    const wrap = root.getElementById("wrap");
+                    wrap.classList.add("interactive");
+                    wrap.innerHTML = `
+                      <div class="card">
+                        <h1>⟡ Account created ⟡</h1>
+                        <div class="row"><b>Username</b><span id="u"></span></div>
+                        <div class="row"><b>Email</b><span id="e"></span></div>
+                        <div class="row"><b>Password</b><span id="p"></span></div>
+                        <div class="warn">⚠️ Save these credentials or change them.</div>
+                        <div class="btns">
+                          <button class="ghost" id="copy">Copy</button>
+                          <button id="ok">OK</button>
+                        </div>
+                      </div>`;
+                    root.getElementById("u").textContent = username;
+                    root.getElementById("e").textContent = email;
+                    root.getElementById("p").textContent = password;
+
+                    root.getElementById("copy").onclick = async (ev) => {
+                      const txt = `Username: ${username}\nEmail: ${email}\nPassword: ${password}`;
+                      try {
+                        await navigator.clipboard.writeText(txt);
+                        ev.target.textContent = "Copied ✓";
+                      } catch {
+                        ev.target.textContent = "Failed";
+                      }
+                    };
+                    root.getElementById("ok").onclick = () => {
+                      hideOverlay();
+                      resolve();
+                    };
+                  });
+                }
+
+                // ================= Helpers =================
 
                 function randomString(length, chars) {
                   let result = "";
@@ -110,7 +227,7 @@ function makeAccount(
 
                 function secureRandomInt(max) {
                   const buf = new Uint32Array(1);
-                  const limit = Math.floor(0x100000000 / max) * max; // évite le biais modulo
+                  const limit = Math.floor(0x100000000 / max) * max; // avoids modulo bias
                   do {
                     crypto.getRandomValues(buf);
                   } while (buf[0] >= limit);
@@ -126,9 +243,9 @@ function makeAccount(
                   const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
                   const digits = "0123456789";
                   const all = lower + upper + digits;
-                  const length = 12 + secureRandomInt(5); // 12 à 16
+                  const length = 12 + secureRandomInt(5); // 12 to 16
 
-                  // au moins 1 minuscule, 1 majuscule, 1 chiffre
+                  // at least 1 lowercase, 1 uppercase, 1 digit
                   const out = [
                     securePick(lower),
                     securePick(upper),
@@ -136,7 +253,7 @@ function makeAccount(
                   ];
                   while (out.length < length) out.push(securePick(all));
 
-                  // mélange Fisher-Yates
+                  // Fisher-Yates shuffle
                   for (let i = out.length - 1; i > 0; i--) {
                     const j = secureRandomInt(i + 1);
                     [out[i], out[j]] = [out[j], out[i]];
@@ -154,7 +271,16 @@ function makeAccount(
                 }
 
                 async function startGenerating() {
+                  let attempts = 0;
+
                   while (true) {
+                    attempts++;
+                    // progress 30% -> 90% during the search
+                    setOverlay(
+                      Math.min(90, 30 + attempts * 3),
+                      `Searching for a valid email/username… (attempt ${attempts})`,
+                    );
+
                     const email = generateEmail();
                     const username = generateUsername();
 
@@ -210,13 +336,13 @@ function makeAccount(
                         };
                       }
                     } catch (e) {
-                      // En cas d'erreur réseau/API, on recommence
+                      // On network/API error, retry
                     }
                   }
                 }
 
-                function areFieldsValid() {
-                  // Liste des champs obligatoires
+                // Counts the filled required fields
+                function checkFields() {
                   const requiredSelectors = {
                     skill: '[name="registration[skillLevel]"]',
                     turnstileToken: '[name="registration[turnstile_token]"]',
@@ -225,37 +351,39 @@ function makeAccount(
                     fingerprint: '[name="fingerprint"]',
                   };
 
-                  // Liste des champs optionnels (non bloquants s'ils sont vides)
                   const optionalSelectors = {
                     friend: '[name="registration[friend]"]',
                   };
 
-                  let allValid = true;
+                  const entries = Object.entries(requiredSelectors);
+                  let ok = 0;
 
-                  // Validation des champs requis
-                  for (const [label, selector] of Object.entries(
-                    requiredSelectors,
-                  )) {
+                  for (const [label, selector] of entries) {
                     const value =
                       document.querySelector(selector)?.value?.trim() ?? "";
-                    console.log(`${label} :`, value || "(vide ou introuvable)");
-
-                    if (!value) allValid = false;
+                    console.log(`${label}:`, value || "(empty or not found)");
+                    if (value) ok++;
                   }
 
-                  // Affichage informatif pour les champs optionnels
                   for (const [label, selector] of Object.entries(
                     optionalSelectors,
                   )) {
                     const value =
                       document.querySelector(selector)?.value?.trim() ?? "";
-                    console.log(`${label} (optionnel) :`, value || "(vide)");
+                    console.log(`${label} (optional):`, value || "(empty)");
                   }
 
-                  return allValid;
+                  return {
+                    ok,
+                    total: entries.length,
+                    valid: ok === entries.length,
+                  };
                 }
 
+                // ================= Main loop =================
                 let isExecuting = false;
+
+                showOverlay("Checking fields…");
 
                 const interval = setInterval(async () => {
                   if (isExecuting) return;
@@ -263,10 +391,13 @@ function makeAccount(
                   const buttons = document.querySelectorAll("button");
                   const btn = buttons[1];
 
-                  // Vérification si tous les champs obligatoires sont présents et non vides
-                  if (areFieldsValid()) {
+                  const { ok, total, valid } = checkFields();
+                  // progress 0% -> 30% while waiting for the fields
+                  setOverlay((ok / total) * 30, `Fields ready: ${ok}/${total}`);
+
+                  if (valid) {
                     isExecuting = true;
-                    clearInterval(interval); // Arrêt immédiat de la boucle de vérification
+                    clearInterval(interval); // Stop the polling immediately
 
                     const inputSkill = document.querySelector(
                       '[name="registration[skillLevel]"]',
@@ -288,24 +419,28 @@ function makeAccount(
                       '[name="registration[turnstile_log_data]"]',
                     );
 
+                    setOverlay(30, "Searching for a valid email/username…");
                     const result = await startGenerating();
                     if (!result) {
-                      console.log(
-                        "Aucune paire email/username valide trouvée.",
-                      );
+                      console.log("No valid email/username pair found.");
+                      errorOverlay("No valid email/username pair found.");
                       return;
                     }
 
                     const email =
-                      typeof cEmail !== "undefined" ? cEmail : result.email;
+                      typeof cEmail !== "undefined" && cEmail !== null
+                        ? cEmail
+                        : result.email;
                     const password =
-                      typeof cPassword !== "undefined"
+                      typeof cPassword !== "undefined" && cPassword !== null
                         ? cPassword
                         : generatePassword();
                     const username =
-                      typeof cUsername !== "undefined"
+                      typeof cUsername !== "undefined" && cUsername !== null
                         ? cUsername
                         : result.username;
+
+                    setOverlay(95, "Creating account…");
 
                     const body = new URLSearchParams();
 
@@ -361,20 +496,25 @@ function makeAccount(
                         },
                       );
 
-                      console.log("Statut HTTP :", response.status);
+                      console.log("HTTP status:", response.status);
 
                       if (response.ok) {
-                        alert(
-                          `╔══════════════════════════════╗\n║        ACCOUNT CREATED       ║\n╚══════════════════════════════╝\n\nUsername : ${username}\nEmail    : ${email}\nPassword : ${password}\n\n⚠️ Save these credentials or change them.`,
-                        );
+                        setOverlay(100, "Done");
+                        // Wait for the OK click, then continue
+                        await showResult({ username, email, password });
                         window.location.reload();
                       } else {
-                        console.log("Échec de la requête");
+                        console.log("Request failed");
+                        errorOverlay(
+                          `Request failed (HTTP ${response.status}).`,
+                        );
                       }
                     } catch (err) {
-                      console.error("Erreur Fetch :", err);
+                      console.error("Fetch error:", err);
+                      errorOverlay("Network error. Please try again.");
                     }
                   } else if (btn) {
+                    // Fields not ready yet: click the button to advance the steps
                     btn.click();
                   }
                 }, 200);
@@ -408,7 +548,66 @@ function reviewChessCom(url = "https://www.chess.com/") {
               target: { tabId: tabId },
               args: [url],
               func: async (targetUrl) => {
-                // Helpers
+                // ================= OVERLAY =================
+                const OVERLAY_ID = "__ext_overlay";
+
+                function getRoot() {
+                  return document.getElementById(OVERLAY_ID)?.shadowRoot;
+                }
+
+                function showOverlay(label = "Loading…") {
+                  if (document.getElementById(OVERLAY_ID)) return;
+                  const host = document.createElement("div");
+                  host.id = OVERLAY_ID;
+                  const root = host.attachShadow({ mode: "open" });
+                  root.innerHTML = `
+                    <style>
+                      .wrap{position:fixed;inset:0;z-index:2147483647;display:flex;
+                        flex-direction:column;align-items:center;justify-content:center;gap:16px;
+                        background:rgba(0,0,0,.65);font-family:system-ui,sans-serif;color:#fff;
+                        pointer-events:none}
+                      .spin{width:48px;height:48px;border:4px solid rgba(255,255,255,.25);
+                        border-top-color:#5a8a30;border-radius:50%;animation:r .8s linear infinite}
+                      .spin.error{animation:none;border-color:#c0392b}
+                      @keyframes r{to{transform:rotate(360deg)}}
+                      .bar{width:260px;height:6px;background:rgba(255,255,255,.2);
+                        border-radius:6px;overflow:hidden}
+                      .fill{height:100%;width:0;background:#5a8a30;transition:width .25s}
+                      .fill.error{background:#c0392b}
+                      .txt{font-size:13px}
+                    </style>
+                    <div class="wrap" id="wrap">
+                      <div class="spin" id="spin"></div>
+                      <div class="bar"><div class="fill"></div></div>
+                      <div class="txt">${label}</div>
+                    </div>`;
+                  document.documentElement.appendChild(host);
+                }
+
+                function setOverlay(pct, label) {
+                  const root = getRoot();
+                  if (!root) return;
+                  const fill = root.querySelector(".fill");
+                  if (fill) fill.style.width = `${pct}%`;
+                  const txt = root.querySelector(".txt");
+                  if (label && txt) txt.textContent = label;
+                }
+
+                function errorOverlay(label) {
+                  const root = getRoot();
+                  if (!root) return;
+                  root.querySelector(".spin")?.classList.add("error");
+                  root.querySelector(".fill")?.classList.add("error");
+                  const txt = root.querySelector(".txt");
+                  if (txt) txt.textContent = label;
+                  setTimeout(hideOverlay, 3000);
+                }
+
+                function hideOverlay() {
+                  document.getElementById(OVERLAY_ID)?.remove();
+                }
+
+                // ================= Helpers =================
 
                 function randomString(length, chars) {
                   let result = "";
@@ -452,7 +651,7 @@ function reviewChessCom(url = "https://www.chess.com/") {
 
                 function secureRandomInt(max) {
                   const buf = new Uint32Array(1);
-                  const limit = Math.floor(0x100000000 / max) * max; // évite le biais modulo
+                  const limit = Math.floor(0x100000000 / max) * max; // avoids modulo bias
                   do {
                     crypto.getRandomValues(buf);
                   } while (buf[0] >= limit);
@@ -468,9 +667,9 @@ function reviewChessCom(url = "https://www.chess.com/") {
                   const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
                   const digits = "0123456789";
                   const all = lower + upper + digits;
-                  const length = 12 + secureRandomInt(5); // 12 à 16
+                  const length = 12 + secureRandomInt(5); // 12 to 16
 
-                  // au moins 1 minuscule, 1 majuscule, 1 chiffre
+                  // at least 1 lowercase, 1 uppercase, 1 digit
                   const out = [
                     securePick(lower),
                     securePick(upper),
@@ -478,7 +677,7 @@ function reviewChessCom(url = "https://www.chess.com/") {
                   ];
                   while (out.length < length) out.push(securePick(all));
 
-                  // mélange Fisher-Yates
+                  // Fisher-Yates shuffle
                   for (let i = out.length - 1; i > 0; i--) {
                     const j = secureRandomInt(i + 1);
                     [out[i], out[j]] = [out[j], out[i]];
@@ -496,7 +695,16 @@ function reviewChessCom(url = "https://www.chess.com/") {
                 }
 
                 async function startGenerating() {
+                  let attempts = 0;
+
                   while (true) {
+                    attempts++;
+                    // progress 30% -> 90% during the search
+                    setOverlay(
+                      Math.min(90, 30 + attempts * 3),
+                      `Searching for a valid email/username… (attempt ${attempts})`,
+                    );
+
                     const email = generateEmail();
                     const username = generateUsername();
 
@@ -552,15 +760,14 @@ function reviewChessCom(url = "https://www.chess.com/") {
                         };
                       }
                     } catch (e) {
-                      // En cas d'erreur réseau/API, on recommence
+                      // On network/API error, retry
                     }
                   }
                 }
 
-                // Boucle d'attente du DOM
-
-                function areFieldsValid() {
-                  // Champs obligatoires pour valider la soumission
+                // Counts the filled required fields
+                function checkFields() {
+                  // Required fields to allow submission
                   const requiredSelectors = {
                     skill: '[name="registration[skillLevel]"]',
                     turnstileToken: '[name="registration[turnstile_token]"]',
@@ -569,21 +776,19 @@ function reviewChessCom(url = "https://www.chess.com/") {
                     fingerprint: '[name="fingerprint"]',
                   };
 
-                  // Champ optionnel
+                  // Optional field
                   const optionalSelectors = {
                     friend: '[name="registration[friend]"]',
                   };
 
-                  let allValid = true;
+                  const entries = Object.entries(requiredSelectors);
+                  let ok = 0;
 
-                  for (const [label, selector] of Object.entries(
-                    requiredSelectors,
-                  )) {
+                  for (const [label, selector] of entries) {
                     const value =
                       document.querySelector(selector)?.value?.trim() ?? "";
-                    console.log(`${label} :`, value || "(vide ou introuvable)");
-
-                    if (!value) allValid = false;
+                    console.log(`${label} :`, value || "(empty or not found)");
+                    if (value) ok++;
                   }
 
                   for (const [label, selector] of Object.entries(
@@ -591,13 +796,20 @@ function reviewChessCom(url = "https://www.chess.com/") {
                   )) {
                     const value =
                       document.querySelector(selector)?.value?.trim() ?? "";
-                    console.log(`${label} (optionnel) :`, value || "(vide)");
+                    console.log(`${label} (optional) :`, value || "(empty)");
                   }
 
-                  return allValid;
+                  return {
+                    ok,
+                    total: entries.length,
+                    valid: ok === entries.length,
+                  };
                 }
 
+                // ================= Main loop =================
                 let isExecuting = false;
+
+                showOverlay("Checking fields…");
 
                 const interval = setInterval(async () => {
                   if (isExecuting) return;
@@ -605,10 +817,14 @@ function reviewChessCom(url = "https://www.chess.com/") {
                   const buttons = document.querySelectorAll("button");
                   const btn = buttons[1];
 
-                  // Dès que tous les champs obligatoires sont valides
-                  if (areFieldsValid()) {
+                  const { ok, total, valid } = checkFields();
+                  // progress 0% -> 30% while waiting for the fields
+                  setOverlay((ok / total) * 30, `Fields ready: ${ok}/${total}`);
+
+                  // As soon as all required fields are valid
+                  if (valid) {
                     isExecuting = true;
-                    clearInterval(interval); // Arrêt immédiat de l'intervalle
+                    clearInterval(interval); // Stop the polling immediately
 
                     const inputSkill = document.querySelector(
                       '[name="registration[skillLevel]"]',
@@ -630,17 +846,19 @@ function reviewChessCom(url = "https://www.chess.com/") {
                       '[name="registration[turnstile_log_data]"]',
                     );
 
+                    setOverlay(30, "Searching for a valid email/username…");
                     const result = await startGenerating();
                     if (!result) {
-                      console.log(
-                        "Aucune paire email/username valide trouvée.",
-                      );
+                      console.log("No valid email/username pair found.");
+                      errorOverlay("No valid email/username pair found.");
                       return;
                     }
 
                     const email = result.email;
                     const password = generatePassword();
                     const username = result.username;
+
+                    setOverlay(95, "Submitting registration…");
 
                     const body = new URLSearchParams();
 
@@ -702,15 +920,22 @@ function reviewChessCom(url = "https://www.chess.com/") {
                       console.log("HTTP status :", response.status);
 
                       if (response.ok) {
+                        setOverlay(100, "Done! Redirecting…");
+                        // Short delay so the 100% state is visible
+                        await new Promise((r) => setTimeout(r, 300));
                         window.location.href = targetUrl;
                       } else {
                         console.log("Request failed");
+                        errorOverlay(
+                          `Request failed (HTTP ${response.status}).`,
+                        );
                       }
                     } catch (err) {
                       console.error("Fetch error :", err);
+                      errorOverlay("Network error. Please try again.");
                     }
                   } else if (btn) {
-                    // Si les champs ne sont pas encore prêts, on clique sur le bouton pour faire défiler/valider les étapes
+                    // Fields not ready yet: click the button to advance/validate the steps
                     btn.click();
                   }
                 }, 200);
