@@ -985,17 +985,12 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               document.querySelector("#acc-widget").remove();
             }
 
-            // if (event.source !== window) return;
-            // if (event.data && event.data.type === "FEN_RESPONSE") {
+            
             if (lichessFenHistory.length > 0) {
-              // let fenTemp = event.data.fen;
 
               let fenTemp = lichessFenHistory.at(-1);
 
-              // if (lichessFenHistory.length > 0) {
-              //   fenTemp = lichessFenHistory.at(-1);
-              //   window.postMessage({ type: "stop" }, "*");
-              // }
+              
 
               if (fenTemp !== fen_) {
                 fen_ = fenTemp;
