@@ -1,3 +1,15 @@
+/* ================= MINECRAFT FONT =================
+   Place ton fichier de police dans : fonts/Minecraft.woff2 (ou .ttf)
+   Si le fichier est absent, "Press Start 2P" (Google Fonts) sert de secours. */
+@font-face {
+  font-family: 'Minecraft';
+  src: url('fonts/Minecraft.woff2') format('woff2'),
+       url('fonts/Minecraft.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ================= RESET / BASE ================= */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -26,6 +38,7 @@
 
   --font-mono: 'Space Mono', monospace;
   --font-body: 'DM Sans', sans-serif;
+  --font-mc:   'Minecraft', 'Press Start 2P', 'Space Mono', monospace;
 
   --radius-card: 14px;
   --radius-sm: 8px;
@@ -111,11 +124,13 @@ body {
   background: linear-gradient(90deg, transparent, var(--border-strong), transparent);
 }
 
-/* ================= HEADINGS ================= */
+/* ================= HEADINGS (police Minecraft) ================= */
 h1 {
-  text-align: center; margin-bottom: 28px;
-  font-family: var(--font-mono); font-size: 16px; font-weight: 700;
-  letter-spacing: 3.5px; text-transform: uppercase; color: var(--grey-fish);
+  position: relative;
+  text-align: center; margin-bottom: 36px;
+  font-family: var(--font-mc); font-size: 22px; font-weight: normal;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--grey-fish);
+  text-shadow: 2px 2px 0 rgba(120, 110, 95, 0.35);
   display: flex; align-items: center; justify-content: center; gap: 10px;
 }
 h1::before { content: '⟡'; color: var(--olive-vivid); opacity: 0.85; }
@@ -124,6 +139,37 @@ h1::after  { content: '⟡'; color: var(--olive-vivid); opacity: 0.85; }
 h2 {
   font-family: var(--font-mono); font-size: 11px; font-weight: 700;
   letter-spacing: 2px; text-transform: uppercase; color: var(--text-soft);
+}
+
+/* ================= SPLASH TEXT (façon menu Minecraft) ================= */
+.splash {
+  position: absolute;
+  right: 0;
+  bottom: -18px;
+  z-index: 2;
+  font-family: var(--font-mc);
+  font-size: 12px;
+  font-weight: normal;
+  letter-spacing: 0;
+  text-transform: none;
+  text-decoration: none;
+  white-space: nowrap;
+  color: #ffe600;
+  text-shadow: 2px 2px 0 #3f3b00;
+  cursor: pointer;
+  transform: rotate(-16deg);
+  transform-origin: center;
+  animation: splashPulse 0.55s ease-in-out infinite alternate;
+}
+.splash:hover { color: #fff67a; }
+.splash:focus-visible { outline: 2px dashed var(--olive-vivid); outline-offset: 4px; }
+
+@keyframes splashPulse {
+  from { transform: rotate(-16deg) scale(1); }
+  to   { transform: rotate(-16deg) scale(1.12); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .splash { animation: none; }
 }
 
 /* ================= SETTINGS BLOCK ================= */
@@ -340,9 +386,11 @@ h2 {
 
 /* ================= LOAD / EXPORT PANELS ================= */
 .panel-title {
-  text-align: center; margin-bottom: 24px;
-  font-family: var(--font-mono); font-size: 14px; font-weight: 700;
-  letter-spacing: 3px; text-transform: uppercase; color: var(--grey-fish);
+  position: relative;
+  text-align: center; margin-bottom: 36px;
+  font-family: var(--font-mc); font-size: 18px; font-weight: normal;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--grey-fish);
+  text-shadow: 2px 2px 0 rgba(120, 110, 95, 0.35);
 }
 .panel-title::before { content: '⟡ '; color: var(--olive-vivid); opacity: 0.85; }
 
@@ -421,8 +469,21 @@ input:focus, select:focus { outline: none; border-color: var(--olive-vivid); box
   }
 
   h1 {
-    font-size: 13px;
-    letter-spacing: 2px;
+    font-size: 15px;
+    letter-spacing: 1px;
+    margin-bottom: 40px;
+  }
+
+  .panel-title {
+    font-size: 12px;
+    letter-spacing: 1px;
+    margin-bottom: 40px;
+  }
+
+  .splash {
+    font-size: 9px;
+    bottom: -22px;
+    right: 4px;
   }
 
   /* Settings row : passe en colonne sur très petit écran */

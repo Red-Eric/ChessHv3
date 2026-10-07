@@ -24,8 +24,9 @@ function hideEngineSettings() {
     child.style.display = "";
   });
 
+  // ".auto-only" (Move to Go) est caché par défaut : seul Komodo Auto l'affiche
   document
-    .querySelectorAll(".komodo, .maia3, .stockfish6, .stockfish11")
+    .querySelectorAll(".komodo, .maia3, .stockfish6, .stockfish11, .auto-only")
     .forEach((el) => {
       el.style.display = "none";
     });
@@ -38,7 +39,7 @@ function showKomodoSetting() {
   });
 }
 
-// Komodo Auto : on garde seulement ELO + Style + Auto Start Game
+// Komodo Auto : on garde seulement ELO + Move to Go + Style + Auto Start Game
 function showAutoSetting() {
   hideEngineSettings();
 
@@ -54,6 +55,11 @@ function showAutoSetting() {
   const styleBlock = document.getElementById("style")?.closest(".komodo");
   if (eloBlock) eloBlock.style.display = "";
   if (styleBlock) styleBlock.style.display = "";
+
+  // Réaffiche Move to Go (réservé à Komodo Auto)
+  document.querySelectorAll(".auto-only").forEach((el) => {
+    el.style.display = "";
+  });
 
   // Réaffiche Auto Start Game (le toggle + son texte d'aide juste en dessous)
   const autoStartBlock = document
@@ -331,6 +337,7 @@ function applyEngineSettings(engine) {
   hideAllSetting();
 
   // Komodo Auto : mêmes réglages de base que Komodo, mais affichage réduit
+  // (c'est le seul mode où "Move to Go" est affiché)
   if (isAutoEngine(engine)) {
     showAutoSetting();
 
@@ -501,6 +508,7 @@ function updateChessUI() {
     "st6_passedPawnsEnd",
     "st6_kingSafety",
     "opening",
+    "moveToGo",
   ].forEach((k) => (el(k).value = chessConfig[k]));
   el("style").value = chessConfig.style;
   el("preview").value = chessConfig.preview;
@@ -524,10 +532,11 @@ function updateChessUI() {
     "speach",
     "floatingBtn",
     "special",
-    "review2"
+    "review2",
   ].forEach((k) => (el(k).checked = chessConfig[k]));
 
   el("eloValue").textContent = chessConfig.elo;
+  el("moveToGoValue").textContent = chessConfig.moveToGo;
   el("linesValue").textContent = chessConfig.lines;
   el("openingValue").textContent = chessConfig.opening;
   el("depthValue").textContent = chessConfig.depth;
@@ -618,6 +627,7 @@ loadChessConfig(updateChessUI);
   "st6_passedPawnsEnd",
   "st6_kingSafety",
   "opening",
+  "moveToGo",
 ].forEach((k) => {
   el(k).oninput = (e) => {
     chessConfig[k] = +e.target.value;
@@ -675,7 +685,7 @@ el("delayMax").oninput = handleDelayInput;
   "speach",
   "floatingBtn",
   "special",
-  "review2"
+  "review2",
 ].forEach((k) => {
   el(k).onchange = (e) => {
     chessConfig[k] = e.target.checked;

@@ -6,7 +6,7 @@
     <title>ChessHv3 Setting</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&family=Press+Start+2P&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="style.css" />
@@ -23,7 +23,16 @@
     <!-- ================= SETTINGS ================= -->
     <div class="panel active" id="chess">
       <div class="container">
-        <h1>ChessHv3</h1>
+        <h1>
+          ChessHv3
+          <a
+            class="splash"
+            href="https://youtube.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            >also tried Ashina</a
+          >
+        </h1>
 
         <div class="section-divider">
           <span>Game Review Access (Chess.com only)</span>
@@ -809,6 +818,31 @@
             </div>
           </div>
 
+          <!-- MOVE TO GO : visible uniquement avec Komodo Auto -->
+          <div class="auto-only">
+            <div class="setting">
+              <label
+                >Move to Go :
+                <span class="value-badge" id="moveToGoValue">20</span></label
+              >
+              <input
+                type="range"
+                id="moveToGo"
+                min="20"
+                max="70"
+                step="1"
+                value="20"
+              />
+            </div>
+
+            <div class="setting-help">
+              This the estimate move you play to calculate the time management
+              <span style="color: #e74c3c; font-weight: 700">
+                The more you got the the faster the engine play (recommanded 20 for bullet)</span
+              >
+            </div>
+          </div>
+
           <div class="komodo stockfish6 stockfish11 wukong lozza">
             <div class="setting">
               <label
@@ -1326,7 +1360,16 @@
 
     <!-- ================= LOAD ================= -->
     <div class="panel" id="load">
-      <p class="panel-title">Load Settings</p>
+      <p class="panel-title">
+        Load Settings
+        <a
+          class="splash"
+          href="https://youtube.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          >also tried Ashina</a
+        >
+      </p>
       <p class="load-hint">
         Paste a previously exported JSON config below and click Load.
       </p>
@@ -1351,7 +1394,16 @@
 
     <!-- ================= EXPORT ================= -->
     <div class="panel" id="export">
-      <p class="panel-title">Export Settings</p>
+      <p class="panel-title">
+        Export Settings
+        <a
+          class="splash"
+          href="https://youtube.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          >also tried Ashina</a
+        >
+      </p>
       <p class="load-hint">
         Click Export to generate your current config as JSON.
       </p>
@@ -1364,7 +1416,16 @@
 
     <!-- ================= ACCOUNT GENERATOR ================= -->
     <div class="panel" id="account">
-      <p class="panel-title">Account generator</p>
+      <p class="panel-title">
+        Account generator
+        <a
+          class="splash"
+          href="https://youtube.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          >also tried Ashina</a
+        >
+      </p>
       <p class="load-hint">
         Type your own values or use the Generate buttons. The email and the
         username are checked against chess.com (generated ones are guaranteed

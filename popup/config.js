@@ -2,6 +2,7 @@ const defaultChessConfig = {
   engine: "komodo",
 
   elo: 3500,
+  moveToGo : 20,
   coach: 999,
   hideArrow: false,
   lines: 5,
