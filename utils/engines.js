@@ -1085,7 +1085,7 @@ class komodo {
       const onMessage = (event) => {
         const line = event.data;
 
-        //console.log(line);
+        // console.log(line);
         if (typeof line !== "string") return;
 
         if (line.startsWith("bestmove")) {
