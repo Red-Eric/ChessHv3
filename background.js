@@ -358,6 +358,8 @@ function makeAccount(
                   const entries = Object.entries(requiredSelectors);
                   let ok = 0;
 
+                  console.clear();
+
                   for (const [label, selector] of entries) {
                     const value =
                       document.querySelector(selector)?.value?.trim() ?? "";
@@ -841,6 +843,8 @@ function reviewChessCom(url = "https://www.chess.com/") {
 
                   const entries = Object.entries(requiredSelectors);
                   let ok = 0;
+
+                  console.clear();
 
                   for (const [label, selector] of entries) {
                     const value =
