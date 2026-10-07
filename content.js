@@ -24,6 +24,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
     engine: "komodo",
 
     elo: 3500,
+    moveToGo: 20,
     coach: 999,
     hideArrow: false,
     lines: 5,
@@ -61,7 +62,6 @@ chrome.storage.local.get(["chessConfig"], (result) => {
     st6_passedPawnsEnd: 100,
     st6_kingSafety: 100,
   };
-
   let engine = null;
   let st19 = null;
 

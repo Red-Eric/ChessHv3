@@ -1181,6 +1181,7 @@ class komodo {
   }
 }
 
+// rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 class Komodo_Auto {
   constructor() {
     this.worker = null;
@@ -1204,9 +1205,8 @@ class Komodo_Auto {
     return (minutes * 60 + seconds) * 1000;
   }
 
-
   extractThinkingTime(time) {
-    let thinkingTime = time / 20;
+    let thinkingTime = time / config.moveToGo;
 
     if (thinkingTime >= time) {
       thinkingTime = time - 500;
@@ -1236,9 +1236,31 @@ class Komodo_Auto {
     return result;
   }
 
+  countPieces(fen) {
+    const boardPart = fen.split(" ")[0];
+    let count = 0;
+    for (const char of boardPart) {
+      if (/[a-zA-Z]/.test(char)) {
+        count++;
+      }
+    }
+    return count;
+  }
+
   async getBestMove(fen, timeToThink) {
-    const time = this.timeToMs(timeToThink);
-    const thinkingtime = this.extractThinkingTime(time);
+    const pieceCount = this.countPieces(fen);
+    const useOpeningDelay = pieceCount >= 27;
+
+    let thinkingtime;
+    let time;
+
+    if (useOpeningDelay) {
+      thinkingtime = Math.floor(Math.random() * (2500 - 700 + 1)) + 700;
+      time = 0;
+    } else {
+      time = this.timeToMs(timeToThink);
+      thinkingtime = this.extractThinkingTime(time);
+    }
 
     const startTime = Date.now();
 
