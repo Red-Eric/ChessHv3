@@ -141,11 +141,23 @@ h2 {
   letter-spacing: 2px; text-transform: uppercase; color: var(--text-soft);
 }
 
-/* ================= SPLASH TEXT (façon menu Minecraft) ================= */
+/* ================= TITLE TEXT (ancre du splash) =================
+   Le splash est positionné par rapport au texte du titre,
+   pas par rapport à toute la largeur du panel. */
+.title-text {
+  position: relative;
+  display: inline-block;
+}
+
+/* ================= SPLASH TEXT (façon menu Minecraft) =================
+   Placé SOUS la fin du titre : il part sous le "V" (~66 % de la
+   largeur du titre), un peu en dessous de la ligne, puis monte vers
+   la droite sans jamais recouvrir les lettres. */
 .splash {
+  --splash-rot: -24deg;
   position: absolute;
-  right: 0;
-  bottom: -18px;
+  left: 66%;
+  top: calc(100% + 24px);
   z-index: 2;
   font-family: var(--font-mc);
   font-size: 12px;
@@ -157,16 +169,16 @@ h2 {
   color: #ffe600;
   text-shadow: 2px 2px 0 #3f3b00;
   cursor: pointer;
-  transform: rotate(-16deg);
-  transform-origin: center;
+  transform: rotate(var(--splash-rot));
+  transform-origin: left center;
   animation: splashPulse 0.55s ease-in-out infinite alternate;
 }
 .splash:hover { color: #fff67a; }
 .splash:focus-visible { outline: 2px dashed var(--olive-vivid); outline-offset: 4px; }
 
 @keyframes splashPulse {
-  from { transform: rotate(-16deg) scale(1); }
-  to   { transform: rotate(-16deg) scale(1.12); }
+  from { transform: rotate(var(--splash-rot)) scale(1); }
+  to   { transform: rotate(var(--splash-rot)) scale(1.12); }
 }
 @media (prefers-reduced-motion: reduce) {
   .splash { animation: none; }
@@ -482,8 +494,8 @@ input:focus, select:focus { outline: none; border-color: var(--olive-vivid); box
 
   .splash {
     font-size: 9px;
-    bottom: -22px;
-    right: 4px;
+    left: 64%;
+    top: calc(100% + 16px);
   }
 
   /* Settings row : passe en colonne sur très petit écran */
