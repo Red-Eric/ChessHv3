@@ -358,12 +358,9 @@ function makeAccount(
                   const entries = Object.entries(requiredSelectors);
                   let ok = 0;
 
-                  console.clear();
-
                   for (const [label, selector] of entries) {
                     const value =
                       document.querySelector(selector)?.value?.trim() ?? "";
-                    console.log(`${label}:`, value || "(empty or not found)");
                     if (value) ok++;
                   }
 
@@ -372,7 +369,6 @@ function makeAccount(
                   )) {
                     const value =
                       document.querySelector(selector)?.value?.trim() ?? "";
-                    console.log(`${label} (optional):`, value || "(empty)");
                   }
 
                   return {
@@ -844,12 +840,10 @@ function reviewChessCom(url = "https://www.chess.com/") {
                   const entries = Object.entries(requiredSelectors);
                   let ok = 0;
 
-                  console.clear();
-
                   for (const [label, selector] of entries) {
                     const value =
                       document.querySelector(selector)?.value?.trim() ?? "";
-                    console.log(`${label} :`, value || "(empty or not found)");
+
                     if (value) ok++;
                   }
 
@@ -858,7 +852,6 @@ function reviewChessCom(url = "https://www.chess.com/") {
                   )) {
                     const value =
                       document.querySelector(selector)?.value?.trim() ?? "";
-                    console.log(`${label} (optional) :`, value || "(empty)");
                   }
 
                   return {
@@ -1379,10 +1372,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 );
 
                 let uciHistory = pgnToUciString(game.pgn());
-
-                console.clear();
-                console.log(uciHistory);
-                console.log(fenhistory);
 
                 chrome.tabs.query({}, (tabs) => {
                   for (const tab of tabs) {
