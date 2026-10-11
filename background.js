@@ -343,6 +343,7 @@ function makeAccount(
 
                 // Counts the filled required fields
                 function checkFields() {
+                  // debugger;
                   const requiredSelectors = {
                     skill: '[name="registration[skillLevel]"]',
                     // On gère le turnstile à part pour accepter s'il y a plusieurs inputs
@@ -362,23 +363,23 @@ function makeAccount(
                   }
 
                   // 2. Vérification spécifique pour Turnstile (gère le casquerySelectorAll)
-                  const turnstileElements = document.querySelectorAll(
-                    '[name="registration[turnstile_token]"]',
-                  );
-                  let hasValidTurnstile = false;
-                  for (const el of turnstileElements) {
-                    if (el.value && el.value.trim() !== "") {
-                      hasValidTurnstile = true;
-                      break;
-                    }
-                  }
+                  // const turnstileElements = document.querySelectorAll(
+                  //   '[name="registration[turnstile_token]"]',
+                  // );
+                  // let hasValidTurnstile = false;
+                  // for (const el of turnstileElements) {
+                  //   if (el.value && el.value.trim() !== "") {
+                  //     hasValidTurnstile = true;
+                  //     break;
+                  //   }
+                  // }
 
-                  if (hasValidTurnstile) {
-                    ok++;
-                  }
+                  // if (hasValidTurnstile) {
+                  //   ok++;
+                  // }
 
                   // Le total attendu est maintenant de 4 (classiques) + 1 (turnstile) = 5
-                  const total = entries.length + 1;
+                  const total = entries.length + 0;
 
                   return {
                     ok,
@@ -463,19 +464,19 @@ function makeAccount(
                     if (friendEl && friendEl.value)
                       body.append("registration[friend]", friendEl.value);
 
-                    if (turnstileTokens[0]) {
-                      body.append(
-                        "registration[turnstile_token]",
-                        turnstileTokens[0].value,
-                      );
-                    }
+                    // if (turnstileTokens[0]) {
+                    //   body.append(
+                    //     "registration[turnstile_token]",
+                    //     turnstileTokens[0].value,
+                    //   );
+                    // }
                     body.append("registration[username]", username);
-                    if (turnstileTokens[1]) {
-                      body.append(
-                        "registration[turnstile_token]",
-                        turnstileTokens[1].value,
-                      );
-                    }
+                    // if (turnstileTokens[1]) {
+                    //   body.append(
+                    //     "registration[turnstile_token]",
+                    //     turnstileTokens[1].value,
+                    //   );
+                    // }
 
                     if (logEl) {
                       body.append(
@@ -851,23 +852,23 @@ function reviewChessCom(url = "https://www.chess.com/") {
                   }
 
                   // 2. Vérification spécifique pour Turnstile (gère le casquerySelectorAll)
-                  const turnstileElements = document.querySelectorAll(
-                    '[name="registration[turnstile_token]"]',
-                  );
-                  let hasValidTurnstile = false;
-                  for (const el of turnstileElements) {
-                    if (el.value && el.value.trim() !== "") {
-                      hasValidTurnstile = true;
-                      break;
-                    }
-                  }
+                  // const turnstileElements = document.querySelectorAll(
+                  //   '[name="registration[turnstile_token]"]',
+                  // );
+                  // let hasValidTurnstile = false;
+                  // for (const el of turnstileElements) {
+                  //   if (el.value && el.value.trim() !== "") {
+                  //     hasValidTurnstile = true;
+                  //     break;
+                  //   }
+                  // }
 
-                  if (hasValidTurnstile) {
-                    ok++;
-                  }
+                  // if (hasValidTurnstile) {
+                  //   ok++;
+                  // }
 
                   // Le total attendu est maintenant de 4 (classiques) + 1 (turnstile) = 5
-                  const total = entries.length + 1;
+                  const total = entries.length;
 
                   return {
                     ok,
@@ -899,9 +900,9 @@ function reviewChessCom(url = "https://www.chess.com/") {
                     const inputSkill = document.querySelector(
                       '[name="registration[skillLevel]"]',
                     );
-                    const turnstileTokens = document.querySelectorAll(
-                      '[name="registration[turnstile_token]"]',
-                    );
+                    // const turnstileTokens = document.querySelectorAll(
+                    //   '[name="registration[turnstile_token]"]',
+                    // );
                     const tokenEl = document.querySelector(
                       '[name="registration[_token]"]',
                     );
@@ -945,21 +946,21 @@ function reviewChessCom(url = "https://www.chess.com/") {
                       body.append("registration[friend]", friendEl.value);
                     }
 
-                    if (turnstileTokens[0]) {
-                      body.append(
-                        "registration[turnstile_token]",
-                        turnstileTokens[0].value,
-                      );
-                    }
+                    // if (turnstileTokens[0]) {
+                    //   body.append(
+                    //     "registration[turnstile_token]",
+                    //     turnstileTokens[0].value,
+                    //   );
+                    // }
 
                     body.append("registration[username]", username);
 
-                    if (turnstileTokens[1]) {
-                      body.append(
-                        "registration[turnstile_token]",
-                        turnstileTokens[1].value,
-                      );
-                    }
+                    // if (turnstileTokens[1]) {
+                    //   body.append(
+                    //     "registration[turnstile_token]",
+                    //     turnstileTokens[1].value,
+                    //   );
+                    // }
 
                     if (logEl) {
                       body.append(
