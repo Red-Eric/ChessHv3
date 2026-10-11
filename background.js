@@ -345,36 +345,45 @@ function makeAccount(
                 function checkFields() {
                   const requiredSelectors = {
                     skill: '[name="registration[skillLevel]"]',
-                    turnstileToken: '[name="registration[turnstile_token]"]',
+                    // On gère le turnstile à part pour accepter s'il y a plusieurs inputs
                     token: '[name="registration[_token]"]',
                     kount: '[name="kountSessionId"]',
                     fingerprint: '[name="fingerprint"]',
                   };
 
-                  const optionalSelectors = {
-                    friend: '[name="registration[friend]"]',
-                  };
-
-                  const entries = Object.entries(requiredSelectors);
                   let ok = 0;
+                  const entries = Object.entries(requiredSelectors);
 
+                  // 1. Vérification des champs classiques
                   for (const [label, selector] of entries) {
                     const value =
                       document.querySelector(selector)?.value?.trim() ?? "";
                     if (value) ok++;
                   }
 
-                  for (const [label, selector] of Object.entries(
-                    optionalSelectors,
-                  )) {
-                    const value =
-                      document.querySelector(selector)?.value?.trim() ?? "";
+                  // 2. Vérification spécifique pour Turnstile (gère le casquerySelectorAll)
+                  const turnstileElements = document.querySelectorAll(
+                    '[name="registration[turnstile_token]"]',
+                  );
+                  let hasValidTurnstile = false;
+                  for (const el of turnstileElements) {
+                    if (el.value && el.value.trim() !== "") {
+                      hasValidTurnstile = true;
+                      break;
+                    }
                   }
+
+                  if (hasValidTurnstile) {
+                    ok++;
+                  }
+
+                  // Le total attendu est maintenant de 4 (classiques) + 1 (turnstile) = 5
+                  const total = entries.length + 1;
 
                   return {
                     ok,
-                    total: entries.length,
-                    valid: ok === entries.length,
+                    total,
+                    valid: ok === total,
                   };
                 }
 
@@ -823,41 +832,47 @@ function reviewChessCom(url = "https://www.chess.com/") {
 
                 // Counts the filled required fields
                 function checkFields() {
-                  // Required fields to allow submission
                   const requiredSelectors = {
                     skill: '[name="registration[skillLevel]"]',
-                    turnstileToken: '[name="registration[turnstile_token]"]',
+                    // On gère le turnstile à part pour accepter s'il y a plusieurs inputs
                     token: '[name="registration[_token]"]',
                     kount: '[name="kountSessionId"]',
                     fingerprint: '[name="fingerprint"]',
                   };
 
-                  // Optional field
-                  const optionalSelectors = {
-                    friend: '[name="registration[friend]"]',
-                  };
-
-                  const entries = Object.entries(requiredSelectors);
                   let ok = 0;
+                  const entries = Object.entries(requiredSelectors);
 
+                  // 1. Vérification des champs classiques
                   for (const [label, selector] of entries) {
                     const value =
                       document.querySelector(selector)?.value?.trim() ?? "";
-
                     if (value) ok++;
                   }
 
-                  for (const [label, selector] of Object.entries(
-                    optionalSelectors,
-                  )) {
-                    const value =
-                      document.querySelector(selector)?.value?.trim() ?? "";
+                  // 2. Vérification spécifique pour Turnstile (gère le casquerySelectorAll)
+                  const turnstileElements = document.querySelectorAll(
+                    '[name="registration[turnstile_token]"]',
+                  );
+                  let hasValidTurnstile = false;
+                  for (const el of turnstileElements) {
+                    if (el.value && el.value.trim() !== "") {
+                      hasValidTurnstile = true;
+                      break;
+                    }
                   }
+
+                  if (hasValidTurnstile) {
+                    ok++;
+                  }
+
+                  // Le total attendu est maintenant de 4 (classiques) + 1 (turnstile) = 5
+                  const total = entries.length + 1;
 
                   return {
                     ok,
-                    total: entries.length,
-                    valid: ok === entries.length,
+                    total,
+                    valid: ok === total,
                   };
                 }
 
