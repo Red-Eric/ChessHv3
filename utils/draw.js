@@ -584,6 +584,8 @@ function highlightMovesOnBoard(moves, side) {
     });
   }
 
+  
+
   filteredMoves.slice(0, maxMoves).forEach((move, index) => {
     const color = colors[index] || "red";
     drawArrow(move.from, move.to, color, move.eval);
