@@ -355,7 +355,6 @@ const queryChess_com = "wc-chess-board";
 const queryLichess_org = "cg-container";
 const queryWordChess_com = "div.cg-board";
 
-
 function highlightMovesOnBoard(moves, side) {
   if (config.hideArrow) return;
   if (config.onlyShowEval) return;
@@ -411,10 +410,15 @@ function highlightMovesOnBoard(moves, side) {
   }
 
   function drawArrow(fromSquare, toSquare, color, score) {
-    // Eval inconnue (ex: "...."): ni nombre, ni mat (#3 / #-3), ni book
+    // Maia: rang du coup ("1st", "2nd", "3rd", "4th"...)
+    const isOrdinal =
+      score !== undefined && /^\d+(st|nd|rd|th)$/i.test(String(score));
+
+    // Eval inconnue (ex: "...."): ni nombre, ni mat (#3 / #-3), ni book, ni ordinal Maia
     const isUnknownEval =
       score !== undefined &&
       score !== "book" &&
+      !isOrdinal &&
       !/^#?[+-]?\d+(\.\d+)?$/.test(String(score));
 
     const arrowColor =
@@ -540,7 +544,12 @@ function highlightMovesOnBoard(moves, side) {
           rectEl.setAttribute("ry", "8");
 
           // Eval inconnue: le fond suit le side (blanc pour "w", noir pour "b")
-          const bgIsDark = isUnknownEval ? side === "b" : isNegative;
+          // Ordinal Maia: fond clair, comme une eval positive
+          const bgIsDark = isOrdinal
+            ? false
+            : isUnknownEval
+              ? side === "b"
+              : isNegative;
 
           rectEl.setAttribute("fill", bgIsDark ? "#312e2b" : "#ffffff");
           rectEl.setAttribute("fill-opacity", "0.85");
@@ -558,6 +567,8 @@ function highlightMovesOnBoard(moves, side) {
   let filteredMoves = moves;
   if (config.winningMove) {
     filteredMoves = moves.filter((move) => {
+      if (/^\d+(st|nd|rd|th)$/i.test(String(move.eval))) return true;
+
       const evalValue = parseFloat(move.eval);
       if (side === "w") {
         return (
@@ -584,7 +595,6 @@ function highlightMovesOnBoard(moves, side) {
     }
   });
 }
-
 
 /* HINT*/
 
@@ -868,7 +878,6 @@ function getBoardWidth() {
     return width;
   }
 }
-
 
 function CreateEvalBar(initialScore = "0.0", initialColor = "white") {
   let selector;
