@@ -153,6 +153,10 @@ chrome.storage.local.get(["chessConfig"], (result) => {
           return;
         }
 
+        if (window.location.href === "https://www.chess.com/home") {
+          testing();
+        }
+
         lastFEN = "";
         uciHistory = "";
         fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";

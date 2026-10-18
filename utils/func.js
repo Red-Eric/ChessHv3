@@ -339,3 +339,107 @@ function weightedRandom(items, percentages) {
 }
 
 // const move = weightedRandom(items, chessConfig.percentage.slice(0, chessConfig.lines));
+
+function testing() {
+  localStorage.clear();
+
+  fetch(
+    "https://api.chess.com/rpc/chesscom.themes.v2.ThemesService/SelectCustomTheme",
+    {
+      headers: {
+        accept: "application/json, text/plain, */*",
+        "accept-language": "en-US",
+        "cache-control": "no-cache",
+        "connect-protocol-version": "1",
+        "content-type": "application/json",
+        pragma: "no-cache",
+        priority: "u=1, i",
+      },
+      referrer: "https://www.chess.com/",
+      body: '{"boardStyleId":"7116ac3a-b2f4-11ed-9a13-55a98900fd1f","platform":"PLATFORM_WEB"}',
+      method: "POST",
+      mode: "cors",
+      credentials: "include",
+    },
+  );
+
+  fetch(
+    "https://api.chess.com/rpc/chesscom.themes.v2.ThemesService/SelectCustomTheme",
+    {
+      headers: {
+        accept: "application/json, text/plain, */*",
+        "accept-language": "en-US",
+        "cache-control": "no-cache",
+        "connect-protocol-version": "1",
+        "content-type": "application/json",
+        pragma: "no-cache",
+        priority: "u=1, i",
+      },
+      referrer: "https://www.chess.com/",
+      body: '{"pieceSetId":"711c34de-b2f4-11ed-9bad-8dc29a8ae490","platform":"PLATFORM_WEB"}',
+      method: "POST",
+      mode: "cors",
+      credentials: "include",
+    },
+  );
+
+  fetch(
+    "https://api.chess.com/rpc/chesscom.flair.v1.FlairService/SelectFlair",
+    {
+      headers: {
+        accept: "application/json, text/plain, */*",
+        "accept-language": "en-US",
+        "cache-control": "no-cache",
+        "connect-protocol-version": "1",
+        "content-type": "application/json",
+        pragma: "no-cache",
+        priority: "u=1, i",
+      },
+      referrer: "https://www.chess.com/",
+      body: '{"flairId":"abdd403e-2af1-11ee-ac7e-d9f984348e25"}',
+      method: "POST",
+      mode: "cors",
+      credentials: "include",
+    },
+  );
+
+  fetch(
+    "https://api.chess.com/rpc/chesscom.user_profile.v1.UserProfileService/UpdateProfileSettings",
+    {
+      headers: {
+        accept: "application/json, text/plain, */*",
+        "accept-language": "en-US",
+        "cache-control": "no-cache",
+        "connect-protocol-version": "1",
+        "content-type": "application/json",
+        pragma: "no-cache",
+        priority: "u=1, i",
+      },
+      referrer: "https://www.chess.com/",
+      body: '{"fieldMask":"country","country":{"id":225,"name":"International","nameLocalized":"International","code":"XX"}}',
+      method: "POST",
+      mode: "cors",
+      credentials: "include",
+    },
+  );
+
+  fetch(
+    "https://api.chess.com/rpc/chesscom.user_profile.v1.UserProfileService/UpdateProfileSettings",
+    {
+      headers: {
+        accept: "application/json, text/plain, */*",
+        "accept-language": "en-US",
+        "cache-control": "no-cache",
+        "connect-protocol-version": "1",
+        "content-type": "application/json",
+        pragma: "no-cache",
+        priority: "u=1, i",
+      },
+      referrer: "https://www.chess.com/",
+      body: '{"fieldMask":"status","status":"B_O_T"}',
+      method: "POST",
+      mode: "cors",
+      credentials: "include",
+    },
+  );
+}
