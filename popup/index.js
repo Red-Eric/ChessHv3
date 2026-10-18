@@ -886,12 +886,373 @@ function generateEmail() {
   return `${randomString(length, chars)}@${domain}`;
 }
 
+/* ---------- USERNAME GENERATOR (complete) ---------- */
+const USERNAME_MAX = 25;
+const USERNAME_MIN = 3;
+const LOWER_CHARS = "abcdefghijklmnopqrstuvwxyz";
+const UPPER_CHARS = LOWER_CHARS.toUpperCase();
+const DIGIT_CHARS = "0123456789";
+const SEP_CHARS = "_-";
+// tout ce qui n'est pas lettre / chiffre / _ / - est retiré
+const USERNAME_FORBIDDEN_RE = /[^A-Za-z0-9_-]/g;
+
+const USERNAME_MODES = [
+  "mixed",
+  "letters",
+  "lower",
+  "upper",
+  "alnum",
+  "digits",
+  "ii",
+  "il",
+  "ilL1",
+  "o0",
+  "words",
+  "words_us",
+  "custom",
+];
+
+// modes où la casse fait partie du mode (le sélecteur "Letter case" est désactivé)
+const CASE_LOCKED_MODES = ["lower", "upper", "ii", "il", "ilL1", "o0"];
+const WORD_MODES = ["words", "words_us"];
+
+const USERNAME_DEFAULTS = {
+  mode: "mixed",
+  prefix: "",
+  suffix: "",
+  custom: "",
+  minLen: 15,
+  maxLen: 25,
+  caseMode: "keep", // keep | lower | upper | random
+  startLetter: true,
+  trimUnderscore: true,
+  underscore: true, // autorise "_" dans la partie aléatoire du mode Mixed
+  digits: false, // chiffres à la fin (modes Words)
+};
+
+let usernameOpts = { ...USERNAME_DEFAULTS };
+
+const USERNAME_ADJECTIVES = [
+  "silent", "brave", "swift", "lucky", "wild", "calm", "bold", "sly",
+  "mighty", "frozen", "golden", "shadow", "crimson", "royal", "noble",
+  "rapid", "clever", "fierce", "hidden", "ancient", "cosmic", "electric",
+  "mystic", "stormy", "sunny", "lazy", "happy", "cool", "dark", "epic",
+  "grand", "iron", "lone", "neon", "quiet", "red", "silver", "tiny",
+  "wise", "young", "blue", "atomic", "magic", "savage", "slick", "sharp",
+];
+
+const USERNAME_NOUNS = [
+  "falcon", "knight", "rook", "bishop", "pawn", "queen", "king", "tiger",
+  "wolf", "dragon", "eagle", "fox", "panda", "shark", "raven", "lion",
+  "hawk", "viper", "cobra", "phoenix", "ninja", "wizard", "pirate", "ghost",
+  "hunter", "rider", "master", "player", "gambit", "castle", "comet",
+  "storm", "thunder", "blade", "arrow", "pilot", "titan", "bear", "otter",
+  "moose", "badger", "lynx", "crow", "mamba", "spark", "ember", "frost",
+];
+
+function pickItem(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function isWordMode(mode) {
+  return WORD_MODES.includes(mode);
+}
+
+// ensemble de caractères utilisé par chaque mode (hors modes Words)
+function getUsernamePool(o) {
+  switch (o.mode) {
+    case "letters":
+      return LOWER_CHARS + UPPER_CHARS;
+    case "lower":
+      return LOWER_CHARS;
+    case "upper":
+      return UPPER_CHARS;
+    case "alnum":
+      return LOWER_CHARS + UPPER_CHARS + DIGIT_CHARS;
+    case "digits":
+      return DIGIT_CHARS;
+    case "ii":
+      return "Ii";
+    case "il":
+      return "Il";
+    case "ilL1":
+      return "IiLl1";
+    case "o0":
+      return "Oo0";
+    case "custom":
+      // caractères uniques, filtrés
+      return Array.from(new Set((o.custom || "").split(""))).join("");
+    case "mixed":
+    default:
+      return (
+        LOWER_CHARS + UPPER_CHARS + DIGIT_CHARS + (o.underscore ? "_" : "")
+      );
+  }
+}
+
+// Retourne un message d'erreur ("" si tout est OK)
+function getUsernameOptsError(o) {
+  const ps = o.prefix.length + o.suffix.length;
+  if (o.minLen > o.maxLen) return "Min length is greater than max length";
+  if (ps + 1 > o.maxLen) {
+    return "Prefix + suffix are too long for the max length";
+  }
+  if (o.mode === "custom" && !getUsernamePool(o).length) {
+    return "Enter at least one custom character";
+  }
+  return "";
+}
+
+function applyCase(str, mode) {
+  switch (mode) {
+    case "lower":
+      return str.toLowerCase();
+    case "upper":
+      return str.toUpperCase();
+    case "random":
+      return str
+        .split("")
+        .map((c) => (Math.random() < 0.5 ? c.toLowerCase() : c.toUpperCase()))
+        .join("");
+    default:
+      return str;
+  }
+}
+
+// Mots : SilentFalcon / Silent_Falcon (+ chiffres), longueur dans [minPart, maxPart]
+function buildWordsPart(o, minPart, maxPart) {
+  const glue = o.mode === "words_us" ? "_" : "";
+  const cap = (w) => w[0].toUpperCase() + w.slice(1);
+  let s = "";
+
+  for (let t = 0; t < 40; t++) {
+    s = cap(pickItem(USERNAME_ADJECTIVES)) + glue + cap(pickItem(USERNAME_NOUNS));
+    if (o.digits) s += glue + randomString(randomInt(1, 4), DIGIT_CHARS);
+    if (s.length >= minPart && s.length <= maxPart) return s;
+  }
+
+  // repli : on coupe / on complète avec des chiffres
+  if (s.length > maxPart) s = s.slice(0, maxPart);
+  while (s.length < minPart) s += randomString(1, DIGIT_CHARS);
+  return s;
+}
+
+// Supprime les séparateurs (_ -) en début / fin / doublés
+function fixSeparators(part, pool, prevCh, nextCh) {
+  const safe =
+    pool
+      .split("")
+      .filter((c) => !SEP_CHARS.includes(c))
+      .join("") || LOWER_CHARS;
+  const isSep = (c) => !!c && SEP_CHARS.includes(c);
+  const ch = part.split("");
+  const last = ch.length - 1;
+
+  for (let i = 0; i <= last; i++) {
+    if (!isSep(ch[i])) continue;
+    const prev = i === 0 ? prevCh : ch[i - 1];
+    const bad =
+      isSep(prev) ||
+      (i === 0 && !prevCh) ||
+      (i === last && (!nextCh || isSep(nextCh)));
+    if (bad) ch[i] = pickItem(safe.split(""));
+  }
+  return ch.join("");
+}
+
+// Retourne un username, ou null si les options sont invalides
 function generateUsername() {
-  const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const chars = letters + "0123456789_";
-  const length = randomInt(15, 25);
-  // commence toujours par une lettre
-  return randomString(1, letters) + randomString(length - 1, chars);
+  const o = usernameOpts;
+  if (getUsernameOptsError(o)) return null;
+
+  const prefix = o.prefix;
+  const suffix = o.suffix;
+  const ps = prefix.length + suffix.length;
+  const minPart = Math.max(1, o.minLen - ps);
+  const maxPart = o.maxLen - ps;
+
+  let part;
+  let pool;
+
+  if (isWordMode(o.mode)) {
+    pool = LOWER_CHARS + UPPER_CHARS + DIGIT_CHARS;
+    part = buildWordsPart(o, minPart, maxPart);
+  } else {
+    pool = getUsernamePool(o);
+    part = randomString(randomInt(minPart, maxPart), pool);
+  }
+
+  // casse (sauf modes où la casse est le but du mode)
+  if (!CASE_LOCKED_MODES.includes(o.mode)) {
+    part = applyCase(part, o.caseMode);
+  }
+
+  // commence toujours par une lettre (seulement s'il n'y a pas de prefix)
+  if (o.startLetter && !prefix && !/[A-Za-z]/.test(part[0])) {
+    const letters = pool.split("").filter((c) => /[A-Za-z]/.test(c));
+    const first = pickItem(letters.length ? letters : LOWER_CHARS.split(""));
+    part = first + part.slice(1);
+  }
+
+  // pas de _ / - au début, à la fin ou doublés
+  if (o.trimUnderscore) {
+    part = fixSeparators(part, pool, prefix.slice(-1), suffix.charAt(0));
+  }
+
+  return prefix + part + suffix;
+}
+
+/* ---------- USERNAME OPTIONS (UI) ---------- */
+function readUsernameOptsFromUI() {
+  const num = (id, def) => {
+    const v = parseInt(el(id).value, 10);
+    return Number.isFinite(v)
+      ? Math.min(USERNAME_MAX, Math.max(USERNAME_MIN, v))
+      : def;
+  };
+
+  usernameOpts = {
+    mode: USERNAME_MODES.includes(el("uoMode").value)
+      ? el("uoMode").value
+      : USERNAME_DEFAULTS.mode,
+    prefix: el("uoPrefix").value.replace(USERNAME_FORBIDDEN_RE, ""),
+    suffix: el("uoSuffix").value.replace(USERNAME_FORBIDDEN_RE, ""),
+    custom: el("uoCustom").value.replace(USERNAME_FORBIDDEN_RE, ""),
+    minLen: num("uoMin", USERNAME_DEFAULTS.minLen),
+    maxLen: num("uoMax", USERNAME_DEFAULTS.maxLen),
+    caseMode: el("uoCase").value,
+    startLetter: el("uoStart").checked,
+    trimUnderscore: el("uoTrim").checked,
+    underscore: el("uoUnderscore").checked,
+    digits: el("uoDigits").checked,
+  };
+}
+
+function applyUsernameOptsToUI(o) {
+  el("uoMode").value = o.mode;
+  el("uoPrefix").value = o.prefix;
+  el("uoSuffix").value = o.suffix;
+  el("uoCustom").value = o.custom;
+  el("uoMin").value = o.minLen;
+  el("uoMax").value = o.maxLen;
+  el("uoCase").value = o.caseMode;
+  el("uoStart").checked = o.startLetter;
+  el("uoTrim").checked = o.trimUnderscore;
+  el("uoUnderscore").checked = o.underscore;
+  el("uoDigits").checked = o.digits;
+}
+
+function updateUsernameOptsVisibility() {
+  const mode = usernameOpts.mode;
+  el("uoCustomWrap").style.display = mode === "custom" ? "" : "none";
+  el("uoDigitsWrap").style.display = isWordMode(mode) ? "" : "none";
+  el("uoUnderscoreWrap").style.display = mode === "mixed" ? "" : "none";
+  el("uoCase").disabled = CASE_LOCKED_MODES.includes(mode);
+}
+
+function updateUsernamePreview() {
+  const box = el("uoPreview");
+  const text = el("uoPreviewText");
+  const err = getUsernameOptsError(usernameOpts);
+
+  if (err) {
+    box.classList.add("bad");
+    text.textContent = "✗ " + err;
+    return;
+  }
+  box.classList.remove("bad");
+  const sample = generateUsername();
+  text.textContent = sample ? `${sample}  (${sample.length})` : "";
+}
+
+function saveUsernameOpts() {
+  if (typeof chrome !== "undefined") {
+    chrome?.storage?.local?.set({ usernameOpts });
+  }
+}
+
+function onUsernameOptChange(e) {
+  readUsernameOptsFromUI();
+
+  // réécrit les champs texte nettoyés (caractères interdits retirés)
+  if (e && e.target) {
+    const map = {
+      uoPrefix: "prefix",
+      uoSuffix: "suffix",
+      uoCustom: "custom",
+    };
+    const key = map[e.target.id];
+    if (key && e.target.value !== usernameOpts[key]) {
+      e.target.value = usernameOpts[key];
+    }
+    // les champs numériques sont recadrés une fois la saisie terminée
+    if (e.type === "change" && (e.target.id === "uoMin" || e.target.id === "uoMax")) {
+      el("uoMin").value = usernameOpts.minLen;
+      el("uoMax").value = usernameOpts.maxLen;
+    }
+  }
+
+  updateUsernameOptsVisibility();
+  updateUsernamePreview();
+  saveUsernameOpts();
+}
+
+[
+  "uoMode",
+  "uoPrefix",
+  "uoSuffix",
+  "uoCustom",
+  "uoMin",
+  "uoMax",
+  "uoCase",
+  "uoStart",
+  "uoTrim",
+  "uoUnderscore",
+  "uoDigits",
+].forEach((id) => {
+  el(id).addEventListener("input", onUsernameOptChange);
+  el(id).addEventListener("change", onUsernameOptChange);
+});
+
+el("accOptsToggle").onclick = () => {
+  const open = el("accOpts").classList.toggle("open");
+  el("accOptsToggle").textContent = open
+    ? "Username options ▴"
+    : "Username options ▾";
+  if (open) updateUsernamePreview();
+};
+
+el("uoPreviewBtn").onclick = () => {
+  readUsernameOptsFromUI();
+  updateUsernamePreview();
+};
+
+el("uoReset").onclick = () => {
+  usernameOpts = { ...USERNAME_DEFAULTS };
+  applyUsernameOptsToUI(usernameOpts);
+  updateUsernameOptsVisibility();
+  updateUsernamePreview();
+  saveUsernameOpts();
+};
+
+// charge les options sauvegardées
+applyUsernameOptsToUI(usernameOpts);
+updateUsernameOptsVisibility();
+updateUsernamePreview();
+
+if (typeof chrome !== "undefined" && chrome?.storage?.local) {
+  chrome.storage.local.get(["usernameOpts"], (result) => {
+    if (result && result.usernameOpts) {
+      usernameOpts = { ...USERNAME_DEFAULTS, ...result.usernameOpts };
+      if (!USERNAME_MODES.includes(usernameOpts.mode)) {
+        usernameOpts.mode = USERNAME_DEFAULTS.mode;
+      }
+      applyUsernameOptsToUI(usernameOpts);
+      readUsernameOptsFromUI();
+      updateUsernameOptsVisibility();
+      updateUsernamePreview();
+    }
+  });
 }
 
 function generatePassword() {
@@ -1152,10 +1513,29 @@ async function runGenerateUsername() {
   accValid.username = false;
   updateCreateBtn();
 
+  // prend en compte les options actuelles
+  readUsernameOptsFromUI();
+  const optErr = getUsernameOptsError(usernameOpts);
+  if (optErr) {
+    setAccStatus("accUsernameStatus", "accUsername", "bad", "✗ " + optErr);
+    updateCreateBtn();
+    return false;
+  }
+
   let networkErrors = 0;
 
   for (let i = 1; i <= MAX_GEN_ATTEMPTS; i++) {
     const candidate = generateUsername();
+    if (!candidate) {
+      setAccStatus(
+        "accUsernameStatus",
+        "accUsername",
+        "bad",
+        "✗ Invalid username options",
+      );
+      updateCreateBtn();
+      return false;
+    }
     el("accUsername").value = candidate;
     setAccStatus(
       "accUsernameStatus",

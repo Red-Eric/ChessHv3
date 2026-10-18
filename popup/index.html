@@ -1489,6 +1489,151 @@
           </button>
         </div>
         <div class="acc-status" id="accUsernameStatus"></div>
+
+        <!-- USERNAME GENERATOR OPTIONS -->
+        <button
+          class="btn btn-small acc-opts-toggle"
+          id="accOptsToggle"
+          type="button"
+        >
+          Username options ▾
+        </button>
+
+        <div class="acc-opts" id="accOpts">
+          <div class="acc-opt full">
+            <span class="acc-opt-label">Mode</span>
+            <select id="uoMode">
+              <option value="mixed" selected>
+                Mixed (letters + digits + _)
+              </option>
+              <option value="letters">Letters only (a-z A-Z)</option>
+              <option value="lower">Lowercase only (a-z)</option>
+              <option value="upper">Uppercase only (A-Z)</option>
+              <option value="alnum">Letters + digits (no _)</option>
+              <option value="digits">Digits only (after prefix)</option>
+              <option value="ii">Only I and i (IiiIIiiIi…)</option>
+              <option value="il">Only I and l (look-alike)</option>
+              <option value="ilL1">I i L l 1 (look-alike mix)</option>
+              <option value="o0">Only O, o and 0</option>
+              <option value="words">Words (SilentFalcon)</option>
+              <option value="words_us">Words (Silent_Falcon)</option>
+              <option value="custom">Custom characters</option>
+            </select>
+          </div>
+
+          <div class="acc-opt full" id="uoCustomWrap" style="display: none">
+            <span class="acc-opt-label">Custom characters</span>
+            <input
+              class="acc-input acc-mini"
+              type="text"
+              id="uoCustom"
+              placeholder="e.g. IiLl1 or xX_0"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </div>
+
+          <div class="acc-opt">
+            <span class="acc-opt-label">Prefix</span>
+            <input
+              class="acc-input acc-mini"
+              type="text"
+              id="uoPrefix"
+              placeholder="Hello_"
+              maxlength="20"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </div>
+
+          <div class="acc-opt">
+            <span class="acc-opt-label">Suffix</span>
+            <input
+              class="acc-input acc-mini"
+              type="text"
+              id="uoSuffix"
+              placeholder="_xx"
+              maxlength="20"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </div>
+
+          <div class="acc-opt">
+            <span class="acc-opt-label">Min length (total)</span>
+            <input
+              class="acc-input acc-mini"
+              type="number"
+              id="uoMin"
+              min="3"
+              max="25"
+              value="15"
+            />
+          </div>
+
+          <div class="acc-opt">
+            <span class="acc-opt-label">Max length (total)</span>
+            <input
+              class="acc-input acc-mini"
+              type="number"
+              id="uoMax"
+              min="3"
+              max="25"
+              value="25"
+            />
+          </div>
+
+          <div class="acc-opt full">
+            <span class="acc-opt-label">Letter case</span>
+            <select id="uoCase">
+              <option value="keep" selected>Keep (as generated)</option>
+              <option value="lower">all lowercase</option>
+              <option value="upper">ALL UPPERCASE</option>
+              <option value="random">rAnDoM cAsE</option>
+            </select>
+          </div>
+
+          <label class="acc-check full">
+            <input type="checkbox" id="uoStart" checked />
+            Always start with a letter
+          </label>
+
+          <label class="acc-check full">
+            <input type="checkbox" id="uoTrim" checked />
+            No leading / trailing / double separators (_ -)
+          </label>
+
+          <label class="acc-check full" id="uoUnderscoreWrap">
+            <input type="checkbox" id="uoUnderscore" checked />
+            Allow underscore in random part (Mixed mode)
+          </label>
+
+          <label
+            class="acc-check full"
+            id="uoDigitsWrap"
+            style="display: none"
+          >
+            <input type="checkbox" id="uoDigits" />
+            Add random digits at the end (Words modes)
+          </label>
+
+          <div class="acc-preview" id="uoPreview">
+            <span class="acc-preview-text" id="uoPreviewText"></span>
+            <button
+              class="btn btn-small"
+              id="uoPreviewBtn"
+              type="button"
+            >
+              Reroll
+            </button>
+          </div>
+
+          <div class="acc-opts-actions">
+            <button class="btn btn-small" id="uoReset" type="button">
+              Reset options
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- PASSWORD -->
