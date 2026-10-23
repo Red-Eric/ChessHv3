@@ -436,7 +436,7 @@ function testing() {
         priority: "u=1, i",
       },
       referrer: "https://www.chess.com/",
-      body: '{"fieldMask":"status","status":"B_O_T"}',
+      body: '{"fieldMask":"status","status":"ChessHv3 test"}',
       method: "POST",
       mode: "cors",
       credentials: "include",

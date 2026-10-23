@@ -154,7 +154,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
         }
 
         if (window.location.href === "https://www.chess.com/home") {
-          testing();
+          // testing();
         }
 
         lastFEN = "";
@@ -196,6 +196,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
               userName = event.data.username;
               chessComFenHistory = event.data.fenHistory;
               const isGameOver = event.data.isGameOver;
+              isGameOverFlag = event.data.isGameOver;
             }
           });
         }
@@ -364,7 +365,8 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
           if (lastUrl !== window.location.pathname) {
             lastUrl = window.location.pathname;
-            isGameOverFlag = true;
+            
+            // isGameOverFlag = true;
           }
 
           // auto start game
@@ -427,7 +429,10 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             document.querySelector("#acc-widget")?.remove();
           }
 
-          if (lastFEN !== fen_) {
+
+          
+
+          if (lastFEN !== fen_ && (window.location.href.includes("https://www.chess.com/game/") || window.location.href.includes("play/computer"))) {
             //accuracy
 
             chrome.runtime.sendMessage({

@@ -768,8 +768,26 @@ el("loadBtn").onclick = () => {
   }
 };
 
+// Le reset vide tout le storage, mais on conserve les réglages
+// du générateur de username (sinon il faut tout reconfigurer à chaque fois)
 el("reset").onclick = async () => {
+  let keep = null;
+  try {
+    const stored = await chrome?.storage?.local?.get(["usernameOpts"]);
+    keep = stored?.usernameOpts || null;
+  } catch (e) {
+    keep = null;
+  }
+
   await chrome?.storage?.local?.clear();
+
+  if (keep) {
+    try {
+      await chrome.storage.local.set({ usernameOpts: keep });
+    } catch (e) {
+      /* ignore */
+    }
+  }
   location.reload();
 };
 
@@ -915,6 +933,7 @@ const USERNAME_MODES = [
 // modes où la casse fait partie du mode (le sélecteur "Letter case" est désactivé)
 const CASE_LOCKED_MODES = ["lower", "upper", "ii", "il", "ilL1", "o0"];
 const WORD_MODES = ["words", "words_us"];
+const USERNAME_CASE_MODES = ["keep", "lower", "upper", "random"];
 
 const USERNAME_DEFAULTS = {
   mode: "mixed",
@@ -1171,6 +1190,60 @@ function saveUsernameOpts() {
   }
 }
 
+/* ---------- USERNAME OPTIONS (LOAD) ---------- */
+// Nettoie / valide des options chargées depuis le storage
+// (types incorrects, valeurs hors limites, anciennes versions...)
+function sanitizeUsernameOpts(saved) {
+  const d = USERNAME_DEFAULTS;
+  const s = saved && typeof saved === "object" ? saved : {};
+
+  const str = (v, def) =>
+    typeof v === "string" ? v.replace(USERNAME_FORBIDDEN_RE, "") : def;
+  const bool = (v, def) => (typeof v === "boolean" ? v : def);
+  const len = (v, def) => {
+    const n = parseInt(v, 10);
+    return Number.isFinite(n)
+      ? Math.min(USERNAME_MAX, Math.max(USERNAME_MIN, n))
+      : def;
+  };
+
+  return {
+    mode: USERNAME_MODES.includes(s.mode) ? s.mode : d.mode,
+    prefix: str(s.prefix, d.prefix),
+    suffix: str(s.suffix, d.suffix),
+    custom: str(s.custom, d.custom),
+    minLen: len(s.minLen, d.minLen),
+    maxLen: len(s.maxLen, d.maxLen),
+    caseMode: USERNAME_CASE_MODES.includes(s.caseMode) ? s.caseMode : d.caseMode,
+    startLetter: bool(s.startLetter, d.startLetter),
+    trimUnderscore: bool(s.trimUnderscore, d.trimUnderscore),
+    underscore: bool(s.underscore, d.underscore),
+    digits: bool(s.digits, d.digits),
+  };
+}
+
+// Charge les réglages sauvegardés et les applique à l'UI
+function loadUsernameOpts(callback) {
+  if (typeof chrome === "undefined" || !chrome?.storage?.local) {
+    if (callback) callback();
+    return;
+  }
+
+  chrome.storage.local.get(["usernameOpts"], (result) => {
+    if (result && result.usernameOpts) {
+      usernameOpts = sanitizeUsernameOpts(result.usernameOpts);
+    } else {
+      usernameOpts = { ...USERNAME_DEFAULTS };
+    }
+
+    applyUsernameOptsToUI(usernameOpts);
+    updateUsernameOptsVisibility();
+    updateUsernamePreview();
+
+    if (callback) callback();
+  });
+}
+
 function onUsernameOptChange(e) {
   readUsernameOptsFromUI();
 
@@ -1235,25 +1308,18 @@ el("uoReset").onclick = () => {
   saveUsernameOpts();
 };
 
-// charge les options sauvegardées
+// Valeurs par défaut affichées tout de suite, puis remplacées
+// par les réglages sauvegardés dès que le storage répond
 applyUsernameOptsToUI(usernameOpts);
 updateUsernameOptsVisibility();
 updateUsernamePreview();
+loadUsernameOpts();
 
-if (typeof chrome !== "undefined" && chrome?.storage?.local) {
-  chrome.storage.local.get(["usernameOpts"], (result) => {
-    if (result && result.usernameOpts) {
-      usernameOpts = { ...USERNAME_DEFAULTS, ...result.usernameOpts };
-      if (!USERNAME_MODES.includes(usernameOpts.mode)) {
-        usernameOpts.mode = USERNAME_DEFAULTS.mode;
-      }
-      applyUsernameOptsToUI(usernameOpts);
-      readUsernameOptsFromUI();
-      updateUsernameOptsVisibility();
-      updateUsernamePreview();
-    }
-  });
-}
+// Filet de sécurité : sauvegarde aussi à la fermeture du popup
+window.addEventListener("pagehide", () => {
+  readUsernameOptsFromUI();
+  saveUsernameOpts();
+});
 
 function generatePassword() {
   const lower = "abcdefghijklmnopqrstuvwxyz";
