@@ -365,7 +365,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
           if (lastUrl !== window.location.pathname) {
             lastUrl = window.location.pathname;
-            
+
             // isGameOverFlag = true;
           }
 
@@ -429,10 +429,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             document.querySelector("#acc-widget")?.remove();
           }
 
-
-          
-
-          if (lastFEN !== fen_ && (window.location.href.includes("https://www.chess.com/game/") || window.location.href.includes("play/computer"))) {
+          if (
+            lastFEN !== fen_ &&
+            (window.location.href.includes("https://www.chess.com/game/") ||
+              window.location.href.includes("play/computer"))
+          ) {
             //accuracy
 
             chrome.runtime.sendMessage({
@@ -626,7 +627,11 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                 )[1]?.innerText;
 
                 engine.getBestMove(fen_, time_).then((move) => {
-                  requestMove(move.from, move.to, "q", true);
+                  // requestMove(move.from, move.to, "q", true);
+
+                  if (move?.from && move?.to) {
+                    requestMove(move.from, move.to, "q", true);
+                  }
                 });
               } else {
                 if (
@@ -1035,7 +1040,9 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                       .slice(0, 5);
 
                     engine.getBestMove(fen_, time_).then(async (move) => {
-                      await movePiece(move.from, move.to, 0);
+                      if (move?.from && move?.to) {
+                        await movePiece(move.from, move.to, 0);
+                      }
                     });
                   } else {
                     if (
@@ -1892,7 +1899,10 @@ chrome.storage.local.get(["chessConfig"], (result) => {
                 const time_ = `${String(minutes).padStart(2, "0")}:${String(Math.floor(seconds)).padStart(2, "0")}`;
 
                 engine.getBestMove(fen_, time_).then(async (move) => {
-                  movePiece(move.from, move.to, 0);
+                  if (move?.from && move?.to) {
+                    // requestMove(move.from, move.to, "q", true);
+                    movePiece(move.from, move.to, 0);
+                  }
                 });
               } else {
                 if (

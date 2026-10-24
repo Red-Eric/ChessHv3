@@ -1287,8 +1287,8 @@ class Komodo_Auto {
           const elapsed = Date.now() - startTime;
           const remaining = thinkingtime - elapsed;
 
-          console.log("Engine calculation:", elapsed, "ms");
-          console.log("Remaining wait:", remaining, "ms");
+          // console.log("Engine calculation:", elapsed, "ms");
+          // console.log("Remaining wait:", remaining, "ms");
 
           if (remaining > 0) {
             setTimeout(() => {
