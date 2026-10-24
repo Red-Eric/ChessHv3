@@ -1264,10 +1264,6 @@ class Komodo_Auto {
 
     const startTime = Date.now();
 
-    console.clear();
-    console.log("Time left:", time, "ms");
-    console.log("Thinking time:", thinkingtime, "ms");
-
     this.worker.postMessage("setoption name UCI LimitStrength value true");
 
     this.worker.postMessage(`setoption name Personality value ${config.style}`);

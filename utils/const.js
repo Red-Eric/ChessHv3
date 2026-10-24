@@ -887,7 +887,7 @@ const wp = `
 
 let lastFEN = "";
 let uciHistory = "";
-let fen_ = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+let fen_ = "r1bq1rk1/pp2bppp/2n1pn2/2pp4/2PP4/2N1PN2/PP2BPPP/R1BQ1RK1 w - - 0 1";
 let side_index = 1;
 let evalObj = null;
 let chessComFenHistory = [];
