@@ -57,13 +57,14 @@
         "utils/draw.js",
         "content.js"
       ],
-      "run_at": "document_idle"
+      "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [
     {
       "resources": [
         "a.js",
+        "interceptor.js",
         "b.js",
         "lib/chess_min.js",
         "lib/komodo.js",
