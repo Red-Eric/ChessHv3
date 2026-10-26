@@ -1174,11 +1174,8 @@ if (window.location.href.includes("https://www.chess.com/daily")) {
 if (window.location.href.includes("https://www.chess.com/puzzles/rush")) {
  
 
-
 (() => {
   const originalFetch = window.fetch;
-
-  
 
   window.fetch = async function (...args) {
     const response = await originalFetch.apply(this, args);
@@ -1195,31 +1192,26 @@ if (window.location.href.includes("https://www.chess.com/puzzles/rush")) {
 
         const results = puzzles
           .map((puzzle) => {
-            const fen = puzzle.initialFen;
+            const initialFen = puzzle.initialFen;
 
-            if (!fen || !puzzle.pgn) {
+            if (!initialFen || !puzzle.pgn) {
               console.warn("[DEBUG] FEN ou PGN manquant :", puzzle.id);
               return null;
             }
 
             const chess = new Chess();
+            const loaded = chess.load(initialFen);
 
-            const loaded = chess.load(fen);
-
-            console.group(`[PUZZLE ${puzzle.id}]`);
-            console.log("[DEBUG] FEN initial :", fen);
-            console.log("[DEBUG] FEN après chargement :", chess.fen());
-            console.log("[DEBUG] Couleur utilisateur :", puzzle.colorOfUser);
-            console.log("[DEBUG] PGN original :", puzzle.pgn);
+           
 
             if (loaded === false) {
-              console.error("[DEBUG] Échec du chargement du FEN");
-              console.groupEnd();
+              
               return null;
             }
 
             const colorOfUser = puzzle.colorOfUser;
             const solution = [];
+            let resultFen = null;
 
             const movesText = puzzle.pgn
               .replace(/\r/g, "")
@@ -1235,54 +1227,40 @@ if (window.location.href.includes("https://www.chess.com/puzzles/rush")) {
               .split(/\s+/)
               .filter(Boolean);
 
-            console.log("[DEBUG] Coups SAN extraits :", tokens);
 
             for (let i = 0; i < tokens.length; i++) {
               const san = tokens[i];
-
-              // Afficher l'état avant le coup.
               const fenBefore = chess.fen();
               const movingColor =
                 chess.turn() === "w" ? "white" : "black";
-
-              console.group(`[COUP ${i}] ${san}`);
-              console.log("[DEBUG] FEN avant :", fenBefore);
-              console.log("[DEBUG] Couleur qui joue :", movingColor);
 
               let move;
 
               try {
                 move = chess.move(san, { strict: false });
               } catch (error) {
-                console.error("[DEBUG] Exception chess.move() :", error);
                 move = null;
               }
 
               if (!move) {
-                console.error("[DEBUG] Coup SAN invalide :", san);
-                console.log("[DEBUG] FEN inchangé :", chess.fen());
-                console.groupEnd();
-                console.groupEnd();
+                
                 break;
               }
 
-              // Afficher le résultat réel du coup.
               const fenAfter = chess.fen();
 
-              console.log("[DEBUG] Coup interprété :", move);
-              console.log("[DEBUG] FEN après :", fenAfter);
-              console.log("[DEBUG] Position modifiée :", fenBefore !== fenAfter);
+              
 
-              // Le premier coup sert uniquement à avancer la position.
               if (i === 0) {
-                console.log("[DEBUG] Premier coup ignoré dans solution");
-                console.groupEnd();
+                resultFen = fenAfter;
+
+                
+
                 continue;
               }
 
               if (movingColor !== colorOfUser) {
-                console.log("[DEBUG] Coup adverse ignoré");
-                console.groupEnd();
+                
                 continue;
               }
 
@@ -1298,13 +1276,15 @@ if (window.location.href.includes("https://www.chess.com/puzzles/rush")) {
               console.groupEnd();
             }
 
-            console.log("[DEBUG] FEN final :", chess.fen());
-            console.log("[DEBUG] Solution finale :", solution);
-            console.groupEnd();
+            if (resultFen === null) {
+              resultFen = initialFen;
+            }
+
+            
 
             return {
               id: puzzle.id,
-              fen,
+              fen: resultFen,
               solution,
             };
           })
@@ -1314,7 +1294,6 @@ if (window.location.href.includes("https://www.chess.com/puzzles/rush")) {
 
         console.log(res_)
 
-        console.log("[DEBUG] Résultats complets :", window.res_);
       } catch (error) {
         console.error("[Chess.com] Erreur :", error);
       }
@@ -1323,6 +1302,7 @@ if (window.location.href.includes("https://www.chess.com/puzzles/rush")) {
     return response;
   };
 })();
+
 
 
 }
