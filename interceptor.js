@@ -1187,7 +1187,6 @@ if (window.location.href.includes("https://www.chess.com/puzzles/rush")) {
           const data = await response.clone().json();
           const puzzles = data?.puzzles || [];
 
-
           const results = puzzles
             .map((puzzle) => {
               const initialFen = puzzle.initialFen;
@@ -1285,7 +1284,6 @@ if (window.location.href.includes("https://www.chess.com/puzzles/rush")) {
     };
   })();
 
-
   let flag__ = false;
 
   const interval = setInterval(() => {
@@ -1299,23 +1297,28 @@ if (window.location.href.includes("https://www.chess.com/puzzles/rush")) {
     }
 
     if (flag__ === true) {
+      // debugger;
+      const puzzle = res_?.find((e) => e.fen === fen);
 
-      debugger;
+      if (!puzzle) {
+        console.warn("[DEBUG] Aucun puzzle correspondant au FEN :", fen);
+        return;
+      }
 
-      soluce = res_.find((e) => e.fen === fen).solution;
-      soluce.forEach((e) => {
-        const prom_ = e.promotion?.toLocaleLowerCase()[0] || "q";
-        movePiecePuzzle(e.from, e.to, prom_, 100);
-      });
+      soluce = puzzle.solution;
+      (async () => {
+        for (const e of soluce) {
+          const prom_ = e.promotion?.toLocaleLowerCase()[0] || "q";
+
+          movePiecePuzzle(e.from, e.to, prom_, 100);
+
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+      })();
 
       flag__ = false;
     }
 
     // res = [];
   }, 500);
-
-
-
-
-
 }
