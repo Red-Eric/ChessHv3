@@ -1172,136 +1172,149 @@ if (window.location.href.includes("https://www.chess.com/daily")) {
 }
 
 if (window.location.href.includes("https://www.chess.com/puzzles/rush")) {
- 
+  localStorage.clear();
 
-(() => {
-  const originalFetch = window.fetch;
+  (() => {
+    const originalFetch = window.fetch;
 
-  window.fetch = async function (...args) {
-    const response = await originalFetch.apply(this, args);
+    window.fetch = async function (...args) {
+      const response = await originalFetch.apply(this, args);
 
-    const url =
-      args[0] instanceof Request ? args[0].url : String(args[0]);
+      const url = args[0] instanceof Request ? args[0].url : String(args[0]);
 
-    if (url.includes("/callback/tactics/challenge/puzzles")) {
-      try {
-        const data = await response.clone().json();
-        const puzzles = data?.puzzles || [];
-
-        console.log("[DEBUG] Nombre de puzzles :", puzzles.length);
-
-        const results = puzzles
-          .map((puzzle) => {
-            const initialFen = puzzle.initialFen;
-
-            if (!initialFen || !puzzle.pgn) {
-              console.warn("[DEBUG] FEN ou PGN manquant :", puzzle.id);
-              return null;
-            }
-
-            const chess = new Chess();
-            const loaded = chess.load(initialFen);
-
-           
-
-            if (loaded === false) {
-              
-              return null;
-            }
-
-            const colorOfUser = puzzle.colorOfUser;
-            const solution = [];
-            let resultFen = null;
-
-            const movesText = puzzle.pgn
-              .replace(/\r/g, "")
-              .replace(/^\s*\[[^\]]*\]\s*$/gm, "")
-              .replace(/\{[^}]*\}/g, " ")
-              .replace(/\([^)]*\)/g, " ")
-              .replace(/\$\d+/g, " ")
-              .trim();
-
-            const tokens = movesText
-              .replace(/\d+\.(?:\.\.)?/g, " ")
-              .replace(/1\/2-1\/2|1-0|0-1|\*/g, " ")
-              .split(/\s+/)
-              .filter(Boolean);
+      if (url.includes("/callback/tactics/challenge/puzzles")) {
+        try {
+          const data = await response.clone().json();
+          const puzzles = data?.puzzles || [];
 
 
-            for (let i = 0; i < tokens.length; i++) {
-              const san = tokens[i];
-              const fenBefore = chess.fen();
-              const movingColor =
-                chess.turn() === "w" ? "white" : "black";
+          const results = puzzles
+            .map((puzzle) => {
+              const initialFen = puzzle.initialFen;
 
-              let move;
-
-              try {
-                move = chess.move(san, { strict: false });
-              } catch (error) {
-                move = null;
+              if (!initialFen || !puzzle.pgn) {
+                return null;
               }
 
-              if (!move) {
-                
-                break;
+              const chess = new Chess();
+              const loaded = chess.load(initialFen);
+
+              if (loaded === false) {
+                return null;
               }
 
-              const fenAfter = chess.fen();
+              const colorOfUser = puzzle.colorOfUser;
+              const solution = [];
+              let resultFen = null;
 
-              
+              const movesText = puzzle.pgn
+                .replace(/\r/g, "")
+                .replace(/^\s*\[[^\]]*\]\s*$/gm, "")
+                .replace(/\{[^}]*\}/g, " ")
+                .replace(/\([^)]*\)/g, " ")
+                .replace(/\$\d+/g, " ")
+                .trim();
 
-              if (i === 0) {
-                resultFen = fenAfter;
+              const tokens = movesText
+                .replace(/\d+\.(?:\.\.)?/g, " ")
+                .replace(/1\/2-1\/2|1-0|0-1|\*/g, " ")
+                .split(/\s+/)
+                .filter(Boolean);
 
-                
+              for (let i = 0; i < tokens.length; i++) {
+                const san = tokens[i];
+                const fenBefore = chess.fen();
+                const movingColor = chess.turn() === "w" ? "white" : "black";
 
-                continue;
+                let move;
+
+                try {
+                  move = chess.move(san, { strict: false });
+                } catch (error) {
+                  move = null;
+                }
+
+                if (!move) {
+                  break;
+                }
+
+                const fenAfter = chess.fen();
+
+                if (i === 0) {
+                  resultFen = fenAfter;
+
+                  continue;
+                }
+
+                if (movingColor !== colorOfUser) {
+                  continue;
+                }
+
+                const entry = {
+                  from: move.from,
+                  to: move.to,
+                  promotion: move.promotion || null,
+                };
+
+                solution.push(entry);
+
+                console.groupEnd();
               }
 
-              if (movingColor !== colorOfUser) {
-                
-                continue;
+              if (resultFen === null) {
+                resultFen = initialFen;
               }
 
-              const entry = {
-                from: move.from,
-                to: move.to,
-                promotion: move.promotion || null,
+              return {
+                id: puzzle.id,
+                fen: resultFen,
+                solution,
               };
+            })
+            .filter(Boolean);
 
-              solution.push(entry);
+          res_ = results;
 
-              console.log("[DEBUG] Coup ajouté à solution :", entry);
-              console.groupEnd();
-            }
-
-            if (resultFen === null) {
-              resultFen = initialFen;
-            }
-
-            
-
-            return {
-              id: puzzle.id,
-              fen: resultFen,
-              solution,
-            };
-          })
-          .filter(Boolean);
-
-        res_ = results;
-
-        console.log(res_)
-
-      } catch (error) {
-        console.error("[Chess.com] Erreur :", error);
+          console.log(res_);
+        } catch (error) {
+          console.error("[Chess.com] Erreur :", error);
+        }
       }
+
+      return response;
+    };
+  })();
+
+
+  let flag__ = false;
+
+  const interval = setInterval(() => {
+    const fen = document.querySelector("wc-chess-board")?.game?.getFEN();
+
+    if (
+      fen &&
+      !(fen?.includes("pppppppp/8/8/8/8/PPPPPPPP") && res_?.length === 0)
+    ) {
+      flag__ = true;
     }
 
-    return response;
-  };
-})();
+    if (flag__ === true) {
+
+      debugger;
+
+      soluce = res_.find((e) => e.fen === fen).solution;
+      soluce.forEach((e) => {
+        const prom_ = e.promotion?.toLocaleLowerCase()[0] || "q";
+        movePiecePuzzle(e.from, e.to, prom_, 100);
+      });
+
+      flag__ = false;
+    }
+
+    // res = [];
+  }, 500);
+
+
 
 
 
