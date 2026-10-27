@@ -12,7 +12,6 @@
     "service_worker": "background.js"
   },
   "action": {
-
     "default_icon": {
       "16": "icons/16.png",
       "48": "icons/48.png",
@@ -47,6 +46,16 @@
         "<all_urls>"
       ],
       "js": [
+        "interceptor.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
         "alert.js",
         "lib/chess_min.js",
         "lib/maia3/maia3-tokenizer.js",
@@ -57,7 +66,7 @@
         "utils/draw.js",
         "content.js"
       ],
-      "run_at": "document_start"
+      "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
@@ -85,14 +94,12 @@
         "book/*",
         "audio.html",
         "popup/index.html",
-    
         "lib/maia3/all_moves.json",
         "lib/maia3/all_moves_reversed.json",
         "lib/maia3/maia3-5m.onnx",
         "lib/maia3/maia3-engine.js",
         "lib/maia3/maia3-tokenizer.js",
         "lib/maia3/maia3-worker.js",
-
         "lib/ort/ort-wasm-simd-threaded.wasm",
         "lib/ort/ort-wasm-simd.wasm",
         "lib/ort/ort-wasm-threaded.js",
@@ -101,11 +108,9 @@
         "lib/ort/ort-wasm.wasm",
         "lib/ort/ort.min.js",
         "lib/ort/ort.wasm.min.js",
-
         "analyze/engine/torch.js",
         "analyze/engine/torch.wasm",
         "analyze/index.html"
-        
       ],
       "matches": [
         "<all_urls>"

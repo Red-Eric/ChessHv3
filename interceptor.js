@@ -909,6 +909,7 @@ let Chess = function (r) {
   );
 };
 
+
 const queryChess_com = "wc-chess-board";
 const queryLichess_org = "cg-container";
 const queryWordChess_com = "div.cg-board";
@@ -936,12 +937,12 @@ function movePiecePuzzle(
     return false;
   }
   const legal = game.getLegalMoves();
-  // let move = legal.find((m) => m.from === from && m.to === to);
-  let move = {
-    from: from,
-    to: to,
-    promotionTypes: promotion,
-  };
+  let move = legal.find((m) => m.from === from && m.to === to);
+  // let move = {
+  //   from: from,
+  //   to: to,
+  //   promotionTypes: promotion,
+  // };
   if (!move) {
     console.log("no legal move ?");
     return false;
@@ -1027,13 +1028,25 @@ if (window.location.href.includes("https://www.chess.com/puzzles/rated")) {
     }
 
     if (flag__ === true) {
-      res_.solution.forEach((e) => {
-        console.log(e);
+      // res_.solution.forEach((e) => {
+      //   console.log(e);
 
-        const prom_ = e.promotion?.toLocaleLowerCase()[0] || "q";
+      //   const prom_ = e.promotion?.toLocaleLowerCase()[0] || "q";
 
-        movePiecePuzzle(e.from, e.to, prom_, 1000);
-      });
+      //   movePiecePuzzle(e.from, e.to, prom_, 1000);
+      // });
+
+      (async () => {
+        for (const e of res_.solution) {
+          const prom_ = e.promotion?.toLocaleLowerCase()[0] || null;
+
+          
+
+          movePiecePuzzle(e.from, e.to, prom_, 800);
+
+          await new Promise((resolve) => setTimeout(resolve, 900));
+        }
+      })();
 
       flag__ = false;
     }
@@ -1159,10 +1172,16 @@ if (window.location.href.includes("https://www.chess.com/daily")) {
 
     if (flag__ === true) {
       soluce = res_.find((e) => e.fen === fen).solution;
-      soluce.forEach((e) => {
-        const prom_ = e.promotion?.toLocaleLowerCase()[0] || "q";
-        movePiecePuzzle(e.from, e.to, prom_, 1000);
-      });
+
+      (async () => {
+        for (const e of soluce) {
+          const prom_ = e.promotion?.toLocaleLowerCase()[0] || "q";
+
+          movePiecePuzzle(e.from, e.to, prom_, 100);
+
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+      })();
 
       flag__ = false;
     }
@@ -1272,7 +1291,14 @@ if (window.location.href.includes("https://www.chess.com/puzzles/rush")) {
             })
             .filter(Boolean);
 
-          res_ = results;
+          // res_ = results;
+
+          res_ = [
+            ...(res_ || []),
+            ...results.filter(
+              (newP) => !res_?.some((oldP) => oldP.id === newP.id),
+            ),
+          ];
 
           console.log(res_);
         } catch (error) {
@@ -1297,15 +1323,26 @@ if (window.location.href.includes("https://www.chess.com/puzzles/rush")) {
     }
 
     if (flag__ === true) {
-      // debugger;
-      const puzzle = res_?.find((e) => e.fen === fen);
+      flag__ = false;
 
-      if (!puzzle) {
+      // On cherche l'index du puzzle correspondant au FEN actuel
+      const puzzleIndex = res_?.findIndex((e) => e.fen === fen);
+
+      if (puzzleIndex === -1 || puzzleIndex === undefined) {
         console.warn("[DEBUG] Aucun puzzle correspondant au FEN :", fen);
         return;
       }
 
-      soluce = puzzle.solution;
+      // On extrait le puzzle ET on le supprime directement du tableau res_
+      const puzzle = res_.splice(puzzleIndex, 1)[0];
+
+      const soluce = puzzle.solution;
+
+      // soluce.forEach((e) => {
+      //   const prom_ = e.promotion?.toLocaleLowerCase()[0] || "q";
+      //   movePiecePuzzle(e.from, e.to, prom_, 200);
+      // });
+
       (async () => {
         for (const e of soluce) {
           const prom_ = e.promotion?.toLocaleLowerCase()[0] || "q";
@@ -1315,10 +1352,45 @@ if (window.location.href.includes("https://www.chess.com/puzzles/rush")) {
           await new Promise((resolve) => setTimeout(resolve, 500));
         }
       })();
-
-      flag__ = false;
     }
-
-    // res = [];
   }, 500);
+
+  // const interval = setInterval(() => {
+  //   const fen = document.querySelector("wc-chess-board")?.game?.getFEN();
+
+  //   if (
+  //     fen &&
+  //     !(fen?.includes("pppppppp/8/8/8/8/PPPPPPPP") && res_?.length === 0)
+  //   ) {
+  //     flag__ = true;
+  //   }
+
+  //   if (flag__ === true) {
+  //     // debugger;
+  //     flag__ = false;
+  //     const puzzle = res_?.find((e) => e.fen === fen);
+
+  //     if (!puzzle) {
+  //       console.warn("[DEBUG] Aucun puzzle correspondant au FEN :", fen);
+  //       return;
+  //     }
+
+  //     soluce = puzzle.solution;
+
+  //     // on efface
+
+  //     (async () => {
+  //       for (const e of soluce) {
+  //         const prom_ = e.promotion?.toLocaleLowerCase()[0] || "q";
+
+  //         movePiecePuzzle(e.from, e.to, prom_, 100);
+
+  //         await new Promise((resolve) => setTimeout(resolve, 500));
+  //       }
+  //     })();
+
+  //   }
+
+  //   // res = [];
+  // }, 500);
 }
