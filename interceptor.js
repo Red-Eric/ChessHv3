@@ -1232,7 +1232,7 @@ if (window.location.href.includes("https://www.chess.com/daily")) {
   (() => {
     const originalFetch = window.fetch;
 
-    window.res_ = [];
+    // window.res_ = [];
 
     window.fetch = async function (...args) {
       const response = await originalFetch.apply(this, args);
@@ -1256,30 +1256,17 @@ if (window.location.href.includes("https://www.chess.com/daily")) {
               // Extraire le FEN initial
               const fen = pgn.match(/\[FEN\s+"([^"]+)"\]/)?.[1];
 
-              if (!fen) {
-                return null;
-              }
+              if (!fen) return null;
 
-              // Initialiser la position
-              const chesslib = new Chess();
-
-              if (!chesslib.load(fen)) {
-                return null;
-              }
-
-              // Extraire les coups après les en-têtes PGN
-              const pgnMoves = pgn.replace(/\[[^\]]*\]/g, "").trim();
+              // Initialiser chess.js avec le FEN initial
+              const chesslib = new Chess(fen);
 
               const solution = [];
 
-              // Lire les coups du PGN en utilisant chess.js
-              const tempChess = new Chess();
+              // Extraire les coups après les en-têtes PGN
+              const pgnMoves = pgn.replace(/^\s*\[[^\]]*\]\s*$/gm, "").trim();
 
-              if (!tempChess.load(fen)) {
-                return null;
-              }
-
-              // Supprimer les commentaires, variantes et résultats
+              // Supprimer commentaires, variantes et annotations
               const cleanPgn = pgnMoves
                 .replace(/\{[^}]*\}/g, "")
                 .replace(/\([^)]*\)/g, "")
@@ -1287,14 +1274,18 @@ if (window.location.href.includes("https://www.chess.com/daily")) {
                 .replace(/\b(1-0|0-1|1\/2-1\/2|\*)\b/g, "")
                 .trim();
 
-              // Récupérer les coups SAN
+              // Extraire les coups SAN
               const tokens = cleanPgn
-                .replace(/\d+\.(\.\.)?/g, " ")
+                .replace(/\d+\.(?:\.\.)?/g, " ")
                 .split(/\s+/)
                 .filter(Boolean);
 
+              // Parcourir tous les coups
               for (const san of tokens) {
-                const move = tempChess.move(san);
+                // FEN AVANT de jouer le coup
+                const moveFen = chesslib.fen();
+
+                const move = chesslib.move(san);
 
                 if (!move) {
                   console.warn("[Chess.com] Coup invalide :", puzzle.id, san);
@@ -1305,6 +1296,7 @@ if (window.location.href.includes("https://www.chess.com/daily")) {
                   from: move.from,
                   to: move.to,
                   promotion: move.promotion || null,
+                  fen: moveFen,
                 });
               }
 
@@ -1331,35 +1323,68 @@ if (window.location.href.includes("https://www.chess.com/daily")) {
     };
   })();
 
-  let flag__ = false;
+  setInterval(() => {
+    if (!Array.isArray(res_) || !res_.length) return;
 
-  const interval = setInterval(() => {
-    const fen = document.querySelector("wc-chess-board")?.game?.getFEN();
+    const fen_ =
+      document.querySelector("wc-chess-board")?.game?.getFEN() ||
+      LASTFEN_PUZZLE;
 
-    if (
-      fen &&
-      !(fen?.includes("pppppppp/8/8/8/8/PPPPPPPP") && res_?.length === 0)
-    ) {
-      flag__ = true;
-    }
+    if (!fen_) return;
 
-    if (flag__ === true) {
-      soluce = res_.find((e) => e.fen === fen).solution;
+    if (fen_ !== LASTFEN_PUZZLE) {
+      LASTFEN_PUZZLE = fen_;
 
-      (async () => {
-        for (const e of soluce) {
-          const prom_ = e.promotion?.toLocaleLowerCase()[0] || "q";
+      // Normaliser le FEN
+      const normalizeFen = (fen) => fen.split(/\s+/).slice(0, 4).join(" ");
 
-          movePiecePuzzle(e.from, e.to, prom_, 100);
+      const currentFen = normalizeFen(fen_);
 
-          await new Promise((resolve) => setTimeout(resolve, 500));
+      // Parcourir tous les puzzles et chercher le FEN correspondant
+      let matchedMove = null;
+      let matchedPuzzle = null;
+
+      for (const puzzle of res_) {
+        if (!puzzle?.solution?.length) continue;
+
+        const move = puzzle.solution.find(
+          (m) => normalizeFen(m.fen) === currentFen,
+        );
+
+        if (move) {
+          matchedMove = move;
+          matchedPuzzle = puzzle;
+          break;
         }
-      })();
+      }
 
-      flag__ = false;
+      // Aucun FEN correspondant
+      if (!matchedMove) return;
+
+      const { from, to, promotion } = matchedMove;
+
+      // Construire le tableau des coups
+      m__ = [
+        {
+          from,
+          to,
+          eval: promotion,
+        },
+      ];
+
+      clearHighlightSquaresPuzzle();
+
+      highlightMovesOnBoardPuzzle(m__, getSidePuzzle());
+
+      // console.log({
+      //   puzzle: matchedPuzzle.id,
+      //   title: matchedPuzzle.title,
+      //   from,
+      //   to,
+      //   promotion,
+      //   fen: matchedMove.fen,
+      // });
     }
-
-    res = [];
   }, 500);
 }
 
@@ -1396,7 +1421,6 @@ if (window.location.href.includes("https://www.chess.com/puzzles/rush")) {
 
               const colorOfUser = puzzle.colorOfUser;
               const solution = [];
-              let resultFen = null;
 
               const movesText = puzzle.pgn
                 .replace(/\r/g, "")
@@ -1412,9 +1436,11 @@ if (window.location.href.includes("https://www.chess.com/puzzles/rush")) {
                 .split(/\s+/)
                 .filter(Boolean);
 
-              for (let i = 0; i < tokens.length; i++) {
-                const san = tokens[i];
+              for (const san of tokens) {
+                // FEN avant le coup
                 const fenBefore = chess.fen();
+
+                // Couleur qui doit jouer
                 const movingColor = chess.turn() === "w" ? "white" : "black";
 
                 let move;
@@ -1426,54 +1452,40 @@ if (window.location.href.includes("https://www.chess.com/puzzles/rush")) {
                 }
 
                 if (!move) {
+                  console.warn("[Chess.com] Coup invalide :", san, puzzle.id);
                   break;
                 }
 
-                const fenAfter = chess.fen();
-
-                if (i === 0) {
-                  resultFen = fenAfter;
-
-                  continue;
-                }
-
+                // Garder uniquement les coups du joueur
                 if (movingColor !== colorOfUser) {
                   continue;
                 }
 
-                const entry = {
+                solution.push({
+                  fen: fenBefore,
                   from: move.from,
                   to: move.to,
                   promotion: move.promotion || null,
-                };
-
-                solution.push(entry);
-
-                console.groupEnd();
-              }
-
-              if (resultFen === null) {
-                resultFen = initialFen;
+                });
               }
 
               return {
                 id: puzzle.id,
-                fen: resultFen,
+                fen: initialFen,
                 solution,
               };
             })
             .filter(Boolean);
 
-          // res_ = results;
-
+          // Ajouter les nouveaux puzzles sans doublons
           res_ = [
-            ...(res_ || []),
+            ...(Array.isArray(res_) ? res_ : []),
             ...results.filter(
               (newP) => !res_?.some((oldP) => oldP.id === newP.id),
             ),
           ];
 
-          console.log(res_);
+          // console.log("[Chess.com] Puzzles extraits :", res_);
         } catch (error) {
           console.error("[Chess.com] Erreur :", error);
         }
@@ -1483,87 +1495,57 @@ if (window.location.href.includes("https://www.chess.com/puzzles/rush")) {
     };
   })();
 
-  let flag__ = false;
+  setInterval(() => {
+    if (!Array.isArray(res_) || !res_.length) return;
 
-  const interval = setInterval(() => {
-    const fen = document.querySelector("wc-chess-board")?.game?.getFEN();
+    const fen_ = document.querySelector("wc-chess-board")?.game?.getFEN();
 
-    if (
-      fen &&
-      !(fen?.includes("pppppppp/8/8/8/8/PPPPPPPP") && res_?.length === 0)
-    ) {
-      flag__ = true;
-    }
+    if (!fen_) return;
 
-    if (flag__ === true) {
-      flag__ = false;
+    if (fen_ === LASTFEN_PUZZLE) return;
 
-      // On cherche l'index du puzzle correspondant au FEN actuel
-      const puzzleIndex = res_?.findIndex((e) => e.fen === fen);
+    LASTFEN_PUZZLE = fen_;
 
-      if (puzzleIndex === -1 || puzzleIndex === undefined) {
-        console.warn("[DEBUG] Aucun puzzle correspondant au FEN :", fen);
-        return;
+    const normalizeFen = (fen) => fen.split(/\s+/).slice(0, 4).join(" ");
+
+    const currentFen = normalizeFen(fen_);
+
+    let matchedMove = null;
+    let matchedPuzzle = null;
+
+    for (const puzzle of res_) {
+      if (!puzzle?.solution?.length) continue;
+
+      const move = puzzle.solution.find(
+        (m) => m.fen && normalizeFen(m.fen) === currentFen,
+      );
+
+      if (move) {
+        matchedMove = move;
+        matchedPuzzle = puzzle;
+        break;
       }
-
-      // On extrait le puzzle ET on le supprime directement du tableau res_
-      const puzzle = res_.splice(puzzleIndex, 1)[0];
-
-      const soluce = puzzle.solution;
-
-      // soluce.forEach((e) => {
-      //   const prom_ = e.promotion?.toLocaleLowerCase()[0] || "q";
-      //   movePiecePuzzle(e.from, e.to, prom_, 200);
-      // });
-
-      (async () => {
-        for (const e of soluce) {
-          const prom_ = e.promotion?.toLocaleLowerCase()[0] || "q";
-
-          movePiecePuzzle(e.from, e.to, prom_, 100);
-
-          await new Promise((resolve) => setTimeout(resolve, 500));
-        }
-      })();
     }
+
+    // Aucun coup correspondant
+    if (!matchedMove) {
+      clearHighlightSquaresPuzzle();
+      return;
+    }
+
+    const { from, to, promotion } = matchedMove;
+
+    m__ = [
+      {
+        from,
+        to,
+        eval: promotion,
+      },
+    ];
+
+    clearHighlightSquaresPuzzle();
+    highlightMovesOnBoardPuzzle(m__, getSidePuzzle());
+
+    
   }, 500);
-
-  // const interval = setInterval(() => {
-  //   const fen = document.querySelector("wc-chess-board")?.game?.getFEN();
-
-  //   if (
-  //     fen &&
-  //     !(fen?.includes("pppppppp/8/8/8/8/PPPPPPPP") && res_?.length === 0)
-  //   ) {
-  //     flag__ = true;
-  //   }
-
-  //   if (flag__ === true) {
-  //     // debugger;
-  //     flag__ = false;
-  //     const puzzle = res_?.find((e) => e.fen === fen);
-
-  //     if (!puzzle) {
-  //       console.warn("[DEBUG] Aucun puzzle correspondant au FEN :", fen);
-  //       return;
-  //     }
-
-  //     soluce = puzzle.solution;
-
-  //     // on efface
-
-  //     (async () => {
-  //       for (const e of soluce) {
-  //         const prom_ = e.promotion?.toLocaleLowerCase()[0] || "q";
-
-  //         movePiecePuzzle(e.from, e.to, prom_, 100);
-
-  //         await new Promise((resolve) => setTimeout(resolve, 500));
-  //       }
-  //     })();
-
-  //   }
-
-  //   // res = [];
-  // }, 500);
 }
