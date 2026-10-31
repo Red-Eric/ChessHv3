@@ -909,10 +909,136 @@ let Chess = function (r) {
   );
 };
 
-
 const queryChess_com = "wc-chess-board";
-const queryLichess_org = "cg-container";
-const queryWordChess_com = "div.cg-board";
+
+function highlightMovesOnBoardPuzzle(moves, side = "w") {
+  if (!Array.isArray(moves)) return;
+  if (window.location.host !== "www.chess.com") return;
+
+  const parent = document.querySelector(queryChess_com);
+  if (!parent) return;
+
+  const rect = parent.getBoundingClientRect();
+  const squareSize = rect.width / 8;
+  const colors = ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"];
+
+  document.querySelectorAll(".customH").forEach((el) => el.remove());
+
+  function squareToPosition(square) {
+    const fileChar = square[0];
+    const rank = parseInt(square[1], 10) - 1;
+
+    if (side === "w") {
+      const file = fileChar.charCodeAt(0) - "a".charCodeAt(0);
+      return { x: file * squareSize, y: (7 - rank) * squareSize };
+    }
+    const file = "h".charCodeAt(0) - fileChar.charCodeAt(0);
+    return { x: file * squareSize, y: rank * squareSize };
+  }
+
+  function drawArrow(fromSquare, toSquare, color, score) {
+    const from = squareToPosition(fromSquare);
+    const to = squareToPosition(toSquare);
+    const NS = "http://www.w3.org/2000/svg";
+
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("class", "customH");
+    svg.setAttribute("width", rect.width);
+    svg.setAttribute("height", rect.width);
+    svg.style.position = "fixed";
+    svg.style.left = rect.left + "px";
+    svg.style.top = rect.top + "px";
+    svg.style.pointerEvents = "none";
+    svg.style.overflow = "visible";
+    svg.style.zIndex = "999999";
+
+    // Pointe de flèche
+    const defs = document.createElementNS(NS, "defs");
+    const marker = document.createElementNS(NS, "marker");
+    marker.setAttribute("id", `arrowhead-${color}`);
+    marker.setAttribute("markerWidth", "3.5");
+    marker.setAttribute("markerHeight", "2.5");
+    marker.setAttribute("refX", "1.75");
+    marker.setAttribute("refY", "1.25");
+    marker.setAttribute("orient", "auto");
+    marker.setAttribute("markerUnits", "strokeWidth");
+
+    const arrowPath = document.createElementNS(NS, "path");
+    arrowPath.setAttribute("d", "M0,0 L3.5,1.25 L0,2.5 Z");
+    arrowPath.setAttribute("fill", color);
+    marker.appendChild(arrowPath);
+    defs.appendChild(marker);
+    svg.appendChild(defs);
+
+    // Ligne
+    const line = document.createElementNS(NS, "line");
+    line.setAttribute("x1", from.x + squareSize / 2);
+    line.setAttribute("y1", from.y + squareSize / 2);
+    line.setAttribute("x2", to.x + squareSize / 2);
+    line.setAttribute("y2", to.y + squareSize / 2);
+    line.setAttribute("stroke", color);
+    line.setAttribute("stroke-width", "5");
+    line.setAttribute("marker-end", `url(#arrowhead-${color})`);
+    line.setAttribute("opacity", "0.6");
+    svg.appendChild(line);
+
+    // Texte brut (chaîne affichée telle quelle)
+    if (score !== undefined && score !== null && String(score) !== "") {
+      const group = document.createElementNS(NS, "g");
+
+      const text = document.createElementNS(NS, "text");
+      text.setAttribute("x", to.x + squareSize);
+      text.setAttribute("y", to.y);
+      text.setAttribute("font-size", "9");
+      text.setAttribute("font-weight", "bold");
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("dominant-baseline", "middle");
+      text.setAttribute("fill", color);
+      text.textContent = String(score);
+
+      group.appendChild(text);
+      svg.appendChild(group);
+
+      requestAnimationFrame(() => {
+        const bbox = text.getBBox();
+        const padding = 2;
+
+        const rectEl = document.createElementNS(NS, "rect");
+        rectEl.setAttribute("x", bbox.x - padding);
+        rectEl.setAttribute("y", bbox.y - padding);
+        rectEl.setAttribute("width", bbox.width + padding * 2);
+        rectEl.setAttribute("height", bbox.height + padding * 2);
+        rectEl.setAttribute("rx", "8");
+        rectEl.setAttribute("ry", "8");
+
+        // Fond selon le side : blanc pour "w", noir pour "b"
+        const bgIsDark = side === "b";
+        rectEl.setAttribute("fill", bgIsDark ? "#312e2b" : "#ffffff");
+        rectEl.setAttribute("fill-opacity", "0.85");
+        rectEl.setAttribute("stroke", bgIsDark ? "#000000" : "#cccccc");
+        rectEl.setAttribute("stroke-width", "1");
+
+        group.insertBefore(rectEl, text);
+      });
+    }
+
+    document.body.appendChild(svg);
+  }
+
+  moves.slice(0, colors.length).forEach((move, index) => {
+    drawArrow(move.from, move.to, colors[index], move.eval);
+  });
+}
+
+function clearHighlightSquaresPuzzle() {
+  document.querySelectorAll(".customH").forEach((el) => el.remove());
+}
+
+function getSidePuzzle() {
+  const side_index =
+    document?.querySelector("wc-chess-board")?.game?.getPlayingAs() || 1;
+  return side_index === 1 ? "w" : "b";
+}
 
 function getGameObjectPuzzle() {
   if (window.game) return window.game;
@@ -960,6 +1086,7 @@ function movePiecePuzzle(
   return true;
 }
 let res_ = [];
+let LASTFEN_PUZZLE = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 if (window.location.href.includes("https://www.chess.com/puzzles/rated")) {
   (() => {
@@ -975,37 +1102,82 @@ if (window.location.href.includes("https://www.chess.com/puzzles/rated")) {
           const data = await response.clone().json();
           const puzzle = data?.userPuzzle?.puzzle;
 
-          if (puzzle) {
-            const moves = puzzle.moves || [];
+          if (!puzzle) return response;
 
-            // Récupérer le côté à partir du FEN
-            const fen = puzzle.pgn?.match(/\[FEN "([^"]+)"\]/)?.[1];
-            const activeColor = fen?.split(/\s+/)[1];
+          const moves = puzzle.moves || [];
 
-            const side =
-              activeColor === "w" ? "b" : activeColor === "b" ? "w" : null;
+          // FEN initial de la position
+          const fen = puzzle.pgn?.match(/\[FEN "([^"]+)"\]/)?.[1];
 
-            // Garder uniquement les coups aux index impairs
-            const solution = moves
-              .filter((_, index) => index % 2 === 1)
-              .map(({ move }) => ({
-                from: move.from.replace("SQUARE_", "").toLowerCase(),
-                to: move.to.replace("SQUARE_", "").toLowerCase(),
-                promotion: move.promotionPieceType
-                  ? move.promotionPieceType
-                      .replace("PROMOTION_PIECE_TYPE_", "")
-                      .toLowerCase()
-                  : null,
-              }));
-
-            console.clear();
-
-            res_ = {
-              side: side,
-              orientation: side,
-              solution: solution,
-            };
+          if (!fen) {
+            console.error("[Chess.com] FEN initial introuvable.");
+            return response;
           }
+
+          const activeColor = fen.split(/\s+/)[1];
+
+          const side =
+            activeColor === "w" ? "b" : activeColor === "b" ? "w" : null;
+
+          // Initialiser chess.js
+          const chesslib = new Chess(fen);
+
+          const solution = [];
+
+          // Parcourir TOUS les coups dans l'ordre chronologique
+          for (let index = 0; index < moves.length; index++) {
+            const move = moves[index].move;
+
+            const from = move.from.replace("SQUARE_", "").toLowerCase();
+
+            const to = move.to.replace("SQUARE_", "").toLowerCase();
+
+            const promotion = move.promotionPieceType
+              ? move.promotionPieceType
+                  .replace("PROMOTION_PIECE_TYPE_", "")
+                  .toLowerCase()
+              : null;
+
+            // Les index impairs correspondent aux coups de la solution
+            if (index % 2 === 1) {
+              // FEN AVANT que le coup de la solution soit joué
+              solution.push({
+                from,
+                to,
+                promotion,
+                fen: chesslib.fen(),
+              });
+            }
+
+            // IMPORTANT :
+            // Jouer TOUS les coups, même ceux qui ne sont pas
+            // enregistrés dans solution (coups adverses).
+            const playedMove = chesslib.move({
+              from,
+              to,
+              ...(promotion ? { promotion } : {}),
+            });
+
+            if (!playedMove) {
+              console.error("[Chess.com] Coup impossible :", {
+                index,
+                from,
+                to,
+                fen: chesslib.fen(),
+              });
+
+              break;
+            }
+          }
+
+          // Résultat final
+          res_ = {
+            side,
+            orientation: side,
+            solution,
+          };
+
+          // console.log("[Chess.com] Solution complète :", window.res_);
         } catch (error) {
           console.error("[Chess.com] Erreur :", error);
         }
@@ -1015,43 +1187,44 @@ if (window.location.href.includes("https://www.chess.com/puzzles/rated")) {
     };
   })();
 
-  let flag__ = false;
+  setInterval(() => {
+    if (!res_?.solution?.length) return;
 
-  const interval = setInterval(() => {
-    const fen = document.querySelector("wc-chess-board")?.game?.getFEN();
+    const fen_ =
+      document.querySelector("wc-chess-board")?.game?.getFEN() ||
+      LASTFEN_PUZZLE;
 
-    if (
-      fen &&
-      !(fen?.includes("pppppppp/8/8/8/8/PPPPPPPP") && res_?.length === 0)
-    ) {
-      flag__ = true;
+    if (!fen_) return;
+
+    if (fen_ !== LASTFEN_PUZZLE) {
+      LASTFEN_PUZZLE = fen_;
+      clearHighlightSquaresPuzzle();
+
+      // Comparer uniquement les 4 premiers champs du FEN
+      const normalizeFen = (fen) => fen.split(/\s+/).slice(0, 4).join(" ");
+
+      const currentFen = normalizeFen(fen_);
+
+      const move = res_.solution.find(
+        (m) => normalizeFen(m.fen) === currentFen,
+      );
+
+      if (move) {
+        const { from, to, promotion, fen } = move;
+        m__ = [
+          {
+            from: from,
+            to: to,
+            eval: promotion,
+          },
+        ];
+
+        clearHighlightSquaresPuzzle();
+
+        highlightMovesOnBoardPuzzle(m__, getSidePuzzle());
+        // console.log({ from, to, promotion, fen });
+      }
     }
-
-    if (flag__ === true) {
-      // res_.solution.forEach((e) => {
-      //   console.log(e);
-
-      //   const prom_ = e.promotion?.toLocaleLowerCase()[0] || "q";
-
-      //   movePiecePuzzle(e.from, e.to, prom_, 1000);
-      // });
-
-      (async () => {
-        for (const e of res_.solution) {
-          const prom_ = e.promotion?.toLocaleLowerCase()[0] || null;
-
-          
-
-          movePiecePuzzle(e.from, e.to, prom_, 800);
-
-          await new Promise((resolve) => setTimeout(resolve, 900));
-        }
-      })();
-
-      flag__ = false;
-    }
-
-    res = [];
   }, 500);
 }
 
