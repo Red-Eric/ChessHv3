@@ -695,6 +695,23 @@
         <div class="section-divider"><span>Opening Book</span></div>
 
         <div class="setting">
+          <label>Opening Book</label>
+          <select id="bookfile">
+            <option selected value="komodo.bin">Komodo Opening Book</option>
+            <option value="fischer.bin">Fischer Opening Book</option>
+            <option value="gambit.bin">Gambit Opening Book</option>
+            <option value="karpov.bin">Karpov Opening Book</option>
+            <option value="kasparov.bin">Kasparov Opening Book</option>
+            <option value="rodent.bin">Rodent Opening Book</option>
+            <option value="tal.bin">Tal Opening Book</option>
+            <option value="titans.bin">Titans Opening Book</option>
+          </select>
+        </div>
+        <div class="setting-help">
+          The opening book file readed by the extension to display the opening move
+        </div>
+
+        <div class="setting">
           <label>
             Opening Moves :
             <span class="value-badge" id="openingValue">0</span>
@@ -840,7 +857,8 @@
             <div class="setting-help">
               This the estimate move you play to calculate the time management
               <span style="color: #e74c3c; font-weight: 700">
-                The more you got the the faster the engine play (recommanded 20 for bullet)</span
+                The more you got the the faster the engine play (recommanded 20
+                for bullet)</span
               >
             </div>
           </div>
@@ -1001,7 +1019,7 @@
             <div class="setting">
               <label>Style</label>
               <select id="style">
-                <option selected value="Default">Engine</option>
+                <option selected value="Default">Default</option>
                 <option>Aggressive</option>
                 <option>Defensive</option>
                 <option>Active</option>
@@ -1608,22 +1626,14 @@
             Allow underscore in random part (Mixed mode)
           </label>
 
-          <label
-            class="acc-check full"
-            id="uoDigitsWrap"
-            style="display: none"
-          >
+          <label class="acc-check full" id="uoDigitsWrap" style="display: none">
             <input type="checkbox" id="uoDigits" />
             Add random digits at the end (Words modes)
           </label>
 
           <div class="acc-preview" id="uoPreview">
             <span class="acc-preview-text" id="uoPreviewText"></span>
-            <button
-              class="btn btn-small"
-              id="uoPreviewBtn"
-              type="button"
-            >
+            <button class="btn btn-small" id="uoPreviewBtn" type="button">
               Reroll
             </button>
           </div>

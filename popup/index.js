@@ -511,6 +511,7 @@ function updateChessUI() {
     "moveToGo",
   ].forEach((k) => (el(k).value = chessConfig[k]));
   el("style").value = chessConfig.style;
+  el("bookfile").value = chessConfig.bookfile;
   el("preview").value = chessConfig.preview;
   el("coach").value = chessConfig.coach;
   el("key").value = chessConfig.key;
@@ -696,6 +697,11 @@ el("delayMax").oninput = handleDelayInput;
 
 el("style").onchange = (e) => {
   chessConfig.style = e.target.value;
+  updateChessUI();
+  saveChessConfig();
+};
+el("bookfile").onchange = (e) => {
+  chessConfig.bookfile = e.target.value;
   updateChessUI();
   saveChessConfig();
 };

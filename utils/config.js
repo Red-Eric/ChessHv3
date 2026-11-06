@@ -2,11 +2,12 @@ let config = {
   engine: "komodo",
 
   elo: 3500,
-  moveToGo : 20,
+  moveToGo: 20,
   coach: 999,
   hideArrow: false,
   lines: 5,
   colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
+  bookfile: "komodo.bin",
   percentage: [100, 0, 0, 0, 0],
   depth: 10,
   depth2: 10,
@@ -17,7 +18,7 @@ let config = {
   autoMove: false,
   floatingBtn: false,
   special: false,
-  opening : 0,
+  opening: 0,
   speach: false,
   moveClassification: false,
   accuracy: false,
@@ -25,12 +26,11 @@ let config = {
   winningMove: false,
   showEval: false,
   preview: "None",
-  review2 : false,
+  review2: false,
   onlyShowEval: false,
   key: "a",
   key2: "z",
-  hints: [
-  ],
+  hints: [],
 
   // special stockfish 6
   st6_mobilityMid: 100,

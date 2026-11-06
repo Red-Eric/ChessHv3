@@ -29,6 +29,7 @@ chrome.storage.local.get(["chessConfig"], (result) => {
     hideArrow: false,
     lines: 5,
     colors: ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"],
+    bookfile: "komodo.bin",
     percentage: [100, 0, 0, 0, 0],
     depth: 10,
     depth2: 10,
@@ -62,8 +63,69 @@ chrome.storage.local.get(["chessConfig"], (result) => {
     st6_passedPawnsEnd: 100,
     st6_kingSafety: 100,
   };
+
   let engine = null;
   let st19 = null;
+
+  let _bookBufferPromise = null;
+  function loadBookBuffer() {
+    if (!_bookBufferPromise) {
+      const url = chrome.runtime.getURL(`book/${config.bookfile}`);
+      // alert("url")
+      _bookBufferPromise = fetch(url).then((r) => {
+        if (!r.ok) throw new Error("book.bin introuvable: " + r.status);
+        return r.arrayBuffer();
+      });
+    }
+    return _bookBufferPromise;
+  }
+
+  async function getBookMoves(fen, side) {
+    const buf = await loadBookBuffer();
+    const view = new DataView(buf);
+    const entryCount = buf.byteLength / 16;
+    const targetKey = polyglotKey(fen);
+
+    const readKey = (i) => {
+      const hi = view.getUint32(i * 16, false);
+      const lo = view.getUint32(i * 16 + 4, false);
+      return (BigInt(hi) << 32n) | BigInt(lo);
+    };
+
+    let lo = 0,
+      hi = entryCount - 1,
+      first = -1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      const k = readKey(mid);
+      if (k === targetKey) {
+        first = mid;
+        hi = mid - 1;
+      } else if (k < targetKey) lo = mid + 1;
+      else hi = mid - 1;
+    }
+
+    const moves = [];
+    if (first !== -1) {
+      for (let i = first; i < entryCount; i++) {
+        if (readKey(i) !== targetKey) break;
+
+        const moveBits = view.getUint16(i * 16 + 8, false);
+        if (moveBits === 0) continue;
+
+        const { from, to } = decodeMove(moveBits);
+
+        const rank = moves.length;
+        const evalLabel =
+          rank === 0 ? "Opening Main Line" : `Opening Variation ${rank + 1}`;
+
+        moves.push({ from, to, eval: evalLabel, fen, side });
+
+        if (moves.length >= config.opening) break;
+      }
+    }
+    return moves;
+  }
 
   (() => {
     if (config.showEval) {
@@ -764,6 +826,9 @@ chrome.storage.local.get(["chessConfig"], (result) => {
             if (!oldConfig || oldConfig.engine !== newConfig.engine) {
               location.reload(true);
             }
+            if (!oldConfig || oldConfig.bookfile !== newConfig.bookfile) {
+              location.reload(true);
+            }
             if (!oldConfig || oldConfig.showEval !== newConfig.showEval) {
               location.reload(true);
             }
@@ -1329,6 +1394,9 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
             if (!oldConfig || oldConfig.engine !== newConfig.engine) {
               // onCoachChanged(newConfig.coach);
+              location.reload(true);
+            }
+            if (!oldConfig || oldConfig.bookfile !== newConfig.bookfile) {
               location.reload(true);
             }
             if (!oldConfig || oldConfig.showEval !== newConfig.showEval) {
@@ -2057,6 +2125,9 @@ chrome.storage.local.get(["chessConfig"], (result) => {
 
             if (!oldConfig || oldConfig.engine !== newConfig.engine) {
               // onCoachChanged(newConfig.coach);
+              location.reload(true);
+            }
+            if (!oldConfig || oldConfig.bookfile !== newConfig.bookfile) {
               location.reload(true);
             }
             if (!oldConfig || oldConfig.showEval !== newConfig.showEval) {
