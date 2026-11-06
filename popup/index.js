@@ -14,6 +14,18 @@ let bookDescriptions = {
   "titans.bin": "Is a strong, positional and well-balanced opening book covering a wide range of mainstream theoretical lines, built for high-level play with an emphasis on soundness, deep preparation, and strategic complexity over sharp tactical chaos."
 }
 
+
+let styleDescription = {
+    "Default": "The Default personality is the strongest and most balanced playing style. It gives you full control over Contempt settings. Most other personalities will play approximately one skill level weaker than Default.",
+    "Aggressive": "The Aggressive personality attacks relentlessly, prioritizing offensive opportunities over king safety. It favors active pieces, sharp positions, and aggressive Queen play.",
+    "Defensive": "The Defensive personality prioritizes king safety and positional stability, preferring solid, reliable moves over unnecessary risks.",
+    "Active": "The Active personality favors open positions, active piece development, and dynamic play, constantly seeking opportunities to improve piece activity.",
+    "Positional": "The Positional personality focuses on solid play, strategic maneuvering, and long-term positional advantages, often preferring closed positions.",
+    "Endgame": "The Endgame personality focuses on reaching and mastering endgame positions, aiming to secure victory through precise play and pawn promotion.",
+    "Human": "The Human personality is designed to simulate the playing style of strong human players. It favors aggressive play, avoids unnecessary simplifications and repetitions, seeks open positions, and prioritizes long-term positional advantages. Recommended for stronger players looking for a challenging human-like opponent. For the best experience, choose a skill level where you can score approximately 25% of your games at your preferred time control."
+};
+
+
 /* ================= ENGINE HELPERS ================= */
 // "auto" = Komodo Auto (accepte aussi "komodo_auto")
 function isAutoEngine(engine) {
