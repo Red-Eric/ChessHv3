@@ -2,6 +2,18 @@ document.addEventListener("DOMContentLoaded", () => {
   chrome?.runtime?.sendMessage({ type: "popupReady" });
 });
 
+
+let bookDescriptions = {
+  "komodo.bin": "Offers a solid and varied opening repertoire, typical of Komodo's positional style, covering both 1.e4 and 1.d4 with theoretically sound lines rather than risky gambits.",
+  "fischer.bin": "Opening repertoire based on the games of Bobby Fischer.",
+  "gambit.bin": "Focuses on gambit lines, featuring aggressive openings and pawn sacrifices to gain attacking chances and rapid development.",
+  "karpov.bin": "Opening repertoire based on the games of Anatoly Karpov.",
+  "kasparov.bin": "Opening repertoire based on the games of Garry Kasparov.",
+  "rodent.bin": "Is a solid, positional opening book that favors classical and well-established lines, avoiding sharp gambits, preferring sound pawn structures and long-term strategic play over tactical complications.",
+  "tal.bin": "Opening repertoire based on the games of Mikhail Tal.",
+  "titans.bin": "Is a strong, positional and well-balanced opening book covering a wide range of mainstream theoretical lines, built for high-level play with an emphasis on soundness, deep preparation, and strategic complexity over sharp tactical chaos."
+}
+
 /* ================= ENGINE HELPERS ================= */
 // "auto" = Komodo Auto (accepte aussi "komodo_auto")
 function isAutoEngine(engine) {
