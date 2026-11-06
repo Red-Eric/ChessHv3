@@ -14,14 +14,104 @@
 
   <body>
     <div class="tabs">
-      <div class="tab active" data-panel="chess">Settings</div>
+      <div class="tab active" data-panel="guide">Guide</div>
+      <div class="tab" data-panel="chess">Settings</div>
       <div class="tab" data-panel="load">Load</div>
       <div class="tab" data-panel="export">Export</div>
       <div class="tab" data-panel="account">Account</div>
     </div>
 
+    <!-- ================= GUIDE ================= -->
+    <div class="panel active" id="guide">
+      <p class="panel-title">
+        <span class="title-text">
+          Guide
+          <a
+            class="splash"
+            href="https://discord.gg/QgtRG2Cpq6"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Also try Ashina Chess</a
+          >
+        </span>
+      </p>
+
+      <p class="load-hint">
+        If you don't know how to use this Chess learning tool 😉, I recommend
+        you watch this YouTube video carefully:
+      </p>
+
+      <a
+        id="guideVideoLink"
+        href="#"
+        target="_blank"
+        rel="noopener noreferrer"
+        style="
+          display: block;
+          position: relative;
+          width: 100%;
+          aspect-ratio: 16 / 9;
+          border-radius: 12px;
+          overflow: hidden;
+          background: #000;
+          margin: 12px 0;
+          text-decoration: none;
+        "
+      >
+        <img
+          id="guideVideoThumb"
+          src=""
+          alt="Video preview"
+          style="
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            opacity: 0.9;
+          "
+        />
+        <span
+          style="
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 68px;
+            height: 48px;
+            background: #ff0000;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+          "
+        >
+          <span
+            style="
+              width: 0;
+              height: 0;
+              border-style: solid;
+              border-width: 10px 0 10px 18px;
+              border-color: transparent transparent transparent #fff;
+              margin-left: 4px;
+            "
+          ></span>
+        </span>
+      </a>
+
+      <div class="setting-help">
+        <a
+          id="guideVideoText"
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+          style="color: #4f8cff; word-break: break-all"
+        ></a>
+      </div>
+    </div>
+
     <!-- ================= SETTINGS ================= -->
-    <div class="panel active" id="chess">
+    <div class="panel" id="chess">
       <div class="container">
         <h1>
           <span class="title-text">
@@ -710,6 +800,11 @@
         <div class="setting-help">
           The opening book file readed by the extension to display the opening move
         </div>
+        <div
+          class="setting-help"
+          id="bookDesc"
+          style="color: #2ecc71; font-weight: 600"
+        ></div>
 
         <div class="setting">
           <label>
@@ -1031,6 +1126,11 @@
             <div class="setting-help">
               Defines the preferred playstyle of the engine.
             </div>
+            <div
+              class="setting-help"
+              id="styleDesc"
+              style="color: #2ecc71; font-weight: 600"
+            ></div>
           </div>
 
           <!-- DISPLAY -->

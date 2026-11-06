@@ -2,6 +2,42 @@ document.addEventListener("DOMContentLoaded", () => {
   chrome?.runtime?.sendMessage({ type: "popupReady" });
 });
 
+/* ================= GUIDE VIDEO =================
+   Change only this URL later to update the video in the Guide panel */
+const GUIDE_VIDEO_URL = "https://www.youtube.com/watch?v=dQw4";
+
+function getYouTubeId(url) {
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes("youtu.be")) return u.pathname.slice(1);
+    if (u.searchParams.get("v")) return u.searchParams.get("v");
+    const m = u.pathname.match(/\/(embed|shorts|live)\/([^/?]+)/);
+    return m ? m[2] : "";
+  } catch (e) {
+    return "";
+  }
+}
+
+function initGuideVideo() {
+  const link = document.getElementById("guideVideoLink");
+  const thumb = document.getElementById("guideVideoThumb");
+  const text = document.getElementById("guideVideoText");
+  if (!link || !thumb || !text) return;
+
+  const id = getYouTubeId(GUIDE_VIDEO_URL);
+
+  link.href = GUIDE_VIDEO_URL;
+  text.href = GUIDE_VIDEO_URL;
+  text.textContent = GUIDE_VIDEO_URL;
+
+  if (id) {
+    thumb.src = `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+  }
+  thumb.onerror = () => {
+    thumb.style.display = "none";
+  };
+}
+initGuideVideo();
 
 let bookDescriptions = {
   "komodo.bin": "Offers a solid and varied opening repertoire, typical of Komodo's positional style, covering both 1.e4 and 1.d4 with theoretically sound lines rather than risky gambits.",
@@ -541,6 +577,10 @@ function updateChessUI() {
   el("key").value = chessConfig.key;
   el("key2").value = chessConfig.key2;
   el("engine").value = chessConfig.engine;
+
+  // Descriptions (en vert) selon l'item sélectionné
+  el("bookDesc").textContent = bookDescriptions[chessConfig.bookfile] || "";
+  el("styleDesc").textContent = styleDescription[chessConfig.style] || "";
 
   el("delayMin").value = chessConfig.delay0;
   el("delayMax").value = chessConfig.delay;

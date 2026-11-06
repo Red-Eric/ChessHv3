@@ -1122,6 +1122,3 @@ input:focus, select:focus { outline: none; border-color: var(--olive-vivid); box
   .acc-preview .btn { width: auto; }
   .acc-opts-actions .btn { width: 100%; }
 }
-
-
-/* https://www.chess.com/analysis/game/live/80428793827/review */
