@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "ChessLv3",
+  "name": "Chess-Hv3",
   "version": "1.0",
-  "description": "Chess Learner version 3 – Do Not Use This Tool to Cheat. It Is Designed Solely for Learning and Improving Your Chess Skills.",
+  "description": "",
   "icons": {
     "16": "icons/16.png",
     "48": "icons/48.png",
