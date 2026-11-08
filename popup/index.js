@@ -3,41 +3,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ================= GUIDE VIDEO =================
-   Change only this URL later to update the video in the Guide panel */
-const GUIDE_VIDEO_URL = "https://www.youtube.com/watch?v=dQw4";
-
-function getYouTubeId(url) {
-  try {
-    const u = new URL(url);
-    if (u.hostname.includes("youtu.be")) return u.pathname.slice(1);
-    if (u.searchParams.get("v")) return u.searchParams.get("v");
-    const m = u.pathname.match(/\/(embed|shorts|live)\/([^/?]+)/);
-    return m ? m[2] : "";
-  } catch (e) {
-    return "";
-  }
-}
-
-function initGuideVideo() {
-  const link = document.getElementById("guideVideoLink");
-  const thumb = document.getElementById("guideVideoThumb");
-  const text = document.getElementById("guideVideoText");
-  if (!link || !thumb || !text) return;
-
-  const id = getYouTubeId(GUIDE_VIDEO_URL);
-
-  link.href = GUIDE_VIDEO_URL;
-  text.href = GUIDE_VIDEO_URL;
-  text.textContent = GUIDE_VIDEO_URL;
-
-  if (id) {
-    thumb.src = `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
-  }
-  thumb.onerror = () => {
-    thumb.style.display = "none";
-  };
-}
-initGuideVideo();
+   La vidéo est locale : guide.mp4 dans le même dossier que index.html
+   (balise <video src="guide.mp4"> dans index.html, aucun JS nécessaire) */
 
 let bookDescriptions = {
   "komodo.bin": "Offers a solid and varied opening repertoire, typical of Komodo's positional style, covering both 1.e4 and 1.d4 with theoretically sound lines rather than risky gambits.",
@@ -176,6 +143,12 @@ document.querySelectorAll(".tab").forEach((tab) => {
       .forEach((e) => e.classList.remove("active"));
     tab.classList.add("active");
     document.getElementById(tab.dataset.panel).classList.add("active");
+
+    // met la vidéo du guide en pause quand on quitte l'onglet Guide
+    if (tab.dataset.panel !== "guide") {
+      const v = document.getElementById("guideVideo");
+      if (v && !v.paused) v.pause();
+    }
   };
 });
 

@@ -36,77 +36,35 @@
         </span>
       </p>
 
-      <p class="load-hint">
-        If you don't know how to use this Chess learning tool 😉, I recommend
-        you watch this YouTube video carefully:
-      </p>
+      <p class="load-hint">Plz watch this video carefully guys</p>
 
-      <a
-        id="guideVideoLink"
-        href="#"
-        target="_blank"
-        rel="noopener noreferrer"
+      <!-- Vidéo locale : guide.mp4 doit être dans le même dossier que index.html -->
+      <video
+        id="guideVideo"
+        src="guide.mp4"
+        controls
+        preload="metadata"
+        playsinline
         style="
           display: block;
-          position: relative;
           width: 100%;
           aspect-ratio: 16 / 9;
           border-radius: 12px;
-          overflow: hidden;
           background: #000;
           margin: 12px 0;
-          text-decoration: none;
         "
-      >
-        <img
-          id="guideVideoThumb"
-          src=""
-          alt="Video preview"
-          style="
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-            opacity: 0.9;
-          "
-        />
-        <span
-          style="
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 68px;
-            height: 48px;
-            background: #ff0000;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
-          "
-        >
-          <span
-            style="
-              width: 0;
-              height: 0;
-              border-style: solid;
-              border-width: 10px 0 10px 18px;
-              border-color: transparent transparent transparent #fff;
-              margin-left: 4px;
-            "
-          ></span>
-        </span>
-      </a>
+      ></video>
 
       <div class="setting-help">
-        <a
-          id="guideVideoText"
-          href="#"
-          target="_blank"
-          rel="noopener noreferrer"
-          style="color: #4f8cff; word-break: break-all"
-        ></a>
+        This tool is 100% compatible with Chess.com. Tested in bullet, blitz
+        and rapid.
+        <br /><br />
+        It is not designed for ultra-bullet: the code's thread has a 500 ms
+        latency, so it is not fast enough in that area.
+        <br /><br />
+        It also works on Lichess and FIDE Arena, but with some minor bugs since
+        I haven't tested on those sites. I just code, and when it works I'm
+        out.
       </div>
     </div>
 
@@ -818,7 +776,7 @@
         <div class="setting-help">
           Number of opening moves displayed as arrows from the opening book.
           <span style="color: #e74c3c; font-weight: 700">
-            Opening moves are retrieved from the book.bin database and are
+            Opening moves are retrieved from the bookfile.bin database and are
             independent of the engine.
           </span>
         </div>
