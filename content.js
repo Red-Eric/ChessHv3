@@ -14,6 +14,7 @@ let startY = 0;
 
 const chess2 = new Chess();
 // Inject a.js
+
 preInjection();
 
 const interval = 100;
