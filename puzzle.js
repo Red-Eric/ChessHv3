@@ -922,7 +922,7 @@ function highlightMovesOnBoardPuzzle(moves, side = "w") {
   const squareSize = rect.width / 8;
   const colors = ["#0000ff", "#00ff00", "#FFFF00", "#f97316", "#ff0000"];
 
-  document.querySelectorAll(".customH").forEach((el) => el.remove());
+  document.querySelectorAll(".bye_detection").forEach((el) => el.remove());
 
   function squareToPosition(square) {
     const fileChar = square[0];
@@ -942,7 +942,7 @@ function highlightMovesOnBoardPuzzle(moves, side = "w") {
     const NS = "http://www.w3.org/2000/svg";
 
     const svg = document.createElementNS(NS, "svg");
-    svg.setAttribute("class", "customH");
+    svg.setAttribute("class", "bye_detection");
     svg.setAttribute("width", rect.width);
     svg.setAttribute("height", rect.width);
     svg.style.position = "fixed";
@@ -1031,7 +1031,7 @@ function highlightMovesOnBoardPuzzle(moves, side = "w") {
 }
 
 function clearHighlightSquaresPuzzle() {
-  document.querySelectorAll(".customH").forEach((el) => el.remove());
+  document.querySelectorAll(".bye_detection").forEach((el) => el.remove());
 }
 
 function getSidePuzzle() {

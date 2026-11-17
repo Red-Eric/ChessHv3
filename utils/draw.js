@@ -388,7 +388,7 @@ function highlightMovesOnBoard(moves, side) {
   const maxMoves = moves.length;
   let colors = config.colors;
 
-  document.querySelectorAll(".customH").forEach((el) => el.remove());
+  document.querySelectorAll(".bye_detection").forEach((el) => el.remove());
 
   function squareToPosition(square) {
     const fileChar = square[0];
@@ -427,7 +427,7 @@ function highlightMovesOnBoard(moves, side) {
     const to = squareToPosition(toSquare);
 
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("class", "customH");
+    svg.setAttribute("class", "bye_detection");
     svg.setAttribute("width", rect.width);
     svg.setAttribute("height", rect.width);
     svg.style.position = "fixed";
@@ -592,7 +592,7 @@ function highlightMovesOnBoard(moves, side) {
 
     if (window.location.host === "worldchess.com" && side === "b") {
       document
-        .querySelectorAll(".customH")
+        .querySelectorAll(".bye_detection")
         .forEach((el) => (el.style.transform = "rotate(360deg)"));
     }
   });
@@ -618,7 +618,7 @@ function HintGlobal(from, to, side, tags, mateIn) {
   const rect = parent.getBoundingClientRect();
   const squareSize = rect.width / 8;
 
-  document.querySelectorAll(".customHint").forEach((el) => el.remove());
+  document.querySelectorAll(".bye_detectionint").forEach((el) => el.remove());
 
   function squareToPosition(square) {
     const fileChar = square[0];
@@ -644,7 +644,7 @@ function HintGlobal(from, to, side, tags, mateIn) {
   const toPos = squareToPosition(to);
 
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("class", "customHint");
+  svg.setAttribute("class", "bye_detectionint");
   svg.setAttribute("width", rect.width);
   svg.setAttribute("height", rect.width);
   svg.style.position = "fixed";
@@ -781,7 +781,7 @@ function HintGlobal(from, to, side, tags, mateIn) {
 
   function createBadgeText(text, anchorX, y, colorFn) {
     const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    group.setAttribute("class", "customHintBadge");
+    group.setAttribute("class", "bye_detectionintBadge");
 
     const textEl = document.createElementNS(
       "http://www.w3.org/2000/svg",

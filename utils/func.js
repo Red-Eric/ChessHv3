@@ -189,11 +189,11 @@ function randomIntBetween(min, max) {
 
 // clear the arrows on the board
 function clearHighlightSquares() {
-  document.querySelectorAll(".customH").forEach((el) => el.remove());
+  document.querySelectorAll(".bye_detection").forEach((el) => el.remove());
 }
 
 function clearHighlighthints() {
-  document.querySelectorAll(".customHint").forEach((el) => el.remove());
+  document.querySelectorAll(".bye_detectionint").forEach((el) => el.remove());
 }
 // clear move classification icon
 function clearHint() {
